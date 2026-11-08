@@ -1,0 +1,2178 @@
+{
+  "meta": {
+    "attribution": "Data from Efficient Games (https://efficient.games), licensed under CC BY 4.0.",
+    "clientBuild": "1.60.1.70862",
+    "collectedOn": {
+      "first": "2026-11-07",
+      "last": "2026-11-08"
+    },
+    "dataset": "vendors",
+    "license": "CC BY 4.0",
+    "product": "wowf",
+    "schemaVersion": 1,
+    "sources": 3
+  },
+  "modifications": "Filtered to CraftPilot catalog/professions; fields preserved.",
+  "vendors": {
+    "12196": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Innkeeper Kaylisk",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.7394,
+          "mapY": 0.607,
+          "uiMap": 1440,
+          "worldX": 2339.6,
+          "worldY": -2563.8
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "12962": {
+      "entries": {
+        "item:6530": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 6530,
+          "name": "Nightcrawlers",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Wik'Tar",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.1177,
+          "mapY": 0.3417,
+          "uiMap": 1440,
+          "worldX": 3359.6,
+          "worldY": 1021.5
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 3
+    },
+    "13476": {
+      "entries": {
+        "item:16583": {
+          "costs": {
+            "5": 10000
+          },
+          "itemId": 16583,
+          "name": "Demonic Figurine",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:17034": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 17034,
+          "name": "Maple Seed",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:17035": {
+          "costs": {
+            "5": 400
+          },
+          "itemId": 17035,
+          "name": "Stranglethorn Seed",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Balai Lok'Wein",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.364,
+          "mapY": 0.3035,
+          "uiMap": 1445,
+          "worldX": -3095.5,
+          "worldY": -2886.1
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "2115": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Joshua Kien",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.3228,
+          "mapY": 0.6553,
+          "uiMap": 1420,
+          "worldX": 1863.3,
+          "worldY": 1574.5
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "2140": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "4": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4470": {
+          "costs": {
+            "4": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Edwin Harly",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.4406,
+          "mapY": 0.3995,
+          "uiMap": 1421,
+          "worldX": 548.2,
+          "worldY": 1599.4
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "2626": {
+      "entries": {
+        "item:6530": {
+          "costs": {
+            "4": 100
+          },
+          "itemId": 6530,
+          "name": "Nightcrawlers",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-08",
+      "name": "Old Man Heming",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.2743,
+          "mapY": 0.7713,
+          "uiMap": 1434,
+          "worldX": -14449.8,
+          "worldY": 470.4
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "2663": {
+      "entries": {
+        "item:10728": {
+          "costs": {
+            "4": 1500
+          },
+          "itemId": 10728,
+          "name": "Pattern: Black Swashbuckler's Shirt",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-08",
+      "name": "Narkk",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.2819,
+          "mapY": 0.7451,
+          "uiMap": 1434,
+          "worldX": -14338.6,
+          "worldY": 422.3
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "2664": {
+      "entries": {
+        "item:11291": {
+          "costs": {
+            "4": 4500
+          },
+          "itemId": 11291,
+          "name": "Star Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:159": {
+          "costs": {
+            "4": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4470": {
+          "costs": {
+            "4": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-08",
+      "name": "Kelsey Yance",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.2821,
+          "mapY": 0.7444,
+          "uiMap": 1434,
+          "worldX": -14335.5,
+          "worldY": 420.7
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "2999": {
+      "entries": {
+        "item:18567": {
+          "costs": {
+            "5": 150000
+          },
+          "itemId": 18567,
+          "name": "Elemental Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2880": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2880,
+          "name": "Weak Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:3466": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 3466,
+          "name": "Strong Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:3857": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 3857,
+          "name": "Coal",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Taur Stonehoof",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.3983,
+          "mapY": 0.5503,
+          "uiMap": 1456,
+          "worldX": -1232.9,
+          "worldY": 100.9
+        }
+      ],
+      "repairs": true,
+      "sources": 1,
+      "visits": 1
+    },
+    "3005": {
+      "entries": {
+        "item:10290": {
+          "costs": {
+            "5": 2500
+          },
+          "itemId": 10290,
+          "name": "Pink Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:10311": {
+          "costs": {
+            "5": 3000
+          },
+          "itemId": 10311,
+          "name": "Pattern: Orange Martial Shirt",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:10325": {
+          "costs": {
+            "5": 10000
+          },
+          "itemId": 10325,
+          "name": "Pattern: White Wedding Dress",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:14341": {
+          "costs": {
+            "5": 5000
+          },
+          "itemId": 14341,
+          "name": "Rune Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2320": {
+          "costs": {
+            "5": 10
+          },
+          "itemId": 2320,
+          "name": "Coarse Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2321": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2321,
+          "name": "Fine Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2324": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 2324,
+          "name": "Bleach",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2325": {
+          "costs": {
+            "5": 1000
+          },
+          "itemId": 2325,
+          "name": "Black Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:252783": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 252783,
+          "name": "Pattern: Mystic Medium Armor Kit",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:252784": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 252784,
+          "name": "Pattern: Forceful Medium Armor Kit",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:252811": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 252811,
+          "name": "Pattern: Mystic Heavy Armor Kit",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:252812": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 252812,
+          "name": "Pattern: Forceful Heavy Armor Kit",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:253665": {
+          "costs": {
+            "5": 150
+          },
+          "itemId": 253665,
+          "name": "Pattern: Linen Reagent Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:253668": {
+          "costs": {
+            "5": 250
+          },
+          "itemId": 253668,
+          "name": "Pattern: Woolen Reagent Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2604": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 2604,
+          "name": "Red Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2605": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2605,
+          "name": "Green Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4289": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 4289,
+          "name": "Salt",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4291": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 4291,
+          "name": "Silken Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4340": {
+          "costs": {
+            "5": 350
+          },
+          "itemId": 4340,
+          "name": "Gray Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4341": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 4341,
+          "name": "Yellow Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4342": {
+          "costs": {
+            "5": 2500
+          },
+          "itemId": 4342,
+          "name": "Purple Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5771": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 5771,
+          "name": "Pattern: Red Linen Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5772": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 5772,
+          "name": "Pattern: Red Woolen Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6260": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 6260,
+          "name": "Blue Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6261": {
+          "costs": {
+            "5": 1000
+          },
+          "itemId": 6261,
+          "name": "Orange Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:8343": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 8343,
+          "name": "Heavy Silken Thread",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Mahu",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.4397,
+          "mapY": 0.4493,
+          "uiMap": 1456,
+          "worldX": -1162.7,
+          "worldY": 57.8
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 9
+    },
+    "3012": {
+      "entries": {
+        "item:10938": {
+          "costs": {
+            "5": 800
+          },
+          "itemId": 10938,
+          "limited": true,
+          "name": "Lesser Magic Essence",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 2
+        },
+        "item:10940": {
+          "costs": {
+            "5": 800
+          },
+          "itemId": 10940,
+          "limited": true,
+          "name": "Strange Dust",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 1
+        },
+        "item:11291": {
+          "costs": {
+            "5": 4500
+          },
+          "itemId": 11291,
+          "name": "Star Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:20752": {
+          "costs": {
+            "5": 3000
+          },
+          "itemId": 20752,
+          "name": "Formula: Minor Mana Oil",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:20753": {
+          "costs": {
+            "5": 4000
+          },
+          "itemId": 20753,
+          "name": "Formula: Lesser Wizard Oil",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:20758": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 20758,
+          "name": "Formula: Minor Wizard Oil",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:22307": {
+          "costs": {
+            "5": 6000
+          },
+          "itemId": 22307,
+          "name": "Pattern: Enchanted Mageweave Pouch",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:247786": {
+          "costs": {
+            "5": 10
+          },
+          "itemId": 247786,
+          "name": "Mote of Magic",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4470": {
+          "costs": {
+            "5": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6217": {
+          "costs": {
+            "5": 124
+          },
+          "itemId": 6217,
+          "name": "Copper Rod",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6342": {
+          "costs": {
+            "5": 300
+          },
+          "itemId": 6342,
+          "name": "Formula: Enchant Chest - Minor Intellect",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6349": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 6349,
+          "name": "Formula: Enchant 2H Weapon - Lesser Intellect",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6377": {
+          "costs": {
+            "5": 1000
+          },
+          "itemId": 6377,
+          "name": "Formula: Enchant Boots - Minor Agility",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Nata Dawnstrider",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.4509,
+          "mapY": 0.3902,
+          "uiMap": 1456,
+          "worldX": -1121.5,
+          "worldY": 46
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "3335": {
+      "entries": {
+        "item:16583": {
+          "costs": {
+            "5": 10000
+          },
+          "itemId": 16583,
+          "name": "Demonic Figurine",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:17034": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 17034,
+          "name": "Maple Seed",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:17035": {
+          "costs": {
+            "5": 400
+          },
+          "itemId": 17035,
+          "name": "Stranglethorn Seed",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5640": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 5640,
+          "limited": true,
+          "name": "Recipe: Rage Potion",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 1
+        },
+        "item:5643": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 5643,
+          "limited": true,
+          "name": "Recipe: Great Rage Potion",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Hagrus",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.4616,
+          "mapY": 0.4605,
+          "uiMap": 1454,
+          "worldX": 1843.1,
+          "worldY": -4328
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "3348": {
+      "entries": {
+        "item:13478": {
+          "costs": {
+            "5": 13000
+          },
+          "itemId": 13478,
+          "name": "Recipe: Elixir of Superior Defense",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:18256": {
+          "costs": {
+            "5": 30000
+          },
+          "itemId": 18256,
+          "name": "Imbued Vial",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:3371": {
+          "costs": {
+            "5": 20
+          },
+          "itemId": 3371,
+          "name": "Empty Vial",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:3372": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 3372,
+          "name": "Leaded Vial",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:5642": {
+          "costs": {
+            "5": 1800
+          },
+          "itemId": 5642,
+          "name": "Recipe: Free Action Potion",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:8925": {
+          "costs": {
+            "5": 2500
+          },
+          "itemId": 8925,
+          "name": "Crystal Vial",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Kor'geld",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.5625,
+          "mapY": 0.346,
+          "uiMap": 1454,
+          "worldX": 1950.3,
+          "worldY": -4469.5
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "3367": {
+      "entries": {
+        "item:2320": {
+          "costs": {
+            "5": 10
+          },
+          "itemId": 2320,
+          "name": "Coarse Thread",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:2321": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2321,
+          "name": "Fine Thread",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:2324": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 2324,
+          "name": "Bleach",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:2325": {
+          "costs": {
+            "5": 1000
+          },
+          "itemId": 2325,
+          "name": "Black Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:2604": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 2604,
+          "name": "Red Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:2605": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2605,
+          "name": "Green Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:2880": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2880,
+          "name": "Weak Flux",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:3371": {
+          "costs": {
+            "5": 20
+          },
+          "itemId": 3371,
+          "name": "Empty Vial",
+          "sources": 2,
+          "stack": 5
+        },
+        "item:3372": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 3372,
+          "name": "Leaded Vial",
+          "sources": 2,
+          "stack": 5
+        },
+        "item:3466": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 3466,
+          "name": "Strong Flux",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:3857": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 3857,
+          "name": "Coal",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4289": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 4289,
+          "name": "Salt",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4291": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 4291,
+          "name": "Silken Thread",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4340": {
+          "costs": {
+            "5": 350
+          },
+          "itemId": 4340,
+          "name": "Gray Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4341": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 4341,
+          "name": "Yellow Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4342": {
+          "costs": {
+            "5": 2500
+          },
+          "itemId": 4342,
+          "name": "Purple Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4399": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 4399,
+          "name": "Wooden Stock",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:4400": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 4400,
+          "name": "Heavy Stock",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:6217": {
+          "costs": {
+            "5": 124
+          },
+          "itemId": 6217,
+          "name": "Copper Rod",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:6260": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 6260,
+          "name": "Blue Dye",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:6530": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 6530,
+          "name": "Nightcrawlers",
+          "sources": 2,
+          "stack": 1
+        },
+        "item:8343": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 8343,
+          "name": "Heavy Silken Thread",
+          "sources": 2,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Felika",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.5911,
+          "mapY": 0.5659,
+          "uiMap": 1454,
+          "worldX": 1744.6,
+          "worldY": -4509.7
+        },
+        {
+          "instance": 1,
+          "mapX": 0.6052,
+          "mapY": 0.4967,
+          "uiMap": 1454,
+          "worldX": 1809.3,
+          "worldY": -4529.5
+        }
+      ],
+      "repairs": false,
+      "sources": 2,
+      "visits": 2
+    },
+    "3413": {
+      "entries": {
+        "item:10647": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 10647,
+          "name": "Engineer's Ink",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:10648": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 10648,
+          "name": "Blank Parchment",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:16041": {
+          "costs": {
+            "5": 12000
+          },
+          "itemId": 16041,
+          "name": "Schematic: Thorium Grenade",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:16042": {
+          "costs": {
+            "5": 12000
+          },
+          "itemId": 16042,
+          "name": "Schematic: Thorium Widget",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:18647": {
+          "costs": {
+            "5": 1800
+          },
+          "itemId": 18647,
+          "name": "Schematic: Red Firework",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2880": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2880,
+          "name": "Weak Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:3466": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 3466,
+          "name": "Strong Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4399": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 4399,
+          "name": "Wooden Stock",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4400": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 4400,
+          "name": "Heavy Stock",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Sovik",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.7553,
+          "mapY": 0.2507,
+          "uiMap": 1454,
+          "worldX": 2039.3,
+          "worldY": -4740
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "3482": {
+      "entries": {
+        "item:2320": {
+          "costs": {
+            "5": 10
+          },
+          "itemId": 2320,
+          "name": "Coarse Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2321": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2321,
+          "name": "Fine Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2324": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 2324,
+          "name": "Bleach",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2604": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 2604,
+          "name": "Red Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2605": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2605,
+          "name": "Green Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2880": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2880,
+          "name": "Weak Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:3371": {
+          "costs": {
+            "5": 20
+          },
+          "itemId": 3371,
+          "name": "Empty Vial",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4289": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 4289,
+          "name": "Salt",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6217": {
+          "costs": {
+            "5": 124
+          },
+          "itemId": 6217,
+          "name": "Copper Rod",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6260": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 6260,
+          "name": "Blue Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6530": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 6530,
+          "name": "Nightcrawlers",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-08",
+      "name": "Tari'qa",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.5166,
+          "mapY": 0.3009,
+          "uiMap": 1413,
+          "worldX": -420.4,
+          "worldY": -2612.1
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 2
+    },
+    "3522": {
+      "entries": {
+        "item:6270": {
+          "costs": {
+            "5": 200
+          },
+          "itemId": 6270,
+          "name": "Pattern: Blue Linen Vest",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Constance Brisboise",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.5255,
+          "mapY": 0.5567,
+          "uiMap": 1420,
+          "worldX": 2160.5,
+          "worldY": 658.7
+        }
+      ],
+      "repairs": true,
+      "sources": 1,
+      "visits": 1
+    },
+    "3556": {
+      "entries": {
+        "item:2320": {
+          "costs": {
+            "4": 10
+          },
+          "itemId": 2320,
+          "name": "Coarse Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2321": {
+          "costs": {
+            "4": 100
+          },
+          "itemId": 2321,
+          "name": "Fine Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2324": {
+          "costs": {
+            "4": 25
+          },
+          "itemId": 2324,
+          "name": "Bleach",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2880": {
+          "costs": {
+            "4": 100
+          },
+          "itemId": 2880,
+          "name": "Weak Flux",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:3371": {
+          "costs": {
+            "4": 20
+          },
+          "itemId": 3371,
+          "name": "Empty Vial",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:3372": {
+          "costs": {
+            "4": 200
+          },
+          "itemId": 3372,
+          "name": "Leaded Vial",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4289": {
+          "costs": {
+            "4": 50
+          },
+          "itemId": 4289,
+          "name": "Salt",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5771": {
+          "costs": {
+            "4": 200
+          },
+          "itemId": 5771,
+          "name": "Pattern: Red Linen Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5786": {
+          "costs": {
+            "4": 550
+          },
+          "itemId": 5786,
+          "name": "Pattern: Murloc Scale Belt",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5787": {
+          "costs": {
+            "4": 600
+          },
+          "itemId": 5787,
+          "name": "Pattern: Murloc Scale Breastplate",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6217": {
+          "costs": {
+            "4": 124
+          },
+          "itemId": 6217,
+          "name": "Copper Rod",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6272": {
+          "costs": {
+            "4": 300
+          },
+          "itemId": 6272,
+          "name": "Pattern: Blue Linen Robe",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6530": {
+          "costs": {
+            "4": 100
+          },
+          "itemId": 6530,
+          "name": "Nightcrawlers",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Andrew Hilbert",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.4323,
+          "mapY": 0.4078,
+          "uiMap": 1421,
+          "worldX": 524.9,
+          "worldY": 1634.3
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 2
+    },
+    "3881": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Grimtak",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.512,
+          "mapY": 0.4268,
+          "uiMap": 1411,
+          "worldX": 303.8,
+          "worldY": -4669.8
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 2
+    },
+    "4553": {
+      "entries": {
+        "item:11291": {
+          "costs": {
+            "4": 4500
+          },
+          "itemId": 11291,
+          "name": "Star Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:159": {
+          "costs": {
+            "4": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4470": {
+          "costs": {
+            "4": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Ronald Burch",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.6234,
+          "mapY": 0.4325,
+          "uiMap": 1458,
+          "worldX": 1601.1,
+          "worldY": 275.2
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "4879": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Ogg'marr",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.3662,
+          "mapY": 0.3095,
+          "uiMap": 1445,
+          "worldX": -3116.7,
+          "worldY": -2897.7
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "5695": {
+      "entries": {
+        "item:10938": {
+          "costs": {
+            "5": 800
+          },
+          "itemId": 10938,
+          "limited": true,
+          "name": "Lesser Magic Essence",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 1
+        },
+        "item:10940": {
+          "costs": {
+            "5": 800
+          },
+          "itemId": 10940,
+          "limited": true,
+          "name": "Strange Dust",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 3
+        },
+        "item:247786": {
+          "costs": {
+            "5": 10
+          },
+          "itemId": 247786,
+          "name": "Mote of Magic",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4470": {
+          "costs": {
+            "5": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6217": {
+          "costs": {
+            "5": 124
+          },
+          "itemId": 6217,
+          "name": "Copper Rod",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6342": {
+          "costs": {
+            "5": 300
+          },
+          "itemId": 6342,
+          "name": "Formula: Enchant Chest - Minor Intellect",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Vance Undergloom",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.617,
+          "mapY": 0.5169,
+          "uiMap": 1420,
+          "worldX": 2280.2,
+          "worldY": 245.1
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "5757": {
+      "entries": {
+        "item:10938": {
+          "costs": {
+            "4": 800
+          },
+          "itemId": 10938,
+          "limited": true,
+          "name": "Lesser Magic Essence",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 1
+        },
+        "item:10940": {
+          "costs": {
+            "4": 800
+          },
+          "itemId": 10940,
+          "limited": true,
+          "name": "Strange Dust",
+          "sources": 1,
+          "stack": 1,
+          "stockMax": 2
+        },
+        "item:11291": {
+          "costs": {
+            "4": 4500
+          },
+          "itemId": 11291,
+          "name": "Star Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:20752": {
+          "costs": {
+            "4": 3000
+          },
+          "itemId": 20752,
+          "name": "Formula: Minor Mana Oil",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:20753": {
+          "costs": {
+            "4": 4000
+          },
+          "itemId": 20753,
+          "name": "Formula: Lesser Wizard Oil",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:20758": {
+          "costs": {
+            "4": 500
+          },
+          "itemId": 20758,
+          "name": "Formula: Minor Wizard Oil",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:22307": {
+          "costs": {
+            "4": 6000
+          },
+          "itemId": 22307,
+          "name": "Pattern: Enchanted Mageweave Pouch",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:247786": {
+          "costs": {
+            "4": 10
+          },
+          "itemId": 247786,
+          "name": "Mote of Magic",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4470": {
+          "costs": {
+            "4": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6217": {
+          "costs": {
+            "4": 124
+          },
+          "itemId": 6217,
+          "name": "Copper Rod",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6342": {
+          "costs": {
+            "4": 300
+          },
+          "itemId": 6342,
+          "name": "Formula: Enchant Chest - Minor Intellect",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Lilly",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.4309,
+          "mapY": 0.5086,
+          "uiMap": 1421,
+          "worldX": 242.5,
+          "worldY": 1640.3
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "5944": {
+      "entries": {
+        "item:10290": {
+          "costs": {
+            "5": 2500
+          },
+          "itemId": 10290,
+          "name": "Pink Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:14341": {
+          "costs": {
+            "5": 5000
+          },
+          "itemId": 14341,
+          "name": "Rune Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2320": {
+          "costs": {
+            "5": 10
+          },
+          "itemId": 2320,
+          "name": "Coarse Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2321": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2321,
+          "name": "Fine Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2324": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 2324,
+          "name": "Bleach",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2325": {
+          "costs": {
+            "5": 1000
+          },
+          "itemId": 2325,
+          "name": "Black Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:253665": {
+          "costs": {
+            "5": 150
+          },
+          "itemId": 253665,
+          "name": "Pattern: Linen Reagent Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:253668": {
+          "costs": {
+            "5": 250
+          },
+          "itemId": 253668,
+          "name": "Pattern: Woolen Reagent Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2604": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 2604,
+          "name": "Red Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:2605": {
+          "costs": {
+            "5": 100
+          },
+          "itemId": 2605,
+          "name": "Green Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4289": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 4289,
+          "name": "Salt",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4291": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 4291,
+          "name": "Silken Thread",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4340": {
+          "costs": {
+            "5": 350
+          },
+          "itemId": 4340,
+          "name": "Gray Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4341": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 4341,
+          "name": "Yellow Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:4342": {
+          "costs": {
+            "5": 2500
+          },
+          "itemId": 4342,
+          "name": "Purple Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:5772": {
+          "costs": {
+            "5": 500
+          },
+          "itemId": 5772,
+          "name": "Pattern: Red Woolen Bag",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6260": {
+          "costs": {
+            "5": 50
+          },
+          "itemId": 6260,
+          "name": "Blue Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6261": {
+          "costs": {
+            "5": 1000
+          },
+          "itemId": 6261,
+          "name": "Orange Dye",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:6274": {
+          "costs": {
+            "5": 400
+          },
+          "itemId": 6274,
+          "name": "Pattern: Blue Overalls",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:8343": {
+          "costs": {
+            "5": 2000
+          },
+          "itemId": 8343,
+          "name": "Heavy Silken Thread",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Yonada",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.4496,
+          "mapY": 0.5934,
+          "uiMap": 1413,
+          "worldX": -2396.9,
+          "worldY": -1933
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "6739": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "4": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4605": {
+          "costs": {
+            "4": 125
+          },
+          "itemId": 4605,
+          "name": "Red-speckled Mushroom",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Innkeeper Bates",
+      "positions": [
+        {
+          "instance": 0,
+          "mapX": 0.4312,
+          "mapY": 0.4119,
+          "uiMap": 1421,
+          "worldX": 513.4,
+          "worldY": 1638.9
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "6791": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "4": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Innkeeper Wiley",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.6206,
+          "mapY": 0.3938,
+          "uiMap": 1413,
+          "worldX": -1048.4,
+          "worldY": -3665.4
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "6928": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Innkeeper Grosk",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.5158,
+          "mapY": 0.417,
+          "uiMap": 1411,
+          "worldX": 338.5,
+          "worldY": -4689.6
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "6929": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-08",
+      "name": "Innkeeper Gryshka",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.54,
+          "mapY": 0.6873,
+          "uiMap": 1454,
+          "worldX": 1631,
+          "worldY": -4438
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 3
+    },
+    "7714": {
+      "entries": {
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        }
+      },
+      "lastSeen": "2026-11-07",
+      "name": "Innkeeper Byula",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.4554,
+          "mapY": 0.5899,
+          "uiMap": 1413,
+          "worldX": -2372.8,
+          "worldY": -1991.9
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    },
+    "8307": {
+      "entries": {
+        "item:11291": {
+          "costs": {
+            "5": 4500
+          },
+          "itemId": 11291,
+          "name": "Star Wood",
+          "sources": 1,
+          "stack": 1
+        },
+        "item:159": {
+          "costs": {
+            "5": 25
+          },
+          "itemId": 159,
+          "name": "Refreshing Spring Water",
+          "sources": 1,
+          "stack": 5
+        },
+        "item:4470": {
+          "costs": {
+            "5": 38
+          },
+          "itemId": 4470,
+          "name": "Simple Wood",
+          "sources": 1,
+          "stack": 1
+        }
+      },
+      "lastSeen": "2026-11-08",
+      "name": "Tarban Hearthgrain",
+      "positions": [
+        {
+          "instance": 1,
+          "mapX": 0.5516,
+          "mapY": 0.3203,
+          "uiMap": 1413,
+          "worldX": -551.4,
+          "worldY": -2966.5
+        }
+      ],
+      "repairs": false,
+      "sources": 1,
+      "visits": 1
+    }
+  }
+}

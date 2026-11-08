@@ -1,0 +1,1974 @@
+{
+  "catalogRecipes": 2080,
+  "egMultiSourceServices": 0,
+  "egServices": 176,
+  "egTrainerNpcs": 6,
+  "egVendorEntries": 174,
+  "egVendorNpcs": 30,
+  "gameClientTested": false,
+  "limitations": [
+    "EG sources count files, not independent confirmation of every field.",
+    "EG positions are player positions when opening windows.",
+    "EG zero level is unknown, not proof of no requirement.",
+    "No absence inference from missing observations.",
+    "pfQuest coords retain legacy zone IDs and percent scale; never UiMapIDs.",
+    "pfQuest vendor values retained verbatim; not normalized to prices.",
+    "No new QuestieDB data imported: historical license coverage unresolved."
+  ],
+  "pfQuestMissingNpcIds": [
+    32287,
+    213077,
+    214070,
+    214096,
+    214098,
+    214099,
+    214101,
+    217689,
+    242498,
+    248196,
+    248197,
+    248199,
+    248200,
+    248201,
+    248202,
+    251973,
+    251991,
+    251997,
+    252380,
+    253139,
+    254151,
+    254695,
+    256729,
+    256730,
+    256732,
+    256733,
+    256734,
+    256735,
+    257004,
+    257020,
+    258306,
+    258415,
+    258463,
+    258466,
+    258548,
+    258568,
+    258572,
+    259860,
+    260565,
+    260566,
+    260570,
+    264078,
+    264797,
+    266901
+  ],
+  "pfQuestNpcs": 547,
+  "pfQuestVendorItems": 299,
+  "relevantItems": 2055,
+  "runtimeLoaded": false,
+  "skillComparisons": [
+    {
+      "catalog": {
+        "learn": 15,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 15,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2153
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2159
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2160
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2161
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2162
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2165
+    },
+    {
+      "catalog": {
+        "learn": 95,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 95,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2166
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2167
+    },
+    {
+      "catalog": {
+        "learn": 85,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 85,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2168
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3753
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3756
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3759
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3760
+    },
+    {
+      "catalog": {
+        "learn": 60,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 60,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3761
+    },
+    {
+      "catalog": {
+        "learn": 55,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 55,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3763
+    },
+    {
+      "catalog": {
+        "learn": 120,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 120,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3764
+    },
+    {
+      "catalog": {
+        "learn": 100,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 100,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3766
+    },
+    {
+      "catalog": {
+        "learn": 105,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 105,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3768
+    },
+    {
+      "catalog": {
+        "learn": 110,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 110,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3770
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3780
+    },
+    {
+      "catalog": {
+        "learn": 30,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 30,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3816
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3817
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3818
+    },
+    {
+      "catalog": {
+        "learn": 90,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 90,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7135
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9060
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9062
+    },
+    {
+      "catalog": {
+        "learn": 45,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 45,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9065
+    },
+    {
+      "catalog": {
+        "learn": 70,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 70,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9068
+    },
+    {
+      "catalog": {
+        "learn": 95,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 95,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9074
+    },
+    {
+      "catalog": {
+        "learn": 100,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 100,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9145
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9193
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9194
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 20648
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 20649
+    },
+    {
+      "catalog": {
+        "learn": 1,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 20,
+      "sameSkill": false,
+      "sources": 1,
+      "spell": 1229432
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255075
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255076
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255077
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255078
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255079
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255080
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255081
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255143
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255144
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255145
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 3365,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255146
+    },
+    {
+      "catalog": {
+        "learn": 30,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 30,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3922
+    },
+    {
+      "catalog": {
+        "learn": 30,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 30,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3923
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3924
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3925
+    },
+    {
+      "catalog": {
+        "learn": 65,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 65,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3926
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3929
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3930
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3931
+    },
+    {
+      "catalog": {
+        "learn": 85,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 85,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3932
+    },
+    {
+      "catalog": {
+        "learn": 100,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 100,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3934
+    },
+    {
+      "catalog": {
+        "learn": 105,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 105,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3936
+    },
+    {
+      "catalog": {
+        "learn": 105,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 105,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3937
+    },
+    {
+      "catalog": {
+        "learn": 105,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 105,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3938
+    },
+    {
+      "catalog": {
+        "learn": 120,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 120,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3941
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3942
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3945
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3946
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3947
+    },
+    {
+      "catalog": {
+        "learn": 130,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 130,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3949
+    },
+    {
+      "catalog": {
+        "learn": 140,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 140,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3950
+    },
+    {
+      "catalog": {
+        "learn": 145,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 145,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3953
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3955
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3956
+    },
+    {
+      "catalog": {
+        "learn": 90,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 90,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3973
+    },
+    {
+      "catalog": {
+        "learn": 60,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 60,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3977
+    },
+    {
+      "catalog": {
+        "learn": 110,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 110,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3978
+    },
+    {
+      "catalog": {
+        "learn": 135,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 135,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 6458
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7430
+    },
+    {
+      "catalog": {
+        "learn": 100,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 100,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 8334
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9271
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 12584
+    },
+    {
+      "catalog": {
+        "learn": 20,
+        "profession": "Engineering"
+      },
+      "npc": 3412,
+      "observedSkill": 20,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1230656
+    },
+    {
+      "catalog": {
+        "learn": 10,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 10,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2385
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2386
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2392
+    },
+    {
+      "catalog": {
+        "learn": 1,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 1,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2393
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2394
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2395
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2396
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2397
+    },
+    {
+      "catalog": {
+        "learn": 55,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 55,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2402
+    },
+    {
+      "catalog": {
+        "learn": 55,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 55,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2964
+    },
+    {
+      "catalog": {
+        "learn": 1,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 5,
+      "sameSkill": false,
+      "sources": 1,
+      "spell": 3755
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3840
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3841
+    },
+    {
+      "catalog": {
+        "learn": 45,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 45,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3842
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3914
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7623
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7624
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 8465
+    },
+    {
+      "catalog": {
+        "learn": 15,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 15,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 8776
+    },
+    {
+      "catalog": {
+        "learn": 20,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 20,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 12045
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 12046
+    },
+    {
+      "catalog": {
+        "learn": 20,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 20,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1229504
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1257368
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Tailoring"
+      },
+      "npc": 3523,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1257369
+    },
+    {
+      "catalog": {
+        "learn": 15,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 15,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7420
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7426
+    },
+    {
+      "catalog": {
+        "learn": 45,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 45,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7454
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7457
+    },
+    {
+      "catalog": {
+        "learn": 60,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 60,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7748
+    },
+    {
+      "catalog": {
+        "learn": 70,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 70,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7771
+    },
+    {
+      "catalog": {
+        "learn": 10,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 10,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 14293
+    },
+    {
+      "catalog": {
+        "learn": 70,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 70,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 14807
+    },
+    {
+      "catalog": {
+        "learn": 1,
+        "profession": "Enchanting"
+      },
+      "npc": 5695,
+      "observedSkill": 20,
+      "sameSkill": false,
+      "sources": 1,
+      "spell": 1230643
+    },
+    {
+      "catalog": {
+        "learn": 15,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 15,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2153
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2160
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2161
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2162
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3753
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3756
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3759
+    },
+    {
+      "catalog": {
+        "learn": 30,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 30,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3816
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9060
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9062
+    },
+    {
+      "catalog": {
+        "learn": 45,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 45,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9065
+    },
+    {
+      "catalog": {
+        "learn": 1,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 20,
+      "sameSkill": false,
+      "sources": 1,
+      "spell": 1229432
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255143
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255144
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255145
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 5811,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255146
+    },
+    {
+      "catalog": {
+        "learn": 15,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 15,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2153
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2159
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2160
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2161
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2162
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2165
+    },
+    {
+      "catalog": {
+        "learn": 95,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 95,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2166
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2167
+    },
+    {
+      "catalog": {
+        "learn": 85,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 85,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 2168
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3753
+    },
+    {
+      "catalog": {
+        "learn": 40,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 40,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3756
+    },
+    {
+      "catalog": {
+        "learn": 50,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 50,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3759
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3760
+    },
+    {
+      "catalog": {
+        "learn": 60,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 60,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3761
+    },
+    {
+      "catalog": {
+        "learn": 55,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 55,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3763
+    },
+    {
+      "catalog": {
+        "learn": 120,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 120,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3764
+    },
+    {
+      "catalog": {
+        "learn": 100,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 100,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3766
+    },
+    {
+      "catalog": {
+        "learn": 105,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 105,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3768
+    },
+    {
+      "catalog": {
+        "learn": 110,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 110,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3770
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3780
+    },
+    {
+      "catalog": {
+        "learn": 30,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 30,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3816
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3817
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 3818
+    },
+    {
+      "catalog": {
+        "learn": 90,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 90,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 7135
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9060
+    },
+    {
+      "catalog": {
+        "learn": 25,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 25,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9062
+    },
+    {
+      "catalog": {
+        "learn": 45,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 45,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9065
+    },
+    {
+      "catalog": {
+        "learn": 70,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 70,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9068
+    },
+    {
+      "catalog": {
+        "learn": 95,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 95,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9074
+    },
+    {
+      "catalog": {
+        "learn": 100,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 100,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9145
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9193
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 9194
+    },
+    {
+      "catalog": {
+        "learn": 75,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 75,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 20648
+    },
+    {
+      "catalog": {
+        "learn": 125,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 125,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 20649
+    },
+    {
+      "catalog": {
+        "learn": 1,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 20,
+      "sameSkill": false,
+      "sources": 1,
+      "spell": 1229432
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255075
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255076
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255077
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255078
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255079
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255080
+    },
+    {
+      "catalog": {
+        "learn": 150,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 150,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255081
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255143
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255144
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255145
+    },
+    {
+      "catalog": {
+        "learn": 35,
+        "profession": "Leatherworking"
+      },
+      "npc": 11084,
+      "observedSkill": 35,
+      "sameSkill": true,
+      "sources": 1,
+      "spell": 1255146
+    }
+  ],
+  "skillDisagreements": 5
+}
