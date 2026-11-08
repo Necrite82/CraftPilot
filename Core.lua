@@ -25,6 +25,12 @@ function CP:Initialize()
   if not D.professions[db.view] then db.view = "engineering" end
   if db.mode ~= "cash" and db.mode ~= "value" then db.mode = "cash" end
   if type(db.includeBank) ~= "boolean" then db.includeBank = false end
+  if type(db.ui) ~= "table" then db.ui = {} end
+  if db.ui.skin ~= "auto" and db.ui.skin ~= "dark" and db.ui.skin ~= "classic" then
+    db.ui.skin = "auto"
+  end
+  if type(db.ui.selectedTrainers) ~= "table" then db.ui.selectedTrainers = {} end
+  if type(db.ui.position) ~= "table" then db.ui.position = nil end
   self.db = db
   self:Refresh(false)
 end
@@ -225,22 +231,58 @@ local function playerFaction()
   return safe(UnitFactionGroup,"player") or "B"
 end
 
-function CP:FindTrainer(key)
+-- A map distance is NOT travel distance. Only compare positions on the SAME
+-- UiMapID. Do not invent distances between cities, continents or dungeon floors.
+function CP:TrainerChoices(key)
   local rank=self:NextRank(key)
-  local needed=rank and rank.cap or 300
-  local side=playerFaction()
+  local required=rank and rank.cap or 300
+  local faction=playerFaction()
   local map=playerMap()
-  local best,weight
+  local position
+  if map and C_Map then position=safe(C_Map.GetPlayerMapPosition,map,"player") end
+  local px,py
+  if position and type(position.GetXY)=="function" then
+    px,py=safe(position.GetXY,position)
+  end
+  local entries={}
+  local nearest,nearDist
   for _,npc in ipairs(D.trainers) do
-    if npc.profession==key and npc.cap>=needed
-        and (npc.faction==side or npc.faction=="B") then
-      local score=(npc.cap==needed and 30 or 0)
-        +(npc.map==map and 100 or 0)
-        +(npc.faction==side and 5 or 0)
-      if weight==nil or score>weight then best,weight=npc,score end
+    if npc.profession==key and (npc.faction==faction or npc.faction=="B") then
+      local inZone=(npc.map==map)
+      local distance
+      if inZone and type(px)=="number" and type(py)=="number" then
+        local dx,dy=(npc.x-px)*100,(npc.y-py)*100
+        distance=math.sqrt(dx*dx+dy*dy)
+      end
+      local entry={
+        npc=npc, canTeach=npc.cap>=required,
+        inZone=inZone,distance=distance
+      }
+      entries[#entries+1]=entry
+      if distance and (not nearDist or distance<nearDist) then
+        nearDist,nearest=distance,npc
+      end
     end
   end
-  return best,rank
+  table.sort(entries,function(a,b)
+    if a.canTeach~=b.canTeach then return a.canTeach end
+    if a.inZone~=b.inZone then return a.inZone end
+    if a.distance and b.distance and a.distance~=b.distance then
+      return a.distance<b.distance
+    end
+    if a.npc.cap~=b.npc.cap then return a.npc.cap>b.npc.cap end
+    return a.npc.name<b.npc.name
+  end)
+  local recommended
+  for _,entry in ipairs(entries) do
+    if entry.canTeach then recommended=entry.npc;break end
+  end
+  return entries,rank,recommended,nearest
+end
+
+function CP:FindTrainer(key)
+  local entries,rank,recommended=self:TrainerChoices(key)
+  return recommended,rank
 end
 
 function CP:SetWaypoint(npc)
@@ -274,8 +316,12 @@ function CP:SetWaypoint(npc)
   return false
 end
 
-function CP:TrainerWaypoint()
-  local npc,rank=self:FindTrainer(self.db.view)
+function CP:TrainerWaypoint(which)
+  local choices,rank,recommended,nearest=self:TrainerChoices(self.db.view)
+  local npc = which=="nearest" and nearest or recommended
+  if which=="nearest" and not nearest then
+    return self:Say("Der nächste Lehrer ist kartenübergreifend nicht zuverlässig bestimmbar. Bitte in der Lehrerübersicht selbst auswählen.")
+  end
   if rank then
     local p=self.db.professions[self.db.view] or {}
     if (p.skill or 0)<rank.min then self:Say("Rang "..rank.name.." ab Skill "..rank.min..".") end
@@ -339,13 +385,27 @@ local function command(input)
   elseif text=="refresh" then
     CP:Refresh(true); CP:Say("Aktualisiert.")
   elseif text=="trainer" then CP:TrainerWaypoint()
+  elseif text=="naechster" or text=="nächster" then CP:TrainerWaypoint("nearest")
+  elseif text=="lehrer" or text=="lehrerlist" then
+    if CP.OpenTab then CP:OpenTab("trainers") end
+  elseif text=="etappen" then
+    if CP.OpenTab then CP:OpenTab("stages") end
+  elseif text=="hilfe" or text=="help" then
+    if CP.OpenTab then CP:OpenTab("help") end
+  elseif text=="resetpos" then
+    if CP.ResetWindowPosition then CP:ResetWindowPosition() end
+  elseif text=="skin auto" or text=="skin dark" or text=="skin classic" then
+    CP.db.ui.skin=text:sub(6)
+    if CP.ApplyTheme then CP:ApplyTheme() end
+    CP:Refresh(false)
+    CP:Say("Darstellung: "..CP.db.ui.skin)
   elseif text=="liste" or text=="list" then CP:ShowShopping()
   elseif text=="mode cash" or text=="mode value" then
     CP.db.mode=text:sub(6);CP:Refresh(false)
   elseif text=="bank on" or text=="bank off" then
     CP.db.includeBank=text=="bank on";CP:Refresh(false)
   else
-    CP:Say("Befehle: /cp | ingi | bergbau | schmied | vz | schneider | leder | kraeuter | alchemie | trainer | liste | refresh | mode cash|value | bank on|off")
+    CP:Say("Hilfe im Addon: /cp hilfe. Direkt: /cp lehrer | etappen | trainer | naechster | liste | resetpos | skin auto|dark|classic.")
   end
 end
 
