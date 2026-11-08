@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.5.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.6.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -37,14 +37,14 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 | Wegpunkte | Liste aller hinterlegten Lehrer der eigenen Fraktion; einzeln per Klick auswählbar, mit Rang-Empfehlung und Same-Map-Abstand |
 | Einkaufsliste | Fehlende Materialien für **die nächste empfohlene Herstellung** |
 | Oberfläche | Verschiebbares Fenster, gespeicherte Position und fünf Registerkarten |
-| Themes | Automatischer Stil mit Blizzard-Templates und optional ElvUI-Hooks; Dunkel/Klassisch auswählbar |
+| Themes | Automatischer Stil mit Blizzard-Templates und optional EllesmereUI-Hooks; Dunkel/Klassisch auswählbar |
 | Hilfe | Integrierte Befehlsübersicht über `/cp hilfe` |
 
 **Keine Automatisierung:** CraftPilot kauft, verkauft, bewegt den Charakter, lernt und stellt nichts selbstständig her.
 
 ## Installation
 
-1. Das **[CraftPilot-0.5.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.5.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.6.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.6.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -80,6 +80,18 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 | \`/cp mode value\` | Eigene Materialien zum Marktwert berücksichtigen |
 | \`/cp bank on\` / \`/cp bank off\` | Bankbestände nach API-Verfügbarkeit ein-/ausschalten |
 
+## Neu in 0.6: Bank, Ellesmere UI und Rezeptkarten
+
+CraftPilot verwendet die offizielle **EllesmereUI-Skinning-API** für eigene Fenster, Buttons, Registerkarten und Scrollleisten, wenn EllesmereUI vorhanden und die Skin-Integration dort freigegeben ist. Andernfalls stehen Standard-, Dunkel- und Klassisch-Darstellung zur Verfügung.
+
+Das Fenster kann an der Kopfzeile bewegt und **unten rechts am Ziehgriff vergrößert oder verkleinert** werden. Größe und Position werden pro Charakter gespeichert.
+
+Im Tab **Jetzt skillen** erscheinen auswählbare Rezeptkarten mit Symbol aus dem WoW-Client, Name, geschätzter Skillchance, geschätzten Kosten pro Skillpunkt und fehlenden Materialien. Über die oberen Schaltflächen wird nach **Preis, Skillchance, Zukaufmenge oder Name** sortiert. Das angeklickte Rezept steuert die Materialliste.
+
+**Bank:** Die Bankberücksichtigung ist für neue Einstellungen standardmäßig an. Beim Öffnen der Bank wird der Bestand der bisher bekannten Rezeptmaterialien erfasst. Nach dem Schließen wird ein ausdrücklich als **letzter Stand** markierter Snapshot verwendet. Er kann veralten. Noch nicht erfasste Bankmaterialien werden nicht als bestätigt vorhanden gewertet. Die Erfassung umfasst nicht die gemeinsame Account-/Warband-Bank. Im Material-Tab kann die Bank ein- oder ausgeschaltet werden.
+
+Weitere Befehle: `/cp sort cost`, `/cp sort chance`, `/cp sort missing`, `/cp sort name`. Alle Befehle sind über `/cp hilfe` ingame abrufbar.
+
 ## Alpha-Hinweise
 
 - Kein Anspruch auf die mathematisch günstigste gesamte Skillroute 1–300.
@@ -91,7 +103,7 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 - Die Lehrerliste enthält **alle hinterlegten, fraktionskompatiblen** Trainer. Die gespeicherte NPC-Datenbank ist nicht vollständig.
 - „Empfohlen“ bedeutet: Der Trainer kann den nächsten benötigten Berufs-Rang lehren. Ein geeigneter Trainer auf der aktuellen Karte wird bevorzugt.
 - „Nächster“ ist ausschließlich ein Vergleich der Kartenkoordinaten **auf derselben Karte**, keine Entfernung in Metern und keine Schätzung der Reisezeit über Zonengrenzen.
-- Auto-Skinning kann die von Blizzard bereitgestellten UI-Templates und ggf. vorhandene ElvUI-Skin-Funktionen nutzen. Für andere UI-Komplettpakete gibt es keine garantierte automatische Übernahme.
+- Auto-Skinning kann die von Blizzard bereitgestellten UI-Templates und ggf. vorhandene EllesmereUI-Skin-Funktionen nutzen. Für andere UI-Komplettpakete gibt es keine garantierte automatische Übernahme.
 - Trainerkoordinaten sind Reisehilfen, keine Live-Prüfung der Trainerangebote. Der Uldaman-Wegpunkt markiert den Zugang, nicht Annoras Standort im Inneren.
 - Noch keine automatisierte Verarbeitung gekaufter oder selbst hergestellter Zwischenprodukte für eine vollständige Zukunftsroute.
 
