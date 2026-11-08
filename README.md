@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.10.1-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.10.2-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.10.1-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.10.1-alpha/CraftPilot-0.10.1-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.10.2-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.10.2-alpha/CraftPilot-0.10.2-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das neue Installationspaket ist `dist/CraftPilot-0.10.1-alpha.zip`. Die älteren Archive bleiben unverändert. Es wurden keine neuen Fremddatensätze importiert. Minimap-Button und Einstellungen sind in dieser Version enthalten.
+Das neue Installationspaket ist `dist/CraftPilot-0.10.2-alpha.zip`. Die älteren Archive bleiben unverändert. Es wurden keine neuen Fremddatensätze importiert. Minimap-Button und Einstellungen sind in dieser Version enthalten.
 
 ## Bedienung und Darstellung in 0.10
 
@@ -188,3 +188,7 @@ Das neue Installationspaket ist `dist/CraftPilot-0.10.1-alpha.zip`. Die älteren
 - Aktualisieren behält die Scrollposition im gleichen Bereich bei. Slash-Befehle bleiben optionale Abkürzungen.
 
 Automatisierte Lua-Tests decken die Steuerung ab; die tatsächliche Darstellung auf einer WoW-Minimap und bei angepasster UI-Skalierung benötigt noch einen Test im Spielclient.
+
+## Korrekturen in 0.10.2
+
+Berufsfenster werden direkt aus dem Klickpfad vor der UI-Aktualisierung geöffnet, ohne `pcall` um die eingeschränkte API. Goldene Auswahlmarkierungen und grüne Erlernt-Häkchen sind Grafiken statt fontabhängiger Sonderzeichen. Das Logo liegt auf einem eigenen Rahmen und wird durch EllesmereUIs Panel-Skin nicht mit ausgeblendet. In den Einstellungen gibt es Schieberegler für Fensterbreite, Fensterhöhe und Minimap-Winkel. Ein erneuter Test im Live-Client steht noch aus.

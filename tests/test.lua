@@ -1,8 +1,17 @@
 -- Pure Lua smoke tests for CraftPilot (no WoW client required).
 local methods = {}
+local createdTextures={}
 methods.__index = function(self,key)
   if key=="CreateFontString" then return function() return setmetatable({},methods) end end
-  if key=="CreateTexture" then return function() return setmetatable({},methods) end end
+  if key=="CreateTexture" then return function()
+    local t=setmetatable({parent=self,alpha=1},methods)
+    createdTextures[#createdTextures+1]=t
+    return t
+  end end
+  if key=="settingSlider" or key=="craftSpec" or key=="craftSync" then return nil end
+  if key=="SetTexture" then return function(t,value) t.texture=value end end
+  if key=="SetAlpha" then return function(t,value) t.alpha=value end end
+  if key=="SetHeight" then return function(t,value) t.height=value end end
 
   if key=="SetSize" then return function(t,w,h) t.width=w;t.height=h end end
   if key=="SetWidth" then return function(t,w) t.width=w end end
@@ -70,7 +79,13 @@ EllesmereUI={
     local api={}
     for _,key in ipairs({"Shell","Panel","CloseButton","Button","Tab","ScrollBar",
       "ApplyBarFill","SquareIcon","SetTabSelection"}) do
-      api[key]=function() end
+      api[key]=function(frame)
+        if key=="Panel" or key=="Shell" then
+          for _,texture in ipairs(createdTextures) do
+            if texture.parent==frame then texture:SetAlpha(0) end
+          end
+        end
+      end
     end
     fn(api)
   end
@@ -473,3 +488,55 @@ end
 CP:CaptureProfession()
 assert(CP.db.recipes.cooking[2964].mats==nil)
 print("PASS: settings callbacks, reset confirmation, route policy, money icons and draggable minimap control")
+
+-- The restricted API must be called without a pcall frame, before rendering.
+local calls={}
+local oldRender=CP.Render
+local oldOpen=C_TradeSkillUI.OpenTradeSkill
+CP.Render=function() calls[#calls+1]="render" end
+C_TradeSkillUI.OpenTradeSkill=function(id)
+  for level=2,12 do
+    local info=debug.getinfo(level,"n")
+    if not info then break end
+    assert(info.name~="pcall","Restricted profession API wrapped in pcall")
+  end
+  calls[#calls+1]="open"
+  assert(id==185)
+  return true
+end
+CP.db.ui.autoOpen=true
+CP:ChangeView("cooking",true)
+assert(calls[1]=="open" and calls[2]=="render")
+InCombatLockdown=function() return true end
+assert(not CP:OpenOwnedProfession("cooking"))
+assert(#calls==2,"No protected open in combat")
+InCombatLockdown=nil
+CP.Render=oldRender
+C_TradeSkillUI.OpenTradeSkill=oldOpen
+
+-- EUI's region fading must leave the logo on its child frame visible.
+local logo
+for _,texture in ipairs(createdTextures) do
+  if texture.parent.frameName=="CraftPilotBrandFrame" then logo=texture end
+end
+assert(logo and logo.alpha==1 and logo.texture:find("Media"))
+CP:OpenTab("settings")
+local sliders={}
+for _,control in ipairs(createdFrames) do
+  local spec=rawget(control,"craftSpec")
+  if spec then sliders[spec.label]=control end
+end
+for label,value in pairs({["Fensterbreite: "]=1060,["Fensterhöhe: "]=800,["Minimap-Position: "]=270}) do
+  local control=assert(sliders[label],"Missing slider: "..label)
+  control:GetScript("OnValueChanged")(control,value)
+end
+assert(CP.db.ui.width==1060 and CP.db.ui.height==800 and CP.db.ui.minimapAngle==270)
+assert(CP.frame.width==1060 and CP.frame.height==800)
+CP:Render()
+for _,control in ipairs(createdFrames) do
+  local label=rawget(control,"displayText")
+  if type(label)=="string" then
+    assert(not label:find("●",1,true) and not label:find("✓",1,true),"Unsupported indicator glyph")
+  end
+end
+print("PASS: direct click-only profession open, skin-safe branding, graphic indicators and settings sliders")
