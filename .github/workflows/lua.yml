@@ -14,7 +14,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y lua5.4
       - name: Check Lua syntax
         run: |
-          for file in *.lua tests/*.lua; do luac5.4 -p "$file"; done
+          for file in *.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
       - name: Run smoke tests
         run: lua5.4 tests/test.lua
       - name: Verify install ZIP matches the source
@@ -22,13 +22,26 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           from zipfile import ZipFile
-          archive = Path("dist/CraftPilot-0.7.0-alpha.zip")
+          archive = Path("dist/CraftPilot-0.8.0-alpha.zip")
           assert archive.is_file(), "Missing install ZIP"
-          expected = ["CraftPilot.toc", "Data.lua", "Core.lua", "UI.lua", "LICENSE", "README.md"]
+          expected = [
+              "CraftPilot.toc", "Data.lua",
+              "ThirdParty/CraftLadder/Alchemy.lua",
+              "ThirdParty/CraftLadder/Blacksmithing.lua",
+              "ThirdParty/CraftLadder/Enchanting.lua",
+              "ThirdParty/CraftLadder/Engineering.lua",
+              "ThirdParty/CraftLadder/Leatherworking.lua",
+              "ThirdParty/CraftLadder/Tailoring.lua",
+              "ThirdParty/CraftLadder/MiningSmelting.lua",
+              "Core.lua", "Catalog.lua", "PriceHistory.lua", "Route.lua", "UI.lua",
+              "LICENSE", "README.md", "DATA_SOURCES.md",
+              "ThirdParty/CraftLadder/CREDITS.txt",
+              "ThirdParty/CraftLadder/SOURCE.md"
+          ]
           with ZipFile(archive) as zipfile:
               assert zipfile.testzip() is None, "Corrupt ZIP entry"
               assert set(zipfile.namelist()) == {"CraftPilot/" + name for name in expected}
               for filename in expected:
                   assert zipfile.read("CraftPilot/" + filename) == Path(filename).read_bytes(), filename
-          print("PASS: install-ready 0.7.0-alpha ZIP matches repository files")
+          print("PASS: install-ready 0.8.0-alpha ZIP matches repository files")
           PY
