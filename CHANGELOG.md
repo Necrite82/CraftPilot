@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.0-alpha — 2026-11-08
+
+- Offizielle EllesmereUI-Skinning-API für eigenes Fenster und Bedienelemente integriert.
+- Fenstergröße per Griff unten rechts verstellbar und pro Charakter gespeichert.
+- Auswählbare Rezeptkarten mit Ingame-Symbolen, Kosten, Skillchance und Materialbedarf; nach vier Kriterien sortierbar.
+- Materialanzeige mit getrennten Taschen- und Bankbeständen, gespeicherten letzten Bankständen sowie einem direkten Ein/Aus-Schalter.
+- Automatisierte Tests für Bank-Snapshots, Skin-API, Rezeptwahl und Fenstergröße erweitert.
+
+**Weiterhin Alpha:** kein bestätigter Live-Client-Test; gespeicherte Bankdaten können veralten.
+
+
 ## 0.5.0-alpha — 2026-11-08
 
 - Überarbeitetes Ingame-Fenster mit klarer Titelzeile, kompakteren Bedienelementen und fünf Registerkarten.
