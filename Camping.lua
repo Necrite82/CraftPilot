@@ -103,6 +103,7 @@ function CP:CampingText(text)
 end
 function CP:CampingCards(key)
   local page=self.db.ui.campingPage or "fires"
+  if page=="shopping" then return self:CampingShoppingCards() end
   local filter=self.db.ui.campingAll==false and key or nil
   local cards={{title=L("Camping: Grundobjekte und Ausbauten"),
     detail=L("Eine Minute sitzen oder herstellen; Camp-Objekte teilen eine Stunde Abklingzeit."),
@@ -154,6 +155,15 @@ function CP:CampingCards(key)
             detail=L("Keine verlässliche Dropchance hinterlegt."),footer=row.source,tooltipItem=row.recipe.item,color="gold"} end
           if row.useSkill then cards[#cards+1]={title=L("Benötigter Berufsskill: ")..row.useSkill,
             detail=L("Gilt für die Benutzung; Lernskill separat im Berufsfenster prüfen."),color="gold"} end
+          if row.mats and next(row.mats) then
+            local ownedRow=row
+            for _,quantity in ipairs({1,5}) do
+              local amount=quantity
+              cards[#cards+1]={title="+"..amount..L(" zum Camping-Einkauf"),detail=ownedRow.name,
+                footer=L("Berufsübergreifender Materialplan; Erlernt-Status separat prüfen."),color="gold",
+                action=function() CP:AddCampingCraft(item,amount);CP:Render() end}
+            end
+          end
           local mats={}
           for id,n in pairs(row.mats or {}) do mats[#mats+1]={id=id,n=n} end
           table.sort(mats,function(a,b) return a.id<b.id end)
@@ -169,6 +179,72 @@ function CP:CampingCards(key)
       end
     end
 
+  end
+  return cards
+end
+
+function CP:AddCampingCraft(item,quantity)
+  if type(quantity)~="number" or quantity%1~=0 then return false end
+  local plan=type(self.db.campingPlan)=="table" and self.db.campingPlan or {}
+  self.db.campingPlan=plan
+  for _,row in ipairs(self:CampingRecipes()) do
+    if row.object.item==item and row.mats and next(row.mats) then
+      local previous=type(plan[item])=="number" and plan[item] or 0
+      local amount=math.max(0,math.min(999,previous+quantity))
+      plan[item]=amount>0 and amount or nil
+      return true
+    end
+  end
+  return false
+end
+
+function CP:CampingShopping()
+  local result={steps={},materials={},unknown=0,cost=0,noPrice=0}
+  local aggregate={}
+  local plan=type(self.db.campingPlan)=="table" and self.db.campingPlan or {}
+  for _,row in ipairs(self:CampingRecipes()) do
+    local quantity=plan[row.object.item]
+    if type(quantity)=="number" and quantity>=1 and quantity<=999 and quantity%1==0 then
+      result.steps[#result.steps+1]={row=row,quantity=quantity}
+      if not row.mats or not next(row.mats) then result.unknown=result.unknown+1 end
+      for id,n in pairs(row.mats or {}) do aggregate[id]=(aggregate[id] or 0)+n*quantity end
+    end
+  end
+  for id,quantity in pairs(aggregate) do
+    local stock,bag,bank,live,known=self:ItemAvailability(id)
+    local missing=math.max(0,quantity-stock)
+    local price=self:Price(id)
+    if missing>0 then
+      if price then result.cost=result.cost+price*missing else result.noPrice=result.noPrice+1 end
+    end
+    result.materials[#result.materials+1]={id=id,quantity=quantity,missing=missing,bag=bag,bank=bank,
+      bankLive=live,bankKnown=known,price=price}
+  end
+  table.sort(result.materials,function(a,b) return a.id<b.id end)
+  return result
+end
+
+function CP:CampingShoppingCards()
+  local plan=self:CampingShopping()
+  local cards={{title=L("Camping-Einkauf · alle Berufe"),
+    detail=L("Bekannter Zukauf: ")..self:FormatMoney(plan.cost),
+    footer=self:BankStatus(),color="gold"}}
+  if #plan.steps==0 then cards[#cards+1]={title=L("Camping-Objekte zum Plan hinzufügen"),
+    detail=L("Ein Feuer oder Objekt aufklappen und +1 oder +5 wählen."),color="blue"} end
+  if plan.unknown>0 or plan.noPrice>0 then cards[#cards+1]={title=L("Einkauf unvollständig"),
+    detail=plan.unknown..L(" Rezepte ohne Materialien · ")..plan.noPrice..L(" fehlende Preise"),color="gold"} end
+  for _,step in ipairs(plan.steps) do
+    local item=step.row.object.item
+    cards[#cards+1]={title=step.quantity.."x "..step.row.name,
+      detail=self.Data.professions[step.row.prof].name.." · "..(step.row.learned and L("Erlernt") or L("Nicht als erlernt erfasst")),
+      footer=L("Anklicken: Menge um eins reduzieren"),tooltipItem=item,color="blue",
+      action=function() CP:AddCampingCraft(item,-1);CP:Render() end}
+  end
+  for _,mat in ipairs(plan.materials) do
+    cards[#cards+1]={title=mat.quantity.."x "..self:ItemName(mat.id),
+      detail=L("Tasche: ")..mat.bag..L(" · Bank: ")..(mat.bankKnown and mat.bank or L("unbekannt"))..L(" · Fehlt: ")..mat.missing,
+      footer=(mat.missing==0 and L("Kein Zukauf") or (mat.price and self:FormatMoney(mat.price*mat.missing) or L("Preis fehlt"))).." · "..self:PriceFreshness(mat.id),
+      tooltipItem=mat.id,color=mat.missing==0 and "green" or "blue"}
   end
   return cards
 end

@@ -44,6 +44,7 @@ function CP:Initialize()
   if type(db.ui.position) ~= "table" then db.ui.position = nil end
   self.db = db
   if self.InitializeControls then self:InitializeControls() end
+  if self.InitializeVersionChecks then self:InitializeVersionChecks() end
   self:Refresh(false)
 end
 

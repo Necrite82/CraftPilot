@@ -99,7 +99,8 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.11.1-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.12.0-alpha")
+local godButton=button(header,112,23,W-270,-10,"God-Mode",function() CP:OpenTab("god") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -287,7 +288,7 @@ local planControls={rangeLabel,rangeStart,targetLabel,rangeEnd,quantityLabel,
  rangeQty,rangeApply,planAdd,planDraft,planPrint,planClear,autoRouteButton,planHint}
 local syncedPlan
 local campControls={}
-for i,page in ipairs({{key="fires",label=L("Campfires")},{key="buffs",label=L("Buffs")},{key="objects",label=L("Objekte & Ausbauten")}}) do
+for i,page in ipairs({{key="fires",label=L("Campfires")},{key="buffs",label=L("Buffs")},{key="objects",label=L("Objekte & Ausbauten")},{key="shopping",label=L("Einkauf")}}) do
   campControls[i]=button(frame,170,25,18+(i-1)*176,-358,page.label,function()
     CP.db.ui.campingPage=page.key;CP:Render()
   end)
@@ -296,7 +297,7 @@ local campingFilter=button(frame,170,25,546,-358,L("Nur gewählter Beruf"),funct
   CP.db.ui.campingAll=CP.db.ui.campingAll==false
   CP:Render()
 end)
-campControls[4]=campingFilter
+campControls[5]=campingFilter
 for _,control in ipairs(campControls) do control:Hide() end
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -736,6 +737,8 @@ local function layout()
   stageProgress:SetWidth(inner)
   content:SetWidth(width-96)
   title:SetWidth(math.max(240,width-400))
+  godButton:ClearAllPoints()
+  godButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-150,-10)
   subtitle:SetWidth(math.max(240,width-300))
   build:ClearAllPoints()
   build:SetPoint("TOPRIGHT",header,"TOPRIGHT",-42,-40)
@@ -761,11 +764,11 @@ local function layout()
       -111-math.floor((i-1)/6)*32)
     b:Show()
   end
-  local tabWidth=(inner-24)/7
+  local tabWidth=(inner-4*(#tabs-1))/#tabs
   for i,control in ipairs(campControls) do
     control:ClearAllPoints()
-    control:SetSize((inner-18)/4,25)
-    control:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*((inner-18)/4+6),-358)
+    control:SetSize((inner-6*(#campControls-1))/#campControls,25)
+    control:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*((inner-6*(#campControls-1))/#campControls+6),-358)
   end
   for i,b in ipairs(orderedTabs) do
     b:ClearAllPoints()
@@ -798,7 +801,7 @@ registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
-  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,settings=true,help=true}
+  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,god=true,settings=true,help=true}
   if tab=="help" then tab="settings" end
   if not valid[tab] then return end
   self.db.ui.tab=tab
@@ -818,6 +821,7 @@ function CP:Render()
   local skill=record and record.skill or 0
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
+  godButton.selectionMarker:SetShown(tab=="god")
   local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
@@ -917,6 +921,9 @@ function CP:Render()
   if tab=="settings" or tab=="help" then
     section:SetText(L("Einstellungen · anklicken zum Ändern"))
     setVisualCards(self:SettingsCards())
+  elseif tab=="god" then
+    section:SetText(L("God-Mode · verkaufen, behalten oder anders skillen"))
+    setVisualCards(self:GodModeCards(key))
   elseif tab=="camping" then
     section:SetText(L("Camping · Objekte, Ausbauten und Materialien"))
     setVisualCards(self:CampingCards(key))
@@ -956,6 +963,14 @@ function CP:Render()
       }
     end
     if not D.stages[key] then
+      for _,option in ipairs(self:Options(key)) do
+        local recipeID=option.id
+        cards[#cards+1]={title=self:RecipeName(key,recipeID,option.name),
+          detail=L("Aktuell erlernt · Skillchance ")..math.floor(option.chance*100).."%",
+          footer=L("Aktueller Schritt aus dem Client; kein vorausberechneter Skillweg."),
+          icon=self:RecipeIcon(key,recipeID),color="blue",
+          action=function() CP.db.ui.selectedRecipes[key]=recipeID;CP:OpenTab("plan") end}
+      end
       cards[#cards+1]={title=L("Noch keine geprüfte Etappenübersicht"),
         detail=L("Skill und erlernte Rezepte werden aus dem Spielclient eingelesen."),
         footer=L("Für diesen Beruf wird kein vollständiger Skillweg behauptet."),
@@ -1165,7 +1180,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.11.1 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.12.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

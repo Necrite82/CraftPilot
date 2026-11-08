@@ -12,6 +12,8 @@ end
 
 function CP:InitializeControls()
   local ui=self.db.ui
+  if type(ui.godCut)~="number" or ui.godCut~=ui.godCut then ui.godCut=5 end
+  ui.godCut=math.max(0,math.min(30,ui.godCut))
   if type(ui.minimapAngle)~="number" or ui.minimapAngle~=ui.minimapAngle then ui.minimapAngle=225 end
   if type(ui.hideMinimap)~="boolean" then ui.hideMinimap=false end
   if type(ui.knownRecipesOnly)~="boolean" then ui.knownRecipesOnly=false end
@@ -162,7 +164,11 @@ function CP:SettingsCards()
       icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
   end
   return {
+    slider(L("God-Mode: AH-Abzug "),tonumber(ui.godCut) or 5,0,30,1,"%",function(value)
+      ui.godCut=value;CP:Render()
+    end),
     card(L("Sprache: ")..(CP.locale=="deDE" and "Deutsch" or "English"),L("Automatisch nach Clientsprache; andere Sprachen verwenden Englisch."),nil),
+    card(CP:VersionStatus(),L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),function() CP:OpenReleaseLink() end,ICON,L("Anklicken: Release-Link kopieren")),
     card(L("Minimap-Button: ")..state(not ui.hideMinimap),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),toggle("hideMinimap")),
     slider(L("Minimap-Position: "),math.floor(ui.minimapAngle),0,359,1,L(" Grad"),function(value)
       ui.minimapAngle=value;CP:PositionMinimapButton()
