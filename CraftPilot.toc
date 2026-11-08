@@ -2,10 +2,20 @@
 ## Title: CraftPilot
 ## Notes: Profession planning, materials, AH prices and trainer waypoints for WoW Forever
 ## Author: CraftPilot contributors
-## Version: 0.7.0-alpha
+## Version: 0.8.0-alpha
 ## OptionalDeps: Auctionator, TomTom, EllesmereUI
 ## SavedVariablesPerCharacter: CraftPilotDB
 
 Data.lua
+ThirdParty\CraftLadder\Alchemy.lua
+ThirdParty\CraftLadder\Blacksmithing.lua
+ThirdParty\CraftLadder\Enchanting.lua
+ThirdParty\CraftLadder\Engineering.lua
+ThirdParty\CraftLadder\Leatherworking.lua
+ThirdParty\CraftLadder\Tailoring.lua
+ThirdParty\CraftLadder\MiningSmelting.lua
 Core.lua
+Catalog.lua
+PriceHistory.lua
+Route.lua
 UI.lua
