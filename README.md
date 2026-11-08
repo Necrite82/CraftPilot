@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.6.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.7.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -44,7 +44,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 
 ## Installation
 
-1. Das **[CraftPilot-0.6.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.6.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.7.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.7.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -79,6 +79,26 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 | \`/cp mode cash\` | Zusätzliche Ausgaben minimieren |
 | \`/cp mode value\` | Eigene Materialien zum Marktwert berücksichtigen |
 | \`/cp bank on\` / \`/cp bank off\` | Bankbestände nach API-Verfügbarkeit ein-/ausschalten |
+
+## Neu in 0.7: einheitliche Karten, Berufe öffnen und Einkaufsplan
+
+Die Bereiche **Materialien**, **Etappen 1–300**, **Hilfe** und **Sammelberufe** verwenden jetzt Karten mit Statusfarben, Symbolen aus dem WoW-Client und kurzen Hinweisen. Materialkarten zeigen benötigte Mengen, Taschen- und zuletzt erfasste Bankbestände, Fehlmengen und gespeicherte AH-Preise. Eine Etappenkarte kann den Abschnitt direkt in den Planer übernehmen.
+
+**Berufsfenster bei Auswahl öffnen:** Ein Klick auf einen gelernten Beruf in CraftPilot versucht, das native Berufsfenster über `C_TradeSkillUI.OpenTradeSkill` zu öffnen. Dies erfordert eine echte Benutzeraktion und kann vom Client oder im Kampf verweigert werden. Für Sammelberufe gibt es nicht in jedem Fall ein Herstellungsfenster. Das Verhalten lässt sich mit `/cp autoopen on` beziehungsweise `/cp autoopen off` deaktivieren. Nicht erlernte Berufe werden nicht automatisch geöffnet.
+
+### Einkaufsplan: frei wählbarer Skillbereich
+
+1. Im neuen Tab **Einkaufsplan** Start und Ziel festlegen, beispielsweise **30 bis 100**.
+2. Ein gelerntes Rezept im Tab **Jetzt skillen** auswählen.
+3. Im Einkaufsplan eine geplante **Stückzahl** eingeben und auf **Rezept +** klicken. Weitere Rezepte können genauso hinzugefügt werden.
+4. CraftPilot fasst alle Zutaten für diese geplanten Herstellungen zusammen. Taschenbestände, der markierte Bank-Snapshot und gespeicherte Auctionator-Preise fließen in die Zukaufübersicht ein.
+5. **Liste im Chat** oder `/cp einkauf` gibt die fehlenden Materialien aus. Einzelne geplante Rezeptschritte lassen sich anklicken und entfernen.
+
+**Schnellschritt +10** ergänzt einen vorläufigen Plan für maximal die nächsten zehn Skillpunkte, basierend auf dem aktuell besten Rezept und der zuletzt eingelesenen Skillchance. Der Vorschlag endet spätestens an der Ausbildungsgrenze.
+
+**Wichtige Grenze:** Der frei wählbare Bereich bezeichnet das **Ziel**, nicht eine garantierte Skillroute. Die Materialmengen stimmen für die **ausgewählten Rezepte und Stückzahlen**, aber die erforderlichen Skillpunkte hängen von der sich ändernden Rezeptfarbe ab. Noch unbekannte oder nicht erlernte spätere Rezepte kann diese Version nicht selbstständig hinzufügen. Ein Plan für 30–100 wird erst dann vollständig, wenn die benötigten Herstellungsschritte feststehen. Zwischenprodukte werden derzeit als Bruttomaterialbedarf gezählt und nicht doppelt durch eine vollständige Produktionskette optimiert.
+
+Neue Befehle: `/cp plan`, `/cp einkauf`, `/cp autoopen on`, `/cp autoopen off`.
 
 ## Neu in 0.6: Bank, Ellesmere UI und Rezeptkarten
 
