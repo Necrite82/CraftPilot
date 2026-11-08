@@ -2,6 +2,17 @@
 local methods = {}
 methods.__index = function(self,key)
   if key=="CreateFontString" then return function() return setmetatable({},methods) end end
+
+  if key=="SetPoint" then return function(t,...) t.point={...} end end
+  if key=="GetPoint" then return function(t)
+    if t.point then return table.unpack(t.point) end
+  end end
+  if key=="ClearAllPoints" then return function(t) t.point=nil end end
+  if key=="SetScript" then return function(t,event,fn)
+    t.scripts=t.scripts or {};t.scripts[event]=fn
+  end end
+  if key=="GetScript" then return function(t,event) return t.scripts and t.scripts[event] end end
+  if key=="SetText" then return function(t,v) t.displayText=v end end
   if key=="IsShown" then return function(t) return t.visible or false end end
   if key=="Show" then return function(t) t.visible=true end end
   if key=="Hide" then return function(t) t.visible=false end end
@@ -18,6 +29,9 @@ function UnitFactionGroup() return "Alliance" end
 C_Timer={After=function(_,f) f() end}
 C_Map={
   GetBestMapForUnit=function() return 1453 end,
+  GetPlayerMapPosition=function(map)
+    if map==1453 then return {GetXY=function() return .50,.75 end} end
+  end,
   SetUserWaypoint=function(p) waypoints[#waypoints+1]=p end,
 }
 UiMapPoint={CreateFromCoordinates=function(map,x,y)
@@ -64,6 +78,9 @@ for _,key in ipairs(CP.Data.order) do
   for i=2,#stages do
     assert(stages[i][1]==stages[i-1][2],"Gap in "..key)
   end
+  for _,segment in ipairs(stages) do
+    assert(segment[2]-segment[1]<=50,"Stage over 50 points: "..key)
+  end
 end
 assert(#CP.Data.order==8)
 assert(CP:CaptureProfession())
@@ -79,8 +96,31 @@ CP.db.mode="cash"
 CP.db.view="tailoring"
 local npc,rank=CP:FindTrainer("tailoring")
 assert(rank.cap==225 and npc.name=="Georgio Bolero")
+local trainerList,nextRank,recommended,nearest=CP:TrainerChoices("tailoring")
+assert(#trainerList>=4 and nextRank.cap==225)
+assert(recommended.name=="Georgio Bolero")
+assert(nearest.name=="Lawrence Schneider")
+assert(trainerList[1].canTeach and trainerList[1].inZone)
+assert(type(trainerList[1].distance)=="number")
 CP:TrainerWaypoint()
 assert(#waypoints==1 and waypoints[1].map==1453)
+CP:TrainerWaypoint("nearest")
+assert(#waypoints==2 and waypoints[2].map==1453)
+CP:OpenTab("help")
+assert(CP.db.ui.tab=="help" and CP.frame.visible==true)
+CP:OpenTab("trainers")
+assert(CP.db.ui.tab=="trainers")
+CP.frame:SetPoint("CENTER",UIParent,"CENTER",112,-42)
+CP:SaveWindowPosition()
+assert(CP.db.ui.position.x==112 and CP.db.ui.position.y==-42)
+CP:ResetWindowPosition()
+assert(CP.db.ui.position==nil and CP.frame.point[4]==0)
+CP.db.ui.skin="classic"
+CP:ApplyTheme()
+CP.db.ui.skin="dark"
+CP:ApplyTheme()
+CP.db.ui.skin="auto"
+CP:ApplyTheme()
 CP.db.professions.enchanting={skill=205,cap=225,name="Enchanting"}
 local target=CP:FindTrainer("enchanting")
 assert(target.name:find("Annora") and target.indoor)
@@ -141,4 +181,7 @@ CP.db.professions.alchemy={skill=210,cap=225,name="Alchemy"}
 assert(CP:FindTrainer("herbalism").name=="Jandi")
 assert(CP:FindTrainer("alchemy").name=="Rogvar")
 
-print("PASS: 8 professions, 1-300 stages, gathering, alchemy, scoring, trainer pins")
+C_Map.GetBestMapForUnit=function() return 999 end
+local trainers,rank3,best3,nearest3=CP:TrainerChoices("alchemy")
+assert(#trainers>0 and nearest3==nil)
+print("PASS: eight professions, milestone splits, trainer choices, map distance, UI help, position, skins")
