@@ -79,10 +79,15 @@ header:SetScript("OnDragStop", function()
   if type(frame.StopMovingOrSizing)=="function" then frame:StopMovingOrSizing() end
   if CP.SaveWindowPosition then CP:SaveWindowPosition() end
 end)
-local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
-local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
+local brand=header:CreateTexture(nil,"ARTWORK")
+brand:SetSize(48,48)
+brand:SetPoint("TOPLEFT",header,"TOPLEFT",12,-8)
+brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
+local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
+local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   "WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.9.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.10.1-alpha")
+local settingsButton=button(header,112,23,W-270,-10,"Einstellungen",function() CP:OpenTab("settings") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -120,6 +125,7 @@ local professionButtons={}
 local professionOrder={}
 local allProfessionsButton=button(frame,185,23,280,-78,"Alle Berufe anzeigen",function()
   CP.db.ui.showAllProfessions=not CP.db.ui.showAllProfessions
+  if not CP.db.ui.showAllProfessions then CP:PreferOwnedProfession() end
   CP:Render()
 end)
 for i,key in ipairs(D.order) do
@@ -147,7 +153,7 @@ local tabs={
   {key="mats", label="Materialien"},
   {key="plan", label="Einkaufsplan"},
   {key="trainers", label="Lehrer"},
-  {key="help", label="Hilfe / Befehle"}
+  {key="settings", label="Einstellungen"}
 }
 local tabButtons={}
 local orderedTabs={}
@@ -242,7 +248,12 @@ local planPrint=button(frame,132,25,177,-383,"Liste im Chat",function()
   CP:PrintPlanShopping(CP.db.view)
 end)
 local planClear=button(frame,112,25,314,-383,"Plan leeren",function()
-  CP:ClearPlanCraft(CP.db.view)
+  if CP.pendingPlanClear~=CP.db.view then
+    CP.pendingPlanClear=CP.db.view
+  else
+    CP:ClearPlanCraft(CP.db.view)
+    CP.pendingPlanClear=nil
+  end
   CP:Render()
 end)
 local autoRouteButton=button(frame,142,25,435,-383,"Auto-Route",function()
@@ -287,14 +298,13 @@ content:SetHeight(320)
 scroll:SetScrollChild(content)
 
 local rows={}
+local resetContentScroll=true
+local lastContentContext
 local trainerButtons={}
 local recipeButtons={}
 local visualCards={}
 local function gold(value)
-  if type(value)~="number" then return "Preis fehlt" end
-  local v=math.floor(value+0.5)
-  return string.format("%dg %ds %dc",math.floor(v/10000),
-    math.floor((v%10000)/100),v%100)
+  return CP:FormatMoney(value)
 end
 
 local function clearRows()
@@ -322,7 +332,7 @@ local function setRows(lines)
     row:Show()
   end
   content:SetHeight(math.max(270,#lines*35+16))
-  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+  if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
 local function setTrainerRows(choices,recommended,nearest,selected)
@@ -356,7 +366,7 @@ local function setTrainerRows(choices,recommended,nearest,selected)
     b:Show()
   end
   content:SetHeight(math.max(270,#choices*36+12))
-  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+  if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
 -- CraftPilot's original visual indicators use native flat textures, not
@@ -426,14 +436,15 @@ local function setRecipeRows(key,options,chosen)
     b:Show()
   end
   content:SetHeight(math.max(270,#options*61+16))
-  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+  if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
 -- Shared visual cards for stages, materials and shopping plans.
 -- Graphics are composed from native flat textures and client-provided item icons.
 local function setVisualCards(entries)
   clearRows()
-  local cardHeight=73
+  local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help")
+  local cardHeight=settingsView and 92 or 73
   for i,entry in ipairs(entries) do
     local b=visualCards[i]
     if not b then
@@ -469,6 +480,8 @@ local function setVisualCards(entries)
       end
     end
     b.craftAction=entry.action
+    b.footLabel:ClearAllPoints()
+    b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,settingsView and -72 or -51)
     b:ClearAllPoints()
     b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*cardHeight)
     b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,cardHeight-5)
@@ -494,7 +507,7 @@ local function setVisualCards(entries)
     b:Show()
   end
   content:SetHeight(math.max(280,#entries*cardHeight+15))
-  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+  if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
 local function itemIcon(id)
@@ -669,8 +682,10 @@ local function layout()
   summary:SetWidth(inner)
   stageProgress:SetWidth(inner)
   content:SetWidth(width-96)
-  title:SetWidth(math.max(290,width-240))
-  subtitle:SetWidth(math.max(290,width-240))
+  title:SetWidth(math.max(240,width-400))
+  settingsButton:ClearAllPoints()
+  settingsButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-150,-10)
+  subtitle:SetWidth(math.max(240,width-300))
   build:ClearAllPoints()
   build:SetPoint("TOPRIGHT",header,"TOPRIGHT",-42,-40)
   skinButton:ClearAllPoints()
@@ -720,7 +735,8 @@ registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
-  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,help=true}
+  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,settings=true,help=true}
+  if tab=="help" then tab="settings" end
   if not valid[tab] then return end
   self.db.ui.tab=tab
   frame:Show()
@@ -739,6 +755,16 @@ function CP:Render()
   local skill=record and record.skill or 0
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
+  local context=key..":"..tab
+  resetContentScroll=context~=lastContentContext
+  lastContentContext=context
+  if tab~="plan" then self.pendingPlanClear=nil end
+  if tab~="settings" and tab~="help" then self.pendingSettingsReset=nil end
+  local settingsView=tab=="settings" or tab=="help"
+  summary:SetShown(not settingsView)
+  stageProgress:SetShown(not settingsView)
+  section:ClearAllPoints()
+  section:SetPoint("TOPLEFT",frame,"TOPLEFT",19,settingsView and -226 or -334)
   if type(stageProgress.SetValue)=="function" then
     stageProgress:SetValue(math.max(0,math.min(300,skill)))
   end
@@ -807,45 +833,22 @@ function CP:Render()
   bankDetails:SetText(self:BankStatus())
   for _,control in ipairs(planControls) do control:SetShown(isPlan) end
   if isPlan then
+    planClear:SetText(self.pendingPlanClear==key and "Bestätigen?" or "Plan leeren")
     syncPlanFields(key)
     local choice=self:SelectedOption(key)
     planHint:SetText("Katalog "..self:CatalogCount(key).." Rezepte")
     autoRouteButton:SetEnabled(self:Catalog(key)~=nil)
+    autoRouteButton:SetText(self.db.ui.knownRecipesOnly and "Auto: nur erlernt" or "Auto-Route")
   end
   contentPanel:ClearAllPoints()
   contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
-    isPlan and -423 or ((isTrainers or isRecipes or isMats) and -395 or -358))
+    settingsView and -250 or (isPlan and -423 or ((isTrainers or isRecipes or isMats) and -395 or -358)))
   contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
 
   local lines={}
-  if tab=="help" then
-    section:SetText("Hilfe und Slash-Befehle")
-    setVisualCards({
-      {title="Start & Navigation",detail="/cp · /cp hilfe · /cp etappen · /cp plan",
-       footer="/cp lehrer · /cp trainer · /cp naechster · /cp resetpos",
-       icon="Interface\\Icons\\INV_Misc_Map_01",color="gold"},
-      {title="Beruf automatisch öffnen",detail="Berufsbutton klicken – nur wenn gelernt; bei manchen Sammelberufen nicht möglich.",
-       footer="/cp autoopen on  |  /cp autoopen off",
-       icon="Interface\\Icons\\INV_Misc_Book_09",color="green"},
-      {title="Berufe",detail="/cp ingi · /cp bergbau · /cp schmied · /cp vz",
-       footer="/cp schneider · /cp leder · /cp kraeuter · /cp alchemie",
-       icon="Interface\\Icons\\INV_Misc_Note_01",color="blue"},
-      {title="Automatischer Rezeptplan",detail="Auto-Route schätzt einen Weg bis zum frei gewählten Ziel.",
-       footer="GPL-Katalog, Kosten und Fertigungsketten; Preise/Trainer bitte prüfen.",color="gold",
-       icon="Interface\\Icons\\INV_Misc_Bag_08"},
-      {title="Mehrstufiger Einkaufsplan",detail="Start/Ziel/Menge einstellen; Rezepte weiterhin manuell auswählbar.",
-       footer="Auto-Route · /cp autoplan · Liste im Chat · Plan leeren · /cp einkauf",
-       icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"},
-      {title="Preise & Sortierung",detail="/cp sort cost|chance|missing|name · /cp mode cash|value",
-       footer="/cp bank on|off · /cp liste · /cp refresh",
-       icon="Interface\\Icons\\INV_Misc_Coin_01",color="blue"},
-      {title="Design",detail="/cp skin auto|dark|classic · Fenster oben verschieben",
-       footer="Griff unten rechts: Größe ändern; Auto nutzt EllesmereUI, falls verfügbar.",
-       icon="Interface\\Icons\\INV_Misc_EngGizmos_17",color="green"},
-      {title="Grenzen",detail="Geplante Rezeptmengen ergeben eine konkrete Materialliste.",
-       footer="Skillaufstieg und noch nicht erlernte Rezepte können nicht garantiert werden.",
-       icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"}
-    })
+  if tab=="settings" or tab=="help" then
+    section:SetText("Einstellungen · anklicken zum Ändern")
+    setVisualCards(self:SettingsCards())
   elseif tab=="trainers" then
     local choices,rank,recommended,nearest=self:TrainerChoices(key)
     section:SetText("Lehrer für "..prof.name.."  |  Eintrag anklicken = Wegpunkt")
@@ -926,9 +929,10 @@ function CP:Render()
           }
         end
         cards[#cards+1]={
-          title="Datengrundlage: "..self.catalogBuild,
+          title=self.db.ui.showSourceDetails and ("Datengrundlage: "..self.catalogBuild) or "Planungsgrundlage · Details aufklappen",
           detail=route.assumptions.." Schritte verwenden Lehrer-/Startrezepte ohne aktuelle Spielbestätigung.",
-          footer="Blizzard-Hotfixes und Trainerangebote können vom Katalog abweichen.",
+          footer=self.db.ui.showSourceDetails and (self.catalogUpstream.." · Hotfixes und Angebote im Spiel prüfen.") or "Früherer Forever-Datenstand; Trainerangebote im Spiel prüfen.",
+          action=function() CP:ToggleSetting("showSourceDetails") end,
           icon="Interface\\Icons\\INV_Misc_Book_09",color="gold"
         }
         for _,step in ipairs(route.steps) do
@@ -939,7 +943,7 @@ function CP:Render()
               step.crafts,step.name),
             detail="Skillchance aus früherem Forever-Client · "..stamp,
             footer="Zeitpunkt und Anzahl sind geschätzt; Skillfarbe im Spiel prüfen.",
-            icon="Interface\\Icons\\INV_Misc_EngGizmos_17",
+            icon=self:RecipeIcon(key,step.id),
             color=step.uncertain and "gold" or "green"
           }
         end
@@ -955,7 +959,7 @@ function CP:Render()
               title=node.count.."x "..node.name,
               detail="Im Plan hergestellte Einheit(en) oder Zwischenprodukt.",
               footer="Nur soweit eigene Berufe und Rezeptquellen dies erlauben.",
-              icon="Interface\\Icons\\INV_Misc_EngGizmos_17",color="blue"
+              icon=self:RecipeIcon(key,node.id),color="blue"
             }
           end
         end
@@ -1005,7 +1009,7 @@ function CP:Render()
             title=step.quantity.." × "..step.name,
             detail="Dieser Schritt wird in die gemeinsame Materialliste eingerechnet.",
             footer="Klicken zum Entfernen dieses Rezepts aus dem Plan",
-            icon="Interface\\Icons\\INV_Misc_EngGizmos_17",
+            icon=self:RecipeIcon(key,id),
             color="green",
             action=function() CP:ClearPlanCraft(key,id);CP:Render() end
           }
@@ -1090,7 +1094,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.9 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
+  footer:SetText("CraftPilot 0.10.1 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
 end
 
 function CP:ToggleWindow()

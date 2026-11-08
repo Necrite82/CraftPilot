@@ -210,7 +210,7 @@ function CP:PrintRouteShopping(key)
   self:Say(string.format("Auto-Entwurf %d–%d, vorläufig bis %d, %d Rezeptschritte.",
     route.first,route.target,route.reached,#route.steps))
   for _,mat in ipairs(route.materials) do
-    local info=mat.cost and (string.format("%.1fg",mat.cost/10000)) or "kein Preis"
+    local info=self:FormatMoney(mat.cost)
     self:Say(string.format("%d x %s – %s (%s)",mat.missing,mat.name,info,
       self:PriceFreshness(mat.id)))
   end

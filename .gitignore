@@ -5,3 +5,5 @@ Thumbs.db
 *.bak
 .idea/
 .vscode/
+__pycache__/
+*.pyc
