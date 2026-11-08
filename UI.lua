@@ -443,7 +443,8 @@ end
 -- Graphics are composed from native flat textures and client-provided item icons.
 local function setVisualCards(entries)
   clearRows()
-  local cardHeight=73
+  local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help")
+  local cardHeight=settingsView and 92 or 73
   for i,entry in ipairs(entries) do
     local b=visualCards[i]
     if not b then
@@ -479,6 +480,8 @@ local function setVisualCards(entries)
       end
     end
     b.craftAction=entry.action
+    b.footLabel:ClearAllPoints()
+    b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,settingsView and -72 or -51)
     b:ClearAllPoints()
     b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*cardHeight)
     b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,cardHeight-5)
