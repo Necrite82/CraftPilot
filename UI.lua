@@ -198,6 +198,7 @@ local function setTrainerRows(choices,recommended,nearest,selected)
     local metric=entry.distance and string.format(" | Kartenabstand %.1f",entry.distance)
       or (entry.inZone and " | gleiche Zone" or " | andere Zone")
     b:SetText(flags..npc.name.." — "..npc.zone.." | "..cap..metric)
+    b:ClearAllPoints()
     b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*36)
     b:Show()
   end
@@ -241,6 +242,7 @@ function CP:ApplyTheme()
   if not self.db then return end
   local pref=self.db.ui.skin or "auto"
   local E=_G.ElvUI
+  if type(E)=="table" and type(E.GetModule)~="function" and type(E[1])=="table" then E=E[1] end
   local dark=pref~="classic"
   local name=pref=="classic" and "Klassisch" or (pref=="dark" and "Dunkel" or "Automatisch")
   local palette=dark and {0.065,0.075,0.092} or {0.16,0.115,0.07}
@@ -389,6 +391,7 @@ function CP:Render()
         "Bitte einen fehlenden Lehrerstandort als GitHub-Issue melden."})
     else
       setTrainerRows(choices,recommended,nearest,self.db.ui.selectedTrainers[key])
+      if self.db.ui.skin=="auto" then self:ApplyTheme() end
     end
   elseif tab=="stages" then
     section:SetText("Skill-Etappen – nach Material- und Rangwechseln")
