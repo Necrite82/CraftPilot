@@ -24,23 +24,86 @@ function CP:Initialize()
   if type(db.recipes) ~= "table" then db.recipes = {} end
   if not D.professions[db.view] then db.view = "engineering" end
   if db.mode ~= "cash" and db.mode ~= "value" then db.mode = "cash" end
-  if type(db.includeBank) ~= "boolean" then db.includeBank = false end
+  if type(db.includeBank) ~= "boolean" then db.includeBank = true end
   if type(db.ui) ~= "table" then db.ui = {} end
   if db.ui.skin ~= "auto" and db.ui.skin ~= "dark" and db.ui.skin ~= "classic" then
     db.ui.skin = "auto"
   end
   if type(db.ui.selectedTrainers) ~= "table" then db.ui.selectedTrainers = {} end
+  if type(db.ui.selectedRecipes) ~= "table" then db.ui.selectedRecipes = {} end
+  if type(db.bank) ~= "table" then db.bank = {} end
+  if type(db.bank.items) ~= "table" then db.bank.items = {} end
+  if not ({cost=true,chance=true,missing=true,name=true})[db.ui.recipeSort] then
+    db.ui.recipeSort="cost"
+  end
+  if type(db.ui.width) ~= "number" then db.ui.width=750 end
+  if type(db.ui.height) ~= "number" then db.ui.height=676 end
   if type(db.ui.position) ~= "table" then db.ui.position = nil end
   self.db = db
   self:Refresh(false)
 end
 
-function CP:ItemCount(itemID)
-  local includeBank = self.db and self.db.includeBank or false
+-- Bank stock is a saved snapshot from the last actual bank visit.
+-- Closed-bank data is never labelled as live.
+function CP:RawItemCount(itemID, includeBank)
   local n
-  if C_Item then n = safe(C_Item.GetItemCount, itemID, includeBank, false) end
-  if type(n) ~= "number" then n = safe(GetItemCount, itemID, includeBank, false) end
-  return type(n) == "number" and math.max(0,n) or 0
+  if C_Item then n=safe(C_Item.GetItemCount,itemID,includeBank,false) end
+  if type(n)~="number" then n=safe(GetItemCount,itemID,includeBank,false) end
+  return type(n)=="number" and math.max(0,n) or 0
+end
+
+function CP:BankCount(itemID)
+  if not self.db then return 0,false end
+  local bank=self.db.bank
+  if self.bankIsOpen then
+    local value=math.max(0,self:RawItemCount(itemID,true)-self:RawItemCount(itemID,false))
+    bank.items[itemID]=value
+    if type(time)=="function" then bank.scannedAt=time() end
+    return value,true
+  end
+  local cached=bank.items[itemID]
+  return type(cached)=="number" and math.max(0,cached) or 0,false
+end
+
+function CP:ItemAvailability(itemID)
+  local bags=self:RawItemCount(itemID,false)
+  if self.db and self.db.includeBank then
+    local bank,live=self:BankCount(itemID)
+    return bags+bank,bags,bank,live
+  end
+  return bags,bags,0,false
+end
+
+function CP:ItemCount(itemID)
+  local count=self:ItemAvailability(itemID)
+  return count
+end
+
+function CP:BankStatus()
+  if not self.db then return "Bank nicht erfasst" end
+  if not self.db.includeBank then return "Bank aus" end
+  if self.bankIsOpen then return "Bank LIVE" end
+  if self.db.bank.scannedAt then
+    local stamp=type(date)=="function" and date("%d.%m. %H:%M",self.db.bank.scannedAt)
+    return "Bank zuletzt erfasst"..(stamp and (" "..stamp) or "")
+  end
+  return "Bank unbekannt – einmal öffnen"
+end
+
+function CP:SnapshotBankMaterials()
+  if not self.bankIsOpen or not self.db then return end
+  local items={}
+  for _,recipes in pairs(self.db.recipes) do
+    for _,recipe in pairs(recipes) do
+      if type(recipe.mats)=="table" then
+        for _,mat in ipairs(recipe.mats) do
+          if type(mat[1])=="number" then items[mat[1]]=true end
+        end
+      end
+    end
+  end
+  for itemID in pairs(items) do self:BankCount(itemID) end
+  if type(time)=="function" then self.db.bank.scannedAt=time() end
 end
 
 function CP:ItemName(itemID)
@@ -154,6 +217,12 @@ function CP:CaptureProfession()
     if type(detail)=="table" and type(id)=="number" then
       local old=known[id] or {}
       old.name=detail.name or old.name or ("Rezept "..id)
+      if detail.icon or detail.iconID then old.icon=detail.icon or detail.iconID end
+      local output=safe(T.GetRecipeOutputItemData,id)
+      if type(output)=="table" then
+        old.outputItemID=output.itemID or old.outputItemID
+        old.icon=output.icon or output.iconID or old.icon
+      end
       old.learned=detail.learned == true
       old.disabled=detail.disabled == true
       old.canSkillUp=detail.canSkillUp
@@ -192,7 +261,7 @@ function CP:Options(profession)
           if price then cost=cost+price*pricedQty else unknown[#unknown+1]=item end
         end
       end
-      values[#values+1]={id=id, name=recipe.name, mats=recipe.mats,
+      values[#values+1]={id=id, name=recipe.name, icon=recipe.icon, outputItemID=recipe.outputItemID, mats=recipe.mats,
         chance=chance, cost=cost/chance, missing=missing,
         unknown=#unknown>0, unknownItems=unknown}
     end
@@ -205,6 +274,32 @@ function CP:Options(profession)
     return a.id<b.id
   end)
   return values
+end
+
+function CP:SortedOptions(profession)
+  local items=self:Options(profession)
+  local mode=self.db.ui.recipeSort
+  if mode=="cost" then return items end
+  table.sort(items,function(a,b)
+    if mode=="chance" and a.chance~=b.chance then return a.chance>b.chance end
+    if mode=="missing" and a.missing~=b.missing then return a.missing<b.missing end
+    if mode=="name" and a.name~=b.name then return a.name<b.name end
+    if a.unknown~=b.unknown then return not a.unknown end
+    if a.cost~=b.cost then return a.cost<b.cost end
+    return a.id<b.id
+  end)
+  return items
+end
+
+function CP:SelectedOption(profession)
+  local list=self:SortedOptions(profession)
+  local selected=self.db.ui.selectedRecipes[profession]
+  if type(selected)=="number" then
+    for _,entry in ipairs(list) do
+      if entry.id==selected then return entry,list end
+    end
+  end
+  return list[1],list
 end
 
 function CP:CurrentStage(key)
@@ -340,12 +435,12 @@ function CP:TrainerWaypoint(which)
 end
 
 function CP:ShowShopping()
-  local options=self:Options(self.db.view)
+  local chosen,options=self:SelectedOption(self.db.view)
   if #options==0 then
     return self:Say("Kein auswertbares gelerntes Rezept. Berufsfenster öffnen.")
   end
-  local best=options[1]
-  self:Say("Nächstes Rezept: "..best.name.." (1 Herstellung; Preisstand: letzter Auctionator-Scan)")
+  local best=chosen
+  self:Say("Rezept: "..best.name.." (1 Herstellung; Preisstand: letzter Auctionator-Scan)")
   for _,mat in ipairs(best.mats) do
     local required=mat[2]
     local missing=math.max(0,required-self:ItemCount(mat[1]))
@@ -410,6 +505,8 @@ local function command(input)
     CP.db.mode=text:sub(6);CP:Refresh(false)
   elseif text=="bank on" or text=="bank off" then
     CP.db.includeBank=text=="bank on";CP:Refresh(false)
+  elseif text=="sort cost" or text=="sort chance" or text=="sort missing" or text=="sort name" then
+    CP.db.ui.recipeSort=text:sub(6);CP:Refresh(false)
   else
     CP:Say("Hilfe im Addon: /cp hilfe. Direkt: /cp lehrer | etappen | trainer | naechster | liste | resetpos | skin auto|dark|classic.")
   end
@@ -417,7 +514,8 @@ end
 
 local events=CreateFrame("Frame")
 local names={"PLAYER_LOGIN","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE",
-  "TRADE_SKILL_DATA_SOURCE_CHANGED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP"}
+  "TRADE_SKILL_DATA_SOURCE_CHANGED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP",
+  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED"}
 for _,name in ipairs(names) do pcall(events.RegisterEvent,events,name) end
 local function schedule(capture)
   pendingCapture=pendingCapture or capture
@@ -441,6 +539,16 @@ events:SetScript("OnEvent",function(_,event)
     SLASH_CRAFTPILOT1="/cp"
     SLASH_CRAFTPILOT2="/craftpilot"
     SlashCmdList.CRAFTPILOT=command
+  elseif event=="BANKFRAME_OPENED" then
+    CP.bankIsOpen=true
+    CP:SnapshotBankMaterials()
+    if CP.db then CP:Refresh(false) end
+  elseif event=="BANKFRAME_CLOSED" then
+    CP.bankIsOpen=false
+    if CP.db then CP:Refresh(false) end
+  elseif event=="PLAYERBANKSLOTS_CHANGED" then
+    if CP.bankIsOpen then CP:SnapshotBankMaterials() end
+    if CP.db then CP:Refresh(false) end
   elseif CP.db and (event~="BAG_UPDATE_DELAYED" or (CP.frame and CP.frame:IsShown())) then
     schedule(event=="TRADE_SKILL_SHOW" or event=="TRADE_SKILL_LIST_UPDATE"
       or event=="TRADE_SKILL_DATA_SOURCE_CHANGED")
