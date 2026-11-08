@@ -4,15 +4,15 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.3.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.4.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 ## Supported professions
 
-Engineering, Mining, Blacksmithing, Enchanting, Tailoring and Leatherworking.
+Engineering, Mining, Blacksmithing, Enchanting, Tailoring, Leatherworking, Herbalism and Alchemy.
 
-All six have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and the last stored auction prices. Mining uses an ore progression overview instead.
+All eight have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and stored auction prices. Mining and Herbalism offer gathering progression overviews. Profession levels can also be read from the character profession list.
 
 **Important limitation:** The 1–300 milestones are **not** a complete offline recipe catalog or a globally optimized 1–300 crafting route. This early alpha focuses on verifying recipe capture, cost estimates and trainer navigation in the game.
 
@@ -22,7 +22,7 @@ All six have a **1–300 milestone overview**. Currently learned crafting recipe
 - Compares estimated additional gold cost versus the market value of materials already owned.
 - Optionally includes bank materials, depending on game API availability.
 - Uses cached Auctionator prices; no real-time auction lookup.
-- Provides six profession milestone guides from skill 1 to 300.
+- Provides eight profession milestone guides from skill 1 to 300.
 - Provides built-in Alliance/Horde trainer destinations through TomTom or a supported map waypoint.
 - Shows missing materials for the **next recommended craft**.
 - Does not automate buying, crafting, training or movement.
@@ -45,6 +45,8 @@ All six have a **1–300 milestone overview**. Currently learned crafting recipe
 | \`/cp vz\` | Enchanting |
 | \`/cp schneider\` | Tailoring |
 | \`/cp leder\` | Leatherworking |
+| \`/cp kraeuter\` | Herbalism |
+| \`/cp alchemie\` | Alchemy |
 | \`/cp trainer\` | Trainer waypoint |
 | \`/cp liste\` | Missing materials for one craft |
 | \`/cp refresh\` | Refresh the open profession |
@@ -53,7 +55,7 @@ All six have a **1–300 milestone overview**. Currently learned crafting recipe
 
 ## Limitations
 
-The alpha does not guarantee a cheapest complete 1–300 route. Recipe difficulties and reagent data must come from the game client. Yellow/green skill-up chances are estimates. Auctionator data is a stored snapshot, not a live offer or guaranteed available quantity. Some enchants require a target item and a runed rod beyond the reagents shown. Trainer coordinates are navigation references and must be checked in game; the Annora marker points to the Uldaman entrance.
+The alpha does not guarantee a cheapest complete 1–300 route. Recipe difficulties and reagent data must come from the game client. Yellow/green skill-up chances are estimates. Auctionator data is a stored snapshot, not a live offer or guaranteed available quantity. Some enchants require a target item and a runed rod beyond the reagents shown. Some Alchemy recipes have cooldowns or special equipment requirements. Herbalism does not provide fixed plant spawn markers or gathering price optimization. Trainer coordinates are navigation references and must be checked in game; the Annora marker points to the Uldaman entrance.
 
 For bug reports, include the game build, addon version, profession, skill level, reproduction steps and relevant Lua errors. Do not post private information.
 

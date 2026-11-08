@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.0-alpha — 2026-11-08
+
+- Kräuterkunde und Alchemie als siebten und achten Beruf ergänzt.
+- Eigene 1–300-Etappenübersichten für beide Berufe und passende Trainerziele für Horde und Allianz.
+- Berufs-Skillstände zusätzlich über `GetProfessions` und `GetProfessionInfo` eingelesen, insbesondere für Sammelberufe ohne offenes Rezeptfenster.
+- Oberfläche auf acht Berufsschaltflächen erweitert; Lua-Smoketests angepasst.
+- Unterschiedliche Charakterstufen-Anforderungen für Kräuterkunde berücksichtigt.
+
+**Bekannte Einschränkungen:** Kein vollständiger Offline-Rezeptkatalog, keine globale 1–300-Kostenoptimierung und noch kein Live-Client-Test.
+
 ## 0.3.0-alpha — 2026-11-08
 
 - Unterstützung für Schmiedekunst, Verzauberkunst, Schneiderei und Lederverarbeitung ergänzt.

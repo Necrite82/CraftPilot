@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.3.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.4.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -16,8 +16,10 @@ CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direk
 - Verzauberkunst
 - Schneiderei
 - Lederverarbeitung
+- Kräuterkunde
+- Alchemie
 
-Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die fünf Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach ihren geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau hat stattdessen eine Übersicht geeigneter Erz- und Skillbereiche.
+Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sechs Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau und Kräuterkunde zeigen geeignete Sammelstufen und Gebiete. Berufs-Skillwerte können auch ohne offenes Rezeptfenster über die Charakter-Berufsübersicht ausgelesen werden.
 
 **Wichtige Abgrenzung:** Die 1–300-Etappen sind eine Orientierung und noch **keine vollständige Offline-Rezeptdatenbank**. Eine durchgehend durchgerechnete, global günstigste Einkaufs- und Herstellungsroute bis 300 sowie sämtliche Lehrerrezepte, Händler- und Beuterezepte sind noch nicht implementiert. Diese Alpha ist zunächst für das Testen von Rezeptauslesung, Kostenvergleich und Navigation gedacht.
 
@@ -25,7 +27,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die fü
 
 | Funktion | Beschreibung |
 | --- | --- |
-| Beruf erkennen | Ingenieurskunst, Bergbau, Schmiedekunst, Verzauberkunst, Schneiderei, Lederverarbeitung |
+| Beruf erkennen | Ingenieurskunst, Bergbau, Schmiedekunst, Verzauberkunst, Schneiderei, Lederverarbeitung, Kräuterkunde, Alchemie |
 | Rezepte erfassen | Bekannte Rezepte, Reagenzien und aktuelle Schwierigkeitsfarben aus dem geöffneten Berufsfenster übernehmen |
 | Kostenvergleich | Aktuell mögliche Rezepte nach geschätzten Kosten pro Skillpunkt sortieren |
 | Eigene Materialien | Taschenbestände abziehen; optional Bankbestände, soweit die Spiel-API sie bereitstellt |
@@ -47,7 +49,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die fü
 
 **Empfohlen:** eine Forever-kompatible Version von [Auctionator](https://www.curseforge.com/wow/addons/auctionator) und [TomTom](https://www.curseforge.com/wow/addons/tomtom). Die Addons sind optional, verbessern aber Kostenabschätzungen und Navigation.
 
-Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Bei einem Skillaufstieg das Berufsfenster erneut öffnen beziehungsweise aktualisieren.
+Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für Kräuterkunde reicht zur Anzeige des Skillstands die erlernte Profession; eine Rezeptliste ist dafür nicht erforderlich. Bei einem Skillaufstieg das Berufsfenster erneut öffnen beziehungsweise aktualisieren.
 
 ## Befehle
 
@@ -60,6 +62,8 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Bei ei
 | \`/cp vz\` | Verzauberkunst |
 | \`/cp schneider\` | Schneiderei |
 | \`/cp leder\` | Lederverarbeitung |
+| \`/cp kraeuter\` | Kräuterkunde |
+| \`/cp alchemie\` | Alchemie |
 | \`/cp trainer\` | Berufslehrer-Wegpunkt setzen |
 | \`/cp liste\` | Fehlende Materialien für die nächste Herstellung ausgeben |
 | \`/cp refresh\` | Geöffnetes Berufsfenster erneut einlesen |
@@ -70,9 +74,9 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Bei ei
 ## Alpha-Hinweise
 
 - Kein Anspruch auf die mathematisch günstigste gesamte Skillroute 1–300.
-- Aufgeführte Etappen sind **keine** Mengen- oder Preisgarantie.
+- Aufgeführte Etappen sind **keine** Mengen- oder Preisgarantie. Kräuterkunde bietet keine Erntekostenoptimierung oder festen Pflanzen-Spawnpunkte.
 - Auctionator-Preise sind **gespeicherte Scans**, keine Echtzeitpreise, Lagerbestände oder garantierten Kaufmöglichkeiten.
-- Rezepte mit nicht eindeutig auslesbaren Reagenzien werden nicht preislich bewertet.
+- Rezepte mit nicht eindeutig auslesbaren Reagenzien werden nicht preislich bewertet. Bei Alchemie können bestimmte Rezepte zusätzliche Geräte, Voraussetzungen oder Abklingzeiten haben.
 - Enchants können ein geeignetes Zielitem und eine passende Runenrute erfordern; solche Voraussetzungen fließen nicht immer in die Materialrechnung ein.
 - Die geschätzten Skillchancen für gelbe/grüne Rezepte sind Näherungen. Die tatsächlichen Erfolge schwanken.
 - Trainerkoordinaten sind Reisehilfen, keine Live-Prüfung der Trainerangebote. Der Uldaman-Wegpunkt markiert den Zugang, nicht Annoras Standort im Inneren.

@@ -12,7 +12,7 @@ Die Berufslehrer-Tabelle enthält einzelne sachliche Ortsangaben aus öffentlich
 
 ## Eingelesene Daten
 
-- Profession, Skill, Skill-Obergrenze: \`C_TradeSkillUI.GetBaseProfessionInfo\`
+- Profession, Skill, Skill-Obergrenze: \`C_TradeSkillUI.GetBaseProfessionInfo\` sowie \`GetProfessions\` / \`GetProfessionInfo\`
 - Rezeptliste und aktuelle Schwierigkeit: \`C_TradeSkillUI.GetAllRecipeIDs\`, \`GetRecipeInfo\`
 - Reagenzien: \`C_TradeSkillUI.GetRecipeSchematic\`
 - Taschenbestand: \`C_Item.GetItemCount\`
@@ -33,6 +33,9 @@ Orts- und Ranghinweise wurden mit diesen öffentlich verfügbaren Informationen 
 - Verzauberkunst: https://www.icy-veins.com/wow-forever/enchanting-leveling-guide
 - Schneiderei: https://www.icy-veins.com/wow-forever/tailoring-leveling-guide
 - Lederverarbeitung: https://www.icy-veins.com/wow-forever/leatherworking-leveling-guide
+- Kräuterkunde / Forever-Ausbildung und Koordinaten: https://www.method.gg/wow-forever/herbalism-in-wow-forever-leveling-guide-herbalism-items-enchants-trainers
+- Kräuterkunde / Rangtrainer: https://www.icy-veins.com/wow-forever/herbalism-leveling-guide
+- Alchemie / Forever-Lehrer und Koordinaten: https://www.wowhead.com/forever/guide/professions/alchemy-overview-trainer-locations-recipes
 
 Aufgrund von Beta-Änderungen, Kartenvarianten und serverseitigen Änderungen kann eine Position oder ein Trainerangebot abweichen. Insbesondere der Wegpunkt für **Annora** zeigt einen Zugang zu **Uldaman**, nicht den Standort innerhalb der Instanz.
 
