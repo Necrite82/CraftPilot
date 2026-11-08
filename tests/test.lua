@@ -2,6 +2,7 @@
 local methods = {}
 methods.__index = function(self,key)
   if key=="CreateFontString" then return function() return setmetatable({},methods) end end
+  if key=="CreateTexture" then return function() return setmetatable({},methods) end end
 
   if key=="SetSize" then return function(t,w,h) t.width=w;t.height=h end end
   if key=="SetWidth" then return function(t,w) t.width=w end end
@@ -232,7 +233,64 @@ CP.db.professions.alchemy={skill=210,cap=225,name="Alchemy"}
 assert(CP:FindTrainer("herbalism").name=="Jandi")
 assert(CP:FindTrainer("alchemy").name=="Rogvar")
 
+-- Hardware-event-bound opening: learned primary professions only.
+local opened={}
+C_TradeSkillUI.OpenTradeSkill=function(id)
+  opened[#opened+1]=id
+  return true
+end
+assert(CP:OwnsProfession("alchemy")==true)
+assert(CP:OwnsProfession("tailoring")==false)
+CP.db.ui.autoOpen=true
+CP:ChangeView("alchemy",true)
+assert(opened[#opened]==171)
+local openings=#opened
+CP:ChangeView("tailoring",true)
+assert(#opened==openings)
+CP.db.ui.autoOpen=false
+CP:ChangeView("alchemy",true)
+assert(#opened==openings)
+CP.db.ui.autoOpen=true
+
+-- Range and explicit multi-craft material aggregation.
+assert(CP:SetPlanRange("alchemy",30,100))
+local plan=CP:PlanFor("alchemy")
+assert(plan.start==30 and plan.target==100)
+assert(CP:AddPlanCraft("alchemy",2964,3))
+local basket=CP:PlanShopping("alchemy")
+assert(basket.first==30 and basket.last==100)
+assert(basket.crafts==3 and #basket.steps==1)
+assert(#basket.materials==1 and basket.materials[1].required==6)
+assert(basket.materials[1].missing==0)
+CP.db.includeBank=false
+basket=CP:PlanShopping("alchemy")
+assert(basket.materials[1].missing==4 and basket.purchaseCopper==80)
+CP.db.includeBank=true
+CP:PrintPlanShopping("alchemy")
+CP:OpenTab("plan")
+assert(CP.db.ui.tab=="plan")
+CP:OpenTab("stages")
+assert(CP.db.ui.tab=="stages")
+CP:OpenTab("mats")
+assert(CP.db.ui.tab=="mats")
+CP:OpenTab("help")
+assert(CP.db.ui.tab=="help")
+CP:ClearPlanCraft("alchemy",2964)
+assert(CP:PlanShopping("alchemy").crafts==0)
+assert(not CP:SetPlanRange("alchemy",100,30))
+assert(not CP:AddPlanCraft("alchemy",999999,4))
+
+-- A short provisional draft stops at 10 points and cannot promise the full
+-- target range when future recipe difficulties are unknown.
+observedSkill=130
+CP.db.professions.alchemy={skill=130,cap=150,name="Alchemy"}
+assert(CP:SetPlanRange("alchemy",130,180))
+assert(CP:DraftPlanStep("alchemy")==true)
+assert(CP:PlanShopping("alchemy").crafts==10)
+assert(CP:PlanShopping("alchemy").first==130)
+
+
 C_Map.GetBestMapForUnit=function() return 999 end
 local trainers,rank3,best3,nearest3=CP:TrainerChoices("alchemy")
 assert(#trainers>0 and nearest3==nil)
-print("PASS: professions, bank snapshots, recipe sorting, selection, Ellesmere skin, resizing, trainer routing")
+print("PASS: professions, bank, native profession click, stages/material cards, partial range planner and shopping aggregation")

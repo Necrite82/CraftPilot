@@ -31,6 +31,8 @@ function CP:Initialize()
   end
   if type(db.ui.selectedTrainers) ~= "table" then db.ui.selectedTrainers = {} end
   if type(db.ui.selectedRecipes) ~= "table" then db.ui.selectedRecipes = {} end
+  if type(db.plans) ~= "table" then db.plans = {} end
+  if type(db.ui.autoOpen) ~= "boolean" then db.ui.autoOpen = true end
   if type(db.bank) ~= "table" then db.bank = {} end
   if type(db.bank.items) ~= "table" then db.bank.items = {} end
   if not ({cost=true,chance=true,missing=true,name=true})[db.ui.recipeSort] then
@@ -454,10 +456,194 @@ function CP:ShowShopping()
   end
 end
 
-function CP:ChangeView(key)
+
+-- Opening a profession is hardware-event restricted. Call only from a user
+-- click, never from deferred timers, rendering, login or item update events.
+function CP:OwnsProfession(key)
+  if not self.db or not D.professions[key] then return false end
+  if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return false end
+  local success,first,second=pcall(GetProfessions)
+  if not success then return false end
+  for _,index in ipairs({first or false,second or false}) do
+    if type(index)=="number" then
+      local ok,name,icon,skill,cap,abilities,spellOffset,skillLine=
+        pcall(GetProfessionInfo,index)
+      if ok and skillLine==D.professions[key].id then return true end
+    end
+  end
+  return false
+end
+
+function CP:OpenOwnedProfession(key)
+  if not self:OwnsProfession(key) then return false end
+  if type(InCombatLockdown)=="function" and InCombatLockdown() then
+    self:Say("Berufsfenster kann im Kampf gesperrt sein.")
+    return false
+  end
+  local T=_G.C_TradeSkillUI
+  if T and type(T.OpenTradeSkill)=="function" then
+    local success,result=pcall(T.OpenTradeSkill,D.professions[key].id)
+    if success and result~=false then return true end
+  end
+  -- Gathering without a crafting panel can still be selected in CraftPilot.
+  self:Say("Berufsfenster konnte nicht geöffnet werden. Skillplan bleibt nutzbar.")
+  return false
+end
+
+-- This planner intentionally never promises a complete skill-up route. Recipe
+-- quantities are explicit decisions; reagents form an exact gross shopping list
+-- for those crafts, while future skill-ups remain uncertain.
+local function clampSkill(n)
+  n=math.floor(tonumber(n) or 1)
+  return math.max(1,math.min(300,n))
+end
+function CP:PlanFor(key)
+  if not self.db or not D.professions[key] then return nil end
+  local current=(self.db.professions[key] or {}).skill or 1
+  local p=self.db.plans[key]
+  if type(p)~="table" then
+    p={start=math.max(1,math.min(299,math.floor(current))),target=math.min(300,math.max(2,math.floor(current)+25)),crafts={}}
+    self.db.plans[key]=p
+  end
+  if type(p.crafts)~="table" then p.crafts={} end
+  p.start=clampSkill(p.start)
+  p.target=clampSkill(p.target)
+  if p.start>=p.target then p.target=math.min(300,p.start+1) end
+  if p.start>=p.target then p.start=299;p.target=300 end
+  return p
+end
+
+function CP:SetPlanRange(key,first,last)
+  local p=self:PlanFor(key)
+  if not p then return false end
+  local a,b=clampSkill(first),clampSkill(last)
+  if a>=b then return false end
+  p.start,p.target=a,b
+  return true
+end
+
+function CP:AddPlanCraft(key,recipeID,quantity)
+  local p=self:PlanFor(key)
+  local recipe=self.db.recipes[key] and self.db.recipes[key][recipeID]
+  local count=math.floor(tonumber(quantity) or 0)
+  if not p or not recipe or not recipe.learned
+     or type(recipe.mats)~="table" or #recipe.mats==0
+     or count<1 or count>999 then return false end
+  p.crafts[recipeID]=math.min(9999,(p.crafts[recipeID] or 0)+count)
+  return true
+end
+
+function CP:ClearPlanCraft(key,recipeID)
+  local p=self:PlanFor(key)
+  if not p then return end
+  if type(recipeID)=="number" then p.crafts[recipeID]=nil
+  else p.crafts={} end
+end
+
+function CP:DraftPlanStep(key)
+  local p=self:PlanFor(key)
+  if not p or D.professions[key].gathering then return false end
+  local current=(self.db.professions[key] or {}).skill or 0
+  if current~=p.start then
+    self:Say("Schnellvorschlag nur ab aktuellem Skill. Startwert anpassen.")
+    return false
+  end
+  local choice=self:SelectedOption(key)
+  if not choice or not choice.chance or choice.chance<=0 then
+    self:Say("Noch kein auswertbares Rezept. Berufsfenster öffnen.")
+    return false
+  end
+  local rank=(self.db.professions[key] or {}).cap or 0
+  local points=math.min(10,p.target-current,math.max(0,rank-current))
+  if points<=0 then
+    self:Say("Erst den nächsten Ausbildungsrang lernen.")
+    return false
+  end
+  local expectedCrafts=math.max(1,math.ceil(points/choice.chance))
+  local ok=self:AddPlanCraft(key,choice.id,expectedCrafts)
+  if ok then
+    self:Say("Unverbindlicher erster Schritt: "..expectedCrafts.."x "..choice.name
+      .." (ca. "..points.." Skillpunkte bei heutiger Skillfarbe).")
+  end
+  return ok
+end
+
+function CP:PlanShopping(key)
+  local p=self:PlanFor(key)
+  if not p then return nil end
+  local aggregate={}
+  local steps={}
+  local craftCount=0
+  local expected=0
+  local uncertainSkills=false
+  for id,qty in pairs(p.crafts) do
+    if type(qty)=="number" and qty>0 then
+      local recipe=self.db.recipes[key] and self.db.recipes[key][id]
+      if recipe and type(recipe.mats)=="table" then
+        steps[#steps+1]={id=id,name=recipe.name or ("Rezept "..id),quantity=qty}
+        craftCount=craftCount+qty
+        local snapshot=(self.db.professions[key] or {}).skill or 0
+        local chances={ [0]=1,[1]=.70,[2]=.35,[3]=0 }
+        local chance=chances[recipe.difficulty]
+        if recipe.snapshotSkill==snapshot and chance then
+          expected=expected+qty*chance
+        else uncertainSkills=true end
+        for _,mat in ipairs(recipe.mats) do
+          if type(mat[1])=="number" and type(mat[2])=="number" then
+            aggregate[mat[1]]=(aggregate[mat[1]] or 0)+qty*mat[2]
+          end
+        end
+      end
+    end
+  end
+  table.sort(steps,function(a,b) return a.name<b.name end)
+  local materials={}
+  local purchaseCopper=0
+  local noPrice=0
+  local unknownBank=0
+  for id,required in pairs(aggregate) do
+    local total,bag,bank,live,known=self:ItemAvailability(id)
+    local missing=math.max(0,required-total)
+    local price=self:Price(id)
+    local estimate=missing>0 and price and price*missing or nil
+    if estimate then purchaseCopper=purchaseCopper+estimate end
+    if missing>0 and not price then noPrice=noPrice+1 end
+    if self.db.includeBank and not known then unknownBank=unknownBank+1 end
+    materials[#materials+1]={
+      id=id,name=self:ItemName(id),required=required,bag=bag,bank=bank,
+      bankKnown=known,bankLive=live,missing=missing,price=price,
+      cost=estimate
+    }
+  end
+  table.sort(materials,function(a,b) return a.name<b.name end)
+  return {
+    first=p.start,last=p.target,steps=steps,materials=materials,
+    crafts=craftCount,purchaseCopper=purchaseCopper,noPrice=noPrice,
+    unknownBank=unknownBank,expectedSkillUps=expected,
+    uncertainSkills=uncertainSkills
+  }
+end
+
+function CP:PrintPlanShopping(key)
+  local result=self:PlanShopping(key)
+  if not result then return end
+  self:Say(("Einkaufsliste %s, Skill %d–%d: %d geplante Herstellungen")
+    :format(D.professions[key].name,result.first,result.last,result.crafts))
+  if #result.steps==0 then return self:Say("Noch keine Rezepte im Plan. Im Planer hinzufügen.") end
+  for _,mat in ipairs(result.materials) do
+    if mat.missing>0 then
+      local total=mat.cost and (math.floor(mat.cost/10000).."g "..math.floor(mat.cost%10000/100).."s") or "Preis fehlt"
+      self:Say(mat.missing.."x "..mat.name.." (ca. "..total..")")
+    end
+  end
+  self:Say("Achtung: Liste deckt nur ausdrücklich ausgewählte Rezepte ab. Kein garantierter Skillweg.")
+end
+
+function CP:ChangeView(key,openNative)
   if not D.professions[key] then return end
   self.db.view=key
   self:Refresh(false)
+  if openNative and self.db.ui.autoOpen then self:OpenOwnedProfession(key) end
 end
 
 function CP:Refresh(capture)
@@ -493,6 +679,13 @@ local function command(input)
     if CP.OpenTab then CP:OpenTab("trainers") end
   elseif text=="etappen" then
     if CP.OpenTab then CP:OpenTab("stages") end
+  elseif text=="plan" or text=="einkaufsliste" then
+    if CP.OpenTab then CP:OpenTab("plan") end
+  elseif text=="einkauf" then
+    CP:PrintPlanShopping(CP.db.view)
+  elseif text=="autoopen on" or text=="autoopen off" then
+    CP.db.ui.autoOpen=text=="autoopen on"
+    CP:Say("Berufsfenster automatisch öffnen: "..(CP.db.ui.autoOpen and "AN" or "AUS"))
   elseif text=="hilfe" or text=="help" then
     if CP.OpenTab then CP:OpenTab("help") end
   elseif text=="resetpos" then

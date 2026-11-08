@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0-alpha — 2026-11-08
+
+- Materialien, Skilletappen, Hilfe und Sammelberuf-Übersichten auf einheitliche Karten mit dezenten visuellen Markierungen umgestellt.
+- Etappenkarten übernehmen den gewählten Skillbereich direkt in den Einkaufsplan.
+- Gelernte Herstellungsberufe können durch einen direkten Benutzerklick ihr natives Berufsfenster öffnen (clientabhängige sichere API).
+- Frei einstellbarer Skillbereich mit mehreren ausgewählten Rezepten und Stückzahlen; aggregierte Material- und Einkaufsliste mit Taschen, Bank-Snapshot und gespeicherten AH-Preisen.
+- Vorsichtiger Schnellvorschlag für bis zu zehn aktuelle Skillpunkte; keine vorgetäuschte 1–300-Komplettplanung.
+- Zusätzliche Tests für sichere Berufsöffnung, Planbereich, Material-Aggregation und UI-Karten.
+
+**Grenzen:** Ohne vollständige Forever-Rezeptdatenbank und zuverlässige zukünftige Skillfarben kann CraftPilot keine garantierte kostenoptimale Route von z. B. Skill 30 auf 100 berechnen. Die Einkaufsliste bezieht sich auf ausdrücklich gewählte Herstellungsmengen; Zwischenprodukte werden nicht aufgelöst.
+
+
 ## 0.6.0-alpha — 2026-11-08
 
 - Offizielle EllesmereUI-Skinning-API für eigenes Fenster und Bedienelemente integriert.
