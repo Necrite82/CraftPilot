@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0-alpha — 2026-11-08
+
+- Überarbeitetes Ingame-Fenster mit klarer Titelzeile, kompakteren Bedienelementen und fünf Registerkarten.
+- Verschieben über die Kopfzeile; Fensterposition wird pro Charakter gespeichert, mit Rücksetzfunktion.
+- Darstellungsmodi Automatisch, Dunkel und Klassisch; optionale ElvUI-Button-Skin-Unterstützung.
+- Für acht Berufe feinere 1–300-Etappen an Material- und Ausbildungswechseln.
+- Liste aller hinterlegten Lehrer der eigenen Fraktion, einzeln anklickbar.
+- Lehrerempfehlung passend zum nächsten Ausbildungsrang; Same-Map-Kartenabstand nur bei verfügbaren Positionsdaten.
+- Vollständige Slash-Befehlshilfe im Addon sowie neue Befehle für Etappen, Lehrerliste, Fensterposition und Darstellung.
+- Ergänzende Offline-Tests für Lehrerauswahl, Fensterposition und Darstellungs-Fallbacks.
+
+**Hinweis:** Die Trainerdatenbank ist noch nicht vollständig; es werden keine kartenübergreifenden Reisezeiten berechnet. Ein Live-Test in WoW Forever steht noch aus.
+
 ## 0.4.0-alpha — 2026-11-08
 
 - Kräuterkunde und Alchemie als siebten und achten Beruf ergänzt.
