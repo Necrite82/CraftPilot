@@ -204,6 +204,13 @@ scroll:SetScrollChild(content)
 local rows={}
 local trainerButtons={}
 local recipeButtons={}
+local function gold(value)
+  if type(value)~="number" then return "Preis fehlt" end
+  local v=math.floor(value+0.5)
+  return string.format("%dg %ds %dc",math.floor(v/10000),
+    math.floor((v%10000)/100),v%100)
+end
+
 local function clearRows()
   for _,r in ipairs(rows) do r:Hide() end
   for _,b in ipairs(trainerButtons) do b:Hide() end
@@ -262,6 +269,71 @@ local function setTrainerRows(choices,recommended,nearest,selected)
     b:Show()
   end
   content:SetHeight(math.max(270,#choices*36+12))
+  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+end
+
+-- CraftPilot's original visual indicators use native flat textures, not
+-- artwork copied from another addon. Recipe icons come from the game client.
+local function setRecipeRows(key,options,chosen)
+  clearRows()
+  for i,entry in ipairs(options) do
+    local b=recipeButtons[i]
+    if not b then
+      b=button(content,W-113,57,5,-(i-1)*61,"",function()
+        if b.craftRecipe and CP.db then
+          CP.db.ui.selectedRecipes[CP.db.view]=b.craftRecipe.id
+          CP:Render()
+        end
+      end)
+      b.nameLabel=text(b,"GameFontHighlight",48,-7,W-180,"")
+      b.infoLabel=text(b,"GameFontDisableSmall",48,-30,W-180,"")
+      if type(b.CreateTexture)=="function" then
+        local icon=b:CreateTexture(nil,"ARTWORK")
+        if icon then
+          icon:SetSize(35,35)
+          icon:SetPoint("LEFT",b,"LEFT",9,0)
+          b.craftIcon=icon
+          if CP.ellesmereSkin and type(CP.ellesmereSkin.SquareIcon)=="function" then
+            pcall(CP.ellesmereSkin.SquareIcon,icon,b)
+          end
+        end
+        local marker=b:CreateTexture(nil,"OVERLAY")
+        if marker then
+          marker:SetSize(3,45)
+          marker:SetPoint("LEFT",b,"LEFT",1,0)
+          b.craftStripe=marker
+        end
+      end
+      recipeButtons[i]=b
+    end
+    b.craftRecipe=entry
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*61)
+    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,57)
+    if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
+      local texture=entry.icon
+      if not texture and entry.outputItemID and C_Item and type(C_Item.GetItemIconByID)=="function" then
+        local ok,value=pcall(C_Item.GetItemIconByID,entry.outputItemID)
+        if ok then texture=value end
+      end
+      b.craftIcon:SetTexture(texture or "Interface\\Icons\\INV_Misc_Note_01")
+    end
+    if b.craftStripe and type(b.craftStripe.SetColorTexture)=="function" then
+      if chosen and entry.id==chosen.id then
+        b.craftStripe:SetColorTexture(.20,.81,.66,.95)
+      else
+        b.craftStripe:SetColorTexture(.37,.48,.67,.70)
+      end
+    end
+    local active=chosen and entry.id==chosen.id
+    b.nameLabel:SetText((active and GREEN.."● AUSGEWÄHLT  "..RESET or "")
+      ..entry.name)
+    local price=entry.unknown and ("AH-Preis unvollständig") or gold(entry.cost)
+    b.infoLabel:SetText(string.format("Skill %.0f%%  •  %s / Skillpunkt  •  %d Materialien fehlen",
+      entry.chance*100,price,entry.missing))
+    b:Show()
+  end
+  content:SetHeight(math.max(270,#options*61+16))
   if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
@@ -374,12 +446,7 @@ function CP:OpenTab(tab)
   self:Render()
 end
 
-local function gold(value)
-  if type(value)~="number" then return "Preis fehlt" end
-  local v=math.floor(value+0.5)
-  return string.format("%dg %ds %dc",math.floor(v/10000),
-    math.floor((v%10000)/100),v%100)
-end
+
 
 function CP:Render()
   if not self.db then return end
