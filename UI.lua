@@ -82,7 +82,7 @@ end)
 local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
   "WoW Forever  |  Acht Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.6.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.7.0-alpha")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -123,7 +123,7 @@ for i,key in ipairs(D.order) do
   local row=math.floor((i-1)/4)
   local b=button(frame,174,27,18+col*179,-111-row*32,
     D.professions[key].name,function()
-      CP:ChangeView(key)
+      CP:ChangeView(key,true)
   end)
   professionButtons[key]=b
   professionOrder[#professionOrder+1]=b
@@ -133,13 +133,14 @@ local tabs={
   {key="now", label="Jetzt skillen"},
   {key="stages", label="Etappen 1–300"},
   {key="mats", label="Materialien"},
+  {key="plan", label="Einkaufsplan"},
   {key="trainers", label="Lehrer"},
   {key="help", label="Hilfe / Befehle"}
 }
 local tabButtons={}
 local orderedTabs={}
 for i,t in ipairs(tabs) do
-  tabButtons[t.key]=button(frame,139,27,18+(i-1)*143,-183,t.label,function()
+  tabButtons[t.key]=button(frame,112,27,18+(i-1)*117,-183,t.label,function()
     CP:OpenTab(t.key)
   end)
   orderedTabs[#orderedTabs+1]=tabButtons[t.key]
@@ -186,6 +187,66 @@ trainerAction1:Hide()
 trainerAction2:Hide()
 trainerInfo:Hide()
 
+-- Multi-recipe shopping planner. Numeric controls are user-editable.
+local rangeLabel=text(frame,"GameFontHighlightSmall",18,-362,42,"Von")
+local rangeStart=CreateFrame("EditBox",nil,frame,"InputBoxTemplate")
+rangeStart:SetSize(54,24)
+rangeStart:SetPoint("TOPLEFT",frame,"TOPLEFT",52,-352)
+local targetLabel=text(frame,"GameFontHighlightSmall",116,-362,42,"Bis")
+local rangeEnd=CreateFrame("EditBox",nil,frame,"InputBoxTemplate")
+rangeEnd:SetSize(54,24)
+rangeEnd:SetPoint("TOPLEFT",frame,"TOPLEFT",149,-352)
+local quantityLabel=text(frame,"GameFontHighlightSmall",215,-362,52,"Menge")
+local rangeQty=CreateFrame("EditBox",nil,frame,"InputBoxTemplate")
+rangeQty:SetSize(50,24)
+rangeQty:SetPoint("TOPLEFT",frame,"TOPLEFT",266,-352)
+for _,field in ipairs({rangeStart,rangeEnd,rangeQty}) do
+  if type(field.SetNumeric)=="function" then field:SetNumeric(true) end
+  if type(field.SetAutoFocus)=="function" then field:SetAutoFocus(false) end
+  field:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+  field:SetScript("OnEnterPressed",function(self) self:ClearFocus() end)
+end
+local function fieldNumber(field,fallback)
+  local value=type(field.GetText)=="function" and field:GetText() or nil
+  return tonumber(value) or fallback
+end
+local rangeApply=button(frame,93,25,332,-352,"Bereich OK",function()
+  local p=CP:PlanFor(CP.db.view)
+  if CP:SetPlanRange(CP.db.view,fieldNumber(rangeStart,p.start),
+      fieldNumber(rangeEnd,p.target)) then CP:Render()
+  else CP:Say("Bereich 1–300: Start muss kleiner als Ziel sein.") end
+end)
+local planAdd=button(frame,142,25,431,-352,"Rezept +",function()
+  local key=CP.db.view
+  local chosen=CP:SelectedOption(key)
+  if not chosen then CP:Say("Bitte erst ein aktuelles Rezept wählen.");return end
+  if CP:AddPlanCraft(key,chosen.id,fieldNumber(rangeQty,1)) then CP:Render()
+  else CP:Say("Rezept oder Menge ungültig.") end
+end)
+local planDraft=button(frame,152,25,18,-383,"Schnellschritt +10",function()
+  if CP:DraftPlanStep(CP.db.view) then CP:Render() end
+end)
+local planPrint=button(frame,132,25,177,-383,"Liste im Chat",function()
+  CP:PrintPlanShopping(CP.db.view)
+end)
+local planClear=button(frame,112,25,314,-383,"Plan leeren",function()
+  CP:ClearPlanCraft(CP.db.view)
+  CP:Render()
+end)
+local planHint=text(frame,"GameFontDisableSmall",435,-386,285,"Nur bekannte Rezepte")
+local planControls={rangeLabel,rangeStart,targetLabel,rangeEnd,quantityLabel,
+ rangeQty,rangeApply,planAdd,planDraft,planPrint,planClear,planHint}
+local syncedPlan
+local function syncPlanFields(key)
+  local p=CP:PlanFor(key)
+  local marker=key..":"..p.start..":"..p.target
+  if marker==syncedPlan then return end
+  syncedPlan=marker
+  rangeStart:SetText(tostring(p.start))
+  rangeEnd:SetText(tostring(p.target))
+  rangeQty:SetText("1")
+end
+
 local contentPanel=CreateFrame("Frame",nil,frame,"BackdropTemplate")
 contentPanel:SetBackdrop(backdrop)
 contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-358)
@@ -204,6 +265,7 @@ scroll:SetScrollChild(content)
 local rows={}
 local trainerButtons={}
 local recipeButtons={}
+local visualCards={}
 local function gold(value)
   if type(value)~="number" then return "Preis fehlt" end
   local v=math.floor(value+0.5)
@@ -215,6 +277,7 @@ local function clearRows()
   for _,r in ipairs(rows) do r:Hide() end
   for _,b in ipairs(trainerButtons) do b:Hide() end
   for _,b in ipairs(recipeButtons) do b:Hide() end
+  for _,b in ipairs(visualCards) do b:Hide() end
 end
 
 local function setRows(lines)
@@ -345,6 +408,9 @@ local helpRows={
   "/cp".."     Fenster öffnen / schließen",
   "/cp hilfe".."     Diese Hilfe öffnen",
   "/cp etappen".."     Skill-Etappen anzeigen",
+  "/cp plan".."     Planer für frei wählbaren Skillbereich",
+  "/cp einkauf".."     Plan-Einkaufsliste im Chat",
+  "/cp autoopen on|off".."     Berufsfenster beim Klick automatisch öffnen",
   "/cp lehrer".."     Alle Lehrer mit Wegpunkten anzeigen",
   "/cp trainer".."     Empfohlenen Lehrer markieren",
   "/cp naechster".."     Nächsten Lehrer auf derselben Karte markieren",
@@ -357,6 +423,9 @@ local helpRows={
   "/cp mode value".."     Marktwert vorhandener Materialien mitrechnen",
   "/cp bank on|off".."     Bankbestände ein- oder ausschließen",
   "/cp sort cost|chance|missing|name".."     Rezeptsortierung",
+  "Im Einkaufsplan Start, Ziel und Menge eintragen; Rezept hinzufügen.",
+  "Schnellschritt +10: vorsichtige Empfehlung für nur den nächsten Abschnitt.",
+  "Ein Skillbereich 30–100 verlangt ggf. weitere, noch unbekannte Rezepte.",
   "Bankbestand wird beim Öffnen des Bankschalters erfasst.",
   "Ein letzter Bankstand kann veraltet sein – vor größeren Einkäufen prüfen.",
   GOLD.."BERUFE"..RESET,
@@ -368,7 +437,7 @@ local helpRows={
   "Lehrer mit einem Klick auswählen: alle Einträge in der Lehrer-Liste sind anklickbar.",
   "NÄHE ist nur auf derselben Karte vergleichbar – kein automatisches Reiserouting.",
   "Ein externes UI verändert nicht automatisch jedes fremde Addon. Auto unterstützt",
-  "vorhandene Blizzard-Templates und, wenn verfügbar, die ElvUI-Skin-Schnittstelle."
+  "vorhandene Blizzard-Templates und, wenn verfügbar, die EllesmereUI-Schnittstelle."
 }
 
 -- Official EllesmereUI third-party skinning API (not copied UI assets).
@@ -485,7 +554,7 @@ local function layout()
     b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%4)*(profWidth+5),
       -111-math.floor((i-1)/4)*32)
   end
-  local tabWidth=(inner-16)/5
+  local tabWidth=(inner-20)/6
   for i,b in ipairs(orderedTabs) do
     b:ClearAllPoints()
     b:SetSize(tabWidth,27)
@@ -507,7 +576,7 @@ registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
-  local valid={now=true,stages=true,mats=true,trainers=true,help=true}
+  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,help=true}
   if not valid[tab] then return end
   self.db.ui.tab=tab
   frame:Show()
@@ -670,7 +739,7 @@ function CP:Render()
       setRows(lines)
     end
   end
-  footer:SetText("CraftPilot 0.6 Alpha  |  Rezeptsymbole: WoW-Client  |  /cp hilfe")
+  footer:SetText("CraftPilot 0.7 Alpha  |  Materialliste: geplante Mengen, keine Skillgarantie  |  /cp hilfe")
 end
 
 function CP:ToggleWindow()
