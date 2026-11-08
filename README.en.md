@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.5.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.6.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -26,12 +26,12 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 - Lists all stored trainers available to the player's faction, with clickable waypoints, recommended next-rank trainers and same-map distance comparisons.
 - Shows missing materials for the **next recommended craft**.
 - Provides a movable window with per-character saved placement, tab navigation and built-in command help.
-- Uses Blizzard templates with optional ElvUI button-skin hooks; Dark and Classic themes are available.
+- Uses Blizzard templates with optional EllesmereUI button-skin hooks; Dark and Classic themes are available.
 - Does not automate buying, crafting, training or movement.
 
 ## Installation
 
-1. Download the **[CraftPilot-0.5.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.5.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.6.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.6.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -60,6 +60,16 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 | \`/cp refresh\` | Refresh the open profession |
 | \`/cp mode cash\` / \`/cp mode value\` | Choose cost model |
 | \`/cp bank on\` / \`/cp bank off\` | Include or exclude bank materials |
+
+## New in 0.6: banking, themes and recipe cards
+
+CraftPilot uses the **official EllesmereUI third-party skinning API** when available and enabled, or its standard/Dark/Classic theme fallback. Move the window by dragging its title bar; resize it with the lower-right grip. Window position and size are saved per character.
+
+The crafting tab displays selectable recipe cards with icons from the game client, skill chance, estimated cost per skill point and missing reagent count. Sort by price, chance, missing amount or name. The material tab follows the selected recipe.
+
+Bank contents are counted by default, **only after visiting the bank and capturing known recipe materials**. When the bank closes, stored counts are clearly marked as the last saved snapshot and can become stale. Uncaptured materials are not assumed to be present. Account-wide/Warband banks are not included.
+
+Sorting commands: `/cp sort cost`, `/cp sort chance`, `/cp sort missing`, `/cp sort name`; see `/cp hilfe` for the complete in-game help.
 
 ## Limitations
 

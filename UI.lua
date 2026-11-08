@@ -3,6 +3,7 @@ local D = CP.Data
 
 local W, H = 750, 676
 local GOLD = "|cffffd878"
+local BLUE = "|cff79c6f1"
 local GREEN = "|cff89e1aa"
 local MUTED = "|cff9dabb8"
 local RESET = "|r"
@@ -24,6 +25,9 @@ local function button(parent, width, height, x, y, caption, callback)
   b:SetText(caption)
   b:SetScript("OnClick", callback)
   allButtons[#allButtons+1] = b
+  if CP.ellesmereSkin and type(CP.ellesmereSkin.Button)=="function" then
+    pcall(CP.ellesmereSkin.Button,b)
+  end
   return b
 end
 
@@ -48,6 +52,13 @@ frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 frame:SetBackdrop(backdrop)
 frame:SetMovable(true)
 frame:EnableMouse(true)
+if type(frame.SetResizable)=="function" then frame:SetResizable(true) end
+if type(frame.SetResizeBounds)=="function" then
+  frame:SetResizeBounds(750,570,1100,930)
+elseif type(frame.SetMinResize)=="function" then
+  frame:SetMinResize(750,570)
+  if type(frame.SetMaxResize)=="function" then frame:SetMaxResize(1100,930) end
+end
 if type(frame.SetClampedToScreen)=="function" then frame:SetClampedToScreen(true) end
 frame:Hide()
 CP.frame = frame
@@ -71,11 +82,32 @@ end)
 local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
   "WoW Forever  |  Acht Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.5.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.6.0-alpha")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
+local resizeGrip=CreateFrame("Button",nil,frame)
+resizeGrip:SetSize(24,24)
+resizeGrip:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-3,3)
+if type(resizeGrip.SetNormalTexture)=="function" then
+  resizeGrip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+  resizeGrip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+  resizeGrip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+end
+resizeGrip:SetScript("OnMouseDown",function()
+  if type(frame.StartSizing)=="function" then frame:StartSizing("BOTTOMRIGHT") end
+end)
+resizeGrip:SetScript("OnMouseUp",function()
+  if type(frame.StopMovingOrSizing)=="function" then frame:StopMovingOrSizing() end
+  if CP.SaveWindowPosition then CP:SaveWindowPosition() end
+end)
 
 local themeName = text(frame,"GameFontDisableSmall",18,-82,250,"")
+local stageProgress=CreateFrame("StatusBar",nil,frame)
+stageProgress:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-319)
+stageProgress:SetSize(W-36,5)
+if type(stageProgress.SetStatusBarTexture)=="function" then stageProgress:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8") end
+if type(stageProgress.SetMinMaxValues)=="function" then stageProgress:SetMinMaxValues(0,300) end
+if type(stageProgress.SetStatusBarColor)=="function" then stageProgress:SetStatusBarColor(.91,.68,.31,1) end
 local skinButton = button(frame,170,23, W-198,-78,"Design: Automatisch",function()
   if not CP.db then return end
   local current=CP.db.ui.skin
@@ -85,6 +117,7 @@ local skinButton = button(frame,170,23, W-198,-78,"Design: Automatisch",function
 end)
 
 local professionButtons={}
+local professionOrder={}
 for i,key in ipairs(D.order) do
   local col=(i-1)%4
   local row=math.floor((i-1)/4)
@@ -93,6 +126,7 @@ for i,key in ipairs(D.order) do
       CP:ChangeView(key)
   end)
   professionButtons[key]=b
+  professionOrder[#professionOrder+1]=b
 end
 
 local tabs={
@@ -103,10 +137,12 @@ local tabs={
   {key="help", label="Hilfe / Befehle"}
 }
 local tabButtons={}
+local orderedTabs={}
 for i,t in ipairs(tabs) do
   tabButtons[t.key]=button(frame,139,27,18+(i-1)*143,-183,t.label,function()
     CP:OpenTab(t.key)
   end)
+  orderedTabs[#orderedTabs+1]=tabButtons[t.key]
 end
 
 local summary = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -125,6 +161,27 @@ local trainerAction2=button(frame,186,25,220,-358,"Nächsten markieren",function
   CP:TrainerWaypoint("nearest")
 end)
 local trainerInfo=text(frame,"GameFontDisableSmall",425,-361,285,"")
+local sortButtons={}
+local sorts={
+  {key="cost",label="Preis"},
+  {key="chance",label="Skillchance"},
+  {key="missing",label="Zukaufmenge"},
+  {key="name",label="Name"},
+}
+for i,item in ipairs(sorts) do
+  sortButtons[item.key]=button(frame,115,25,18+(i-1)*119,-358,item.label,function()
+    CP.db.ui.recipeSort=item.key
+    CP:Render()
+  end)
+  sortButtons[item.key]:Hide()
+end
+local bankButton=button(frame,250,25,18,-358,"Bank: einschalten",function()
+  CP.db.includeBank=not CP.db.includeBank
+  CP:Refresh(false)
+end)
+bankButton:Hide()
+local bankDetails=text(frame,"GameFontDisableSmall",283,-361,410,"")
+bankDetails:Hide()
 trainerAction1:Hide()
 trainerAction2:Hide()
 trainerInfo:Hide()
@@ -146,9 +203,18 @@ scroll:SetScrollChild(content)
 
 local rows={}
 local trainerButtons={}
+local recipeButtons={}
+local function gold(value)
+  if type(value)~="number" then return "Preis fehlt" end
+  local v=math.floor(value+0.5)
+  return string.format("%dg %ds %dc",math.floor(v/10000),
+    math.floor((v%10000)/100),v%100)
+end
+
 local function clearRows()
   for _,r in ipairs(rows) do r:Hide() end
   for _,b in ipairs(trainerButtons) do b:Hide() end
+  for _,b in ipairs(recipeButtons) do b:Hide() end
 end
 
 local function setRows(lines)
@@ -206,6 +272,71 @@ local function setTrainerRows(choices,recommended,nearest,selected)
   if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
+-- CraftPilot's original visual indicators use native flat textures, not
+-- artwork copied from another addon. Recipe icons come from the game client.
+local function setRecipeRows(key,options,chosen)
+  clearRows()
+  for i,entry in ipairs(options) do
+    local b=recipeButtons[i]
+    if not b then
+      b=button(content,W-113,57,5,-(i-1)*61,"",function()
+        if b.craftRecipe and CP.db then
+          CP.db.ui.selectedRecipes[CP.db.view]=b.craftRecipe.id
+          CP:Render()
+        end
+      end)
+      b.nameLabel=text(b,"GameFontHighlight",48,-7,W-180,"")
+      b.infoLabel=text(b,"GameFontDisableSmall",48,-30,W-180,"")
+      if type(b.CreateTexture)=="function" then
+        local icon=b:CreateTexture(nil,"ARTWORK")
+        if icon then
+          icon:SetSize(35,35)
+          icon:SetPoint("LEFT",b,"LEFT",9,0)
+          b.craftIcon=icon
+          if CP.ellesmereSkin and type(CP.ellesmereSkin.SquareIcon)=="function" then
+            pcall(CP.ellesmereSkin.SquareIcon,icon,b)
+          end
+        end
+        local marker=b:CreateTexture(nil,"OVERLAY")
+        if marker then
+          marker:SetSize(3,45)
+          marker:SetPoint("LEFT",b,"LEFT",1,0)
+          b.craftStripe=marker
+        end
+      end
+      recipeButtons[i]=b
+    end
+    b.craftRecipe=entry
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*61)
+    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,57)
+    if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
+      local texture=entry.icon
+      if not texture and entry.outputItemID and C_Item and type(C_Item.GetItemIconByID)=="function" then
+        local ok,value=pcall(C_Item.GetItemIconByID,entry.outputItemID)
+        if ok then texture=value end
+      end
+      b.craftIcon:SetTexture(texture or "Interface\\Icons\\INV_Misc_Note_01")
+    end
+    if b.craftStripe and type(b.craftStripe.SetColorTexture)=="function" then
+      if chosen and entry.id==chosen.id then
+        b.craftStripe:SetColorTexture(.20,.81,.66,.95)
+      else
+        b.craftStripe:SetColorTexture(.37,.48,.67,.70)
+      end
+    end
+    local active=chosen and entry.id==chosen.id
+    b.nameLabel:SetText((active and GREEN.."● AUSGEWÄHLT  "..RESET or "")
+      ..entry.name)
+    local price=entry.unknown and ("AH-Preis unvollständig") or gold(entry.cost)
+    b.infoLabel:SetText(string.format("Skill %.0f%%  •  %s / Skillpunkt  •  %d Materialien fehlen",
+      entry.chance*100,price,entry.missing))
+    b:Show()
+  end
+  content:SetHeight(math.max(270,#options*61+16))
+  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+end
+
 local footer=text(frame,"GameFontDisableSmall",19,-645,W-40,
   "Alpha: Keine automatischen Käufe oder Herstellungsaktionen. Preise sind AH-Snapshots.")
 
@@ -225,6 +356,9 @@ local helpRows={
   "/cp mode cash".."     Nur zusätzlichen Zukauf berücksichtigen",
   "/cp mode value".."     Marktwert vorhandener Materialien mitrechnen",
   "/cp bank on|off".."     Bankbestände ein- oder ausschließen",
+  "/cp sort cost|chance|missing|name".."     Rezeptsortierung",
+  "Bankbestand wird beim Öffnen des Bankschalters erfasst.",
+  "Ein letzter Bankstand kann veraltet sein – vor größeren Einkäufen prüfen.",
   GOLD.."BERUFE"..RESET,
   "/cp ingi".."   Ingenieurskunst      /cp bergbau   Bergbau",
   "/cp schmied".."   Schmiedekunst       /cp vz   Verzauberkunst",
@@ -237,46 +371,60 @@ local helpRows={
   "vorhandene Blizzard-Templates und, wenn verfügbar, die ElvUI-Skin-Schnittstelle."
 }
 
-local themeKey
+-- Official EllesmereUI third-party skinning API (not copied UI assets).
+local function useSkin(S,fn,...)
+  if S and type(S[fn])=="function" then
+    pcall(S[fn],...)
+  end
+end
+
+local function registerEllesmereUI()
+  local eui=_G.EllesmereUI
+  if type(eui)~="table" or type(eui.RegisterSkin)~="function" then return end
+  pcall(eui.RegisterSkin,"CraftPilot",function(S)
+    CP.ellesmereSkin=S
+    useSkin(S,"Shell",frame)
+    useSkin(S,"Panel",header)
+    useSkin(S,"Panel",summary)
+    useSkin(S,"Panel",contentPanel)
+    useSkin(S,"CloseButton",close)
+    for _,b in ipairs(allButtons) do useSkin(S,"Button",b) end
+    for _,b in ipairs(orderedTabs) do useSkin(S,"Tab",b) end
+    if scroll.ScrollBar then useSkin(S,"ScrollBar",scroll.ScrollBar) end
+    useSkin(S,"ApplyBarFill",stageProgress)
+    if CP.db then CP:ApplyTheme() end
+  end)
+end
+
 function CP:ApplyTheme()
   if not self.db then return end
   local pref=self.db.ui.skin or "auto"
-  local E=_G.ElvUI
-  if type(E)=="table" and type(E.GetModule)~="function" and type(E[1])=="table" then E=E[1] end
-  local dark=pref~="classic"
+  local hasEUI=pref=="auto" and type(self.ellesmereSkin)=="table"
   local name=pref=="classic" and "Klassisch" or (pref=="dark" and "Dunkel" or "Automatisch")
+  local dark=pref~="classic"
   local palette=dark and {0.065,0.075,0.092} or {0.16,0.115,0.07}
   local sub=dark and {0.11,0.125,0.145} or {0.22,0.16,0.095}
   local border=dark and {0.36,0.32,0.24,1} or {0.56,0.40,0.23,1}
-  color(frame,palette[1],palette[2],palette[3],0.98,border)
-  color(header,sub[1],sub[2],sub[3],0.99,border)
-  color(summary,sub[1],sub[2],sub[3],0.96,border)
-  color(contentPanel,palette[1],palette[2],palette[3],0.88,border)
-  skinButton:SetText("Design: "..name)
-  local applied=false
-  if pref=="auto" and type(E)=="table" and type(E.GetModule)=="function" then
-    local ok,skins=pcall(E.GetModule,E,"Skins",true)
-    if ok and type(skins)=="table" then
-      if type(frame.SetTemplate)=="function" then pcall(frame.SetTemplate,frame,"Transparent") end
-      if type(skins.HandleButton)=="function" then
-        for _,b in ipairs(allButtons) do
-          if not b.craftElvUISkinned then
-            local worked=pcall(skins.HandleButton,skins,b)
-            if worked then b.craftElvUISkinned=true;applied=true end
-          end
-        end
-      end
-    end
+  -- Leave all Ellesmere surfaces alone in Auto. Ellesmere manages its own theme
+  -- and any future live recoloring.
+  if not hasEUI then
+    color(frame,palette[1],palette[2],palette[3],0.98,border)
+    color(header,sub[1],sub[2],sub[3],0.99,border)
+    color(summary,sub[1],sub[2],sub[3],0.96,border)
+    color(contentPanel,palette[1],palette[2],palette[3],0.88,border)
   end
-  themeName:SetText("Oberfläche: "..(applied and "ElvUI-Skin"
-    or ((pref=="auto" and "Blizzard / UI-Templates") or name)))
-  themeKey=pref
+  skinButton:SetText("Design: "..name)
+  themeName:SetText("Oberfläche: "..(hasEUI and "EllesmereUI"
+    or (pref=="auto" and "Blizzard / Standard" or name)))
 end
 
 local restored=false
 function CP:RestoreWindowPosition()
   if restored or not self.db then return end
   restored=true
+  local width=math.max(750,math.min(1100,self.db.ui.width or W))
+  local height=math.max(570,math.min(930,self.db.ui.height or H))
+  frame:SetSize(width,height)
   local pos=self.db.ui.position
   if type(pos)=="table" and type(pos.point)=="string"
      and type(pos.relPoint)=="string" and type(pos.x)=="number"
@@ -288,6 +436,10 @@ end
 
 function CP:SaveWindowPosition()
   if not self.db then return end
+  local width=type(frame.GetWidth)=="function" and frame:GetWidth()
+  local height=type(frame.GetHeight)=="function" and frame:GetHeight()
+  if type(width)=="number" then self.db.ui.width=math.max(750,math.min(1100,width)) end
+  if type(height)=="number" then self.db.ui.height=math.max(570,math.min(930,height)) end
   local point,_,relPoint,x,y=frame:GetPoint(1)
   if type(point)=="string" and type(relPoint)=="string" and
      type(x)=="number" and type(y)=="number" then
@@ -303,6 +455,56 @@ function CP:ResetWindowPosition()
   self:Say("Fensterposition zurückgesetzt.")
 end
 
+local function layout()
+  local width=type(frame.GetWidth)=="function" and frame:GetWidth() or W
+  local height=type(frame.GetHeight)=="function" and frame:GetHeight() or H
+  if type(width)~="number" then width=W end
+  if type(height)~="number" then height=H end
+  local inner=width-36
+  header:SetWidth(width-20)
+  summary:SetWidth(inner)
+  stageProgress:SetWidth(inner)
+  content:SetWidth(width-96)
+  title:SetWidth(math.max(290,width-240))
+  subtitle:SetWidth(math.max(290,width-240))
+  build:ClearAllPoints()
+  build:SetPoint("TOPRIGHT",header,"TOPRIGHT",-42,-40)
+  skinButton:ClearAllPoints()
+  skinButton:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-78)
+  status:SetWidth(inner-26)
+  rankText:SetWidth(inner-26)
+  priceText:SetWidth(inner-26)
+  section:SetWidth(inner)
+  footer:ClearAllPoints()
+  footer:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",19,22)
+  footer:SetWidth(width-62)
+  local profWidth=(inner-15)/4
+  for i,b in ipairs(professionOrder) do
+    b:ClearAllPoints()
+    b:SetSize(profWidth,27)
+    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%4)*(profWidth+5),
+      -111-math.floor((i-1)/4)*32)
+  end
+  local tabWidth=(inner-16)/5
+  for i,b in ipairs(orderedTabs) do
+    b:ClearAllPoints()
+    b:SetSize(tabWidth,27)
+    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*(tabWidth+4),-183)
+  end
+  for _,row in ipairs(rows) do row:SetWidth(width-113) end
+  for _,b in ipairs(trainerButtons) do
+    b:SetWidth(width-113)
+  end
+  for _,b in ipairs(recipeButtons) do
+    b:SetWidth(width-113)
+    if b.nameLabel then b.nameLabel:SetWidth(width-180) end
+    if b.infoLabel then b.infoLabel:SetWidth(width-180) end
+  end
+end
+frame:SetScript("OnSizeChanged",function() layout() end)
+layout()
+registerEllesmereUI()
+
 function CP:OpenTab(tab)
   if not self.db then return end
   local valid={now=true,stages=true,mats=true,trainers=true,help=true}
@@ -312,12 +514,7 @@ function CP:OpenTab(tab)
   self:Render()
 end
 
-local function gold(value)
-  if type(value)~="number" then return "Preis fehlt" end
-  local v=math.floor(value+0.5)
-  return string.format("%dg %ds %dc",math.floor(v/10000),
-    math.floor((v%10000)/100),v%100)
-end
+
 
 function CP:Render()
   if not self.db then return end
@@ -329,6 +526,9 @@ function CP:Render()
   local skill=record and record.skill or 0
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
+  if type(stageProgress.SetValue)=="function" then
+    stageProgress:SetValue(math.max(0,math.min(300,skill)))
+  end
 
   for k,b in pairs(professionButtons) do
     b:SetText((k==key and GOLD.."● "..RESET or "")..D.professions[k].name)
@@ -337,6 +537,10 @@ function CP:Render()
     local label
     for _,t in ipairs(tabs) do if t.key==k then label=t.label;break end end
     b:SetText((k==tab and GOLD.."● "..RESET or "")..(label or k))
+    local S=self.ellesmereSkin
+    if S and self.db.ui.skin=="auto" and type(S.SetTabSelection)=="function" then
+      pcall(S.SetTabSelection,b,k==tab)
+    end
   end
 
   status:SetText(GOLD..prof.name..RESET.."  |  "..(record and (skill.." / "..cap) or "Skill noch nicht eingelesen")
@@ -354,26 +558,29 @@ function CP:Render()
     rankText:SetText(record and "Höchster Ausbildungsrang erreicht"
       or "Berufsfenster oder Berufeübersicht öffnen, um Daten einzulesen")
   end
-  priceText:SetText("Preis-Modus: "..(self.db.mode=="cash" and "Zukauf" or "Materialwert")
-    .."  |  Bank: "..(self.db.includeBank and "ein" or "aus")
-    .."  |  Auctionator: gespeicherte Preise, keine Echtzeitangebote")
+  priceText:SetText("Preis: "..(self.db.mode=="cash" and "Zukauf" or "Materialwert")
+    .."  |  "..self:BankStatus()
+    .."  |  AH: gespeicherter Scan")
 
   local isTrainers=tab=="trainers"
-  if isTrainers then
-    trainerAction1:Show()
-    trainerAction2:Show()
-    trainerInfo:Show()
-    contentPanel:ClearAllPoints()
-    contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-395)
-    contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
-  else
-    trainerAction1:Hide()
-    trainerAction2:Hide()
-    trainerInfo:Hide()
-    contentPanel:ClearAllPoints()
-    contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-358)
-    contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
+  local isRecipes=tab=="now" and not prof.gathering
+  local isMats=tab=="mats" and not prof.gathering
+  trainerAction1:SetShown(isTrainers)
+  trainerAction2:SetShown(isTrainers)
+  trainerInfo:SetShown(isTrainers)
+  for _,mode in ipairs(sorts) do
+    local b=sortButtons[mode.key]
+    b:SetShown(isRecipes)
+    b:SetText((self.db.ui.recipeSort==mode.key and "● " or "")..mode.label)
   end
+  bankButton:SetShown(isMats)
+  bankDetails:SetShown(isMats)
+  bankButton:SetText("Bankmaterialien: "..(self.db.includeBank and "AN" or "AUS"))
+  bankDetails:SetText(self:BankStatus())
+  contentPanel:ClearAllPoints()
+  contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
+    (isTrainers or isRecipes or isMats) and -395 or -358)
+  contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
 
   local lines={}
   if tab=="help" then
@@ -417,26 +624,31 @@ function CP:Render()
     end
     setRows(lines)
   else
-    local options=self:Options(key)
+    local chosen,options=self:SelectedOption(key)
     local captured=self.db.lastCapture
     local current=captured and captured.key==key and captured.skill==skill
     if tab=="mats" then
-      section:SetText("Fehlende Materialien für die nächste empfohlene Herstellung")
+      section:SetText("Materialbedarf für das ausgewählte Rezept")
       if #options==0 then
         lines[#lines+1]="Kein geeignetes eingelesenes Rezept. Berufsfenster öffnen."
       else
-        local best=options[1]
-        lines[#lines+1]=GOLD.."EMPFEHLUNG  "..RESET..best.name
+        local best=chosen
+        lines[#lines+1]=GOLD.."AUSWAHL  "..RESET..best.name
+        lines[#lines+1]=MUTED.."Bankbestände sind nur beim Bankbesuch aktuell geprüft."..RESET
         for _,mat in ipairs(best.mats) do
-          local deficit=math.max(0,mat[2]-self:ItemCount(mat[1]))
+          local total,bag,bank,live,known=self:ItemAvailability(mat[1])
+          local deficit=math.max(0,mat[2]-total)
+          local price=self:Price(mat[1])
+          local marker=self.db.includeBank and (live and "Bank live" or (known and "letzter Stand" or "unbekannt")) or "nur Tasche"
+          lines[#lines+1]=string.format("%s: %d benötigt | Tasche %d | Bank %d (%s)",
+            self:ItemName(mat[1]),mat[2],bag,bank,marker)
           if deficit>0 then
-            local price=self:Price(mat[1])
-            lines[#lines+1]=string.format("%d × %s (Bestand %d)  |  %s",
-              deficit,self:ItemName(mat[1]),self:ItemCount(mat[1]),
-              price and gold(price*deficit) or "kein AH-Preis")
+            lines[#lines+1]=string.format("  → %d nachkaufen | %s",
+              deficit,price and gold(price*deficit) or "Preis fehlt")
+          else
+            lines[#lines+1]=GREEN.."  ✓ Material vorhanden"..RESET
           end
         end
-        if #lines==1 then lines[#lines+1]=GREEN.."Alle Materialien vorhanden."..RESET end
       end
     else
       section:SetText("Erlernte Rezepte – geschätzte Kosten je Skillpunkt")
@@ -446,20 +658,19 @@ function CP:Render()
       elseif #options==0 then
         lines[#lines+1]="Keine aktuell auswertbaren Rezepte mit eindeutigen Materialien."
       else
-        for i=1,math.min(30,#options) do
-          local o=options[i]
-          local p=o.unknown and "Preis unvollständig" or gold(o.cost)
-          lines[#lines+1]=string.format("%d. %s | %d%% Skillchance | %s | %d Teile fehlen",
-            i,o.name,math.floor(o.chance*100),p,o.missing)
-        end
+        section:SetText("Rezept anklicken = auswählen  |  Sortierung oben ändern")
       end
     end
     if not record then
       lines[#lines+1]="Beruf noch nicht auf diesem Charakter erfasst."
     end
-    setRows(lines)
+    if tab=="now" and current and #options>0 then
+      setRecipeRows(key,options,chosen)
+    else
+      setRows(lines)
+    end
   end
-  footer:SetText("CraftPilot 0.5 Alpha  |  Keine automatischen Aktionen  |  /cp hilfe")
+  footer:SetText("CraftPilot 0.6 Alpha  |  Rezeptsymbole: WoW-Client  |  /cp hilfe")
 end
 
 function CP:ToggleWindow()
