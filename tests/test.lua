@@ -5,13 +5,13 @@ methods.__index = function(self,key)
 
   if key=="SetPoint" then return function(t,...) t.point={...} end end
   if key=="GetPoint" then return function(t)
-    if t.point then return table.unpack(t.point) end
+    local point=rawget(t,"point");if point then return table.unpack(point) end
   end end
   if key=="ClearAllPoints" then return function(t) t.point=nil end end
   if key=="SetScript" then return function(t,event,fn)
-    t.scripts=t.scripts or {};t.scripts[event]=fn
+    local scripts=rawget(t,"scripts") or {};t.scripts=scripts;scripts[event]=fn
   end end
-  if key=="GetScript" then return function(t,event) return t.scripts and t.scripts[event] end end
+  if key=="GetScript" then return function(t,event) local scripts=rawget(t,"scripts");return scripts and scripts[event] end end
   if key=="SetText" then return function(t,v) t.displayText=v end end
   if key=="IsShown" then return function(t) return t.visible or false end end
   if key=="Show" then return function(t) t.visible=true end end
