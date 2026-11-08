@@ -325,7 +325,7 @@ local aliases={
   vz="enchanting", verzauberung="enchanting", enchanting="enchanting",
   schneider="tailoring", tailoring="tailoring",
   leder="leatherworking", leatherworking="leatherworking",
-  kraeuter="herbalism", kräuter="herbalism", kraut="herbalism", herbalism="herbalism",
+  kraeuter="herbalism", ["kräuter"]="herbalism", kraut="herbalism", herbalism="herbalism",
   alchemie="alchemy", alchemy="alchemy",
 }
 local function command(input)
