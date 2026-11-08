@@ -242,7 +242,8 @@ function CP:TrainerChoices(key)
   if map and C_Map then position=safe(C_Map.GetPlayerMapPosition,map,"player") end
   local px,py
   if position and type(position.GetXY)=="function" then
-    px,py=safe(position.GetXY,position)
+    local ok,x,y=pcall(position.GetXY,position)
+    if ok then px,py=x,y end
   end
   local entries={}
   local nearest,nearDist
