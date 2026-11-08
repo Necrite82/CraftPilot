@@ -12,3 +12,7 @@ Additional third-party attributions, including CMaNGOS classic-db, QuestieDB and
 Der Datenstand ist ausdrücklich nicht mit einer überprüften Live-Verfügbarkeit oder einer garantierten günstigsten Route gleichzusetzen. Das Addon berücksichtigt ausschließlich geeignete Herstellungsrezepte und zeigt Annahmen an. Alle Datenquellen können serverseitigen Änderungen unterliegen.
 
 Third-party modules in this directory are redistributed under their original GPL-3.0 terms. They are not independently authored CraftPilot code.
+
+## Camping subset added in 0.11
+
+`Camp.lua` is preserved unchanged from the same pinned revision, generated 2026-10-16 for build 1.60.1.70425. `CampingRecipes.lua` is a marked filtered derivative containing eight matching cooking/first-aid records, with no unrelated recipe tables. Fishing input was inspected and yielded no matching recipes. Input URLs and checksums are in `CAMP_SOURCES.json`; `tools/import_camping.py` reproduces the import. Original contributors, notices and GPL-3.0 terms above apply. See `docs/CAMPING_SOURCES.md` for validation, scope and remaining unknowns.

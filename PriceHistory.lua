@@ -1,6 +1,7 @@
 -- CraftPilot: price provenance and freshness.
 -- Uses Auctionator's documented external API v1; no private database tables.
 local _,CP=...
+local L=CP.L
 local function call(fn,...)
   if type(fn)~="function" then return nil end
   local ok,result=pcall(fn,...)
@@ -15,13 +16,13 @@ function CP:PriceDetails(itemID)
   if type(age)~="number" or age<0 then age=nil end
   local vendor=self:CatalogVendorPrice(itemID)
   local selected=ah
-  local source=ah and "Auctionator" or "unbekannt"
+  local source=ah and "Auctionator" or L("unbekannt")
   if vendor and (not selected or vendor<selected) then
     selected=vendor
-    source="Haendler"
+    source=L("Haendler")
   end
   local freshness
-  if source=="Haendler" then freshness="vendor"
+  if source==L("Haendler") then freshness="vendor"
   elseif not selected then freshness="missing"
   elseif age==nil then freshness="unknown"
   elseif age>7 then freshness="stale"
@@ -34,12 +35,12 @@ end
 function CP:PriceFreshness(itemID)
   local p=self:PriceDetails(itemID)
   local label
-  if p.freshness=="fresh" then label="AH aktuell ("..p.ageDays.." T.)"
-  elseif p.freshness=="aging" then label="AH "..p.ageDays.." T. alt"
-  elseif p.freshness=="stale" then label="AH VERALTET ("..p.ageDays.." T.)"
-  elseif p.freshness=="unknown" then label="AH Alter unbekannt"
-  elseif p.freshness=="vendor" then label="Haendlerpreis"
-  else label="Kein Preis" end
+  if p.freshness=="fresh" then label=L("AH aktuell (")..p.ageDays..L(" T.)")
+  elseif p.freshness=="aging" then label="AH "..p.ageDays..L(" T. alt")
+  elseif p.freshness=="stale" then label=L("AH VERALTET (")..p.ageDays..L(" T.)")
+  elseif p.freshness=="unknown" then label=L("AH Alter unbekannt")
+  elseif p.freshness=="vendor" then label=L("Haendlerpreis")
+  else label=L("Kein Preis") end
   return label,p
 end
 

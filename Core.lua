@@ -1,4 +1,5 @@
 local _, CP = ...
+local L=CP.L
 _G.CraftPilot = CP
 local D = CP.Data
 local pending = false
@@ -84,14 +85,14 @@ function CP:ItemCount(itemID)
 end
 
 function CP:BankStatus()
-  if not self.db then return "Bank nicht erfasst" end
-  if not self.db.includeBank then return "Bank aus" end
+  if not self.db then return L("Bank nicht erfasst") end
+  if not self.db.includeBank then return L("Bank aus") end
   if self.bankIsOpen then return "Bank LIVE" end
   if self.db.bank.scannedAt then
     local stamp=type(date)=="function" and date("%d.%m. %H:%M",self.db.bank.scannedAt)
-    return "Bank zuletzt erfasst"..(stamp and (" "..stamp) or "")
+    return L("Bank zuletzt erfasst")..(stamp and (" "..stamp) or "")
   end
-  return "Bank unbekannt – einmal öffnen"
+  return L("Bank unbekannt – einmal öffnen")
 end
 
 function CP:SnapshotBankMaterials()
@@ -226,7 +227,7 @@ function CP:CaptureProfession()
     local detail=safe(T.GetRecipeInfo,id)
     if type(detail)=="table" and type(id)=="number" then
       local old=known[id] or {}
-      old.name=detail.name or old.name or ("Rezept "..id)
+      old.name=detail.name or old.name or (L("Rezept ")..id)
       if detail.icon or detail.iconID then old.icon=detail.icon or detail.iconID end
       local output=safe(T.GetRecipeOutputItemData,id)
       if type(output)=="table" then
@@ -399,15 +400,15 @@ function CP:FindTrainer(key)
 end
 
 function CP:SetWaypoint(npc)
-  if not npc then return self:Say("Kein passender Standort hinterlegt.") end
+  if not npc then return self:Say(L("Kein passender Standort hinterlegt.")) end
   local title="CraftPilot: "..npc.name.." ("..npc.zone..")"
   local t=_G.TomTom
   if t and type(t.AddWaypoint)=="function" then
     local ok,uid=pcall(t.AddWaypoint,t,npc.map,npc.x,npc.y,
       {title=title,crazy=true,persistent=false})
     if ok and uid~=false and uid~=nil then
-      self:Say("Wegpunkt: "..title)
-      if npc.indoor then self:Say("Achtung: Zielmarkierung ist nur der Instanzeingang.") end
+      self:Say(L("Wegpunkt: ")..title)
+      if npc.indoor then self:Say(L("Achtung: Zielmarkierung ist nur der Instanzeingang.")) end
       return true
     end
   end
@@ -418,13 +419,13 @@ function CP:SetWaypoint(npc)
       local ok=pcall(C_Map.SetUserWaypoint,point)
       if ok then
         if C_SuperTrack then safe(C_SuperTrack.SetSuperTrackedUserWaypoint,true) end
-        self:Say("Kartenmarkierung: "..title)
-        if npc.indoor then self:Say("Achtung: Zielmarkierung ist nur der Instanzeingang.") end
+        self:Say(L("Kartenmarkierung: ")..title)
+        if npc.indoor then self:Say(L("Achtung: Zielmarkierung ist nur der Instanzeingang.")) end
         return true
       end
     end
   end
-  self:Say(string.format("%s, %s: %.1f / %.1f (Karte %d). TomTom empfohlen.",
+  self:Say(string.format(L("%s, %s: %.1f / %.1f (Karte %d). TomTom empfohlen."),
     npc.name,npc.zone,npc.x*100,npc.y*100,npc.map))
   return false
 end
@@ -433,14 +434,14 @@ function CP:TrainerWaypoint(which)
   local choices,rank,recommended,nearest=self:TrainerChoices(self.db.view)
   local npc = which=="nearest" and nearest or recommended
   if which=="nearest" and not nearest then
-    return self:Say("Der nächste Lehrer ist kartenübergreifend nicht zuverlässig bestimmbar. Bitte in der Lehrerübersicht selbst auswählen.")
+    return self:Say(L("Der nächste Lehrer ist kartenübergreifend nicht zuverlässig bestimmbar. Bitte in der Lehrerübersicht selbst auswählen."))
   end
   if rank then
     local p=self.db.professions[self.db.view] or {}
-    if (p.skill or 0)<rank.min then self:Say("Rang "..rank.name.." ab Skill "..rank.min..".") end
+    if (p.skill or 0)<rank.min then self:Say(L("Rang ")..rank.name..L(" ab Skill ")..rank.min..".") end
     local requiredLevel=self:RankCharacterLevel(self.db.view,rank)
     if (safe(UnitLevel,"player") or 0)<requiredLevel then
-      self:Say("Rang "..rank.name.." benötigt Charakterstufe "..requiredLevel..".")
+      self:Say(L("Rang ")..rank.name..L(" benötigt Charakterstufe ")..requiredLevel..".")
     end
   end
   self:SetWaypoint(npc)
@@ -449,17 +450,17 @@ end
 function CP:ShowShopping()
   local chosen,options=self:SelectedOption(self.db.view)
   if #options==0 then
-    return self:Say("Kein auswertbares gelerntes Rezept. Berufsfenster öffnen.")
+    return self:Say(L("Kein auswertbares gelerntes Rezept. Berufsfenster öffnen."))
   end
   local best=chosen
-  self:Say("Rezept: "..best.name.." (1 Herstellung; Preisstand: letzter Auctionator-Scan)")
+  self:Say(L("Rezept: ")..best.name..L(" (1 Herstellung; Preisstand: letzter Auctionator-Scan)"))
   for _,mat in ipairs(best.mats) do
     local required=mat[2]
     local missing=math.max(0,required-self:ItemCount(mat[1]))
     if missing>0 then
       local price=self:Price(mat[1])
       self:Say(string.format("%d x %s%s",missing,self:ItemName(mat[1]),
-        price and string.format(" (ca. %d Kupfer/Stk.)",price) or " (kein AH-Preis)"))
+        price and string.format(L(" (ca. %d Kupfer/Stk.)"),price) or L(" (kein AH-Preis)")))
     end
   end
 end
@@ -501,7 +502,7 @@ end
 function CP:OpenOwnedProfession(key)
   if not self:OwnsProfession(key) then return false end
   if type(InCombatLockdown)=="function" and InCombatLockdown() then
-    self:Say("Berufsfenster kann im Kampf gesperrt sein.")
+    self:Say(L("Berufsfenster kann im Kampf gesperrt sein."))
     return false
   end
   local T=_G.C_TradeSkillUI
@@ -510,7 +511,7 @@ function CP:OpenOwnedProfession(key)
     if T.OpenTradeSkill(D.professions[key].id)==true then return true end
   end
   -- Gathering without a crafting panel can still be selected in CraftPilot.
-  self:Say("Berufsfenster konnte nicht geöffnet werden. Skillplan bleibt nutzbar.")
+  self:Say(L("Berufsfenster konnte nicht geöffnet werden. Skillplan bleibt nutzbar."))
   return false
 end
 
@@ -575,25 +576,25 @@ function CP:DraftPlanStep(key)
   if not p or (D.professions[key].gathering and not D.professions[key].crafting) then return false end
   local current=(self.db.professions[key] or {}).skill or 0
   if current~=p.start then
-    self:Say("Schnellvorschlag nur ab aktuellem Skill. Startwert anpassen.")
+    self:Say(L("Schnellvorschlag nur ab aktuellem Skill. Startwert anpassen."))
     return false
   end
   local choice=self:SelectedOption(key)
   if not choice or not choice.chance or choice.chance<=0 then
-    self:Say("Noch kein auswertbares Rezept. Berufsfenster öffnen.")
+    self:Say(L("Noch kein auswertbares Rezept. Berufsfenster öffnen."))
     return false
   end
   local rank=(self.db.professions[key] or {}).cap or 0
   local points=math.min(10,p.target-current,math.max(0,rank-current))
   if points<=0 then
-    self:Say("Erst den nächsten Ausbildungsrang lernen.")
+    self:Say(L("Erst den nächsten Ausbildungsrang lernen."))
     return false
   end
   local expectedCrafts=math.max(1,math.ceil(points/choice.chance))
   local ok=self:AddPlanCraft(key,choice.id,expectedCrafts)
   if ok then
-    self:Say("Unverbindlicher erster Schritt: "..expectedCrafts.."x "..choice.name
-      .." (ca. "..points.." Skillpunkte bei heutiger Skillfarbe).")
+    self:Say(L("Unverbindlicher erster Schritt: ")..expectedCrafts.."x "..choice.name
+      ..L(" (ca. ")..points..L(" Skillpunkte bei heutiger Skillfarbe)."))
   end
   return ok
 end
@@ -610,7 +611,7 @@ function CP:PlanShopping(key)
     if type(qty)=="number" and qty>0 then
       local recipe=self.db.recipes[key] and self.db.recipes[key][id]
       if recipe and type(recipe.mats)=="table" then
-        steps[#steps+1]={id=id,name=recipe.name or ("Rezept "..id),quantity=qty}
+        steps[#steps+1]={id=id,name=self:RecipeName(key,id,recipe.name),quantity=qty}
         craftCount=craftCount+qty
         local snapshot=(self.db.professions[key] or {}).skill or 0
         local chances={ [0]=1,[1]=.70,[2]=.35,[3]=0 }
@@ -659,16 +660,16 @@ function CP:PrintPlanShopping(key)
   if plan and plan.autoMode and self:PrintRouteShopping(key) then return end
   local result=self:PlanShopping(key)
   if not result then return end
-  self:Say(("Einkaufsliste %s, Skill %d–%d: %d geplante Herstellungen")
+  self:Say((L("Einkaufsliste %s, Skill %d–%d: %d geplante Herstellungen"))
     :format(D.professions[key].name,result.first,result.last,result.crafts))
-  if #result.steps==0 then return self:Say("Noch keine Rezepte im Plan. Im Planer hinzufügen.") end
+  if #result.steps==0 then return self:Say(L("Noch keine Rezepte im Plan. Im Planer hinzufügen.")) end
   for _,mat in ipairs(result.materials) do
     if mat.missing>0 then
-      local total=mat.cost and (math.floor(mat.cost/10000).."g "..math.floor(mat.cost%10000/100).."s") or "Preis fehlt"
-      self:Say(mat.missing.."x "..mat.name.." (ca. "..total..")")
+      local total=mat.cost and (math.floor(mat.cost/10000).."g "..math.floor(mat.cost%10000/100).."s") or L("Preis fehlt")
+      self:Say(mat.missing.."x "..mat.name..L(" (ca. ")..total..")")
     end
   end
-  self:Say("Achtung: Liste deckt nur ausdrücklich ausgewählte Rezepte ab. Kein garantierter Skillweg.")
+  self:Say(L("Achtung: Liste deckt nur ausdrücklich ausgewählte Rezepte ab. Kein garantierter Skillweg."))
 end
 
 function CP:ChangeView(key,openNative)
@@ -708,7 +709,7 @@ local function command(input)
     CP:ChangeView(aliases[text])
     if CP.frame then CP.frame:Show() end
   elseif text=="refresh" then
-    CP:Refresh(true); CP:Say("Aktualisiert.")
+    CP:Refresh(true); CP:Say(L("Aktualisiert."))
   elseif text=="trainer" then CP:TrainerWaypoint()
   elseif text=="naechster" or text=="nächster" then CP:TrainerWaypoint("nearest")
   elseif text=="lehrer" or text=="lehrerlist" then
@@ -722,12 +723,12 @@ local function command(input)
   elseif text=="autoplan" then
     local ok,result=CP:BuildRouteForCurrentPlan(CP.db.view)
     if ok then
-      CP:Say("Vorschlag erstellt: "..#result.steps.." Schritte, bis Skill "..result.reached..".")
+      CP:Say(L("Vorschlag erstellt: ")..#result.steps..L(" Schritte, bis Skill ")..result.reached..".")
       CP:Refresh(false)
-    else CP:Say(result or "Kein geeigneter Rezeptkatalog.") end
+    else CP:Say(result or L("Kein geeigneter Rezeptkatalog.")) end
   elseif text=="autoopen on" or text=="autoopen off" then
     CP.db.ui.autoOpen=text=="autoopen on"
-    CP:Say("Berufsfenster automatisch öffnen: "..(CP.db.ui.autoOpen and "AN" or "AUS"))
+    CP:Say(L("Berufsfenster automatisch öffnen: ")..(CP.db.ui.autoOpen and L("AN") or L("AUS")))
   elseif text=="hilfe" or text=="help" then
     if CP.OpenTab then CP:OpenTab("help") end
   elseif text=="resetpos" then
@@ -736,7 +737,7 @@ local function command(input)
     CP.db.ui.skin=text:sub(6)
     if CP.ApplyTheme then CP:ApplyTheme() end
     CP:Refresh(false)
-    CP:Say("Darstellung: "..CP.db.ui.skin)
+    CP:Say(L("Darstellung: ")..CP.db.ui.skin)
   elseif text=="liste" or text=="list" then CP:ShowShopping()
   elseif text=="mode cash" or text=="mode value" then
     CP.db.mode=text:sub(6);CP:Refresh(false)
@@ -745,7 +746,7 @@ local function command(input)
   elseif text=="sort cost" or text=="sort chance" or text=="sort missing" or text=="sort name" then
     CP.db.ui.recipeSort=text:sub(6);CP:Refresh(false)
   else
-    CP:Say("Hilfe im Addon: /cp hilfe. Direkt: /cp lehrer | etappen | trainer | naechster | liste | resetpos | skin auto|dark|classic.")
+    CP:Say(L("Hilfe im Addon: /cp hilfe. Direkt: /cp lehrer | etappen | trainer | naechster | liste | resetpos | skin auto|dark|classic."))
   end
 end
 

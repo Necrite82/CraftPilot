@@ -40,3 +40,7 @@ Preise werden nicht als Echtzeitangebote ausgegeben. Ein fehlendes Preisdatum wi
 ## Weiterentwicklung und Aktualisierung
 
 Quellenänderungen für den Rezeptkatalog sollten aus einem rechtlich kompatiblen, nachweisbaren Herkunftsstand übernommen und mit Commit-ID, Client-Build, Erstellerhinweisen und Tests dokumentiert werden. Neue Fremddaten dürfen nicht ohne Prüfung der Lizenz- und Datenbankrechte übernommen werden.
+
+## Camping reference subset (0.11)
+
+The separate Camping view uses the pinned Craft Ladder camp file and eight matching recipe records. Original notices and GPL terms remain intact. Exact inputs, SHA-256 hashes, scope, factual cross-checks and known differences are documented in [Camping sources](docs/CAMPING_SOURCES.md) and [CAMP_SOURCES.json](ThirdParty/CraftLadder/CAMP_SOURCES.json). Client-captured recipe information takes priority over this older reference snapshot. No current boss/drop completeness is claimed.
