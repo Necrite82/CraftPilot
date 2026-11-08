@@ -148,6 +148,8 @@ function CP:CampingCards(key)
           footer=row.source,tooltipItem=item,tooltipSpell=row.object.spell,icon=self:RecipeIcon(row.prof,row.id),color=row.learned and "green" or "blue",
           action=function() CP.db.ui.campingRecipe=CP.db.ui.campingRecipe~=item and item or nil;CP:Render() end}
         if self.db.ui.campingRecipe==item then
+          cards[#cards+1]={title=self:RecipeColorLabel(row.prof,row.id),detail=self:RecipeRangeText(row.prof,row.id),
+            footer=L("Aktuelle Farbe aus dem Client; vollständige Grenzwerte separat gekennzeichnet."),color="blue"}
           cards[#cards+1]={title=L("Lernskill im Katalog: ")..tostring(row.recipe and row.recipe.learn or L("unbekannt")),
             detail=L("Herstellung, Lernen und Benutzung können unterschiedliche Voraussetzungen haben."),
             footer=L("Benutzungsanforderung im Gegenstands-Tooltip prüfen."),color="gold"}

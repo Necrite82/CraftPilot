@@ -34,7 +34,7 @@ end
 
 function CP:CatalogSkillChance(recipe,skill)
   local colors=recipe and recipe.colors
-  if type(colors)~="table" or type(skill)~="number" then return 0 end
+  if not self:ValidSkillColors(colors) or type(skill)~="number" then return 0 end
   local start,yellow,green,grey=colors[1],colors[2],colors[3],colors[4]
   if not start or not yellow or not green or not grey or skill<start or skill>=grey then return 0 end
   if skill<yellow then return 1 end
@@ -46,9 +46,10 @@ function CP:CatalogSource(key,recipeID,skill)
   local data=self:Catalog(key)
   local recipe=data and data.recipes[recipeID]
   if not recipe then return nil end
-  if (recipe.learn or 1)>skill then return nil end
   local old=self.db and self.db.recipes[key] and self.db.recipes[key][recipeID]
   if old and old.learned and old.disabled~=true then return "known",recipe end
+  if old and old.disabled then return nil end
+  if (recipe.learn or 1)>skill then return nil end
   if self.db and self.db.ui.knownRecipesOnly then return nil end
   if key=="mining" and not self:OwnsProfession("mining") then return nil end
   if recipe.spec or recipe.cooldown or recipe.rep or recipe.tools then return nil end
@@ -69,10 +70,23 @@ function CP:CatalogCandidateRecipes(key,skill)
   local out={}
   if not data then return out end
   for id,recipe in pairs(data.recipes) do
-    local chance=self:CatalogSkillChance(recipe,skill)
+    local chance=self:RecipeChanceAt(key,id,recipe,skill)
     if chance>0 and type(recipe.mats)=="table" and next(recipe.mats) then
       local source=self:CatalogSource(key,id,skill)
-      if source then out[#out+1]={id=id,recipe=recipe,chance=chance,source=source} end
+      local effective=recipe
+      if source=="known" then
+        local native=self.db.recipes[key][id]
+        if type(native.mats)~="table" or #native.mats==0 then source=nil
+        else
+          effective={}
+          for k,v in pairs(recipe) do effective[k]=v end
+          effective.mats={}
+          for _,mat in ipairs(native.mats) do effective.mats[mat[1]]=(effective.mats[mat[1]] or 0)+mat[2] end
+          effective.name=native.name or recipe.name
+          effective.makes=native.outputItemID or recipe.makes
+        end
+      end
+      if source then out[#out+1]={id=id,recipe=effective,chance=chance,source=source} end
     end
   end
   table.sort(out,function(a,b)

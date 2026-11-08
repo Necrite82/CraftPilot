@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.12.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.12.1-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.12.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.12.0-alpha/CraftPilot-0.12.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.12.1-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.12.1-alpha/CraftPilot-0.12.1-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das vorbereitete Entwicklungspaket ist `dist/CraftPilot-0.12.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das vorbereitete Entwicklungspaket ist `dist/CraftPilot-0.12.1-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -224,3 +224,13 @@ Für Berufe ohne feste Etappenübersicht erscheinen zusätzlich aktuelle erlernt
 Ab 0.12 tauscht CraftPilot beim Betreten der Spielwelt und bei Gruppen-/Gildenänderungen seine Versionsnummer über Addon-Nachrichten mit Gruppe, Raid oder Gilde aus. Eine neuere gemeldete Version erzeugt einmal pro Charakter und Versionsstand einen lokalen Chat-Hinweis; in Einstellungen steht der gemeldete Stand mit anklickbarem Kopierfenster für den festen GitHub-Release-Link.
 
 Beide Seiten benötigen mindestens 0.12 für dieses Protokoll. Ein einmaliges manuelles Update von älteren Versionen ist erforderlich. Ohne Kontakt zu einer neueren Version entsteht kein Hinweis. Meldungen sind Versionsangaben anderer Spieler, keine authentifizierte GitHub-Abfrage. Es werden weder Dateien heruntergeladen noch Updates automatisch installiert. Nachrichten sind auf kurze Versionsnummern begrenzt und pro Kanal gedrosselt; fremde URLs und Inhalte werden nicht übernommen. Fehlende Kommunikations-APIs verhindern nicht die Nutzung des restlichen Addons.
+
+## Neu in 0.12.1: Rezeptfarben und Berufsabgleich
+
+Rezeptzeilen zeigen die aktuelle Clientfarbe und getrennt davon die Grenzen **Orange von–bis, Gelb von–bis, Grün von–bis, Grau ab**. Die Intervalle enden jeweils einen Punkt vor Beginn der nächsten Farbe. Leere Intervalle erscheinen als Strich. Fehlende, widersprüchliche oder zur eingelesenen Farbe abweichende Grenzen sind gekennzeichnet; ältere Grenzwerte sind keine Live-Bestätigung. Aufgeklappte Camping- und God-Mode-Rezepte zeigen dieselben Informationen.
+
+In Einstellungen ist **Orange/Gelb bevorzugen** standardmäßig aktiv. Bei der Standardsortierung und automatischen Route stehen bekannte, bewertbare orange/gelbe Rezepte vor grünen. Unvollständig bewertete Rezepte gewinnen dadurch nicht automatisch. Grün bleibt sichtbar, manuell auswählbar und im God-Mode wirtschaftlich vergleichbar. Bewusste Rezeptauswahlen bleiben erhalten. Alte automatisch berechnete Routen werden beim ersten Start dieser Version verworfen; manuelle Pläne bleiben erhalten.
+
+**Einstellungen → Berufsdaten prüfen** zeigt alle zwölf Berufe, verfügbare Grenzwerte und Abweichungen zu eingelesenen Clientfarben. Ein eigener Beruf lässt sich dort direkt öffnen. Für aktuelle Farben die eigenen Berufsfenster einmal öffnen; ohne Zugriff auf diese Fenster kann kein externer Abgleich alle live gültigen Rezeptstände bestätigen. Der Abgleich und seine Grenzen stehen in [Berufsstatus](docs/PROFESSION_STATUS.md).
+
+Für Kochen und Erste Hilfe sind nur 162 zusätzliche Zahlenreihen aus den bereits gepinnten Eingaben ergänzt, keine vollständigen neuen Rezept-, Händler- oder Sammeldatenbanken. Reproduktion: `python tools/import_skill_ranges.py --source-dir work/camping-inputs --check` nach dem vorhandenen Camping-Import.

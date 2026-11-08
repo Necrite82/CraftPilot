@@ -115,6 +115,7 @@ end
 local function better(a,b)
   if not b then return true end
   if a.unknown~=b.unknown then return a.unknown<b.unknown end
+  if (a.greenPenalty or 0)~=(b.greenPenalty or 0) then return (a.greenPenalty or 0)<(b.greenPenalty or 0) end
   if a.delta~=b.delta then return a.delta<b.delta end
   if a.count~=b.count then return a.count<b.count end
   return a.id<b.id
@@ -138,7 +139,8 @@ function CP:GenerateAutomaticRoute(key,first,last)
       local trial=evaluate(state,candidate,crafts,key,skill)
       local option={
         unknown=countSet(trial.missing)-countSet(state.missing),
-        delta=trial.spent-state.spent,count=crafts,id=candidate.id
+        delta=trial.spent-state.spent,count=crafts,id=candidate.id,
+        greenPenalty=(self.db.ui.preferReliableSkill and candidate.chance<.5) and 1 or 0
       }
       -- Unknown material prices must not accidentally win as zero-cost items.
       if option.unknown>0 then option.unknown=1000+countSet(trial.missing) end

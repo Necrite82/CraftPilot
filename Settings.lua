@@ -12,6 +12,11 @@ end
 
 function CP:InitializeControls()
   local ui=self.db.ui
+  if type(ui.preferReliableSkill)~="boolean" then ui.preferReliableSkill=true end
+  if ui.skillPolicyVersion~=1 then
+    for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
+    ui.skillPolicyVersion=1
+  end
   if type(ui.godCut)~="number" or ui.godCut~=ui.godCut then ui.godCut=5 end
   ui.godCut=math.max(0,math.min(30,ui.godCut))
   if type(ui.minimapAngle)~="number" or ui.minimapAngle~=ui.minimapAngle then ui.minimapAngle=225 end
@@ -103,14 +108,14 @@ function CP:ToggleSetting(key)
   if not self.db then return end
   if key=="bank" then self.db.includeBank=not self.db.includeBank
   elseif key=="mode" then self.db.mode=self.db.mode=="cash" and "value" or "cash"
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true})[key] then
     self.db.ui[key]=not self.db.ui[key]
   else return end
   self.pendingSettingsReset=nil
   if key=="showAllProfessions" and not self.db.ui.showAllProfessions then self:PreferOwnedProfession() end
   self:UpdateMinimapButton()
   -- A different route policy must not leave an old automatic proposal visible.
-  if key=="knownRecipesOnly" or key=="bank" or key=="mode" then
+  if key=="preferReliableSkill" or key=="knownRecipesOnly" or key=="bank" or key=="mode" then
     for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
   end
   self:Refresh(false)
@@ -183,6 +188,8 @@ function CP:SettingsCards()
     card(L("Berufsauswahl: ")..(ui.showAllProfessions and L("alle Berufe") or L("eigene zuerst")),L("Weitere Berufe bleiben über die Umschaltung erreichbar."),toggle("showAllProfessions")),
     card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
     card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
+    card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im God-Mode vergleichbar."),toggle("preferReliableSkill")),
+    card(L("Berufsdaten prüfen"),L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),function() CP:OpenTab("audit") end),
     card(L("Auto-Route: ")..(ui.knownRecipesOnly and L("nur erlernte Rezepte") or L("Katalogvorschläge zulassen")),L("Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein."),toggle("knownRecipesOnly")),
     card(L("Quelldetails: ")..state(ui.showSourceDetails),L("Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar."),toggle("showSourceDetails")),
     card(L("Design: ")..ui.skin,L("Automatisch mit EllesmereUI, Dunkel oder Klassisch."),function()
