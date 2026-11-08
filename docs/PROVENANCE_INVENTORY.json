@@ -1,0 +1,163 @@
+{
+  "reviewedOn": "2026-11-08",
+  "craftPilotRevision": "daecfb866ed34d512ed0885e60d9dfa706459674",
+  "scope": "provenance evidence only; not a redistribution clearance",
+  "releaseCleared": false,
+  "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+  "catalogFiles": [
+    {
+      "path": "ThirdParty/CraftLadder/Alchemy.lua",
+      "gitBlob": "d655f3b7e9ad43ccd65d2cb995c1114fc40394f8",
+      "sha256": "423ec277c01b89ec9d017a38511b8b4cb5f44d431e525439cae783541d6f5c2f",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Alchemy.lua",
+      "upstreamBlob": "d655f3b7e9ad43ccd65d2cb995c1114fc40394f8",
+      "identity": "identical-git-blob",
+      "recipeCount": 180
+    },
+    {
+      "path": "ThirdParty/CraftLadder/Blacksmithing.lua",
+      "gitBlob": "950289346eb8c9a3e4ecb375a5cb31c64d5a7af8",
+      "sha256": "f307f2ca1780adcd2f0f936ae7fcf30b0a34b0cd7630229e68fcb358b18b0861",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Blacksmithing.lua",
+      "upstreamBlob": "950289346eb8c9a3e4ecb375a5cb31c64d5a7af8",
+      "identity": "identical-git-blob",
+      "recipeCount": 442
+    },
+    {
+      "path": "ThirdParty/CraftLadder/Enchanting.lua",
+      "gitBlob": "f653078d92c3ccb2fc5b47747c440e89559e463b",
+      "sha256": "804e84b3e7753923a7082fb256d42023968810c707ccca55d720ecd5b3db457f",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Enchanting.lua",
+      "upstreamBlob": "f653078d92c3ccb2fc5b47747c440e89559e463b",
+      "identity": "identical-git-blob",
+      "recipeCount": 237
+    },
+    {
+      "path": "ThirdParty/CraftLadder/Engineering.lua",
+      "gitBlob": "37f83509c45ddc424194e8a1170ecdaaea2bf3ab",
+      "sha256": "21d070246d861f8b409666ecb7d305a6bfb73581a48cf9a3e2ca082db1c61254",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Engineering.lua",
+      "upstreamBlob": "37f83509c45ddc424194e8a1170ecdaaea2bf3ab",
+      "identity": "identical-git-blob",
+      "recipeCount": 250
+    },
+    {
+      "path": "ThirdParty/CraftLadder/Leatherworking.lua",
+      "gitBlob": "31df0840fc27cb5d967a268e7f27190cc13f6684",
+      "sha256": "adf1dbef73c19d38f12d6ae04b72e77b6cac214a8e74fc37b7267b9686937efc",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Leatherworking.lua",
+      "upstreamBlob": "31df0840fc27cb5d967a268e7f27190cc13f6684",
+      "identity": "identical-git-blob",
+      "recipeCount": 527
+    },
+    {
+      "path": "ThirdParty/CraftLadder/MiningSmelting.lua",
+      "gitBlob": "e407f48d23e515d853826ce8c595c26fb39c5245",
+      "sha256": "60473cecaae5d2a3dedb799a3d6a156b9b071353c903ffa0bf2b32683853ae92",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Mining.lua",
+      "upstreamBlob": "057b2b41f268fce18107d1f5888907c54577a74e",
+      "identity": "derived-subset",
+      "recipeCount": 10
+    },
+    {
+      "path": "ThirdParty/CraftLadder/Tailoring.lua",
+      "gitBlob": "4e7630e7f0406ba95d2d440bf7862b7eda1301db",
+      "sha256": "ca481c73cfed83f331eea12242688e4cac76c04adbdcf34cc9630103e02670ff",
+      "upstreamRevision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+      "upstreamPath": "CraftLadder/Data/Tailoring.lua",
+      "upstreamBlob": "4e7630e7f0406ba95d2d440bf7862b7eda1301db",
+      "identity": "identical-git-blob",
+      "recipeCount": 434
+    }
+  ],
+  "totalCatalogRecipes": 2080,
+  "archives": [
+    {
+      "path": "dist/CraftPilot-0.4.0-alpha.zip",
+      "sha256": "ac085b09453e7d07bdcd502c7818a44cdc01191ea83c0d8835067c1478ee42b7",
+      "craftLadderEntries": [],
+      "catalogComparisons": []
+    },
+    {
+      "path": "dist/CraftPilot-0.5.0-alpha.zip",
+      "sha256": "f853dbde80381e19ef5905b75d221bffb88bef7c0a31af9f4b93cd84d76190e4",
+      "craftLadderEntries": [],
+      "catalogComparisons": []
+    },
+    {
+      "path": "dist/CraftPilot-0.6.0-alpha.zip",
+      "sha256": "75f14fae41db0dc1717e9c82403f1792cc0b5a696068eb7b6c51a33ab1d0ce74",
+      "craftLadderEntries": [],
+      "catalogComparisons": []
+    },
+    {
+      "path": "dist/CraftPilot-0.7.0-alpha.zip",
+      "sha256": "7b6fae36ce5f07a73a2d6dfaf9d5b9318782f51d00574aa1c3635d3ab66f1217",
+      "craftLadderEntries": [],
+      "catalogComparisons": []
+    },
+    {
+      "path": "dist/CraftPilot-0.8.0-alpha.zip",
+      "sha256": "6a4ee1e0d086f164bbd35a84cf8a1e167090fafe5b4ad07879240bfba3717299",
+      "craftLadderEntries": [
+        "CraftPilot/ThirdParty/CraftLadder/Alchemy.lua",
+        "CraftPilot/ThirdParty/CraftLadder/Blacksmithing.lua",
+        "CraftPilot/ThirdParty/CraftLadder/Enchanting.lua",
+        "CraftPilot/ThirdParty/CraftLadder/Engineering.lua",
+        "CraftPilot/ThirdParty/CraftLadder/Leatherworking.lua",
+        "CraftPilot/ThirdParty/CraftLadder/Tailoring.lua",
+        "CraftPilot/ThirdParty/CraftLadder/MiningSmelting.lua",
+        "CraftPilot/ThirdParty/CraftLadder/CREDITS.txt",
+        "CraftPilot/ThirdParty/CraftLadder/SOURCE.md"
+      ],
+      "catalogComparisons": [
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/Alchemy.lua",
+          "matchesCatalogGitBytes": true
+        },
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/Blacksmithing.lua",
+          "matchesCatalogGitBytes": true
+        },
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/Enchanting.lua",
+          "matchesCatalogGitBytes": true
+        },
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/Engineering.lua",
+          "matchesCatalogGitBytes": true
+        },
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/Leatherworking.lua",
+          "matchesCatalogGitBytes": true
+        },
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/MiningSmelting.lua",
+          "matchesCatalogGitBytes": true
+        },
+        {
+          "path": "CraftPilot/ThirdParty/CraftLadder/Tailoring.lua",
+          "matchesCatalogGitBytes": true
+        }
+      ]
+    }
+  ],
+  "blockingEvidence": [
+    {
+      "source": "QuestieDB",
+      "revisionActuallyUsed": null,
+      "licenseReviewedAt": "f863e106c837f1e30e6dae0e44b166be9bceb5f1",
+      "reason": "Unpinned installed input; historical license coverage unresolved"
+    },
+    {
+      "source": "Blizzard client CSV through wago.tools",
+      "reason": "No specific redistribution grant established for bundled exports"
+    }
+  ]
+}
