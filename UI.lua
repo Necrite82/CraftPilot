@@ -81,8 +81,8 @@ header:SetScript("OnDragStop", function()
 end)
 local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
-  "WoW Forever  |  Acht Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.8.0-alpha")
+  "WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.9.0-dev")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -118,13 +118,25 @@ end)
 
 local professionButtons={}
 local professionOrder={}
+local allProfessionsButton=button(frame,185,23,280,-78,"Alle Berufe anzeigen",function()
+  CP.db.ui.showAllProfessions=not CP.db.ui.showAllProfessions
+  CP:Render()
+end)
 for i,key in ipairs(D.order) do
-  local col=(i-1)%4
-  local row=math.floor((i-1)/4)
-  local b=button(frame,174,27,18+col*179,-111-row*32,
-    D.professions[key].name,function()
+  local col=(i-1)%6
+  local row=math.floor((i-1)/6)
+  local b=button(frame,114,27,18+col*119,-111-row*32,
+    D.professions[key].short,function()
       CP:ChangeView(key,true)
   end)
+  b:SetScript("OnEnter",function()
+    if GameTooltip then
+      GameTooltip:SetOwner(b,"ANCHOR_RIGHT")
+      GameTooltip:SetText(D.professions[key].name)
+      GameTooltip:Show()
+    end
+  end)
+  b:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
   professionButtons[key]=b
   professionOrder[#professionOrder+1]=b
 end
@@ -670,12 +682,15 @@ local function layout()
   footer:ClearAllPoints()
   footer:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",19,22)
   footer:SetWidth(width-62)
-  local profWidth=(inner-15)/4
-  for i,b in ipairs(professionOrder) do
+  local profWidth=(inner-25)/6
+  for _,b in pairs(professionButtons) do b:Hide() end
+  for i,key in ipairs(CP.db and CP:VisibleProfessions() or D.order) do
+    local b=professionButtons[key]
     b:ClearAllPoints()
     b:SetSize(profWidth,27)
-    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%4)*(profWidth+5),
-      -111-math.floor((i-1)/4)*32)
+    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%6)*(profWidth+5),
+      -111-math.floor((i-1)/6)*32)
+    b:Show()
   end
   local tabWidth=(inner-20)/6
   for i,b in ipairs(orderedTabs) do
@@ -728,10 +743,20 @@ function CP:Render()
     stageProgress:SetValue(math.max(0,math.min(300,skill)))
   end
 
-  for k,b in pairs(professionButtons) do
+  allProfessionsButton:SetText(self.db.ui.showAllProfessions and "Nur eigene Berufe" or "Alle Berufe anzeigen")
+  for _,b in pairs(professionButtons) do b:Hide() end
+  local visible=self:VisibleProfessions()
+  local profWidth=((type(frame.GetWidth)=="function" and frame:GetWidth() or W)-61)/6
+  for i,k in ipairs(visible) do
+    local b=professionButtons[k]
     local owned=self:OwnsProfession(k)
+    b:ClearAllPoints()
+    b:SetSize(profWidth,27)
+    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%6)*(profWidth+5),-111-math.floor((i-1)/6)*32)
+    b:Show()
     b:SetText((k==key and GOLD.."● "..RESET or "")
-      ..(owned and GREEN.."✓ "..RESET or "")..D.professions[k].name)
+      ..(owned and GREEN.."✓ "..RESET or "")
+      .."|T"..D.professionIcons[k]..":14|t "..D.professions[k].short)
   end
   for k,b in pairs(tabButtons) do
     local label
@@ -755,7 +780,8 @@ function CP:Render()
     local qualification=#notices>0 and (" ("..table.concat(notices,", ")..")") or ""
     rankText:SetText("Nächster Ausbildungsrang: "..nextRank.name.." bis "..nextRank.cap..qualification)
   else
-    rankText:SetText(record and "Höchster Ausbildungsrang erreicht"
+    rankText:SetText(prof.ranksUnverified and "Ausbildungsanforderungen bitte im Spiel prüfen"
+      or record and "Höchster Ausbildungsrang erreicht"
       or "Berufsfenster oder Berufeübersicht öffnen, um Daten einzulesen")
   end
   priceText:SetText("Preis: "..(self.db.mode=="cash" and "Zukauf" or "Materialwert")
@@ -763,9 +789,10 @@ function CP:Render()
     .."  |  AH: gespeichert  |  Rezeptkatalog: 1.60.1.704xx")
 
   local isTrainers=tab=="trainers"
-  local isRecipes=tab=="now" and not prof.gathering
-  local isMats=tab=="mats" and not prof.gathering
-  local isPlan=tab=="plan" and not prof.gathering
+  local gatheringOnly=prof.gathering and not prof.crafting
+  local isRecipes=tab=="now" and not gatheringOnly
+  local isMats=tab=="mats" and not gatheringOnly
+  local isPlan=tab=="plan" and not gatheringOnly
   trainerAction1:SetShown(isTrainers)
   trainerAction2:SetShown(isTrainers)
   trainerInfo:SetShown(isTrainers)
@@ -836,7 +863,7 @@ function CP:Render()
   elseif tab=="stages" then
     section:SetText("Skill-Etappen · eine Karte anklicken, um diesen Bereich zu planen")
     local cards={}
-    for _,segment in ipairs(D.stages[key]) do
+    for _,segment in ipairs(D.stages[key] or {}) do
       local first,last,description=segment[1],segment[2],segment[3]
       local done=skill>=last
       local active=skill>=first and skill<last
@@ -854,6 +881,12 @@ function CP:Render()
         end or nil
       }
     end
+    if not D.stages[key] then
+      cards[#cards+1]={title="Noch keine geprüfte Etappenübersicht",
+        detail="Skill und erlernte Rezepte werden aus dem Spielclient eingelesen.",
+        footer="Für diesen Beruf wird kein vollständiger Skillweg behauptet.",
+        icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"}
+    end
     cards[#cards+1]={
       title="Orientierung, kein garantierter Rezeptweg",
       detail="Lehrerrezepte, Skillfarben und Materialpreise ändern sich.",
@@ -863,7 +896,7 @@ function CP:Render()
     setVisualCards(cards)
   elseif tab=="plan" then
     section:SetText("Einkaufsplan · frei wählbarer Bereich · bekannte Rezepte")
-    if prof.gathering then
+    if gatheringOnly then
       setVisualCards({{
         title="Sammelberuf · kein Rezept-Einkaufsplan",
         detail="Kräuter und Erze haben keine feste Anzahl für garantierte Skillpunkte.",
@@ -1002,19 +1035,19 @@ function CP:Render()
       setVisualCards(cards)
       end
     end
-  elseif prof.gathering then
+  elseif gatheringOnly then
     section:SetText(prof.name..": aktueller Sammelabschnitt")
     local current=self:CurrentStage(key)
     setVisualCards({
       {
         title=GOLD.."AKTUELL"..RESET.."  ·  Skill "..skill,
-        detail=current and current[3] or "Bitte den Berufsskill im Spiel aktualisieren.",
+        detail=current and current[3] or "Für diesen Beruf ist noch keine geprüfte Sammelroute hinterlegt.",
         footer="Im Tab Etappen siehst du die nächsten Sammelgebiete.",
         icon=key=="herbalism" and "Interface\\Icons\\INV_Misc_Herb_07"
           or "Interface\\Icons\\INV_Ore_Copper_01",color="gold"
       },{
         title="Sammelweg statt Rezeptmenge",
-        detail="Erz- und Kräuter-Vorkommen geben keine feste Anzahl an Skillpunkten.",
+        detail="Sammeln ergibt keine feste Menge für garantierte Skillpunkte.",
         footer="Deshalb erstellt CraftPilot hier keine künstliche Zutaten-Einkaufsliste.",
         icon="Interface\\Icons\\INV_Misc_Map_01",color="blue"
       }
@@ -1057,7 +1090,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.8 Alpha  |  GPL-Katalog mit früherem Forever-Build · Preisalter prüfen")
+  footer:SetText("CraftPilot 0.9 Entwicklung  |  Katalogherkunft in Prüfung · Preisalter prüfen")
 end
 
 function CP:ToggleWindow()

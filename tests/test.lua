@@ -129,17 +129,19 @@ assert(CP.db.includeBank==true)
 assert(CP.db.ui.recipeSort=="cost")
 for _,key in ipairs(CP.Data.order) do
   assert(CP.Data.professions[key],"Missing profession "..key)
-  local stages=CP.Data.stages[key]
+  local stages=CP.Data.stages[key] or {}
+  if #stages>0 then
   assert(stages[1][1]==1 and stages[#stages][2]==300,
     "Incomplete milestone coverage: "..key)
   for i=2,#stages do
     assert(stages[i][1]==stages[i-1][2],"Gap in "..key)
   end
+  end
   for _,segment in ipairs(stages) do
     assert(segment[2]-segment[1]<=50,"Stage over 50 points: "..key)
   end
 end
-assert(#CP.Data.order==8)
+assert(#CP.Data.order==12)
 assert(CP:CaptureProfession())
 assert(CP.db.professions.tailoring.skill==110)
 local options=CP:Options("tailoring")
@@ -336,3 +338,37 @@ C_Map.GetBestMapForUnit=function() return 999 end
 local trainers,rank3,best3,nearest3=CP:TrainerChoices("alchemy")
 assert(#trainers>0 and nearest3==nil)
 print("PASS: GPL catalog, smelting, scan freshness, recursive route, profession UI and shopping plans")
+
+-- Secondary slots must survive nil primary slots.
+GetProfessions=function() return nil,3,nil,4,5,6 end
+GetProfessionInfo=function(index)
+  local rows={
+    [3]={"Skinning",0,90,150,1,0,393},
+    [4]={"Fishing",0,65,150,1,0,356},
+    [5]={"Cooking",0,80,150,1,0,185},
+    [6]={"First Aid",0,100,150,1,0,129},
+  }
+  return table.unpack(rows[index])
+end
+CP:RefreshProfessionSkills()
+for _,key in ipairs({"skinning","fishing","cooking","firstaid"}) do
+  assert(CP:OwnsProfession(key),"Profession not detected: "..key)
+  assert(CP.db.professions[key].cap==150)
+  assert(CP:NextRank(key)==nil,"Do not invent rank requirements")
+  observedID=CP.Data.professions[key].id
+  assert(CP:CaptureProfession())
+  assert(#CP:Options(key)>0,"Native crafting recipes should work: "..key)
+  assert(CP:OpenOwnedProfession(key))
+  for _,tab in ipairs({"now","stages","mats","plan","trainers","help"}) do
+    CP:OpenTab(tab)
+    CP:Render()
+  end
+end
+CP.db.view="cooking"
+CP.db.ui.showAllProfessions=false
+assert(#CP:VisibleProfessions()==4)
+CP.db.ui.showAllProfessions=true
+local visible=CP:VisibleProfessions()
+assert(#visible==12 and visible[1]=="skinning")
+assert(CP.Data.professions.jewelcrafting==nil and CP.Data.professions.inscription==nil)
+print("PASS: 12 professions, secondary slots, native capture and every new profession tab")
