@@ -81,6 +81,12 @@ local function T(prof, name, zone, map, x, y, side, cap, indoor)
 end
 D.trainers = {
   -- Engineering / Mining
+  T("engineering","Jemma Quikswitch","Eisenschmiede",1455,67.8,43.8,"Alliance",75),
+  T("engineering","Trixie Quikswitch","Eisenschmiede",1455,67.8,43.2,"Alliance",150),
+  T("engineering","Sprite Jumpsprocket","Sturmwind",1453,61.8,30.8,"Alliance",75),
+  T("engineering","Lilliam Sparkspindle","Sturmwind",1453,62.2,30.4,"Alliance",150),
+  T("engineering","Thund","Orgrimmar",1454,75.8,24.6,"Horde",75),
+  T("engineering","Nogg","Orgrimmar",1454,75.8,25.2,"Horde",150),
   T("engineering","Springspindle Fizzlegear","Eisenschmiede",1455,68.4,44.0,"Alliance",225),
   T("engineering","Roxxik","Orgrimmar",1454,76.0,25.0,"Horde",225),
   T("engineering","Buzzek Bracketswing","Gadgetzan",1446,52.2,27.6,"B",300),
