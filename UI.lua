@@ -871,6 +871,79 @@ function CP:Render()
         icon="Interface\\Icons\\INV_Misc_Herb_07",color="gold"
       }})
     else
+      local route=self:AutoRouteShopping(key)
+      if route then
+        local cards={}
+        cards[#cards+1]={
+          title=string.format("AUTO-ROUTE · %d → %d · berechnet bis %d",
+            route.first,route.target,route.reached),
+          detail=#route.steps.." Fertigungsetappen · geschätzter Zukauf "..gold(route.price),
+          footer=route.blocked and ("Bei "..route.blocked.." fehlt ein geeignetes Trainerrezept.")
+            or "Vorschlag aus Client-Katalog; keine garantierte oder mathematisch globale Optimum-Route.",
+          icon="Interface\\Icons\\INV_Misc_Note_01",
+          color=route.blocked and "red" or "gold"
+        }
+        if route.unpriced>0 or route.stale>0 or route.unknownAge>0 then
+          cards[#cards+1]={
+            title="Preiswarnungen",
+            detail=route.unpriced.." ohne Preis · "..route.stale.." veraltet · "
+              ..route.unknownAge.." mit unbekanntem Scan-Alter",
+            footer="Vor Einkäufen Auctionator erneut scannen; Preise variieren.",
+            icon="Interface\\Icons\\INV_Misc_Coin_01",color="red"
+          }
+        end
+        cards[#cards+1]={
+          title="Datengrundlage: "..self.catalogBuild,
+          detail=route.assumptions.." Schritte verwenden Lehrer-/Startrezepte ohne aktuelle Spielbestätigung.",
+          footer="Blizzard-Hotfixes und Trainerangebote können vom Katalog abweichen.",
+          icon="Interface\\Icons\\INV_Misc_Book_09",color="gold"
+        }
+        for _,step in ipairs(route.steps) do
+          local stamp=step.source=="known" and "im Spiel gelernt"
+            or (step.source=="trainer" and "beim Lehrer prüfen" or "Startrezept")
+          cards[#cards+1]={
+            title=string.format("%d–%d · %dx %s",step.first,step.last,
+              step.crafts,step.name),
+            detail="Skillchance aus früherem Forever-Client · "..stamp,
+            footer="Zeitpunkt und Anzahl sind geschätzt; Skillfarbe im Spiel prüfen.",
+            icon="Interface\\Icons\\INV_Misc_EngGizmos_17",
+            color=step.uncertain and "gold" or "green"
+          }
+        end
+        if #route.intermediates>0 then
+          cards[#cards+1]={
+            title="Herstellungs- und Zwischenproduktkette",
+            detail="Rohstoffe werden entweder gekauft oder über günstigere bekannte Rezepte verarbeitet.",
+            footer="Die Preiswahl berücksichtigt vorhandene Materialien einmalig je Plan.",
+            icon="Interface\\Icons\\INV_Misc_Bag_08",color="blue"
+          }
+          for _,node in ipairs(route.intermediates) do
+            cards[#cards+1]={
+              title=node.count.."x "..node.name,
+              detail="Im Plan hergestellte Einheit(en) oder Zwischenprodukt.",
+              footer="Nur soweit eigene Berufe und Rezeptquellen dies erlauben.",
+              icon="Interface\\Icons\\INV_Misc_EngGizmos_17",color="blue"
+            }
+          end
+        end
+        if #route.materials==0 then
+          cards[#cards+1]={title="Kein Zukauf erkannt",detail="Laut zuletzt erfassten Beständen und den geschätzten Schritten.",
+            footer="Auf unbekannte Zutaten und veraltete Bankdaten achten.",color="green"}
+        end
+        for _,mat in ipairs(route.materials) do
+          local age=self:PriceFreshness(mat.id)
+          cards[#cards+1]={
+            title=string.format("%dx %s",mat.missing,mat.name),
+            detail=mat.cost and ("Zukauf "..gold(mat.cost).." · "..mat.source)
+              or "Preis fehlt – Kosten nicht vollständig",
+            footer=age,
+            icon=itemIcon(mat.id),
+            color=(mat.freshness=="stale" or mat.freshness=="aging" or not mat.price)
+              and "red" or "green"
+          }
+        end
+        setVisualCards(cards)
+      else
       local plan=self:PlanShopping(key)
       local cards={}
       local range=plan.last-plan.first
@@ -927,6 +1000,7 @@ function CP:Render()
         end
       end
       setVisualCards(cards)
+      end
     end
   elseif prof.gathering then
     section:SetText(prof.name..": aktueller Sammelabschnitt")
