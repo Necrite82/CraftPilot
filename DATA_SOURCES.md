@@ -1,46 +1,42 @@
 # Datenherkunft / Data sources
 
-**Stand: 2026-11-08 — Forever 1.60.x — Alpha**
+**Stand:** 2026-11-08 · WoW Forever · CraftPilot 0.8.0-alpha
 
-## Grundsatz
+## Lizenzierter Herstellungs-Rezeptkatalog
 
-CraftPilot übernimmt bekannte Rezepte, Reagenzien, aktuelle Schwierigkeitsfarben und Skillstände bevorzugt **direkt aus der WoW-Forever-Addon-API auf dem jeweiligen Client**. Es werden keine vollständigen fremden Guide-Texte, Bilder, Datenbanken oder Addon-Quellcodes in diesem Projekt vervielfältigt.
+CraftPilot integriert einen Schnappschuss aus dem **GPL-3.0-Projekt [Craft Ladder](https://github.com/saintmodx/craft-ladder)**: vollständige `Data/*.lua`-Dateien für Alchemy, Blacksmithing, Enchanting, Engineering, Leatherworking und Tailoring sowie einen ausdrücklich gekennzeichneten Schmelzrezept-Auszug aus Mining.
 
-Die 1–300-Etappen sind eigene, grob zusammengefasste Orientierungen. Sie enthalten **keine** importierte vollständige Rezeptdatenbank und dürfen nicht als garantierter Skill- oder Einkaufsplan verstanden werden.
+Verwendete Quellrevision: `b9c61346ad4cf63245f35cadb1e0a88467fb6e75`.
 
-Die Berufslehrer-Tabelle enthält einzelne sachliche Ortsangaben aus öffentlich zugänglichen Spielerinformationen, die hier eigenständig kuratiert wurden. Diese Fakten sind weder ein vollständiger NPC-Export noch ein Ersatz für die Prüfung im Spiel. Quellenhinweise allein begründen keine Nutzungsrechte an umfangreichen fremden Datenbeständen.
+- Originaldateien und deren Kopfkommentare: [ThirdParty/CraftLadder](ThirdParty/CraftLadder)
+- Originale mehrstufige Urheber- und Lizenzhinweise: [CREDITS.txt](ThirdParty/CraftLadder/CREDITS.txt)
+- Quellrevision, Data-Builds und Adaptionsgrenzen: [SOURCE.md](ThirdParty/CraftLadder/SOURCE.md)
+- Gesamtlizenz: GNU GPL-3.0 (siehe [LICENSE](LICENSE))
 
-## Eingelesene Daten
+Craft Ladder führt insbesondere die **Blizzard-Clienttabellen über wago.tools, CMaNGOS classic-db, QuestieDB und AllTheThings** als Datenursprünge auf. Die ursprüngliche MIT-Notiz für AllTheThings ist vollständig in `CREDITS.txt` enthalten. Es werden weder fremde Guide-Texte noch Grafiken aus Websites übernommen. Fremde Daten, Spieldateien, Namen und Marken behalten ihre jeweiligen Rechte; die GPL allein erteilt keine Rechte an Blizzard-Marken oder beliebigen fremden Datenbanken.
 
-- Profession, Skill, Skill-Obergrenze: \`C_TradeSkillUI.GetBaseProfessionInfo\` sowie \`GetProfessions\` / \`GetProfessionInfo\`
-- Rezeptliste und aktuelle Schwierigkeit: \`C_TradeSkillUI.GetAllRecipeIDs\`, \`GetRecipeInfo\`
-- Reagenzien: \`C_TradeSkillUI.GetRecipeSchematic\`
-- Taschenbestand: \`C_Item.GetItemCount\`
-- AH-Snapshot: öffentliche Auctionator-API, wenn installiert
-- Wegpunkte: TomTom-API oder unterstützte Blizzard-Kartenfunktion
+**Zeitliche Grenze:** Die eingebundenen Herstellungsdaten stammen aus **1.60.1.70425 und 1.60.1.70450** vom Oktober 2026. Diese Versionen sind älter als neuere Forever-Builds. Der Datenkatalog enthält Einträge, deren Trainerangebot, Beuterezept, Lernstufe oder tatsächliche Serverfreigabe noch nicht bestätigt ist. Er ist für die Planung ein Referenzdatensatz, **kein garantierter, aktueller Live-Rezeptbestand**.
 
-API-Referenz: https://warcraft.wiki.gg/wiki/API:C_TradeSkillUI.GetBaseProfessionInfo
+## Daten aus dem Spiel
 
-API-Referenz: https://warcraft.wiki.gg/wiki/API_C_TradeSkillUI.GetRecipeSchematic
+CraftPilot liest den aktuellen Skill, erlernte Rezepte, Reagenzien und Skillfarbe vorrangig aus den vom Forever-Client angebotenen APIs aus:
 
-## Reise- und Ausbildungsinformationen
+- `C_TradeSkillUI.GetBaseProfessionInfo`, `GetRecipeInfo`, `GetRecipeSchematic`, `GetAllRecipeIDs`
+- `GetProfessions`, `GetProfessionInfo`
+- `C_Item.GetItemCount` für Taschen-/Bankmengen
+- TomTom oder Blizzard-Kartenwegpunkte
 
-Orts- und Ranghinweise wurden mit diesen öffentlich verfügbaren Informationen abgeglichen:
+Wenn die Schnittstelle keine vollständigen aktuellen Daten liefert, kennzeichnet CraftPilot Annahmen statt unverifizierte Tatsachen zu behaupten. Trainerstandorte sind Reisehilfen; ihr Angebot wird nicht live überprüft.
 
-- Ingenieurskunst: https://mobalytics.gg/wow-forever/guides/engineering-profession-guide
-- Bergbau: https://www.icy-veins.com/wow-forever/mining-leveling-guide
-- Schmiedekunst: https://www.method.gg/wow-forever/blacksmithing-in-wow-forever-leveling-guide-and-trainers
-- Verzauberkunst: https://www.icy-veins.com/wow-forever/enchanting-leveling-guide
-- Schneiderei: https://www.icy-veins.com/wow-forever/tailoring-leveling-guide
-- Lederverarbeitung: https://www.icy-veins.com/wow-forever/leatherworking-leveling-guide
-- Kräuterkunde / Forever-Ausbildung und Koordinaten: https://www.method.gg/wow-forever/herbalism-in-wow-forever-leveling-guide-herbalism-items-enchants-trainers
-- Kräuterkunde / Rangtrainer: https://www.icy-veins.com/wow-forever/herbalism-leveling-guide
-- Alchemie / Forever-Lehrer und Koordinaten: https://www.wowhead.com/forever/guide/professions/alchemy-overview-trainer-locations-recipes
+## Preise
 
-Aufgrund von Beta-Änderungen, Kartenvarianten und serverseitigen Änderungen kann eine Position oder ein Trainerangebot abweichen. Insbesondere der Wegpunkt für **Annora** zeigt einen Zugang zu **Uldaman**, nicht den Standort innerhalb der Instanz.
+Auctionator wird ausschließlich über seine dokumentierte **externe API v1** angesprochen:
 
-## Rechte und Hinweise
+- `GetAuctionPriceByItemID("CraftPilot", itemID)`: letzter gespeicherter Stückpreis
+- `GetAuctionAgeByItemID("CraftPilot", itemID)`: Alter in Tagen, sofern diese API verfügbar ist
 
-Der eigenständig entwickelte **Programmcode** unterliegt der GPL-3.0-only. Dadurch werden keine Rechte an Spielinhalten, Datenbanken, Marken oder Code Dritter eingeräumt. Vollständige fremde Sammlungen und urheberrechtlich geschützte Guide-Texte dürfen nicht allein aufgrund eines Quellenverweises übernommen werden.
+Preise werden nicht als Echtzeitangebote ausgegeben. Ein fehlendes Preisdatum wird als unbekannt gekennzeichnet. Sofern ein dokumentierter Händlerpreis vorliegt, wird er als separater Preisursprung markiert.
 
-Fehlerhafte Orts- oder Spieldaten bitte als Issue melden; Änderungen sollten anhand aktueller Spieltests überprüft werden.
+## Weiterentwicklung und Aktualisierung
+
+Quellenänderungen für den Rezeptkatalog sollten aus einem rechtlich kompatiblen, nachweisbaren Herkunftsstand übernommen und mit Commit-ID, Client-Build, Erstellerhinweisen und Tests dokumentiert werden. Neue Fremddaten dürfen nicht ohne Prüfung der Lizenz- und Datenbankrechte übernommen werden.

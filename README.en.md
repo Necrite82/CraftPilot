@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.7.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.8.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -14,7 +14,7 @@ Engineering, Mining, Blacksmithing, Enchanting, Tailoring, Leatherworking, Herba
 
 All eight have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and stored auction prices. Mining and Herbalism offer gathering progression overviews. Profession levels can also be read from the character profession list.
 
-**Important limitation:** The 1–300 milestones are **not** a complete offline recipe catalog or a globally optimized 1–300 crafting route. This early alpha focuses on verifying recipe capture, cost estimates and trainer navigation in the game.
+**Scope:** An attributed GPL-3.0 crafting recipe snapshot is now bundled for the six crafting professions, plus a smelting subset for Mining. The source client build (1.60.1.70425–70450, October 2026) predates the latest live build; trainer availability and current skill colors are not guaranteed. Routes are estimates, not proven global cost optima.
 
 ## Features
 
@@ -31,7 +31,7 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 
 ## Installation
 
-1. Download the **[CraftPilot-0.7.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.7.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.8.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.8.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -60,6 +60,14 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 | \`/cp refresh\` | Refresh the open profession |
 | \`/cp mode cash\` / \`/cp mode value\` | Choose cost model |
 | \`/cp bank on\` / \`/cp bank off\` | Include or exclude bank materials |
+
+## New in 0.8: source-attributed recipes, make-or-buy chains and price age
+
+CraftPilot now includes **GPL-3.0-licensed Craft Ladder profession data** (six crafting professions and Mining smelting) from the October 2026 Forever client snapshot. Original notices, source revision and additional attribution are preserved in [ThirdParty/CraftLadder](ThirdParty/CraftLadder/SOURCE.md). This is an older client snapshot; live recipes and training sources may differ.
+
+Use **Auto-Route** in the Shopping Plan tab or `/cp autoplan` for a **prospective** range plan. It uses recipe skill colors, learned/trainer recipe assumptions, available stock and stored prices. It compares **buying reagents with crafting intermediate outputs** using known character professions, including Mining smelting when learned. Its greedy decisions are **not** a mathematically guaranteed cheapest full route; the plan may be blocked by unknown or unavailable recipes.
+
+Auctionator's documented external price-age API identifies cached prices older than **3 days** (warning) and **7 days** (stale). Missing scan age is labeled *unknown*; vendor prices are labeled separately. All prices are snapshots, not guaranteed live offers. The existing manual multi-recipe planner remains available.
 
 ## New in 0.7: visual cards and flexible shopping plans
 

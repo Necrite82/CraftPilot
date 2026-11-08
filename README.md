@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.7.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.8.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -21,7 +21,7 @@ CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direk
 
 Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sechs Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau und Kräuterkunde zeigen geeignete Sammelstufen und Gebiete. Berufs-Skillwerte können auch ohne offenes Rezeptfenster über die Charakter-Berufsübersicht ausgelesen werden.
 
-**Wichtige Abgrenzung:** Die 1–300-Etappen sind eine Orientierung und noch **keine vollständige Offline-Rezeptdatenbank**. Eine durchgehend durchgerechnete, global günstigste Einkaufs- und Herstellungsroute bis 300 sowie sämtliche Lehrerrezepte, Händler- und Beuterezepte sind noch nicht implementiert. Diese Alpha ist zunächst für das Testen von Rezeptauslesung, Kostenvergleich und Navigation gedacht.
+**Wichtige Abgrenzung:** Ein umfangreicher GPL-3.0-Rezeptkatalog für die sechs Herstellungsberufe ist jetzt integriert. Er stammt aus einer **älteren Forever-Clientversion** (Oktober 2026, 1.60.1.70425–70450); nicht jede Rezeptquelle oder Trainerstufe ist im aktuellen Live-Spiel bestätigt. Automatische Routen sind **Schätzungen** und ausdrücklich nicht nachweislich global kostenoptimal. Bergbau behält eine Sammlungsübersicht, ergänzt um Schmelzrezepte für Herstellungsketten; Kräuterkunde ist eine Sammelroute.
 
 ## Funktionen
 
@@ -44,7 +44,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 
 ## Installation
 
-1. Das **[CraftPilot-0.7.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.7.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.8.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.8.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -79,6 +79,32 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 | \`/cp mode cash\` | Zusätzliche Ausgaben minimieren |
 | \`/cp mode value\` | Eigene Materialien zum Marktwert berücksichtigen |
 | \`/cp bank on\` / \`/cp bank off\` | Bankbestände nach API-Verfügbarkeit ein-/ausschalten |
+
+## Neu in 0.8: Rezeptkatalog, Produktionsketten und Preisaktualität
+
+### Rezeptdatenbank und Quellen
+
+Für **Ingenieurskunst, Schmiedekunst, Schneiderei, Lederverarbeitung, Verzauberkunst und Alchemie** sind jetzt die vollständigen Rezeptlisten des eingebundenen **Craft-Ladder-Snapshots** mit Reagenzien, Output, Skillfarben und verfügbaren Lernquellen enthalten. Zusätzlich sind Schmelzrezepte aus Bergbau enthalten. Damit kann CraftPilot auch zukünftige Etappen prüfen, ohne dass jedes Rezept bereits im aktuellen Berufsfenster sichtbar sein muss.
+
+Die Daten sind unter **GNU GPL-3.0** mit den ursprünglichen Quellenhinweisen eingebunden. Details: [ThirdParty/CraftLadder/SOURCE.md](ThirdParty/CraftLadder/SOURCE.md), [CREDITS.txt](ThirdParty/CraftLadder/CREDITS.txt) und [DATA_SOURCES.md](DATA_SOURCES.md). Es wurden keine externen Website-Guides als Texte kopiert.
+
+**Achtung:** Der mitgelieferte Datensatz wurde für frühere Forever-Builds erstellt. Neue Rezepte, Server-Hotfixes, Trainerangebote, Spezialisierungen und Verkaufsquellen können abweichen. Der Planer kennzeichnet nicht live bestätigte Trainingsschritte.
+
+### Automatischer Vorschlag im Einkaufsplan
+
+1. Beruf auswählen und im Tab **Einkaufsplan** Start- und Zielskill einstellen, etwa **30–100**.
+2. Auf **Auto-Route** klicken oder `/cp autoplan` verwenden.
+3. CraftPilot erstellt einen **voraussichtlich preisgünstigen** Herstellungsweg anhand der bekannten Skillfarben und gespeicherten Preise. Das Verfahren trifft **schrittweise Kostenentscheidungen** und ist keine mathematisch garantierte Gesamtoptimierung.
+4. Die Liste berücksichtigt den einmalig erfassten Taschen- und Bankbestand. Bei Zwischenprodukten vergleicht sie, soweit eigene Berufe und Rezepte dafür bekannt sind, **Kauf gegen Selbstherstellung** – etwa Erz → Barren → Bauteil. Verbleibende benötigte Rohmaterialien erscheinen als Einkaufsliste.
+5. Geplante Schritte, Annahmen, unbekannte Preise und alternative Herstellungsaktionen werden angezeigt. `/cp einkauf` gibt die Einkaufsliste aus.
+
+Der bisherige **manuelle Plan** mit selbst gewählten Rezepten und Mengen bleibt erhalten. Eine unbekannte Rezeptquelle, Materialpreis oder benötigte Spezialisierung kann dazu führen, dass der automatische Vorschlag unvollständig ist.
+
+### Preisalter statt nur Preis
+
+CraftPilot liest über die **offizielle Auctionator-API** nicht nur den gespeicherten Stückpreis, sondern – soweit verfügbar – auch das **Alter in Tagen** aus. Bis **3 Tage** gilt ein Preis als frisch, nach **mehr als 3 Tagen** erscheint ein Hinweis und nach **mehr als 7 Tagen** die Kennzeichnung *veraltet*. Ohne verfügbares Alter heißt es ausdrücklich *Alter unbekannt*. Wenn ein dokumentierter unbegrenzt verfügbarer Händlerpreis günstiger ist, kann dieser verwendet werden.
+
+Ein angezeigter Preis ist **kein Live-Angebot** und garantiert weder Lagerbestand noch den tatsächlichen Kaufpreis. Ein neuer Scan vor größeren Einkäufen bleibt empfehlenswert.
 
 ## Neu in 0.7: einheitliche Karten, Berufe öffnen und Einkaufsplan
 

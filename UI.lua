@@ -82,7 +82,7 @@ end)
 local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
   "WoW Forever  |  Acht Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.7.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.8.0-alpha")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -233,9 +233,21 @@ local planClear=button(frame,112,25,314,-383,"Plan leeren",function()
   CP:ClearPlanCraft(CP.db.view)
   CP:Render()
 end)
-local planHint=text(frame,"GameFontDisableSmall",435,-386,285,"Nur bekannte Rezepte")
+local autoRouteButton=button(frame,142,25,435,-383,"Auto-Route",function()
+  local key=CP.db.view
+  local p=CP:PlanFor(key)
+  if not CP:SetPlanRange(key,fieldNumber(rangeStart,p.start),
+      fieldNumber(rangeEnd,p.target)) then
+    CP:Say("Ungültiger Bereich.")
+    return
+  end
+  local ok,route=CP:BuildRouteForCurrentPlan(key)
+  if not ok then CP:Say(route or "Keine Kandidaten.") end
+  CP:Render()
+end)
+local planHint=text(frame,"GameFontDisableSmall",588,-386,150,"GPL-Katalog")
 local planControls={rangeLabel,rangeStart,targetLabel,rangeEnd,quantityLabel,
- rangeQty,rangeApply,planAdd,planDraft,planPrint,planClear,planHint}
+ rangeQty,rangeApply,planAdd,planDraft,planPrint,planClear,autoRouteButton,planHint}
 local syncedPlan
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -391,9 +403,14 @@ local function setRecipeRows(key,options,chosen)
     local active=chosen and entry.id==chosen.id
     b.nameLabel:SetText((active and GREEN.."● AUSGEWÄHLT  "..RESET or "")
       ..entry.name)
-    local price=entry.unknown and ("AH-Preis unvollständig") or gold(entry.cost)
-    b.infoLabel:SetText(string.format("Skill %.0f%%  •  %s / Skillpunkt  •  %d Materialien fehlen",
-      entry.chance*100,price,entry.missing))
+    local price=entry.unknown and "Preis unvollständig" or gold(entry.cost)
+    local ids={}
+    for _,mat in ipairs(entry.mats) do ids[#ids+1]=mat[1] end
+    local summary=CP.PriceSummary and CP:PriceSummary(ids)
+    local ageInfo=summary and (summary.stale>0 and " · AH ALT"
+      or (summary.unknown>0 and " · Scan ?" or "")) or ""
+    b.infoLabel:SetText(string.format("Skill %.0f%%  •  %s / Skillpunkt  •  %d Teile fehlen%s",
+      entry.chance*100,price,entry.missing,ageInfo))
     b:Show()
   end
   content:SetHeight(math.max(270,#options*61+16))
@@ -489,13 +506,14 @@ local function materialCards(materials,caption)
     local total,bags,bank,live,known=CP:ItemAvailability(id)
     local missing=math.max(0,qty-total)
     local price=CP:Price(id)
+    local age=CP.PriceFreshness and CP:PriceFreshness(id) or "Alter unbekannt"
     local status=live and "LIVE" or (known and "LETZTER STAND" or "UNBEKANNT")
     entries[#entries+1]={
       title=(CP:ItemName(id)).."  ·  benötigt "..qty.."  ·  fehlt "..missing,
       detail="Tasche "..bags.."  ·  Bank "..bank.." ("..status..")  ·  Gesamt "..total,
-      footer=missing>0 and (price and "Voraussichtlicher Zukauf "..gold(missing*price)
-        or "Für fehlende Materialien liegt kein AH-Preis vor")
-        or "✓ Genügend Material laut erfasstem Bestand",
+      footer=(missing>0 and (price and "Zukauf "..gold(missing*price)
+        or "Fehlender Preis")
+        or "✓ Genügend Material").." · "..age,
       icon=itemIcon(id),color=missing>0 and "red" or "green"
     }
   end
@@ -742,7 +760,7 @@ function CP:Render()
   end
   priceText:SetText("Preis: "..(self.db.mode=="cash" and "Zukauf" or "Materialwert")
     .."  |  "..self:BankStatus()
-    .."  |  AH: gespeicherter Scan")
+    .."  |  AH: gespeichert  |  Rezeptkatalog: 1.60.1.704xx")
 
   local isTrainers=tab=="trainers"
   local isRecipes=tab=="now" and not prof.gathering
@@ -764,7 +782,8 @@ function CP:Render()
   if isPlan then
     syncPlanFields(key)
     local choice=self:SelectedOption(key)
-    planHint:SetText(choice and ("Rezept: "..choice.name) or "Erst ein Rezept auswählen")
+    planHint:SetText("Katalog "..self:CatalogCount(key).." Rezepte")
+    autoRouteButton:SetEnabled(self:Catalog(key)~=nil)
   end
   contentPanel:ClearAllPoints()
   contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
@@ -784,8 +803,11 @@ function CP:Render()
       {title="Berufe",detail="/cp ingi · /cp bergbau · /cp schmied · /cp vz",
        footer="/cp schneider · /cp leder · /cp kraeuter · /cp alchemie",
        icon="Interface\\Icons\\INV_Misc_Note_01",color="blue"},
-      {title="Mehrstufiger Einkaufsplan",detail="Start/Ziel/Menge im Planer einstellen; Rezept in Jetzt skillen auswählen.",
-       footer="Schnellschritt +10 · Liste im Chat · Plan leeren · /cp einkauf",
+      {title="Automatischer Rezeptplan",detail="Auto-Route schätzt einen Weg bis zum frei gewählten Ziel.",
+       footer="GPL-Katalog, Kosten und Fertigungsketten; Preise/Trainer bitte prüfen.",color="gold",
+       icon="Interface\\Icons\\INV_Misc_Bag_08"},
+      {title="Mehrstufiger Einkaufsplan",detail="Start/Ziel/Menge einstellen; Rezepte weiterhin manuell auswählbar.",
+       footer="Auto-Route · /cp autoplan · Liste im Chat · Plan leeren · /cp einkauf",
        icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"},
       {title="Preise & Sortierung",detail="/cp sort cost|chance|missing|name · /cp mode cash|value",
        footer="/cp bank on|off · /cp liste · /cp refresh",
@@ -849,6 +871,79 @@ function CP:Render()
         icon="Interface\\Icons\\INV_Misc_Herb_07",color="gold"
       }})
     else
+      local route=self:AutoRouteShopping(key)
+      if route then
+        local cards={}
+        cards[#cards+1]={
+          title=string.format("AUTO-ROUTE · %d → %d · berechnet bis %d",
+            route.first,route.target,route.reached),
+          detail=#route.steps.." Fertigungsetappen · geschätzter Zukauf "..gold(route.price),
+          footer=route.blocked and ("Bei "..route.blocked.." fehlt ein geeignetes Trainerrezept.")
+            or "Vorschlag aus Client-Katalog; keine garantierte oder mathematisch globale Optimum-Route.",
+          icon="Interface\\Icons\\INV_Misc_Note_01",
+          color=route.blocked and "red" or "gold"
+        }
+        if route.unpriced>0 or route.stale>0 or route.unknownAge>0 then
+          cards[#cards+1]={
+            title="Preiswarnungen",
+            detail=route.unpriced.." ohne Preis · "..route.stale.." veraltet · "
+              ..route.unknownAge.." mit unbekanntem Scan-Alter",
+            footer="Vor Einkäufen Auctionator erneut scannen; Preise variieren.",
+            icon="Interface\\Icons\\INV_Misc_Coin_01",color="red"
+          }
+        end
+        cards[#cards+1]={
+          title="Datengrundlage: "..self.catalogBuild,
+          detail=route.assumptions.." Schritte verwenden Lehrer-/Startrezepte ohne aktuelle Spielbestätigung.",
+          footer="Blizzard-Hotfixes und Trainerangebote können vom Katalog abweichen.",
+          icon="Interface\\Icons\\INV_Misc_Book_09",color="gold"
+        }
+        for _,step in ipairs(route.steps) do
+          local stamp=step.source=="known" and "im Spiel gelernt"
+            or (step.source=="trainer" and "beim Lehrer prüfen" or "Startrezept")
+          cards[#cards+1]={
+            title=string.format("%d–%d · %dx %s",step.first,step.last,
+              step.crafts,step.name),
+            detail="Skillchance aus früherem Forever-Client · "..stamp,
+            footer="Zeitpunkt und Anzahl sind geschätzt; Skillfarbe im Spiel prüfen.",
+            icon="Interface\\Icons\\INV_Misc_EngGizmos_17",
+            color=step.uncertain and "gold" or "green"
+          }
+        end
+        if #route.intermediates>0 then
+          cards[#cards+1]={
+            title="Herstellungs- und Zwischenproduktkette",
+            detail="Rohstoffe werden entweder gekauft oder über günstigere bekannte Rezepte verarbeitet.",
+            footer="Die Preiswahl berücksichtigt vorhandene Materialien einmalig je Plan.",
+            icon="Interface\\Icons\\INV_Misc_Bag_08",color="blue"
+          }
+          for _,node in ipairs(route.intermediates) do
+            cards[#cards+1]={
+              title=node.count.."x "..node.name,
+              detail="Im Plan hergestellte Einheit(en) oder Zwischenprodukt.",
+              footer="Nur soweit eigene Berufe und Rezeptquellen dies erlauben.",
+              icon="Interface\\Icons\\INV_Misc_EngGizmos_17",color="blue"
+            }
+          end
+        end
+        if #route.materials==0 then
+          cards[#cards+1]={title="Kein Zukauf erkannt",detail="Laut zuletzt erfassten Beständen und den geschätzten Schritten.",
+            footer="Auf unbekannte Zutaten und veraltete Bankdaten achten.",color="green"}
+        end
+        for _,mat in ipairs(route.materials) do
+          local age=self:PriceFreshness(mat.id)
+          cards[#cards+1]={
+            title=string.format("%dx %s",mat.missing,mat.name),
+            detail=mat.cost and ("Zukauf "..gold(mat.cost).." · "..mat.source)
+              or "Preis fehlt – Kosten nicht vollständig",
+            footer=age,
+            icon=itemIcon(mat.id),
+            color=(mat.freshness=="stale" or mat.freshness=="aging" or not mat.price)
+              and "red" or "green"
+          }
+        end
+        setVisualCards(cards)
+      else
       local plan=self:PlanShopping(key)
       local cards={}
       local range=plan.last-plan.first
@@ -905,6 +1000,7 @@ function CP:Render()
         end
       end
       setVisualCards(cards)
+      end
     end
   elseif prof.gathering then
     section:SetText(prof.name..": aktueller Sammelabschnitt")
@@ -961,7 +1057,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.7 Alpha  |  Materialliste: geplante Mengen, keine Skillgarantie  |  /cp hilfe")
+  footer:SetText("CraftPilot 0.8 Alpha  |  GPL-Katalog mit früherem Forever-Build · Preisalter prüfen")
 end
 
 function CP:ToggleWindow()

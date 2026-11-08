@@ -1,11 +1,11 @@
-# CraftPilot 0.7.0-alpha – Installationspaket / Installation
+# CraftPilot 0.8.0-alpha – Installationspaket / Installation
 
-[CraftPilot 0.7.0-alpha herunterladen / Download](CraftPilot-0.7.0-alpha.zip)
+[CraftPilot 0.8.0-alpha herunterladen / Download](CraftPilot-0.8.0-alpha.zip)
 
-Installationsfertiges `CraftPilot/`-Verzeichnis mit `CraftPilot.toc`, Lua-Modulen, GPL-3.0-Lizenz und README. Den enthaltenen Ordner in das AddOns-Verzeichnis von WoW Forever entpacken und `/cp` im Spiel eingeben.
+Dieses Paket enthält den installierbaren Ordner `CraftPilot/`, inklusive aller Lua-Dateien, der zugeschriebenen GPL-3.0-Rezeptdatenbank, den Original-Credits, Lizenz und README. Den enthaltenen Ordner ins AddOns-Verzeichnis von WoW Forever entpacken, Spiel starten und `/cp` eingeben.
 
-Install-ready `CraftPilot/` folder containing the TOC, Lua modules, GPL-3.0 license and README. Extract into the WoW Forever AddOns directory and type `/cp`.
+The archive contains the install-ready `CraftPilot/` folder, Lua modules, attributed GPL-3.0 recipe data, original credits, license and README. Extract the included folder to the WoW Forever AddOns directory and run `/cp`.
 
-**Neu / New:** Einheitliche Karten in Materialien, Etappen und Hilfe; anklickbare Etappen, optionales Öffnen gelernter Berufsfenster und ein Einkaufsliste-Planer für frei wählbare Skillbereiche.
+**0.8.0-alpha:** Auto-Route (heuristic), recursive make-or-buy bill of materials, Auctionator scan age. Older client snapshot 1.60.1.704xx; availability and actual recipes must be checked in-game.
 
-**Alpha:** Die Materialliste ist korrekt für explizit ausgewählte Rezepte und Stückzahlen; kein garantiert kompletter Skillweg über unbekannte spätere Rezepte. Die Eignung der Client-API muss ingame geprüft werden.
+**Hinweis:** Kein im Forever-Liveclient bestätigtes Release. Die automatisierten Tests können Ingame-Verhalten nicht vollständig abdecken.
