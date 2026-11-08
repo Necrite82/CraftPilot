@@ -41,7 +41,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 
 ## Installation
 
-1. Unter **Code → Download ZIP** den aktuellen Stand laden, oder ein passendes Release-Paket verwenden, sobald eines angeboten wird.
+1. Das **[CraftPilot-0.4.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.4.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.

@@ -29,7 +29,7 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 
 ## Installation
 
-1. Download the repository ZIP from **Code → Download ZIP** (or use a compatible release when available).
+1. Download the **[CraftPilot-0.4.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.4.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
