@@ -1,6 +1,7 @@
 -- CraftPilot: prospective profession routes and recursive make-or-buy costs.
 -- Original implementation; recipe records are GPL-3.0 data with separate credits.
 local _,CP=...
+local L=CP.L
 local function shallow(t)
   local out={}
   for k,v in pairs(t or {}) do out[k]=v end
@@ -128,7 +129,7 @@ function CP:GenerateAutomaticRoute(key,first,last)
   local noCandidate
   local assumptions=0
   local catalog=self:Catalog(key)
-  if not catalog then return nil,"Für diesen Beruf ist kein Herstellungs-Katalog vorhanden." end
+  if not catalog then return nil,L("Für diesen Beruf ist kein Herstellungs-Katalog vorhanden.") end
   while skill<finish do
     local candidateRows=self:CatalogCandidateRecipes(key,skill)
     local selected,selectedTrial,ranking
@@ -152,7 +153,7 @@ function CP:GenerateAutomaticRoute(key,first,last)
       old.crafts=old.crafts+crafts
       old.last=skill+1
     else
-      steps[#steps+1]={id=selected.id,key=key,name=selected.recipe.name,
+      steps[#steps+1]={id=selected.id,key=key,name=self:RecipeName(key,selected.id,selected.recipe.name),
         first=skill,last=skill+1,crafts=crafts,
         source=selected.source,uncertain=selected.source~="known"}
     end
@@ -175,7 +176,7 @@ function CP:GenerateAutomaticRoute(key,first,last)
     local rec=catalog.recipes[recipeID] or
       (self:Catalog("mining") and self:Catalog("mining").recipes[recipeID])
     intermediates[#intermediates+1]={id=recipeID,
-      name=rec and rec.name or ("Rezept "..recipeID),count=count}
+      name=rec and rec.name or (L("Rezept ")..recipeID),count=count}
   end
   table.sort(intermediates,function(a,b) return a.name<b.name end)
   return {
@@ -207,14 +208,14 @@ end
 function CP:PrintRouteShopping(key)
   local route=self:AutoRouteShopping(key)
   if not route then return false end
-  self:Say(string.format("Auto-Entwurf %d–%d, vorläufig bis %d, %d Rezeptschritte.",
+  self:Say(string.format(L("Auto-Entwurf %d–%d, vorläufig bis %d, %d Rezeptschritte."),
     route.first,route.target,route.reached,#route.steps))
   for _,mat in ipairs(route.materials) do
     local info=self:FormatMoney(mat.cost)
     self:Say(string.format("%d x %s – %s (%s)",mat.missing,mat.name,info,
       self:PriceFreshness(mat.id)))
   end
-  if route.blocked then self:Say("ABBRUCH: Ab Skill "..route.blocked.." kein geeignetes zugängliches Rezept bekannt.") end
-  self:Say("Schätzung mit GPL-3.0-Katalog; Trainer/Farben/Preise und zukünftige Verfügbarkeit prüfen.")
+  if route.blocked then self:Say(L("ABBRUCH: Ab Skill ")..route.blocked..L(" kein geeignetes zugängliches Rezept bekannt.")) end
+  self:Say(L("Schätzung mit GPL-3.0-Katalog; Trainer/Farben/Preise und zukünftige Verfügbarkeit prüfen."))
   return true
 end

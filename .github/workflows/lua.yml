@@ -14,9 +14,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y lua5.4
       - name: Check Lua syntax
         run: |
-          for file in *.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
+          for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
       - name: Run smoke tests
         run: lua5.4 tests/test.lua
+      - name: Verify pinned camping import
+        run: python3 tools/import_camping.py --source-dir "$RUNNER_TEMP/camping-inputs" --download --check
       - name: Verify historical 0.8 ZIP remains unchanged
         run: |
           python3 - <<'PY'

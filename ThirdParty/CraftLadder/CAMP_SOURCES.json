@@ -1,0 +1,24 @@
+{
+  "revision": "b9c61346ad4cf63245f35cadb1e0a88467fb6e75",
+  "build": "1.60.1.70425",
+  "generatedOn": "2026-10-16",
+  "license": "GPL-3.0",
+  "inputs": {
+    "Camp.lua": {
+      "url": "https://raw.githubusercontent.com/saintmodx/craft-ladder/b9c61346ad4cf63245f35cadb1e0a88467fb6e75/CraftLadder/Data/Camp.lua",
+      "sha256": "25acb7fa6e4b469b4fcee0642c2b5c3deafdd16f34c0170e96f5d042f97d4904"
+    },
+    "Cooking.lua": {
+      "url": "https://raw.githubusercontent.com/saintmodx/craft-ladder/b9c61346ad4cf63245f35cadb1e0a88467fb6e75/CraftLadder/Data/Cooking.lua",
+      "sha256": "cd9c626e35c10b6954df8a828280976243f3e7a55d254b8dbff83fbf77ecddac"
+    },
+    "FirstAid.lua": {
+      "url": "https://raw.githubusercontent.com/saintmodx/craft-ladder/b9c61346ad4cf63245f35cadb1e0a88467fb6e75/CraftLadder/Data/FirstAid.lua",
+      "sha256": "3bb60e9e3e6aa7472f703adaaef31c8a4a1706df462250aa98848e6bf239923b"
+    },
+    "Fishing.lua": {
+      "url": "https://raw.githubusercontent.com/saintmodx/craft-ladder/b9c61346ad4cf63245f35cadb1e0a88467fb6e75/CraftLadder/Data/Fishing.lua",
+      "sha256": "f379f64c93305a10647395d1d279efef39709c7d4c5a8d37066e6235312b7221"
+    }
+  }
+}

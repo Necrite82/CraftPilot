@@ -1,9 +1,10 @@
 -- Original CraftPilot settings and minimap integration; no external libraries.
 local _,CP=...
+local L=CP.L
 local ICON="Interface\\AddOns\\CraftPilot\\Media\\CraftPilot"
 
 function CP:FormatMoney(value)
-  if type(value)~="number" then return "Preis fehlt" end
+  if type(value)~="number" then return L("Preis fehlt") end
   local amount=math.max(0,math.floor(value+.5))
   return string.format("%d|TInterface\\MoneyFrame\\UI-GoldIcon:12:12:0:0|t %d|TInterface\\MoneyFrame\\UI-SilverIcon:12:12:0:0|t %d|TInterface\\MoneyFrame\\UI-CopperIcon:12:12:0:0|t",
     math.floor(amount/10000),math.floor(amount%10000/100),amount%100)
@@ -57,9 +58,9 @@ function CP:UpdateMinimapButton()
       if GameTooltip then
         GameTooltip:SetOwner(b,"ANCHOR_LEFT")
         GameTooltip:SetText("CraftPilot")
-        GameTooltip:AddLine("Linksklick: öffnen / schließen",1,1,1)
-        GameTooltip:AddLine("Rechtsklick: Einstellungen",1,1,1)
-        GameTooltip:AddLine("Ziehen: Position ändern",.7,.8,.9)
+        GameTooltip:AddLine(L("Linksklick: öffnen / schließen"),1,1,1)
+        GameTooltip:AddLine(L("Rechtsklick: Einstellungen"),1,1,1)
+        GameTooltip:AddLine(L("Ziehen: Position ändern"),.7,.8,.9)
         GameTooltip:Show()
       end
     end)
@@ -133,48 +134,67 @@ end
 
 function CP:SettingsCards()
   local ui=self.db.ui
-  local function toggle(key) return function() CP:ToggleSetting(key) end end
-  local function state(value) return value and "AN" or "AUS" end
+  local toggleKeys={}
+  local function toggle(key)
+    local action=function() CP:ToggleSetting(key) end
+    toggleKeys[action]=key
+    return action
+  end
+  local function enabled(key)
+    if key=="bank" then return self.db.includeBank end
+    if key=="hideMinimap" then return not ui.hideMinimap end
+    return ui[key]==true
+  end
+  local function state(value) return value and L("AN") or L("AUS") end
   local function card(title,detail,action,icon,footer)
-    return {title=title,detail=detail,footer=footer or "Anklicken zum Ändern",action=action,icon=icon or ICON,color="blue"}
+    local row={title=title,detail=detail,footer=footer or L("Anklicken zum Ändern"),action=action,icon=icon or ICON,color="blue"}
+    local key=toggleKeys[action]
+    if key and key~="mode" then
+      row.slider={kind="toggle",key=key,value=enabled(key) and 1 or 0,min=0,max=1,step=1,apply=function(value)
+        if (value==1)~=enabled(key) then CP:ToggleSetting(key) end
+      end}
+      row.footer=L("Schalter ziehen oder anklicken: AN / AUS")
+    end
+    return row
   end
   local function slider(label,value,min,max,step,unit,apply)
-    return {title=label..value..unit,footer="Regler ziehen: "..min.." bis "..max..unit,
+    return {title=label..value..unit,footer=L("Regler ziehen: ")..min..L(" bis ")..max..unit,
       icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
   end
   return {
-    card("Minimap-Button: "..state(not ui.hideMinimap),"Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn.",toggle("hideMinimap")),
-    slider("Minimap-Position: ",math.floor(ui.minimapAngle),0,359,1," Grad",function(value)
+    card(L("Sprache: ")..(CP.locale=="deDE" and "Deutsch" or "English"),L("Automatisch nach Clientsprache; andere Sprachen verwenden Englisch."),nil),
+    card(L("Minimap-Button: ")..state(not ui.hideMinimap),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),toggle("hideMinimap")),
+    slider(L("Minimap-Position: "),math.floor(ui.minimapAngle),0,359,1,L(" Grad"),function(value)
       ui.minimapAngle=value;CP:PositionMinimapButton()
     end),
-    slider("Fensterbreite: ",ui.width,750,1100,10," px",function(value)
+    slider(L("Fensterbreite: "),ui.width,750,1100,10," px",function(value)
       ui.width=value;CP.frame:SetWidth(value)
     end),
-    slider("Fensterhöhe: ",ui.height,570,930,10," px",function(value)
+    slider(L("Fensterhöhe: "),ui.height,570,930,10," px",function(value)
       ui.height=value;CP.frame:SetHeight(value)
     end),
-    card("Berufsfenster automatisch öffnen: "..state(ui.autoOpen),"Beim Anklicken eines erlernten Berufs; im Kampf möglicherweise gesperrt.",toggle("autoOpen")),
-    card("Berufsauswahl: "..(ui.showAllProfessions and "alle Berufe" or "eigene zuerst"),"Weitere Berufe bleiben über die Umschaltung erreichbar.",toggle("showAllProfessions")),
-    card("Bankbestände berücksichtigen: "..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
-    card("Kostenvergleich: "..(self.db.mode=="cash" and "fehlende Materialien" or "gesamter Materialwert"),"Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte.",toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
-    card("Auto-Route: "..(ui.knownRecipesOnly and "nur erlernte Rezepte" or "Katalogvorschläge zulassen"),"Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein.",toggle("knownRecipesOnly")),
-    card("Quelldetails: "..state(ui.showSourceDetails),"Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar.",toggle("showSourceDetails")),
-    card("Design: "..ui.skin,"Automatisch mit EllesmereUI, Dunkel oder Klassisch.",function()
+    card(L("Berufsfenster automatisch öffnen: ")..state(ui.autoOpen),L("Beim Anklicken eines erlernten Berufs; im Kampf möglicherweise gesperrt."),toggle("autoOpen")),
+    card(L("Berufsauswahl: ")..(ui.showAllProfessions and L("alle Berufe") or L("eigene zuerst")),L("Weitere Berufe bleiben über die Umschaltung erreichbar."),toggle("showAllProfessions")),
+    card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
+    card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
+    card(L("Auto-Route: ")..(ui.knownRecipesOnly and L("nur erlernte Rezepte") or L("Katalogvorschläge zulassen")),L("Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein."),toggle("knownRecipesOnly")),
+    card(L("Quelldetails: ")..state(ui.showSourceDetails),L("Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar."),toggle("showSourceDetails")),
+    card(L("Design: ")..ui.skin,L("Automatisch mit EllesmereUI, Dunkel oder Klassisch."),function()
       ui.skin=ui.skin=="auto" and "dark" or (ui.skin=="dark" and "classic" or "auto")
       CP:ApplyTheme();CP:Render()
     end),
-    card("Rezeptsortierung: "..({cost="Preis",chance="Skillchance",missing="Fehlmenge",name="Name"})[ui.recipeSort],"Gilt für die Rezeptauswahl im Bereich Jetzt skillen.",function()
+    card(L("Rezeptsortierung: ")..({cost=L("Preis"),chance=L("Skillchance"),missing=L("Fehlmenge"),name="Name"})[ui.recipeSort],L("Gilt für die Rezeptauswahl im Bereich Jetzt skillen."),function()
       local nextSort={cost="chance",chance="missing",missing="name",name="cost"}
       ui.recipeSort=nextSort[ui.recipeSort] or "cost";CP:Render()
     end),
-    card("Berufsdaten aktualisieren","Aktuelles eigenes Berufsfenster und Bestände erneut einlesen.",function() CP:Refresh(true) end),
-    card("Einkaufsplan öffnen","Bereich und Mengen wählen; bekannte Rezepte hinzufügen oder Auto-Route prüfen.",function() CP:OpenTab("plan") end),
-    card("Geplante Einkaufsliste im Chat","Materialien des aktuellen mehrstufigen Einkaufsplans ausgeben.",function() CP:PrintPlanShopping(CP.db.view) end),
-    card("Materialliste des gewählten Rezepts im Chat","Fehlende Materialien für eine Herstellung des gewählten Rezepts ausgeben.",function() CP:ShowShopping() end),
-    card(self.pendingSettingsReset and "Zurücksetzen bestätigen – erneut anklicken" or "Fenster und Minimap-Position zurücksetzen",
-      "Stellt Position und Fenstergröße wieder her; Pläne und Rezeptdaten bleiben erhalten.",function() CP:ConfirmWindowReset() end),
-    card("Bedienung","Beruf wählen → Rezepte prüfen → Einkaufsplan erstellen.",nil,ICON,
-      "Alle Funktionen sind über Schaltflächen erreichbar. Slash-Befehle bleiben optional."),
+    card(L("Berufsdaten aktualisieren"),L("Aktuelles eigenes Berufsfenster und Bestände erneut einlesen."),function() CP:Refresh(true) end),
+    card(L("Einkaufsplan öffnen"),L("Bereich und Mengen wählen; bekannte Rezepte hinzufügen oder Auto-Route prüfen."),function() CP:OpenTab("plan") end),
+    card(L("Geplante Einkaufsliste im Chat"),L("Materialien des aktuellen mehrstufigen Einkaufsplans ausgeben."),function() CP:PrintPlanShopping(CP.db.view) end),
+    card(L("Materialliste des gewählten Rezepts im Chat"),L("Fehlende Materialien für eine Herstellung des gewählten Rezepts ausgeben."),function() CP:ShowShopping() end),
+    card(self.pendingSettingsReset and L("Zurücksetzen bestätigen – erneut anklicken") or L("Fenster und Minimap-Position zurücksetzen"),
+      L("Stellt Position und Fenstergröße wieder her; Pläne und Rezeptdaten bleiben erhalten."),function() CP:ConfirmWindowReset() end),
+    card(L("Bedienung"),L("Beruf wählen → Rezepte prüfen → Einkaufsplan erstellen."),nil,ICON,
+      L("Alle Funktionen sind über Schaltflächen erreichbar. Slash-Befehle bleiben optional.")),
   }
 end
 

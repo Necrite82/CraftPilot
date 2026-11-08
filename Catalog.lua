@@ -3,6 +3,7 @@
 -- ThirdParty/CraftLadder/SOURCE.md and the preserved CREDITS.txt.
 -- This module is original CraftPilot integration code.
 local _, CP = ...
+local L=CP.L
 local D=CP.Data
 local ids={
   engineering="ENGINEERING", mining="MINING",
@@ -131,8 +132,8 @@ function CP:CatalogVendorPrice(itemID)
 end
 
 function CP:CatalogNotice(key)
-  if not sourceKeys[key] then return "Kein vollständiger Rezeptkatalog; aktuelle Rezepte aus dem Berufsfenster verwenden." end
+  if not sourceKeys[key] then return L("Kein vollständiger Rezeptkatalog; aktuelle Rezepte aus dem Berufsfenster verwenden.") end
   local count=self:CatalogCount(key)
-  return string.format("%d Rezepte aus Datenstand %s; Trainerverfügbarkeit nicht live bestätigt.",
+  return string.format(L("%d Rezepte aus Datenstand %s; Trainerverfügbarkeit nicht live bestätigt."),
     count,self.catalogBuild)
 end

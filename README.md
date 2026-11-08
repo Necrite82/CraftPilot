@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.10.2-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.11.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das neue Installationspaket ist `dist/CraftPilot-0.10.2-alpha.zip`. Die älteren Archive bleiben unverändert. Es wurden keine neuen Fremddatensätze importiert. Minimap-Button und Einstellungen sind in dieser Version enthalten.
+Das vorbereitete Entwicklungspaket ist `dist/CraftPilot-0.11.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -192,3 +192,11 @@ Automatisierte Lua-Tests decken die Steuerung ab; die tatsächliche Darstellung 
 ## Korrekturen in 0.10.2
 
 Berufsfenster werden direkt aus dem Klickpfad vor der UI-Aktualisierung geöffnet, ohne `pcall` um die eingeschränkte API. Goldene Auswahlmarkierungen und grüne Erlernt-Häkchen sind Grafiken statt fontabhängiger Sonderzeichen. Das Logo liegt auf einem eigenen Rahmen und wird durch EllesmereUIs Panel-Skin nicht mit ausgeblendet. In den Einstellungen gibt es Schieberegler für Fensterbreite, Fensterhöhe und Minimap-Winkel. Ein erneuter Test im Live-Client steht noch aus.
+
+## Neu in 0.11: Camping und Sprache
+
+Der eigene Reiter **Camping** enthält die Unterbereiche **Campfires**, **Buffs** und **Objekte & Ausbauten**. Standardmäßig erscheinen alle zwölf Berufe; auf Wunsch nur der oben gewählte Beruf. Ein Objekt anklicken zeigt Lernskill, bekannte Rezept-/Blueprint-Quelle, Materialien für eine Herstellung und Fehlmengen. Buffs anklicken klappt die im Referenzstand hinterlegten Charakterstufen aus. Die drei Feuer bieten 3, 5 und 10 Plätze. 37 Objekte je Fraktion stammen aus dem eingebundenen Snapshot; Trapper's Workbench ist nur ein zusätzlicher gekennzeichneter Guide-Hinweis ohne erfundene Werte.
+
+Die Oberfläche folgt automatisch der Clientsprache: Deutsch für `deDE`, Englisch für englische und andere Clients. Rezept-/Gegenstandsnamen und verfügbare Zaubertexte werden bevorzugt aus dem Client gelesen; nicht auflösbare Referenznamen können Englisch bleiben. Gespeicherte Namen werden beim nächsten Einlesen des Berufsfensters aktualisiert.
+
+Einstellungen enthalten sichtbar gezeichnete Regler für Breite, Höhe und Minimap-Position sowie An/Aus-Schieber für die booleschen Optionen. Auswahloptionen wie Design und Sortierung bleiben anklickbar. Automatisiert geprüft, noch nicht im Forever-Spielclient visuell getestet.

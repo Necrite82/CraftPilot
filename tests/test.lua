@@ -1,4 +1,5 @@
 -- Pure Lua smoke tests for CraftPilot (no WoW client required).
+function GetLocale() return "deDE" end
 local methods = {}
 local createdTextures={}
 methods.__index = function(self,key)
@@ -111,7 +112,8 @@ C_TradeSkillUI={
 }
 local CP={}
 for _,path in ipairs({
-  "Data.lua",
+  "Locale.lua","Locales/enUS.lua","Data.lua",
+  "ThirdParty/CraftLadder/Camp.lua","ThirdParty/CraftLadder/CampingRecipes.lua",
   "ThirdParty/CraftLadder/Alchemy.lua",
   "ThirdParty/CraftLadder/Blacksmithing.lua",
   "ThirdParty/CraftLadder/Enchanting.lua",
@@ -119,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua"}) do
+  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -524,7 +526,7 @@ CP:OpenTab("settings")
 local sliders={}
 for _,control in ipairs(createdFrames) do
   local spec=rawget(control,"craftSpec")
-  if spec then sliders[spec.label]=control end
+  if spec and spec.label then sliders[spec.label]=control end
 end
 for label,value in pairs({["Fensterbreite: "]=1060,["Fensterhöhe: "]=800,["Minimap-Position: "]=270}) do
   local control=assert(sliders[label],"Missing slider: "..label)
@@ -540,3 +542,94 @@ for _,control in ipairs(createdFrames) do
   end
 end
 print("PASS: direct click-only profession open, skin-safe branding, graphic indicators and settings sliders")
+
+-- Every supported profession has camping objects; faction variants are deduplicated.
+local campProf,items={},{}
+local campRows=CP:CampingRecipes()
+for _,row in ipairs(campRows) do
+  assert(not items[row.object.item],"Duplicate camping object")
+  items[row.object.item]=true;campProf[row.prof]=true
+  for _,n in pairs(row.mats or {}) do assert(n>0 and n%1==0) end
+end
+for _,key in ipairs(CP.Data.order) do assert(campProf[key],"Missing camping profession: "..key) end
+assert(#campRows==37,"Unexpected faction-filtered camping count")
+assert(#CP.CAMP.fires==3 and CP.CAMP.fires[1].slots==3 and CP.CAMP.fires[2].slots==5 and CP.CAMP.fires[3].slots==10)
+for _,page in ipairs({"fires","objects","buffs"}) do
+  CP.db.ui.campingPage=page
+  CP.db.ui.campingAll=true
+  CP:OpenTab("camping")
+  local cards=CP:CampingCards("cooking")
+  assert(#cards>3)
+  for _,card in ipairs(cards) do if card.action then card.action() end end
+  CP:Render()
+end
+CP.db.ui.campingPage="buffs"
+CP.db.ui.campingAll=false
+CP.db.ui.campingBuff=CP.CAMP.features[1].item
+local buffCards=CP:CampingCards(CP.CAMP.features[1].prof)
+local levels=0
+for _,card in ipairs(buffCards) do if (card.title or ""):find("Bis Charakterstufe",1,true) then levels=levels+1 end end
+assert(levels==#CP.CAMP.features[1].gives,"Expanded buff levels missing")
+local originalSpell=C_Spell
+C_Spell={GetSpellDescription=function() return "Current native description" end,GetSpellName=function() return "Current native name" end}
+buffCards=CP:CampingCards(CP.CAMP.features[1].prof)
+assert(buffCards[2].detail=="Current native description" and buffCards[2].title:find("Current native name",1,true))
+C_Spell=originalSpell
+CP.db.ui.campingAll=false
+for _,row in ipairs(CP:CampingRecipes("skinning")) do assert(row.prof=="skinning") end
+local sample=CP.CAMP.fires[1]
+local prior=CP.db.recipes.cooking[sample.maker]
+CP.db.recipes.cooking[sample.maker]={name="Native camp name",learned=true,mats={{4470,7}}}
+local native=CP:CampingRecipes("cooking")[1]
+for _,row in ipairs(CP:CampingRecipes("cooking")) do if row.id==sample.maker then native=row end end
+assert(native.name=="Native camp name" and native.mats[4470]==7 and native.materialsLive)
+CP.db.recipes.cooking[sample.maker].mats=nil
+for _,row in ipairs(CP:CampingRecipes("cooking")) do if row.id==sample.maker then assert(row.mats==nil) end end
+CP.db.recipes.cooking[sample.maker]=prior
+
+-- Real slider callbacks exercise both directions, including inverted minimap visibility.
+CP:OpenTab("settings")
+for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails"}) do
+  local control
+  for _,candidate in ipairs(createdFrames) do
+    local spec=rawget(candidate,"craftSpec")
+    if spec and spec.key==key then control=candidate end
+  end
+  assert(control,"Missing on/off slider: "..key)
+  local before=control.craftSpec.value
+  control:GetScript("OnValueChanged")(control,1-before)
+  assert(control.craftSpec.value==1-before,"Switch did not update")
+  control:GetScript("OnValueChanged")(control,before)
+  assert(control.craftSpec.value==before,"Switch did not restore")
+end
+
+-- Load the actual TOC into fresh addon tables to test language at construction time.
+for _,locale in ipairs({"enUS","enGB","frFR"}) do
+  GetLocale=function() return locale end
+  CraftPilotDB={}
+  local translated={}
+  for line in io.lines("CraftPilot.toc") do
+    if line:match("%.lua$") then assert(loadfile((line:gsub("\\","/"))))("CraftPilot",translated) end
+  end
+  translated:Initialize()
+  assert(translated.locale=="enUS" and translated.L("Einstellungen")=="Settings")
+  assert(translated.Data.professions.cooking.name=="Cooking")
+  for _,key in ipairs(translated.Data.order) do
+    translated.db.view=key
+    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","settings"}) do translated:OpenTab(tab) end
+  end
+  for _,page in ipairs({"fires","objects","buffs"}) do
+    translated.db.ui.campingPage=page
+    for _,card in ipairs(translated:CampingCards("cooking")) do
+      assert(not (card.title or ""):find("Nicht als erlernt",1,true))
+    end
+  end
+  for german,english in pairs(translated.English) do
+    local function placeholders(s)
+      local values={};for value in s:gmatch("%%[sdif]") do values[#values+1]=value end
+      return table.concat(values,",")
+    end
+    assert(placeholders(german)==placeholders(english),"Translation format mismatch: "..german)
+  end
+end
+print("PASS: camping coverage, native-data precedence, all toggle sliders and English/fallback UI rendering")
