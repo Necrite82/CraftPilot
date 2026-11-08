@@ -3,7 +3,7 @@ CP.Data = {}
 local D = CP.Data
 
 D.version = "Forever 1.60.x / 2026-11-08"
-D.order = {"engineering", "mining", "blacksmithing", "enchanting", "tailoring", "leatherworking", "herbalism", "alchemy"}
+D.order = {"engineering", "mining", "blacksmithing", "enchanting", "tailoring", "leatherworking", "herbalism", "alchemy", "skinning", "cooking", "firstaid", "fishing"}
 D.professions = {
   engineering = {id=202, name="Ingenieurskunst", short="Ingi"},
   mining = {id=186, name="Bergbau", short="Bergbau", gathering=true},
@@ -13,6 +13,24 @@ D.professions = {
   leatherworking = {id=165, name="Lederverarbeitung", short="Leder"},
   herbalism = {id=182, name="Kräuterkunde", short="Kräuter", gathering=true},
   alchemy = {id=171, name="Alchemie", short="Alchemie"},
+  skinning = {id=393, name="Kürschnerei", short="Kürschner", gathering=true, crafting=true, ranksUnverified=true},
+  cooking = {id=185, name="Kochen", short="Kochen", secondary=true, ranksUnverified=true},
+  firstaid = {id=129, name="Erste Hilfe", short="Erste Hilfe", secondary=true, ranksUnverified=true},
+  fishing = {id=356, name="Angeln", short="Angeln", secondary=true, gathering=true, crafting=true, ranksUnverified=true},
+}
+D.professionIcons = {
+  engineering="Interface\\Icons\\Trade_Engineering",
+  mining="Interface\\Icons\\Trade_Mining",
+  blacksmithing="Interface\\Icons\\Trade_BlackSmithing",
+  enchanting="Interface\\Icons\\Trade_Engraving",
+  tailoring="Interface\\Icons\\Trade_Tailoring",
+  leatherworking="Interface\\Icons\\Trade_LeatherWorking",
+  herbalism="Interface\\Icons\\Trade_Herbalism",
+  alchemy="Interface\\Icons\\Trade_Alchemy",
+  skinning="Interface\\Icons\\INV_Misc_Pelt_Wolf_01",
+  cooking="Interface\\Icons\\INV_Misc_Food_15",
+  firstaid="Interface\\Icons\\Spell_Holy_SealOfSacrifice",
+  fishing="Interface\\Icons\\Trade_Fishing",
 }
 D.rankLevelExceptions = {herbalism = { [75]=0, [150]=0, [225]=0, [300]=0 }}
 D.ranks = {

@@ -1,0 +1,27 @@
+name: Publish GitHub alpha
+on:
+  push:
+    tags: ['v0.9.0-alpha']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - name: Validate runtime
+        run: |
+          for file in *.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
+          lua5.4 tests/test.lua
+      - name: Verify install archive
+        run: python tools/build_release.py --check
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" dist/CraftPilot-0.9.0-alpha.zip --verify-tag --prerelease --title "CraftPilot 0.9.0-alpha" --notes-file docs/RELEASE_0.9.0-alpha.md

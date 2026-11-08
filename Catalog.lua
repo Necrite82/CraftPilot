@@ -130,7 +130,7 @@ function CP:CatalogVendorPrice(itemID)
 end
 
 function CP:CatalogNotice(key)
-  if not sourceKeys[key] then return "Nur Sammlung; kein vollständiger Herstellungs-Katalog." end
+  if not sourceKeys[key] then return "Kein vollständiger Rezeptkatalog; aktuelle Rezepte aus dem Berufsfenster verwenden." end
   local count=self:CatalogCount(key)
   return string.format("%d Rezepte aus Datenstand %s; Trainerverfügbarkeit nicht live bestätigt.",
     count,self.catalogBuild)

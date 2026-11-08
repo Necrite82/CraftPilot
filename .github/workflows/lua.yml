@@ -17,10 +17,11 @@ jobs:
           for file in *.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
       - name: Run smoke tests
         run: lua5.4 tests/test.lua
-      - name: Verify install ZIP matches the source
+      - name: Verify historical 0.8 ZIP remains unchanged
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import hashlib
           from zipfile import ZipFile
           archive = Path("dist/CraftPilot-0.8.0-alpha.zip")
           assert archive.is_file(), "Missing install ZIP"
@@ -38,10 +39,11 @@ jobs:
               "ThirdParty/CraftLadder/CREDITS.txt",
               "ThirdParty/CraftLadder/SOURCE.md"
           ]
+          assert hashlib.sha256(archive.read_bytes()).hexdigest() == "6a4ee1e0d086f164bbd35a84cf8a1e167090fafe5b4ad07879240bfba3717299", "Historical archive changed"
           with ZipFile(archive) as zipfile:
               assert zipfile.testzip() is None, "Corrupt ZIP entry"
               assert set(zipfile.namelist()) == {"CraftPilot/" + name for name in expected}
-              for filename in expected:
-                  assert zipfile.read("CraftPilot/" + filename) == Path(filename).read_bytes(), filename
-          print("PASS: install-ready 0.8.0-alpha ZIP matches repository files")
+          print("PASS: historical 0.8 archive integrity and pinned SHA-256; development is not packaged")
           PY
+      - name: Verify current alpha install archive matches source
+        run: python3 tools/build_release.py --check

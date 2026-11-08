@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.8.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.9.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -18,8 +18,12 @@ CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direk
 - Lederverarbeitung
 - Kräuterkunde
 - Alchemie
+- Kürschnerei
+- Kochen
+- Erste Hilfe
+- Angeln
 
-Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sechs Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau und Kräuterkunde zeigen geeignete Sammelstufen und Gebiete. Berufs-Skillwerte können auch ohne offenes Rezeptfenster über die Charakter-Berufsübersicht ausgelesen werden.
+Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterlegt. Für die sechs Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau und Kräuterkunde zeigen geeignete Sammelstufen und Gebiete. Berufs-Skillwerte können auch ohne offenes Rezeptfenster über die Charakter-Berufsübersicht ausgelesen werden.
 
 **Wichtige Abgrenzung:** Ein umfangreicher GPL-3.0-Rezeptkatalog für die sechs Herstellungsberufe ist jetzt integriert. Er stammt aus einer **älteren Forever-Clientversion** (Oktober 2026, 1.60.1.70425–70450); nicht jede Rezeptquelle oder Trainerstufe ist im aktuellen Live-Spiel bestätigt. Automatische Routen sind **Schätzungen** und ausdrücklich nicht nachweislich global kostenoptimal. Bergbau behält eine Sammlungsübersicht, ergänzt um Schmelzrezepte für Herstellungsketten; Kräuterkunde ist eine Sammelroute.
 
@@ -33,7 +37,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 | Eigene Materialien | Taschenbestände abziehen; optional Bankbestände, soweit die Spiel-API sie bereitstellt |
 | Auktionshauspreise | Letzte gespeicherte Einzelpreise aus Auctionator auswerten |
 | Kostenmodus | Zusätzliche Ausgaben minimieren oder den Marktwert eigener Materialien berücksichtigen |
-| Skill-Etappen | Kürzere, nach Material- und Ausbildungswechseln strukturierte Abschnitte von 1 bis 300 für alle acht Berufe |
+| Skill-Etappen | Kürzere, nach Material- und Ausbildungswechseln strukturierte Abschnitte von 1 bis 300 für die bisherigen acht Berufe |
 | Wegpunkte | Liste aller hinterlegten Lehrer der eigenen Fraktion; einzeln per Klick auswählbar, mit Rang-Empfehlung und Same-Map-Abstand |
 | Einkaufsliste | Fehlende Materialien für **die nächste empfohlene Herstellung** |
 | Oberfläche | Verschiebbares Fenster, gespeicherte Position und fünf Registerkarten |
@@ -44,7 +48,7 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 
 ## Installation
 
-1. Das **[CraftPilot-0.8.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.8.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.9.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.9.0-alpha/CraftPilot-0.9.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -164,3 +168,11 @@ Die Lua-Syntax und Grundfunktionen werden automatisiert mit [Lua-Smoketests](tes
 CraftPilot-Quellcode ist unter **GNU GPL-3.0-only** lizenziert, siehe [LICENSE](LICENSE). Fremde Addons und Spieldaten unterliegen weiterhin den Rechten ihrer jeweiligen Inhaber. Die Datenherkunft und Grenzen sind in [DATA_SOURCES.md](DATA_SOURCES.md) erläutert.
 
 World of Warcraft ist eine Marke von Blizzard Entertainment. CraftPilot ist ein unabhängiges Community-Projekt und nicht mit Blizzard verbunden.
+
+## Entwicklung: alle zwölf Berufe
+
+Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere eingeblendet. Auch Kochen, Erste Hilfe und Angeln werden aus den Nebenberufs-Slots erkannt. Neue Berufsfenster liefern ihre erlernten Rezepte, Materialien und Skillfarben direkt aus dem Client. Für die vier ergänzten Berufe sind noch keine vollständigen Etappen, Lehrerstandorte oder Fremdkataloge hinterlegt. Ausbildungsanforderungen werden nicht aus den Hauptberufen übernommen. Juwelenschleifen und Inschriftenkunde gehören nicht zu den zwölf bestätigten Forever-Berufen.
+
+Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
+
+Das neue Installationspaket ist `dist/CraftPilot-0.9.0-alpha.zip`. Die älteren Archive bleiben unverändert. Es wurden keine neuen Fremddatensätze importiert. Minimap-Button und Einstellungsbereich folgen in einer späteren Version.

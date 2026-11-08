@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.8.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.9.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -12,7 +12,7 @@ CraftPilot compares currently learned recipes using materials available to the c
 
 Engineering, Mining, Blacksmithing, Enchanting, Tailoring, Leatherworking, Herbalism and Alchemy.
 
-All eight have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and stored auction prices. Mining and Herbalism offer gathering progression overviews. Profession levels can also be read from the character profession list.
+The original eight have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and stored auction prices. Mining and Herbalism offer gathering progression overviews. Profession levels can also be read from the character profession list.
 
 **Scope:** An attributed GPL-3.0 crafting recipe snapshot is now bundled for the six crafting professions, plus a smelting subset for Mining. The source client build (1.60.1.70425–70450, October 2026) predates the latest live build; trainer availability and current skill colors are not guaranteed. Routes are estimates, not proven global cost optima.
 
@@ -31,7 +31,7 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 
 ## Installation
 
-1. Download the **[CraftPilot-0.8.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.8.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.9.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.9.0-alpha/CraftPilot-0.9.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -102,3 +102,9 @@ For bug reports, include the game build, addon version, profession, skill level,
 CraftPilot's own code is licensed under **GNU GPL-3.0-only**; see [LICENSE](LICENSE). Third-party addons and game assets retain their own rights. Sources and limitations are documented in [DATA_SOURCES.md](DATA_SOURCES.md).
 
 World of Warcraft is a trademark of Blizzard Entertainment. This is an independent community project, not affiliated with Blizzard.
+
+## Development: twelve professions
+
+Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
+
+Install `dist/CraftPilot-0.9.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are planned for a later version.

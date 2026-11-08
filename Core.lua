@@ -131,9 +131,9 @@ end
 -- require an open crafting window to display current rank or skill.
 function CP:RefreshProfessionSkills()
   if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return end
-  local ok,first,second=pcall(GetProfessions)
+  local ok,first,second,archaeology,fishing,cooking,firstaid=pcall(GetProfessions)
   if not ok then return end
-  for _,index in ipairs({first or false,second or false}) do
+  for _,index in ipairs({first or false,second or false,fishing or false,cooking or false,firstaid or false}) do
     if type(index)=="number" then
       local success,name,icon,skill,cap,abilities,spellOffset,skillLine=pcall(GetProfessionInfo,index)
       if success and type(skill)=="number" and type(cap)=="number" then
@@ -171,6 +171,8 @@ function CP:DetectProfession()
     blacksmithing={"schmiede","blacksmith"}, enchanting={"verzauber","enchant"},
     herbalism={"kräuter","kraeuter","herbal"}, alchemy={"alchem"},
     tailoring={"schneid","tailor"}, leatherworking={"lederverarbeit","leatherwork"},
+    skinning={"kürschner","kuerschner","skinning"}, cooking={"kochen","cooking"},
+    firstaid={"erste hilfe","first aid"}, fishing={"angeln","fishing"},
   }
   for key, names in pairs(patterns) do
     for _,needle in ipairs(names) do
@@ -249,7 +251,7 @@ end
 local odds={ [0]=1, [1]=0.70, [2]=0.35, [3]=0 }
 function CP:Options(profession)
   local p=self.db.professions[profession]
-  if not p or D.professions[profession].gathering then return {} end
+  if not p or (D.professions[profession].gathering and not D.professions[profession].crafting) then return {} end
   local values={}
   -- Recipe difficulty refers only to the skill at the time of capture.
   for id,recipe in pairs(self.db.recipes[profession] or {}) do
@@ -319,6 +321,7 @@ function CP:CurrentStage(key)
 end
 
 function CP:NextRank(key)
+  if D.professions[key].ranksUnverified then return nil end
   local p=self.db.professions[key] or {}
   local cap=p.cap or 0
   for _,rank in ipairs(D.ranks) do
@@ -466,9 +469,9 @@ end
 function CP:OwnsProfession(key)
   if not self.db or not D.professions[key] then return false end
   if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return false end
-  local success,first,second=pcall(GetProfessions)
+  local success,first,second,archaeology,fishing,cooking,firstaid=pcall(GetProfessions)
   if not success then return false end
-  for _,index in ipairs({first or false,second or false}) do
+  for _,index in ipairs({first or false,second or false,fishing or false,cooking or false,firstaid or false}) do
     if type(index)=="number" then
       local ok,name,icon,skill,cap,abilities,spellOffset,skillLine=
         pcall(GetProfessionInfo,index)
@@ -476,6 +479,22 @@ function CP:OwnsProfession(key)
     end
   end
   return false
+end
+
+function CP:VisibleProfessions()
+  local owned,others={},{}
+  for _,key in ipairs(D.order) do
+    local list=self:OwnsProfession(key) and owned or others
+    list[#list+1]=key
+  end
+  if self.db.ui.showAllProfessions or #owned==0 then
+    for _,key in ipairs(others) do owned[#owned+1]=key end
+  elseif not self:OwnsProfession(self.db.view) then
+    -- Keep explicitly selected reference professions reachable without switching
+    -- the player's view during refresh or opening a profession automatically.
+    owned[#owned+1]=self.db.view
+  end
+  return owned
 end
 
 function CP:OpenOwnedProfession(key)
@@ -552,7 +571,7 @@ end
 
 function CP:DraftPlanStep(key)
   local p=self:PlanFor(key)
-  if not p or D.professions[key].gathering then return false end
+  if not p or (D.professions[key].gathering and not D.professions[key].crafting) then return false end
   local current=(self.db.professions[key] or {}).skill or 0
   if current~=p.start then
     self:Say("Schnellvorschlag nur ab aktuellem Skill. Startwert anpassen.")
@@ -674,6 +693,9 @@ local aliases={
   leder="leatherworking", leatherworking="leatherworking",
   kraeuter="herbalism", ["kräuter"]="herbalism", kraut="herbalism", herbalism="herbalism",
   alchemie="alchemy", alchemy="alchemy",
+  kuerschner="skinning", ["kürschner"]="skinning", skinning="skinning",
+  kochen="cooking", cooking="cooking", erstehilfe="firstaid", firstaid="firstaid",
+  angeln="fishing", fishing="fishing",
 }
 local function command(input)
   if not CP.db then return end
