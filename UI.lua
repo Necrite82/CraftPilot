@@ -82,7 +82,7 @@ end)
 local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
   "WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.9.0-dev")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.9.0-alpha")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -1090,7 +1090,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.9 Entwicklung  |  Katalogherkunft in Prüfung · Preisalter prüfen")
+  footer:SetText("CraftPilot 0.9 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
 end
 
 function CP:ToggleWindow()

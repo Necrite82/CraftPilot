@@ -45,3 +45,5 @@ jobs:
               assert set(zipfile.namelist()) == {"CraftPilot/" + name for name in expected}
           print("PASS: historical 0.8 archive integrity and pinned SHA-256; development is not packaged")
           PY
+      - name: Verify current alpha install archive matches source
+        run: python3 tools/build_release.py --check
