@@ -2,6 +2,7 @@
 local methods = {}
 methods.__index = function(self,key)
   if key=="CreateFontString" then return function() return setmetatable({},methods) end end
+  if key=="CreateTexture" then return function() return setmetatable({},methods) end end
 
   if key=="SetSize" then return function(t,w,h) t.width=w;t.height=h end end
   if key=="SetWidth" then return function(t,w) t.width=w end end
