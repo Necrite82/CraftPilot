@@ -674,6 +674,12 @@ local function layout()
     if b.nameLabel then b.nameLabel:SetWidth(width-180) end
     if b.infoLabel then b.infoLabel:SetWidth(width-180) end
   end
+  for _,b in ipairs(visualCards) do
+    b:SetWidth(width-113)
+    if b.titleLabel then b.titleLabel:SetWidth(width-175) end
+    if b.detailLabel then b.detailLabel:SetWidth(width-175) end
+    if b.footLabel then b.footLabel:SetWidth(width-175) end
+  end
 end
 frame:SetScript("OnSizeChanged",function() layout() end)
 layout()
@@ -705,7 +711,9 @@ function CP:Render()
   end
 
   for k,b in pairs(professionButtons) do
-    b:SetText((k==key and GOLD.."● "..RESET or "")..D.professions[k].name)
+    local owned=self:OwnsProfession(k)
+    b:SetText((k==key and GOLD.."● "..RESET or "")
+      ..(owned and GREEN.."✓ "..RESET or "")..D.professions[k].name)
   end
   for k,b in pairs(tabButtons) do
     local label
@@ -739,6 +747,7 @@ function CP:Render()
   local isTrainers=tab=="trainers"
   local isRecipes=tab=="now" and not prof.gathering
   local isMats=tab=="mats" and not prof.gathering
+  local isPlan=tab=="plan" and not prof.gathering
   trainerAction1:SetShown(isTrainers)
   trainerAction2:SetShown(isTrainers)
   trainerInfo:SetShown(isTrainers)
@@ -751,9 +760,15 @@ function CP:Render()
   bankDetails:SetShown(isMats)
   bankButton:SetText("Bankmaterialien: "..(self.db.includeBank and "AN" or "AUS"))
   bankDetails:SetText(self:BankStatus())
+  for _,control in ipairs(planControls) do control:SetShown(isPlan) end
+  if isPlan then
+    syncPlanFields(key)
+    local choice=self:SelectedOption(key)
+    planHint:SetText(choice and ("Rezept: "..choice.name) or "Erst ein Rezept auswählen")
+  end
   contentPanel:ClearAllPoints()
   contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
-    (isTrainers or isRecipes or isMats) and -395 or -358)
+    isPlan and -423 or ((isTrainers or isRecipes or isMats) and -395 or -358))
   contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
 
   local lines={}
@@ -775,16 +790,99 @@ function CP:Render()
       if self.db.ui.skin=="auto" then self:ApplyTheme() end
     end
   elseif tab=="stages" then
-    section:SetText("Skill-Etappen – nach Material- und Rangwechseln")
-    for _,stage in ipairs(D.stages[key]) do
-      local marker=skill>=stage[2] and MUTED.."✓ BEENDET"..RESET
-        or (skill>=stage[1] and skill<stage[2] and GREEN.."● JETZT"..RESET
-            or "○ SPÄTER")
-      lines[#lines+1]=string.format("%s   %d–%d  |  %s",
-        marker,stage[1],stage[2],stage[3])
+    section:SetText("Skill-Etappen · eine Karte anklicken, um diesen Bereich zu planen")
+    local cards={}
+    for _,segment in ipairs(D.stages[key]) do
+      local first,last,description=segment[1],segment[2],segment[3]
+      local done=skill>=last
+      local active=skill>=first and skill<last
+      cards[#cards+1]={
+        title=string.format("Skill %d–%d  ·  %s",first,last,
+          done and "ERLEDIGT" or (active and "JETZT" or "SPÄTER")),
+        detail=description,
+        footer="Klicken → Einkaufsplan für "..first.."–"..last,
+        icon=prof.gathering and "Interface\\Icons\\INV_Misc_Herb_07"
+          or "Interface\\Icons\\INV_Misc_EngGizmos_17",
+        color=done and "green" or (active and "gold" or "blue"),
+        action=function()
+          if CP:SetPlanRange(key,first,last) then CP:OpenTab("plan") end
+        end
+      }
     end
-    lines[#lines+1]=MUTED.."Orientierung, keine vollständige Rezeptliste oder garantierte Skillroute."..RESET
-    setRows(lines)
+    cards[#cards+1]={
+      title="Orientierung, kein garantierter Rezeptweg",
+      detail="Lehrerrezepte, Skillfarben und Materialpreise ändern sich.",
+      footer="Im Einkaufsplan werden nur explizit ausgewählte Rezepte berechnet.",
+      icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"
+    }
+    setVisualCards(cards)
+  elseif tab=="plan" then
+    section:SetText("Einkaufsplan · frei wählbarer Bereich · bekannte Rezepte")
+    if prof.gathering then
+      setVisualCards({{
+        title="Sammelberuf · kein Rezept-Einkaufsplan",
+        detail="Kräuter und Erze haben keine feste Anzahl für garantierte Skillpunkte.",
+        footer="Nutze die Etappen und Lehrerübersicht für deinen Sammelweg.",
+        icon="Interface\\Icons\\INV_Misc_Herb_07",color="gold"
+      }})
+    else
+      local plan=self:PlanShopping(key)
+      local cards={}
+      local range=plan.last-plan.first
+      local summary=string.format("Skill %d → %d   ·   %d Herstellungen eingeplant",
+        plan.first,plan.last,plan.crafts)
+      local expected=plan.expectedSkillUps>0
+        and string.format("Momentane Skillchance: Ø etwa %.1f mögliche Punkte",plan.expectedSkillUps)
+        or "Skillzuwachs unbekannt, keine garantierte Zielerreichung"
+      cards[#cards+1]={
+        title=summary,
+        detail=expected,
+        footer="Zielbereich "..range.." Skillpunkte. Keine Prognose für ungeöffnete/künftige Rezepte.",
+        icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"
+      }
+      if #plan.steps==0 then
+        cards[#cards+1]={
+          title="Schritt 1: Rezept auswählen",
+          detail="In Jetzt skillen ein gelerntes Rezept anklicken, hier Menge wählen.",
+          footer="Rezept + fügt es dem Plan hinzu; Schnellschritt +10 erstellt nur den ersten Entwurf.",
+          icon="Interface\\Icons\\INV_Misc_Bag_08",color="blue"
+        }
+      else
+        for _,step in ipairs(plan.steps) do
+          local id=step.id
+          cards[#cards+1]={
+            title=step.quantity.." × "..step.name,
+            detail="Dieser Schritt wird in die gemeinsame Materialliste eingerechnet.",
+            footer="Klicken zum Entfernen dieses Rezepts aus dem Plan",
+            icon="Interface\\Icons\\INV_Misc_EngGizmos_17",
+            color="green",
+            action=function() CP:ClearPlanCraft(key,id);CP:Render() end
+          }
+        end
+      end
+      if #plan.materials>0 then
+        cards[#cards+1]={
+          title="Zusammengefasste Materialien",
+          detail="Bekannte Zukaufpreise: "..gold(plan.purchaseCopper)
+            ..(plan.noPrice>0 and ("  ·  "..plan.noPrice.." Preise fehlen") or ""),
+          footer="Bruttomengen für deine gewählten Herstellungen. Keine Zwischenprodukt-Verrechnung.",
+          icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"
+        }
+        for _,m in ipairs(plan.materials) do
+          local color=m.missing>0 and "red" or "green"
+          local status=m.bankLive and "LIVE" or (m.bankKnown and "letzter Stand" or "unbekannt")
+          local cost=m.missing>0 and
+            (m.cost and ("Zukauf ca. "..gold(m.cost)) or "Preis unbekannt")
+            or "Bestand ausreichend"
+          cards[#cards+1]={
+            title=m.name.." · benötigt "..m.required.." · fehlt "..m.missing,
+            detail="Tasche "..m.bag.." · Bank "..m.bank.." ("..status..")",
+            footer=cost,icon=itemIcon(m.id),color=color
+          }
+        end
+      end
+      setVisualCards(cards)
+    end
   elseif prof.gathering then
     section:SetText(prof.name..": nächster sinnvoller Sammelbereich")
     local current=self:CurrentStage(key)
@@ -802,27 +900,16 @@ function CP:Render()
     local captured=self.db.lastCapture
     local current=captured and captured.key==key and captured.skill==skill
     if tab=="mats" then
-      section:SetText("Materialbedarf für das ausgewählte Rezept")
-      if #options==0 then
-        lines[#lines+1]="Kein geeignetes eingelesenes Rezept. Berufsfenster öffnen."
+      section:SetText("Materialien: aktuelles, ausgewähltes Rezept")
+      if not chosen then
+        setVisualCards({{
+          title="Noch kein Rezept eingelesen",
+          detail="Einen erlernten Herstellungsberuf wählen und das Berufsfenster öffnen.",
+          footer="Nach dem Einlesen ein Rezept in Jetzt skillen auswählen.",
+          icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"
+        }})
       else
-        local best=chosen
-        lines[#lines+1]=GOLD.."AUSWAHL  "..RESET..best.name
-        lines[#lines+1]=MUTED.."Bankbestände sind nur beim Bankbesuch aktuell geprüft."..RESET
-        for _,mat in ipairs(best.mats) do
-          local total,bag,bank,live,known=self:ItemAvailability(mat[1])
-          local deficit=math.max(0,mat[2]-total)
-          local price=self:Price(mat[1])
-          local marker=self.db.includeBank and (live and "Bank live" or (known and "letzter Stand" or "unbekannt")) or "nur Tasche"
-          lines[#lines+1]=string.format("%s: %d benötigt | Tasche %d | Bank %d (%s)",
-            self:ItemName(mat[1]),mat[2],bag,bank,marker)
-          if deficit>0 then
-            lines[#lines+1]=string.format("  → %d nachkaufen | %s",
-              deficit,price and gold(price*deficit) or "Preis fehlt")
-          else
-            lines[#lines+1]=GREEN.."  ✓ Material vorhanden"..RESET
-          end
-        end
+        materialCards(chosen.mats,"Rezept: "..chosen.name)
       end
     else
       section:SetText("Erlernte Rezepte – geschätzte Kosten je Skillpunkt")
