@@ -42,14 +42,14 @@ end
 local close=CreateFrame("Button",nil,frame,"UIPanelCloseButton")
 close:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-4,-4)
 
-label(frame,"GameFontNormalLarge",18,-17,460,"CraftPilot  |  WoW Forever  |  0.3 alpha")
+label(frame,"GameFontNormalLarge",18,-17,460,"CraftPilot  |  WoW Forever  |  0.4 alpha")
 label(frame,"GameFontDisableSmall",18,-44,605,
   "Beruf wählen, Berufsfenster öffnen, Empfehlungen und Lehrer direkt im Spiel anzeigen")
 
 for index,key in ipairs(D.order) do
-  local x=18+((index-1)%3)*201
-  local y=-74-math.floor((index-1)/3)*30
-  button(frame,193,x,y,D.professions[key].name,function()
+  local x=18+((index-1)%4)*151
+  local y=-74-math.floor((index-1)/4)*30
+  button(frame,144,x,y,D.professions[key].name,function()
     CP:ChangeView(key)
   end)
 end
@@ -114,8 +114,9 @@ function CP:Render()
   if rank then
     local character=type(UnitLevel)=="function" and UnitLevel("player") or 0
     local requirement=(skill<rank.min and " | Skill "..rank.min.." erforderlich" or "")
-    if character<rank.level then
-      requirement=requirement.." | Charakterstufe "..rank.level.." erforderlich"
+    local requiredLevel=self:RankCharacterLevel(key,rank)
+    if character<requiredLevel then
+      requirement=requirement.." | Charakterstufe "..requiredLevel.." erforderlich"
     end
     rankText:SetText("Nächster Rang: "..rank.name.." (bis "..rank.cap..")"
       ..requirement.." | "..(npc and npc.name or "Lehrer unbekannt"))
@@ -137,16 +138,21 @@ function CP:Render()
     lines[#lines+1]="Die konkreten Rezepte und Kosten werden im Tab 'Jetzt skillen' "
       .."aus dem geöffneten Berufsfenster übernommen."
   elseif meta.gathering then
-    section:SetText("Bergbau: passende Erzstufen")
+    section:SetText(meta.name..": passende Sammelstufen")
     for _,stage in ipairs(D.stages[key]) do
       if skill>=stage[1] and skill<stage[2] then
         lines[#lines+1]="Aktuell: "..stage[3]
         break
       end
     end
-    lines[#lines+1]="Erzvorkommen erscheinen nicht an dauerhaft garantierten Positionen."
-    lines[#lines+1]="Zum Lehrer führt der Button oben; eine Spitzhacke wird weiterhin benötigt."
-    lines[#lines+1]="Für Herstellungsberufe berechnet CraftPilot Materialkosten auf Basis der bekannten Rezepte."
+    if key=="herbalism" then
+      lines[#lines+1]="Kräuter wachsen an wechselnden Fundstellen. Kräuter aufspüren aktivieren."
+      lines[#lines+1]="Zum Lehrer führt der Button oben; Sammelstellen sind nicht garantiert."
+    else
+      lines[#lines+1]="Erzvorkommen erscheinen nicht an dauerhaft garantierten Positionen."
+      lines[#lines+1]="Zum Lehrer führt der Button oben; eine Spitzhacke wird weiterhin benötigt."
+    end
+    lines[#lines+1]="Für Herstellungsberufe berechnet CraftPilot Kosten aus bekannten Rezepten."
   else
     local opts=self:Options(key)
     local capture=self.db.lastCapture

@@ -51,6 +51,34 @@ function CP:Price(itemID)
   return nil
 end
 
+-- Gathering skill is obtained from the character profession list: it does not
+-- require an open crafting window to display current rank or skill.
+function CP:RefreshProfessionSkills()
+  if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return end
+  local ok,first,second=pcall(GetProfessions)
+  if not ok then return end
+  for _,index in ipairs({first or false,second or false}) do
+    if type(index)=="number" then
+      local success,name,icon,skill,cap,abilities,spellOffset,skillLine=pcall(GetProfessionInfo,index)
+      if success and type(skill)=="number" and type(cap)=="number" then
+        for key,meta in pairs(D.professions) do
+          if meta.id==skillLine then
+            self.db.professions[key]={skill=math.max(0,skill),cap=math.max(0,cap),
+              name=type(name)=="string" and name or meta.name}
+            break
+          end
+        end
+      end
+    end
+  end
+end
+
+function CP:RankCharacterLevel(key,rank)
+  if not rank then return 0 end
+  local exceptions=D.rankLevelExceptions and D.rankLevelExceptions[key]
+  return (exceptions and exceptions[rank.cap]) or rank.level
+end
+
 function CP:DetectProfession()
   local T = _G.C_TradeSkillUI
   if not T then return nil end
@@ -65,6 +93,7 @@ function CP:DetectProfession()
   local patterns = {
     engineering={"ingenieur","engineer"}, mining={"bergbau","mining"},
     blacksmithing={"schmiede","blacksmith"}, enchanting={"verzauber","enchant"},
+    herbalism={"kräuter","kraeuter","herbal"}, alchemy={"alchem"},
     tailoring={"schneid","tailor"}, leatherworking={"lederverarbeit","leatherwork"},
   }
   for key, names in pairs(patterns) do
@@ -250,8 +279,9 @@ function CP:TrainerWaypoint()
   if rank then
     local p=self.db.professions[self.db.view] or {}
     if (p.skill or 0)<rank.min then self:Say("Rang "..rank.name.." ab Skill "..rank.min..".") end
-    if (safe(UnitLevel,"player") or 0)<rank.level then
-      self:Say("Rang "..rank.name.." benötigt Charakterstufe "..rank.level..".")
+    local requiredLevel=self:RankCharacterLevel(self.db.view,rank)
+    if (safe(UnitLevel,"player") or 0)<requiredLevel then
+      self:Say("Rang "..rank.name.." benötigt Charakterstufe "..requiredLevel..".")
     end
   end
   self:SetWaypoint(npc)
@@ -283,6 +313,7 @@ end
 
 function CP:Refresh(capture)
   if not self.db then return end
+  self:RefreshProfessionSkills()
   if capture then self:CaptureProfession() end
   if self.Render then self:Render() end
 end
@@ -294,6 +325,8 @@ local aliases={
   vz="enchanting", verzauberung="enchanting", enchanting="enchanting",
   schneider="tailoring", tailoring="tailoring",
   leder="leatherworking", leatherworking="leatherworking",
+  kraeuter="herbalism", kräuter="herbalism", kraut="herbalism", herbalism="herbalism",
+  alchemie="alchemy", alchemy="alchemy",
 }
 local function command(input)
   if not CP.db then return end
@@ -312,7 +345,7 @@ local function command(input)
   elseif text=="bank on" or text=="bank off" then
     CP.db.includeBank=text=="bank on";CP:Refresh(false)
   else
-    CP:Say("Befehle: /cp | ingi | bergbau | schmied | vz | schneider | leder | trainer | liste | refresh | mode cash|value | bank on|off")
+    CP:Say("Befehle: /cp | ingi | bergbau | schmied | vz | schneider | leder | kraeuter | alchemie | trainer | liste | refresh | mode cash|value | bank on|off")
   end
 end
 

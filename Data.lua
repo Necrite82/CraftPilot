@@ -3,7 +3,7 @@ CP.Data = {}
 local D = CP.Data
 
 D.version = "Forever 1.60.x / 2026-11-08"
-D.order = {"engineering", "mining", "blacksmithing", "enchanting", "tailoring", "leatherworking"}
+D.order = {"engineering", "mining", "blacksmithing", "enchanting", "tailoring", "leatherworking", "herbalism", "alchemy"}
 D.professions = {
   engineering = {id=202, name="Ingenieurskunst", short="Ingi"},
   mining = {id=186, name="Bergbau", short="Bergbau", gathering=true},
@@ -11,7 +11,10 @@ D.professions = {
   enchanting = {id=333, name="Verzauberkunst", short="Verzaub."},
   tailoring = {id=197, name="Schneiderei", short="Schneider"},
   leatherworking = {id=165, name="Lederverarbeitung", short="Leder"},
+  herbalism = {id=182, name="Kräuterkunde", short="Kräuter", gathering=true},
+  alchemy = {id=171, name="Alchemie", short="Alchemie"},
 }
+D.rankLevelExceptions = {herbalism = { [75]=0, [150]=0, [225]=0, [300]=0 }}
 D.ranks = {
   {cap=75, min=0, level=1, name="Lehrling"},
   {cap=150, min=50, level=10, name="Geselle"},
@@ -70,6 +73,24 @@ D.stages = {
     {225,250,"Unverwüstliches Leder und höhere Schnitte"},
     {250,300,"Unverwüstliches Leder, Rüstungssets und Spezialmuster"},
   },
+  herbalism = {
+    {1,50,"Friedensblume, Silberblatt und Erdwurzel: Startgebiete"},
+    {50,100,"Maguskönigskraut und Wilddornrose: Brachland, Dunkelküste, Loch Modan"},
+    {100,150,"Beulengras, Wildstahlblume und Königsblut: Sumpfland, Vorgebirge, Eschental"},
+    {150,200,"Lebenswurz, Blassblatt und Golddorn: Arathihochland, Sümpfe des Elends"},
+    {200,230,"Feuerblüte und lila Lotus: Tanaris, Hinterland"},
+    {230,270,"Sonnengras, Blindkraut und Gromsblut: Feralas, Sümpfe des Elends"},
+    {270,300,"Traumblatt, Bergsilbersalbei, Pestblüte und Eiskappe: Hochstufengebiete"},
+  },
+  alchemy = {
+    {1,50,"Einfache Elixiere, Tränke und erste alchemistische Reagenzien"},
+    {50,100,"Frühe Elixiere und Tränke; günstige Kräuter und Phiolen"},
+    {100,150,"Verbesserte Elixiere, Manatränke und Zwischenprodukte"},
+    {150,200,"Höhere Elixiere und Tränke mit neuen Kräuterstufen"},
+    {200,250,"Fortgeschrittene Elixiere, Öle und Forever-Rezepte"},
+    {250,275,"Hochstufige Elixiere und Tränke; ggf. Händlerformeln"},
+    {275,300,"Hochstufige Rezepte, mögliche Transmutationen und neue Formeln"},
+  },
 }
 
 -- Verified public NPC travel references. Each destination is a point of interest,
@@ -80,6 +101,34 @@ local function T(prof, name, zone, map, x, y, side, cap, indoor)
     x=x/100, y=y/100, faction=side, cap=cap, indoor=indoor}
 end
 D.trainers = {
+  -- Herbalism: starter NPCs teach Apprentice; major-city trainers up to 300.
+  T("herbalism","Nancy Songflower","Wald von Elwynn",1429,52.42,43.83,"Alliance",75),
+  T("herbalism","Emrys Flintbeard","Dun Morogh",1426,28.84,66.63,"Alliance",75),
+  T("herbalism","Eleyna Duskbreeze","Teldrassil",1438,59.84,41.63,"Alliance",75),
+  T("herbalism","Zor'la","Durotar",1411,42.84,67.63,"Horde",75),
+  T("herbalism","Garan Sunstrider","Mulgore",1412,44.24,77.83,"Horde",75),
+  T("herbalism","Florence Nightshade","Tirisfal",1420,32.43,65.24,"Horde",75),
+  T("herbalism","Tannysa","Sturmwind",1453,54.43,84.04,"Alliance",300),
+  T("herbalism","Reyna Stonebranch","Eisenschmiede",1455,55.6,58.4,"Alliance",300),
+  T("herbalism","Firodren Mooncaller","Darnassus",1457,48.0,68.4,"Alliance",300),
+  T("herbalism","Jandi","Orgrimmar",1454,55.6,39.6,"Horde",300),
+  T("herbalism","Komin Winterhoof","Donnerfels",1456,49.8,39.8,"Horde",300),
+  T("herbalism","Martha Alliestar","Unterstadt",1458,54.6,50.4,"Horde",300),
+
+  -- Alchemy: specific Expert and Artisan trainers.
+  T("alchemy","Tel'Athir","Sturmwind",1453,55.6,85.6,"Alliance",75),
+  T("alchemy","Vosur Brakthel","Eisenschmiede",1455,67.0,54.2,"Alliance",75),
+  T("alchemy","Lilyssia Nightbreeze","Sturmwind",1453,55.6,85.8,"Alliance",150),
+  T("alchemy","Tally Berryfizz","Eisenschmiede",1455,67.2,54.2,"Alliance",150),
+  T("alchemy","Ainethil","Darnassus",1457,55.0,24.0,"Alliance",225),
+  T("alchemy","Kylanna Windwhisper","Feralas",1444,32.6,43.8,"Alliance",300),
+  T("alchemy","Whuut","Orgrimmar",1454,56.0,33.8,"Horde",75),
+  T("alchemy","Kray","Donnerfels",1456,47.0,34.6,"Horde",75),
+  T("alchemy","Yelmak","Orgrimmar",1454,56.6,33.2,"Horde",150),
+  T("alchemy","Bena Winterhoof","Donnerfels",1456,47.0,33.0,"Horde",150),
+  T("alchemy","Doctor Herbert Halsey","Unterstadt",1458,48.2,72.2,"Horde",225),
+  T("alchemy","Rogvar","Sümpfe des Elends",1435,48.4,55.6,"Horde",300),
+
   -- Engineering / Mining
   T("engineering","Jemma Quikswitch","Eisenschmiede",1455,67.8,43.8,"Alliance",75),
   T("engineering","Trixie Quikswitch","Eisenschmiede",1455,67.8,43.2,"Alliance",150),

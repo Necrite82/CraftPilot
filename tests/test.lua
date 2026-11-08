@@ -65,7 +65,7 @@ for _,key in ipairs(CP.Data.order) do
     assert(stages[i][1]==stages[i-1][2],"Gap in "..key)
   end
 end
-assert(#CP.Data.order==6)
+assert(#CP.Data.order==8)
 assert(CP:CaptureProfession())
 assert(CP.db.professions.tailoring.skill==110)
 local options=CP:Options("tailoring")
@@ -101,4 +101,44 @@ observedID=165
 observedSkill=150
 CP:CaptureProfession()
 assert(CP.db.recipes.leatherworking[2964].mats==nil)
-print("PASS: 6 professions, 1-300 stages, recipe capture, scoring, trainer pins")
+
+-- Skill-level fallback works for professions without a recipe window.
+function GetProfessions() return 2,3 end
+function GetProfessionInfo(index)
+  if index==2 then return "Herbalism",0,208,225,1,0,182,0 end
+  if index==3 then return "Alchemy",0,130,150,1,0,171,0 end
+end
+CP:RefreshProfessionSkills()
+assert(CP.db.professions.herbalism.skill==208 and CP.db.professions.herbalism.cap==225)
+assert(CP.db.professions.alchemy.skill==130 and CP.db.professions.alchemy.cap==150)
+assert(CP:RankCharacterLevel("herbalism",CP.Data.ranks[4])==0)
+assert(CP:RankCharacterLevel("alchemy",CP.Data.ranks[4])==35)
+CP.db.view="herbalism"
+local herbTrainer,herbRank=CP:FindTrainer("herbalism")
+assert(herbRank.cap==300 and herbTrainer.name=="Tannysa")
+CP:TrainerWaypoint()
+assert(waypoints[#waypoints].map==1453)
+CP.db.view="alchemy"
+local alchemyTrainer,alchemyRank=CP:FindTrainer("alchemy")
+assert(alchemyRank.cap==225 and alchemyTrainer.name=="Ainethil")
+observedID=171
+observedSkill=130
+C_TradeSkillUI.GetRecipeSchematic=function()
+  return {reagentSlotSchematics={{
+    quantityRequired=2,reagentType=1,reagents={{itemID=2589}}
+  }}}
+end
+assert(CP:CaptureProfession())
+assert(CP.db.professions.alchemy.skill==130)
+assert(#CP:Options("alchemy")==1 and #CP:Options("herbalism")==0)
+CP:ChangeView("herbalism")
+CP:Render()
+-- Horde trainer routing must not choose an Alliance-only NPC.
+UnitFactionGroup=function() return "Horde" end
+C_Map.GetBestMapForUnit=function() return 1454 end
+CP.db.professions.herbalism={skill=202,cap=225,name="Herbalism"}
+CP.db.professions.alchemy={skill=210,cap=225,name="Alchemy"}
+assert(CP:FindTrainer("herbalism").name=="Jandi")
+assert(CP:FindTrainer("alchemy").name=="Rogvar")
+
+print("PASS: 8 professions, 1-300 stages, gathering, alchemy, scoring, trainer pins")
