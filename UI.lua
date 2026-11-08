@@ -24,6 +24,14 @@ local function button(parent, width, height, x, y, caption, callback)
   b:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
   b:SetText(caption)
   b:SetScript("OnClick", callback)
+  local stateFrame=CreateFrame("Frame",nil,b)
+  stateFrame:SetAllPoints(b)
+  local marker=stateFrame:CreateTexture(nil,"OVERLAY")
+  marker:SetSize(3,height-8)
+  marker:SetPoint("LEFT",stateFrame,"LEFT",2,0)
+  marker:SetColorTexture(.91,.68,.31,1)
+  marker:Hide()
+  b.selectionMarker=marker
   allButtons[#allButtons+1] = b
   if CP.ellesmereSkin and type(CP.ellesmereSkin.Button)=="function" then
     pcall(CP.ellesmereSkin.Button,b)
@@ -79,14 +87,18 @@ header:SetScript("OnDragStop", function()
   if type(frame.StopMovingOrSizing)=="function" then frame:StopMovingOrSizing() end
   if CP.SaveWindowPosition then CP:SaveWindowPosition() end
 end)
-local brand=header:CreateTexture(nil,"ARTWORK")
+-- Keep artwork on its own child: EUI Panel deliberately fades header regions.
+local brandFrame=CreateFrame("Frame","CraftPilotBrandFrame",header)
+brandFrame:SetSize(48,48)
+brandFrame:SetPoint("TOPLEFT",header,"TOPLEFT",12,-8)
+local brand=brandFrame:CreateTexture(nil,"ARTWORK")
 brand:SetSize(48,48)
-brand:SetPoint("TOPLEFT",header,"TOPLEFT",12,-8)
+brand:SetAllPoints(brandFrame)
 brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   "WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.10.1-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.10.2-alpha")
 local settingsButton=button(header,112,23,W-270,-10,"Einstellungen",function() CP:OpenTab("settings") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
@@ -423,7 +435,7 @@ local function setRecipeRows(key,options,chosen)
       end
     end
     local active=chosen and entry.id==chosen.id
-    b.nameLabel:SetText((active and GREEN.."● AUSGEWÄHLT  "..RESET or "")
+    b.nameLabel:SetText((active and GREEN.."AUSGEWÄHLT  "..RESET or "")
       ..entry.name)
     local price=entry.unknown and "Preis unvollständig" or gold(entry.cost)
     local ids={}
@@ -431,7 +443,7 @@ local function setRecipeRows(key,options,chosen)
     local summary=CP.PriceSummary and CP:PriceSummary(ids)
     local ageInfo=summary and (summary.stale>0 and " · AH ALT"
       or (summary.unknown>0 and " · Scan ?" or "")) or ""
-    b.infoLabel:SetText(string.format("Skill %.0f%%  •  %s / Skillpunkt  •  %d Teile fehlen%s",
+    b.infoLabel:SetText(string.format("Skill %.0f%%  |  %s / Skillpunkt  |  %d Teile fehlen%s",
       entry.chance*100,price,entry.missing,ageInfo))
     b:Show()
   end
@@ -480,6 +492,41 @@ local function setVisualCards(entries)
       end
     end
     b.craftAction=entry.action
+    if entry.slider then
+      if not b.settingSlider then
+        local slider=CreateFrame("Slider","CraftPilotSettingsSlider"..i,b,"OptionsSliderTemplate")
+        b.settingSlider=slider
+        slider:SetPoint("TOPLEFT",b,"TOPLEFT",60,-32)
+        slider:SetHeight(18)
+        for _,part in ipairs({"Low","High","Text"}) do
+          local label=rawget(slider,part) or _G["CraftPilotSettingsSlider"..i..part]
+          if label and type(label.Hide)=="function" then label:Hide() end
+        end
+        slider:SetScript("OnValueChanged",function(control,value)
+          if control.craftSync then return end
+          local spec=control.craftSpec
+          if not spec then return end
+          value=math.max(spec.min,math.min(spec.max,math.floor(value/spec.step+.5)*spec.step))
+          spec.apply(value)
+          b.titleLabel:SetText(spec.label..value..spec.unit)
+        end)
+      end
+      local slider=b.settingSlider
+      local spec=entry.slider
+      slider.craftSync=true
+      slider.craftSpec=spec
+      slider:SetWidth(math.max(180,(type(b.GetWidth)=="function" and b:GetWidth() or W-110)-90))
+      slider:SetMinMaxValues(spec.min,spec.max)
+      slider:SetValueStep(spec.step)
+      if type(slider.SetObeyStepOnDrag)=="function" then slider:SetObeyStepOnDrag(true) end
+      slider:SetValue(spec.value)
+      slider.craftSync=false
+      slider:Show()
+      b.detailLabel:Hide()
+    else
+      if b.settingSlider then b.settingSlider:Hide() end
+      b.detailLabel:Show()
+    end
     b.footLabel:ClearAllPoints()
     b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,settingsView and -72 or -51)
     b:ClearAllPoints()
@@ -538,7 +585,7 @@ local function materialCards(materials,caption)
       detail="Tasche "..bags.."  ·  Bank "..bank.." ("..status..")  ·  Gesamt "..total,
       footer=(missing>0 and (price and "Zukauf "..gold(missing*price)
         or "Fehlender Preis")
-        or "✓ Genügend Material").." · "..age,
+        or "Genügend Material").." · "..age,
       icon=itemIcon(id),color=missing>0 and "red" or "green"
     }
   end
@@ -727,6 +774,7 @@ local function layout()
     if b.titleLabel then b.titleLabel:SetWidth(width-175) end
     if b.detailLabel then b.detailLabel:SetWidth(width-175) end
     if b.footLabel then b.footLabel:SetWidth(width-175) end
+    if b.settingSlider then b.settingSlider:SetWidth(math.max(180,width-203)) end
   end
 end
 frame:SetScript("OnSizeChanged",function() layout() end)
@@ -780,14 +828,15 @@ function CP:Render()
     b:SetSize(profWidth,27)
     b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%6)*(profWidth+5),-111-math.floor((i-1)/6)*32)
     b:Show()
-    b:SetText((k==key and GOLD.."● "..RESET or "")
-      ..(owned and GREEN.."✓ "..RESET or "")
+    b.selectionMarker:SetShown(k==key)
+    b:SetText((owned and "|TInterface\\RaidFrame\\ReadyCheck-Ready:12|t " or "")
       .."|T"..D.professionIcons[k]..":14|t "..D.professions[k].short)
   end
   for k,b in pairs(tabButtons) do
     local label
     for _,t in ipairs(tabs) do if t.key==k then label=t.label;break end end
-    b:SetText((k==tab and GOLD.."● "..RESET or "")..(label or k))
+    b.selectionMarker:SetShown(k==tab)
+    b:SetText(label or k)
     local S=self.ellesmereSkin
     if S and self.db.ui.skin=="auto" and type(S.SetTabSelection)=="function" then
       pcall(S.SetTabSelection,b,k==tab)
@@ -825,7 +874,8 @@ function CP:Render()
   for _,mode in ipairs(sorts) do
     local b=sortButtons[mode.key]
     b:SetShown(isRecipes)
-    b:SetText((self.db.ui.recipeSort==mode.key and "● " or "")..mode.label)
+    b.selectionMarker:SetShown(self.db.ui.recipeSort==mode.key)
+    b:SetText(mode.label)
   end
   bankButton:SetShown(isMats)
   bankDetails:SetShown(isMats)
@@ -875,7 +925,7 @@ function CP:Render()
           done and "ERLEDIGT" or (active and "JETZT" or "SPÄTER")),
         detail=description,
         footer=prof.gathering and "Sammelbereich ohne garantierte Erntemenge"
-          or ("Klicken → Einkaufsplan für "..first.."–"..last),
+          or ("Klicken -> Einkaufsplan für "..first.."–"..last),
         icon=prof.gathering and "Interface\\Icons\\INV_Misc_Herb_07"
           or "Interface\\Icons\\INV_Misc_EngGizmos_17",
         color=done and "green" or (active and "gold" or "blue"),
@@ -911,7 +961,7 @@ function CP:Render()
       if route then
         local cards={}
         cards[#cards+1]={
-          title=string.format("AUTO-ROUTE · %d → %d · berechnet bis %d",
+          title=string.format("AUTO-ROUTE · %d -> %d · berechnet bis %d",
             route.first,route.target,route.reached),
           detail=#route.steps.." Fertigungsetappen · geschätzter Zukauf "..gold(route.price),
           footer=route.blocked and ("Bei "..route.blocked.." fehlt ein geeignetes Trainerrezept.")
@@ -984,7 +1034,7 @@ function CP:Render()
       local plan=self:PlanShopping(key)
       local cards={}
       local range=plan.last-plan.first
-      local summary=string.format("Skill %d → %d   ·   %d Herstellungen eingeplant",
+      local summary=string.format("Skill %d -> %d   ·   %d Herstellungen eingeplant",
         plan.first,plan.last,plan.crafts)
       local expected=plan.expectedSkillUps>0
         and string.format("Momentane Skillchance: Ø etwa %.1f mögliche Punkte",plan.expectedSkillUps)
@@ -1006,7 +1056,7 @@ function CP:Render()
         for _,step in ipairs(plan.steps) do
           local id=step.id
           cards[#cards+1]={
-            title=step.quantity.." × "..step.name,
+            title=step.quantity.." x "..step.name,
             detail="Dieser Schritt wird in die gemeinsame Materialliste eingerechnet.",
             footer="Klicken zum Entfernen dieses Rezepts aus dem Plan",
             icon=self:RecipeIcon(key,id),
@@ -1094,7 +1144,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.10.1 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
+  footer:SetText("CraftPilot 0.10.2 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
 end
 
 function CP:ToggleWindow()

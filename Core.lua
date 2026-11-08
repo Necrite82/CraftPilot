@@ -506,8 +506,8 @@ function CP:OpenOwnedProfession(key)
   end
   local T=_G.C_TradeSkillUI
   if T and type(T.OpenTradeSkill)=="function" then
-    local success,result=pcall(T.OpenTradeSkill,D.professions[key].id)
-    if success and result~=false then return true end
+    -- Restricted hardware-event API: call directly from the click path, not pcall.
+    if T.OpenTradeSkill(D.professions[key].id)==true then return true end
   end
   -- Gathering without a crafting panel can still be selected in CraftPilot.
   self:Say("Berufsfenster konnte nicht geöffnet werden. Skillplan bleibt nutzbar.")
@@ -675,8 +675,8 @@ function CP:ChangeView(key,openNative)
   if not D.professions[key] then return end
   self.db.view=key
   if self.db.ui.tab=="settings" or self.db.ui.tab=="help" then self.db.ui.tab="now" end
-  self:Refresh(false)
   if openNative and self.db.ui.autoOpen then self:OpenOwnedProfession(key) end
+  self:Refresh(false)
 end
 
 function CP:Refresh(capture)

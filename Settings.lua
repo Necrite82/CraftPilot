@@ -138,8 +138,21 @@ function CP:SettingsCards()
   local function card(title,detail,action,icon,footer)
     return {title=title,detail=detail,footer=footer or "Anklicken zum Ändern",action=action,icon=icon or ICON,color="blue"}
   end
+  local function slider(label,value,min,max,step,unit,apply)
+    return {title=label..value..unit,footer="Regler ziehen: "..min.." bis "..max..unit,
+      icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
+  end
   return {
     card("Minimap-Button: "..state(not ui.hideMinimap),"Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn.",toggle("hideMinimap")),
+    slider("Minimap-Position: ",math.floor(ui.minimapAngle),0,359,1," Grad",function(value)
+      ui.minimapAngle=value;CP:PositionMinimapButton()
+    end),
+    slider("Fensterbreite: ",ui.width,750,1100,10," px",function(value)
+      ui.width=value;CP.frame:SetWidth(value)
+    end),
+    slider("Fensterhöhe: ",ui.height,570,930,10," px",function(value)
+      ui.height=value;CP.frame:SetHeight(value)
+    end),
     card("Berufsfenster automatisch öffnen: "..state(ui.autoOpen),"Beim Anklicken eines erlernten Berufs; im Kampf möglicherweise gesperrt.",toggle("autoOpen")),
     card("Berufsauswahl: "..(ui.showAllProfessions and "alle Berufe" or "eigene zuerst"),"Weitere Berufe bleiben über die Umschaltung erreichbar.",toggle("showAllProfessions")),
     card("Bankbestände berücksichtigen: "..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
