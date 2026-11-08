@@ -7,6 +7,8 @@ local dropLocations={
   [1263034]={"Sneed", "Todesminen"},
   [1263031]={"Razorclaw the Butcher", "Burg Schattenfang"},
 }
+local useRequirements={[1283400]=140,[1263041]=140,[1263034]=140,[1263031]=140}
+local materialCorrections={[1263031]={[2319]=5,[2321]=3,[4470]=2}}
 local trapper={item=279938,maker=1262982,prof="skinning",name="Trapper's Workbench",
   mats={[4470]=2,[4234]=4,[3575]=1},useSkill=300,
   adds="Eine Falle; übernimmt den kritischen Trefferbonus des Camp Chair."}
@@ -25,7 +27,7 @@ function CP:CampingRecipes(key)
     local recipe=(catalog and catalog.recipes[object.maker]) or (self.CampingRecipeData[object.prof] or {})[object.maker]
     if object.item==trapper.item then recipe=trapperRecipe end
     local native=(self.db.recipes[object.prof] or {})[object.maker]
-    local mats=recipe and recipe.mats or object.mats
+    local mats=materialCorrections[object.maker] or (recipe and recipe.mats or object.mats)
     if native then
       mats=nil
       if native.mats then mats={};for _,mat in ipairs(native.mats) do mats[mat[1]]=mat[2] end end
@@ -44,7 +46,7 @@ function CP:CampingRecipes(key)
     if drop then ways={drop[1].." · "..L(drop[2]).." · "..L("Drop, Live-Verfügbarkeit unbestätigt")} end
     if object.item==trapper.item then ways={"Houndmaster Loksey · "..L("Scharlachrotes Kloster: Bibliothek").." · "..L("Beta-Dropmeldung; aktuell unbestätigt")} end
     rows[#rows+1]={id=object.maker,object=object,base=base,recipe=recipe,prof=object.prof,tier=tier,
-      mats=mats,materialsLive=native and native.mats~=nil,
+      mats=mats,useSkill=useRequirements[object.maker] or object.useSkill,materialsLive=native and native.mats~=nil,
       learned=native and native.learned==true and native.disabled~=true,
       name=self:RecipeName(object.prof,object.maker,object.name),
       source=#ways>0 and table.concat(ways," / ") or L("Bezugsquelle unbekannt")}
@@ -150,7 +152,7 @@ function CP:CampingCards(key)
             footer=L("Benutzungsanforderung im Gegenstands-Tooltip prüfen."),color="gold"}
           if row.recipe and row.recipe.item then cards[#cards+1]={title=L("Blueprint-Gegenstand: ")..self:ItemName(row.recipe.item),
             detail=L("Keine verlässliche Dropchance hinterlegt."),footer=row.source,tooltipItem=row.recipe.item,color="gold"} end
-          if row.object.useSkill then cards[#cards+1]={title=L("Benötigter Berufsskill: ")..row.object.useSkill,
+          if row.useSkill then cards[#cards+1]={title=L("Benötigter Berufsskill: ")..row.useSkill,
             detail=L("Gilt für die Benutzung; Lernskill separat im Berufsfenster prüfen."),color="gold"} end
           local mats={}
           for id,n in pairs(row.mats or {}) do mats[#mats+1]={id=id,n=n} end

@@ -589,10 +589,10 @@ for _,row in ipairs(campRows) do
     assert(row.object.useSkill==300 and row.recipe.item==273109)
     assert(row.source:find("Beta",1,true))
   end
-  if row.id==1283400 then assert(row.source:find("Lord Serpentis",1,true)) end
+  if row.id==1283400 then assert(row.source:find("Lord Serpentis",1,true) and row.useSkill==140) end
   if row.id==1263041 then assert(row.source:find("Gilnid",1,true)) end
   if row.id==1263034 then assert(row.source:find("Sneed",1,true)) end
-  if row.id==1263031 then assert(row.source:find("Razorclaw",1,true)) end
+  if row.id==1263031 then assert(row.source:find("Razorclaw",1,true) and row.mats[2321]==3) end
 end
 assert(newObjects==1)
 assert(#CP.CAMP.fires==3 and CP.CAMP.fires[1].slots==3 and CP.CAMP.fires[2].slots==5 and CP.CAMP.fires[3].slots==10)
