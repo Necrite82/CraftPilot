@@ -774,7 +774,29 @@ function CP:Render()
   local lines={}
   if tab=="help" then
     section:SetText("Hilfe und Slash-Befehle")
-    setRows(helpRows)
+    setVisualCards({
+      {title="Start & Navigation",detail="/cp · /cp hilfe · /cp etappen · /cp plan",
+       footer="/cp lehrer · /cp trainer · /cp naechster · /cp resetpos",
+       icon="Interface\\Icons\\INV_Misc_Map_01",color="gold"},
+      {title="Beruf automatisch öffnen",detail="Berufsbutton klicken – nur wenn gelernt; bei manchen Sammelberufen nicht möglich.",
+       footer="/cp autoopen on  |  /cp autoopen off",
+       icon="Interface\\Icons\\INV_Misc_Book_09",color="green"},
+      {title="Berufe",detail="/cp ingi · /cp bergbau · /cp schmied · /cp vz",
+       footer="/cp schneider · /cp leder · /cp kraeuter · /cp alchemie",
+       icon="Interface\\Icons\\INV_Misc_Note_01",color="blue"},
+      {title="Mehrstufiger Einkaufsplan",detail="Start/Ziel/Menge im Planer einstellen; Rezept in Jetzt skillen auswählen.",
+       footer="Schnellschritt +10 · Liste im Chat · Plan leeren · /cp einkauf",
+       icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"},
+      {title="Preise & Sortierung",detail="/cp sort cost|chance|missing|name · /cp mode cash|value",
+       footer="/cp bank on|off · /cp liste · /cp refresh",
+       icon="Interface\\Icons\\INV_Misc_Coin_01",color="blue"},
+      {title="Design",detail="/cp skin auto|dark|classic · Fenster oben verschieben",
+       footer="Griff unten rechts: Größe ändern; Auto nutzt EllesmereUI, falls verfügbar.",
+       icon="Interface\\Icons\\INV_Misc_EngGizmos_17",color="green"},
+      {title="Grenzen",detail="Geplante Rezeptmengen ergeben eine konkrete Materialliste.",
+       footer="Skillaufstieg und noch nicht erlernte Rezepte können nicht garantiert werden.",
+       icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"}
+    })
   elseif tab=="trainers" then
     local choices,rank,recommended,nearest=self:TrainerChoices(key)
     section:SetText("Lehrer für "..prof.name.."  |  Eintrag anklicken = Wegpunkt")
@@ -800,13 +822,14 @@ function CP:Render()
         title=string.format("Skill %d–%d  ·  %s",first,last,
           done and "ERLEDIGT" or (active and "JETZT" or "SPÄTER")),
         detail=description,
-        footer="Klicken → Einkaufsplan für "..first.."–"..last,
+        footer=prof.gathering and "Sammelbereich ohne garantierte Erntemenge"
+          or ("Klicken → Einkaufsplan für "..first.."–"..last),
         icon=prof.gathering and "Interface\\Icons\\INV_Misc_Herb_07"
           or "Interface\\Icons\\INV_Misc_EngGizmos_17",
         color=done and "green" or (active and "gold" or "blue"),
-        action=function()
+        action=not prof.gathering and function()
           if CP:SetPlanRange(key,first,last) then CP:OpenTab("plan") end
-        end
+        end or nil
       }
     end
     cards[#cards+1]={
@@ -884,17 +907,22 @@ function CP:Render()
       setVisualCards(cards)
     end
   elseif prof.gathering then
-    section:SetText(prof.name..": nächster sinnvoller Sammelbereich")
+    section:SetText(prof.name..": aktueller Sammelabschnitt")
     local current=self:CurrentStage(key)
-    lines[#lines+1]=GREEN.."AKTUELL"..RESET.."  |  "..(current and current[3] or "Skillstand prüfen")
-    lines[#lines+1]="Für alle Skillbereiche: Registerkarte Etappen 1–300."
-    lines[#lines+1]="Die Sammelorte sind Gebiets-Empfehlungen, keine festen Vorkommen."
-    if key=="herbalism" then
-      lines[#lines+1]="Tipp: Kräuter aufspüren einschalten."
-    else
-      lines[#lines+1]="Tipp: Bergbauvorkommen auf der Minikarte verfolgen."
-    end
-    setRows(lines)
+    setVisualCards({
+      {
+        title=GOLD.."AKTUELL"..RESET.."  ·  Skill "..skill,
+        detail=current and current[3] or "Bitte den Berufsskill im Spiel aktualisieren.",
+        footer="Im Tab Etappen siehst du die nächsten Sammelgebiete.",
+        icon=key=="herbalism" and "Interface\\Icons\\INV_Misc_Herb_07"
+          or "Interface\\Icons\\INV_Ore_Copper_01",color="gold"
+      },{
+        title="Sammelweg statt Rezeptmenge",
+        detail="Erz- und Kräuter-Vorkommen geben keine feste Anzahl an Skillpunkten.",
+        footer="Deshalb erstellt CraftPilot hier keine künstliche Zutaten-Einkaufsliste.",
+        icon="Interface\\Icons\\INV_Misc_Map_01",color="blue"
+      }
+    })
   else
     local chosen,options=self:SelectedOption(key)
     local captured=self.db.lastCapture
@@ -925,10 +953,12 @@ function CP:Render()
     if not record then
       lines[#lines+1]="Beruf noch nicht auf diesem Charakter erfasst."
     end
-    if tab=="now" and current and #options>0 then
-      setRecipeRows(key,options,chosen)
-    else
-      setRows(lines)
+    if tab=="now" then
+      if current and #options>0 then
+        setRecipeRows(key,options,chosen)
+      else
+        setRows(lines)
+      end
     end
   end
   footer:SetText("CraftPilot 0.7 Alpha  |  Materialliste: geplante Mengen, keine Skillgarantie  |  /cp hilfe")
