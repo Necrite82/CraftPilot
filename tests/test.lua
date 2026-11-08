@@ -543,6 +543,34 @@ for _,control in ipairs(createdFrames) do
 end
 print("PASS: direct click-only profession open, skin-safe branding, graphic indicators and settings sliders")
 
+-- Price status must follow the relevant material ages, not a fixed warning.
+local savedRecipes=CP.db.recipes.statusTest
+CP.db.recipes.statusTest={[1]={mats={{2589,2},{2840,1}}}}
+local savedAge=Auctionator.API.v1.GetAuctionAgeByItemID
+Auctionator.API.v1.GetAuctionAgeByItemID=function() return 0 end
+local label,state=CP:ProfessionPriceStatus("statusTest")
+assert(state=="fresh" and label:find("aktuell",1,true))
+Auctionator.API.v1.GetAuctionAgeByItemID=function() return 4 end
+label,state=CP:ProfessionPriceStatus("statusTest")
+assert(state=="warning" and label:find("3 T.",1,true))
+Auctionator.API.v1.GetAuctionAgeByItemID=nil
+label,state=CP:ProfessionPriceStatus("statusTest")
+assert(state=="warning" and label:find("ohne Datum",1,true))
+Auctionator.API.v1.GetAuctionAgeByItemID=savedAge
+CP.db.recipes.statusTest={[1]={mats={{999999999,1}}}}
+label,state=CP:ProfessionPriceStatus("statusTest")
+assert(state=="warning" and label:find("fehlen",1,true))
+CP.db.recipes.statusTest={}
+label,state=CP:ProfessionPriceStatus("statusTest")
+assert(state=="unknown")
+CP.db.recipes.statusTest=savedRecipes
+local settingsCount=0
+for _,control in ipairs(createdFrames) do
+  if rawget(control,"displayText")=="Einstellungen" then settingsCount=settingsCount+1 end
+end
+assert(settingsCount==1,"Duplicate settings navigation")
+print("PASS: price freshness states and single settings entry")
+
 -- Every supported profession has camping objects; faction variants are deduplicated.
 local campProf,items={},{}
 local campRows=CP:CampingRecipes()
@@ -552,7 +580,21 @@ for _,row in ipairs(campRows) do
   for _,n in pairs(row.mats or {}) do assert(n>0 and n%1==0) end
 end
 for _,key in ipairs(CP.Data.order) do assert(campProf[key],"Missing camping profession: "..key) end
-assert(#campRows==37,"Unexpected faction-filtered camping count")
+assert(#campRows==38,"Unexpected faction-filtered camping count")
+local newObjects=0
+for _,row in ipairs(campRows) do
+  if row.object.item==279938 then
+    newObjects=newObjects+1
+    assert(row.mats[4470]==2 and row.mats[4234]==4 and row.mats[3575]==1)
+    assert(row.object.useSkill==300 and row.recipe.item==273109)
+    assert(row.source:find("Beta",1,true))
+  end
+  if row.id==1283400 then assert(row.source:find("Lord Serpentis",1,true)) end
+  if row.id==1263041 then assert(row.source:find("Gilnid",1,true)) end
+  if row.id==1263034 then assert(row.source:find("Sneed",1,true)) end
+  if row.id==1263031 then assert(row.source:find("Razorclaw",1,true)) end
+end
+assert(newObjects==1)
 assert(#CP.CAMP.fires==3 and CP.CAMP.fires[1].slots==3 and CP.CAMP.fires[2].slots==5 and CP.CAMP.fires[3].slots==10)
 for _,page in ipairs({"fires","objects","buffs"}) do
   CP.db.ui.campingPage=page

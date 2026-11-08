@@ -99,8 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.11.0-alpha")
-local settingsButton=button(header,112,23,W-270,-10,L("Einstellungen"),function() CP:OpenTab("settings") end)
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.11.1-alpha")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -167,7 +166,7 @@ local tabs={
   {key="plan", label=L("Einkaufsplan")},
   {key="trainers", label=L("Lehrer")},
   {key="camping", label="Camping"},
-  {key="settings", label=L("Optionen")}
+  {key="settings", label=L("Einstellungen")}
 }
 local tabButtons={}
 local orderedTabs={}
@@ -184,7 +183,8 @@ summary:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-226)
 summary:SetBackdrop(backdrop)
 local status=text(summary,"GameFontNormal",14,-11,W-65,"")
 local rankText=text(summary,"GameFontHighlightSmall",14,-37,W-65,"")
-local priceText=text(summary,"GameFontDisableSmall",14,-64,W-65,"")
+local priceText=text(summary,"GameFontDisableSmall",14,-64,(W-70)/2,"")
+local auctionText=text(summary,"GameFontDisableSmall",W/2,-64,(W-70)/2,"")
 local section=text(frame,"GameFontNormal",19,-334,W-50,"")
 
 local trainerAction1=button(frame,196,25,18,-358,L("Empfohlenen Lehrer markieren"),function()
@@ -736,8 +736,6 @@ local function layout()
   stageProgress:SetWidth(inner)
   content:SetWidth(width-96)
   title:SetWidth(math.max(240,width-400))
-  settingsButton:ClearAllPoints()
-  settingsButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-150,-10)
   subtitle:SetWidth(math.max(240,width-300))
   build:ClearAllPoints()
   build:SetPoint("TOPRIGHT",header,"TOPRIGHT",-42,-40)
@@ -745,7 +743,10 @@ local function layout()
   skinButton:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-78)
   status:SetWidth(inner-26)
   rankText:SetWidth(inner-26)
-  priceText:SetWidth(inner-26)
+  priceText:SetWidth((inner-42)/2)
+  auctionText:ClearAllPoints()
+  auctionText:SetPoint("TOPLEFT",summary,"TOPLEFT",inner/2+7,-64)
+  auctionText:SetWidth((inner-42)/2)
   section:SetWidth(inner)
   footer:ClearAllPoints()
   footer:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",19,22)
@@ -873,9 +874,10 @@ function CP:Render()
       or record and L("Höchster Ausbildungsrang erreicht")
       or L("Berufsfenster oder Berufeübersicht öffnen, um Daten einzulesen"))
   end
-  priceText:SetText(L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert"))
-    .."  |  "..self:BankStatus()
-    ..L("  |  AH: gespeichert  |  Rezeptkatalog: 1.60.1.704xx"))
+  priceText:SetText(self:BankStatus())
+  local priceStatus,priceState=self:ProfessionPriceStatus(key)
+  auctionText:SetText(priceStatus)
+  auctionText:SetTextColor(priceState=="fresh" and .45 or .95,priceState=="fresh" and .85 or .72,.55)
 
   local isTrainers=tab=="trainers"
   local gatheringOnly=prof.gathering and not prof.crafting
@@ -1163,7 +1165,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText(string.format(L("CraftPilot %s Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen"),"0.11"))
+  footer:SetText("CraftPilot 0.11.1 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

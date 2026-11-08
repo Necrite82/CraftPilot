@@ -1,7 +1,17 @@
 -- Own display integration; raw reference data retains its original notices.
 local _,CP=...
 local L=CP.L
-CP.campingSource="https://news.blizzard.com/en-us/article/24301516/gather-around-the-campfire-in-world-of-warcraft-forever"
+local dropLocations={
+  [1283400]={"Lord Serpentis", "Höhlen des Wehklagens"},
+  [1263041]={"Gilnid", "Todesminen"},
+  [1263034]={"Sneed", "Todesminen"},
+  [1263031]={"Razorclaw the Butcher", "Burg Schattenfang"},
+}
+local trapper={item=279938,maker=1262982,prof="skinning",name="Trapper's Workbench",
+  mats={[4470]=2,[4234]=4,[3575]=1},useSkill=300,
+  adds="Eine Falle; übernimmt den kritischen Trefferbonus des Camp Chair."}
+local trapperRecipe={item=273109,mats=trapper.mats}
+
 local function factionFits(row)
   local side=type(UnitFactionGroup)=="function" and UnitFactionGroup("player")
   return not row.faction or row.faction=="AH" or row.faction=="B" or row.faction==(side=="Horde" and "H" or "A")
@@ -13,6 +23,7 @@ function CP:CampingRecipes(key)
     seen[object.item]=true
     local catalog=self:Catalog(object.prof)
     local recipe=(catalog and catalog.recipes[object.maker]) or (self.CampingRecipeData[object.prof] or {})[object.maker]
+    if object.item==trapper.item then recipe=trapperRecipe end
     local native=(self.db.recipes[object.prof] or {})[object.maker]
     local mats=recipe and recipe.mats or object.mats
     if native then
@@ -29,6 +40,9 @@ function CP:CampingRecipes(key)
       elseif source.kind=="start" then text=L("Startrezept") end
       if text and factionFits(source) and not unique[text] then ways[#ways+1]=text;unique[text]=true end
     end
+    local drop=dropLocations[object.maker]
+    if drop then ways={drop[1].." · "..L(drop[2]).." · "..L("Drop, Live-Verfügbarkeit unbestätigt")} end
+    if object.item==trapper.item then ways={"Houndmaster Loksey · "..L("Scharlachrotes Kloster: Bibliothek").." · "..L("Beta-Dropmeldung; aktuell unbestätigt")} end
     rows[#rows+1]={id=object.maker,object=object,base=base,recipe=recipe,prof=object.prof,tier=tier,
       mats=mats,materialsLive=native and native.mats~=nil,
       learned=native and native.learned==true and native.disabled~=true,
@@ -43,6 +57,7 @@ function CP:CampingRecipes(key)
     end
   end
   for _,other in ipairs(self.CAMP.others) do add(other,nil,L("Blueprint-Ausbau")) end
+  add(trapper,nil,L("Blueprint-Ausbau"))
   table.sort(rows,function(a,b)
     if a.prof~=b.prof then return a.prof<b.prof end
     local aa=a.recipe and a.recipe.learn or 999
@@ -126,7 +141,7 @@ function CP:CampingCards(key)
       if (page=="fires")== (row.object.slots~=nil) then
         local item=row.object.item
         cards[#cards+1]={title=self.Data.professions[row.prof].name.." | "..row.name.." | "..(row.learned and L("Erlernt") or L("Nicht als erlernt erfasst")),
-          detail=row.object.slots and (row.object.slots..L(" Camp-Plätze")) or (self:CampingText(row.object.adds)~="" and self:CampingText(row.object.adds) or row.tier),
+          detail=row.object.slots and (row.object.slots..L(" Camp-Plätze")) or ((row.object==trapper and L(trapper.adds) or self:CampingText(row.object.adds))~="" and (row.object==trapper and L(trapper.adds) or self:CampingText(row.object.adds)) or row.tier),
           footer=row.source,tooltipItem=item,tooltipSpell=row.object.spell,icon=self:RecipeIcon(row.prof,row.id),color=row.learned and "green" or "blue",
           action=function() CP.db.ui.campingRecipe=CP.db.ui.campingRecipe~=item and item or nil;CP:Render() end}
         if self.db.ui.campingRecipe==item then
@@ -134,7 +149,9 @@ function CP:CampingCards(key)
             detail=L("Herstellung, Lernen und Benutzung können unterschiedliche Voraussetzungen haben."),
             footer=L("Benutzungsanforderung im Gegenstands-Tooltip prüfen."),color="gold"}
           if row.recipe and row.recipe.item then cards[#cards+1]={title=L("Blueprint-Gegenstand: ")..self:ItemName(row.recipe.item),
-            detail=L("Dropchance und konkreter Boss sind hier nicht bestätigt."),footer=row.source,tooltipItem=row.recipe.item,color="gold"} end
+            detail=L("Keine verlässliche Dropchance hinterlegt."),footer=row.source,tooltipItem=row.recipe.item,color="gold"} end
+          if row.object.useSkill then cards[#cards+1]={title=L("Benötigter Berufsskill: ")..row.object.useSkill,
+            detail=L("Gilt für die Benutzung; Lernskill separat im Berufsfenster prüfen."),color="gold"} end
           local mats={}
           for id,n in pairs(row.mats or {}) do mats[#mats+1]={id=id,n=n} end
           table.sort(mats,function(a,b) return a.id<b.id end)
@@ -149,11 +166,7 @@ function CP:CampingCards(key)
         end
       end
     end
-    if page=="objects" and (not filter or filter=="skinning") then cards[#cards+1]={title="Trapper's Workbench",
-      detail=L("Zusätzlicher Guide-Hinweis; nicht im eingebundenen Camping-Build enthalten."),
-      footer=L("Keine bestätigten Material-, Buff- oder Rezeptdaten hinterlegt."),color="gold"} end
+
   end
-  cards[#cards+1]={title=L("Herkunft und Grenzen"),detail=L("Blizzard-Übersicht und gekennzeichneter Craft-Ladder-Referenzstand."),
-    footer=L("Keine vollständige aktuelle Boss-Dropdatenbank; fehlende Werte werden nicht geraten."),color="gold"}
   return cards
 end
