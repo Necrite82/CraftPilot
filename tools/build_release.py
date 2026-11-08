@@ -5,7 +5,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ['CraftPilot.toc', 'Data.lua', 'Core.lua', 'Catalog.lua',
-         'PriceHistory.lua', 'Route.lua', 'UI.lua', 'LICENSE',
+         'PriceHistory.lua', 'Route.lua', 'UI.lua', 'Settings.lua', 'Media/CraftPilot.tga', 'LICENSE',
          'README.md', 'DATA_SOURCES.md',
          'ThirdParty/CraftLadder/CREDITS.txt', 'ThirdParty/CraftLadder/SOURCE.md']
 FILES += ['ThirdParty/CraftLadder/' + name + '.lua' for name in
@@ -13,9 +13,8 @@ FILES += ['ThirdParty/CraftLadder/' + name + '.lua' for name in
            'Leatherworking', 'Tailoring', 'MiningSmelting']]
 
 def source_bytes(name):
-    # Every allowlisted file is UTF-8 text. Match Git's LF representation on
-    # Windows and Linux without changing the actual program or license text.
-    return (ROOT / name).read_bytes().replace(b'\r\n', b'\n')
+    data=(ROOT / name).read_bytes()
+    return data if name.endswith(('.tga','.png')) else data.replace(b'\r\n', b'\n')
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)

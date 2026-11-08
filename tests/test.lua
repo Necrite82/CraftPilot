@@ -29,7 +29,12 @@ UIParent={}
 UISpecialFrames={}
 SlashCmdList={}
 DEFAULT_CHAT_FRAME={AddMessage=function() end}
-function CreateFrame() return setmetatable({},methods) end
+local createdFrames={}
+function CreateFrame(kind,name,parent)
+  local f=setmetatable({kind=kind,frameName=name,parent=parent},methods)
+  createdFrames[#createdFrames+1]=f
+  return f
+end
 function UnitLevel() return 40 end
 function UnitFactionGroup() return "Alliance" end
 C_Timer={After=function(_,f) f() end}
@@ -99,7 +104,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua"}) do
+  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -186,7 +191,7 @@ assert(#waypoints==1 and waypoints[1].map==1453)
 CP:TrainerWaypoint("nearest")
 assert(#waypoints==2 and waypoints[2].map==1453)
 CP:OpenTab("help")
-assert(CP.db.ui.tab=="help" and CP.frame.visible==true)
+assert(CP.db.ui.tab=="settings" and CP.frame.visible==true)
 CP:OpenTab("trainers")
 assert(CP.db.ui.tab=="trainers")
 CP.frame:SetPoint("CENTER",UIParent,"CENTER",112,-42)
@@ -318,7 +323,7 @@ assert(CP.db.ui.tab=="stages")
 CP:OpenTab("mats")
 assert(CP.db.ui.tab=="mats")
 CP:OpenTab("help")
-assert(CP.db.ui.tab=="help")
+assert(CP.db.ui.tab=="settings")
 CP:ClearPlanCraft("alchemy",2964)
 assert(CP:PlanShopping("alchemy").crafts==0)
 assert(not CP:SetPlanRange("alchemy",100,30))
@@ -372,3 +377,99 @@ local visible=CP:VisibleProfessions()
 assert(#visible==12 and visible[1]=="skinning")
 assert(CP.Data.professions.jewelcrafting==nil and CP.Data.professions.inscription==nil)
 print("PASS: 12 professions, secondary slots, native capture and every new profession tab")
+
+-- Exercise real settings callbacks rather than only invoking implementation helpers.
+CP:OpenTab("settings")
+local function clickSetting(prefix)
+  for _,row in ipairs(CP:SettingsCards()) do
+    if row.title:sub(1,#prefix)==prefix then assert(row.action);row.action();return end
+  end
+  error("Missing setting: "..prefix)
+end
+local bankBefore=CP.db.includeBank
+clickSetting("Bankbestände")
+assert(CP.db.includeBank~=bankBefore)
+local oldMode=CP.db.mode
+clickSetting("Kostenvergleich")
+assert(CP.db.mode~=oldMode)
+local oldSort=CP.db.ui.recipeSort
+clickSetting("Rezeptsortierung")
+assert(CP.db.ui.recipeSort~=oldSort)
+local recipeTable=CP.db.recipes
+local planTable=CP.db.plans
+CP.db.ui.position={point="CENTER",relPoint="CENTER",x=50,y=25}
+clickSetting("Fenster und Minimap")
+assert(CP.db.ui.position.x==50 and CP.pendingSettingsReset)
+clickSetting("Zurücksetzen bestätigen")
+assert(CP.db.ui.position==nil and CP.db.ui.width==750 and CP.db.ui.height==676)
+assert(CP.db.recipes==recipeTable and CP.db.plans==planTable)
+
+-- Known-only policy cannot keep a previously computed catalog proposal.
+CP.db.plans.tailoring={autoRoute={steps={}},autoMode=true,start=1,target=10,crafts={}}
+CP.db.recipes.tailoring[2963]=nil
+assert(CP:CatalogSource("tailoring",2963,1)~=nil)
+clickSetting("Auto-Route")
+assert(CP.db.ui.knownRecipesOnly and CP:CatalogSource("tailoring",2963,1)==nil)
+assert(CP.db.plans.tailoring.autoRoute==nil and not CP.db.plans.tailoring.autoMode)
+CP.db.recipes.tailoring[2963]={learned=true,disabled=false}
+assert(CP:CatalogSource("tailoring",2963,1)=="known")
+clickSetting("Auto-Route")
+
+-- Independent settings access remains available with the minimap hidden.
+Minimap={GetWidth=function() return 140 end,GetHeight=function() return 140 end,
+  GetCenter=function() return 400,300 end,GetEffectiveScale=function() return 2 end}
+CP:UpdateMinimapButton()
+local mini=CP.minimapButton
+assert(mini and mini:IsShown())
+mini:GetScript("OnClick")(mini,"RightButton")
+assert(CP.db.ui.tab=="settings" and CP.frame:IsShown())
+mini:GetScript("OnClick")(mini,"LeftButton")
+assert(not CP.frame:IsShown())
+mini:GetScript("OnClick")(mini,"LeftButton")
+assert(CP.frame:IsShown())
+local timer
+local oldAfter=C_Timer.After
+C_Timer.After=function(_,fn) timer=fn end
+GetCursorPosition=function() return 900,600 end
+mini:GetScript("OnDragStart")(mini)
+mini:GetScript("OnUpdate")(mini)
+assert(math.abs(CP.db.ui.minimapAngle)<.001 and math.abs(mini.point[4]-78)<.001)
+mini:GetScript("OnDragStop")(mini)
+assert(mini:GetScript("OnUpdate")==nil)
+mini:GetScript("OnClick")(mini,"LeftButton")
+assert(CP.frame:IsShown(),"Dragging must not toggle the main window")
+timer();C_Timer.After=oldAfter
+CP:OpenTab("settings")
+clickSetting("Minimap-Button")
+assert(not mini:IsShown() and CP.db.ui.hideMinimap)
+local settingsEntry
+for _,b in ipairs(createdFrames) do
+  if b.displayText=="Einstellungen" and b:GetScript("OnClick") then settingsEntry=b end
+end
+assert(settingsEntry)
+settingsEntry:GetScript("OnClick")(settingsEntry)
+assert(CP.db.ui.tab=="settings")
+clickSetting("Minimap-Button")
+assert(mini:IsShown())
+assert(CP:FormatMoney(12345):find("UI%-GoldIcon") and CP:FormatMoney(12345):find("23"))
+assert(CP:FormatMoney(0):find("UI%-CopperIcon"))
+assert(CP:FormatMoney(nil)=="Preis fehlt")
+CP.db.recipes.cooking[123]={icon=456}
+assert(CP:RecipeIcon("cooking",123)==456)
+CP.db.view="engineering"
+CP.db.ui.showAllProfessions=true
+clickSetting("Berufsauswahl")
+assert(CP:OwnsProfession(CP.db.view),"Switching to own professions should select an owned profession")
+-- Refreshing a recipe with ambiguous reagents must clear an older material list.
+observedID=185
+C_TradeSkillUI.GetRecipeSchematic=function()
+  return {reagentSlotSchematics={{quantityRequired=1,reagents={{itemID=1}}}}}
+end
+CP:CaptureProfession()
+assert(CP.db.recipes.cooking[2964].mats)
+C_TradeSkillUI.GetRecipeSchematic=function()
+  return {reagentSlotSchematics={{quantityRequired=1,reagents={{itemID=1},{itemID=2}}}}}
+end
+CP:CaptureProfession()
+assert(CP.db.recipes.cooking[2964].mats==nil)
+print("PASS: settings callbacks, reset confirmation, route policy, money icons and draggable minimap control")

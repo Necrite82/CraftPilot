@@ -48,6 +48,7 @@ function CP:CatalogSource(key,recipeID,skill)
   if (recipe.learn or 1)>skill then return nil end
   local old=self.db and self.db.recipes[key] and self.db.recipes[key][recipeID]
   if old and old.learned and old.disabled~=true then return "known",recipe end
+  if self.db and self.db.ui.knownRecipesOnly then return nil end
   if key=="mining" and not self:OwnsProfession("mining") then return nil end
   if recipe.spec or recipe.cooldown or recipe.rep or recipe.tools then return nil end
   local knownTrainer

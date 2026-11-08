@@ -42,6 +42,7 @@ function CP:Initialize()
   if type(db.ui.height) ~= "number" then db.ui.height=676 end
   if type(db.ui.position) ~= "table" then db.ui.position = nil end
   self.db = db
+  if self.InitializeControls then self:InitializeControls() end
   self:Refresh(false)
 end
 
@@ -238,7 +239,7 @@ function CP:CaptureProfession()
       old.difficulty=detail.relativeDifficulty
       old.snapshotSkill=skill
       local mats=schematicMats(T,id)
-      if mats then old.mats=mats end
+      old.mats=mats
       known[id]=old
       count=count+1
     end
@@ -673,6 +674,7 @@ end
 function CP:ChangeView(key,openNative)
   if not D.professions[key] then return end
   self.db.view=key
+  if self.db.ui.tab=="settings" or self.db.ui.tab=="help" then self.db.ui.tab="now" end
   self:Refresh(false)
   if openNative and self.db.ui.autoOpen then self:OpenOwnedProfession(key) end
 end
