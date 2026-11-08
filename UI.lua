@@ -526,6 +526,9 @@ function CP:Render()
   local skill=record and record.skill or 0
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
+  if type(stageProgress.SetValue)=="function" then
+    stageProgress:SetValue(math.max(0,math.min(300,skill)))
+  end
 
   for k,b in pairs(professionButtons) do
     b:SetText((k==key and GOLD.."● "..RESET or "")..D.professions[k].name)
@@ -534,6 +537,10 @@ function CP:Render()
     local label
     for _,t in ipairs(tabs) do if t.key==k then label=t.label;break end end
     b:SetText((k==tab and GOLD.."● "..RESET or "")..(label or k))
+    local S=self.ellesmereSkin
+    if S and self.db.ui.skin=="auto" and type(S.SetTabSelection)=="function" then
+      pcall(S.SetTabSelection,b,k==tab)
+    end
   end
 
   status:SetText(GOLD..prof.name..RESET.."  |  "..(record and (skill.." / "..cap) or "Skill noch nicht eingelesen")
@@ -551,26 +558,29 @@ function CP:Render()
     rankText:SetText(record and "Höchster Ausbildungsrang erreicht"
       or "Berufsfenster oder Berufeübersicht öffnen, um Daten einzulesen")
   end
-  priceText:SetText("Preis-Modus: "..(self.db.mode=="cash" and "Zukauf" or "Materialwert")
-    .."  |  Bank: "..(self.db.includeBank and "ein" or "aus")
-    .."  |  Auctionator: gespeicherte Preise, keine Echtzeitangebote")
+  priceText:SetText("Preis: "..(self.db.mode=="cash" and "Zukauf" or "Materialwert")
+    .."  |  "..self:BankStatus()
+    .."  |  AH: gespeicherter Scan")
 
   local isTrainers=tab=="trainers"
-  if isTrainers then
-    trainerAction1:Show()
-    trainerAction2:Show()
-    trainerInfo:Show()
-    contentPanel:ClearAllPoints()
-    contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-395)
-    contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
-  else
-    trainerAction1:Hide()
-    trainerAction2:Hide()
-    trainerInfo:Hide()
-    contentPanel:ClearAllPoints()
-    contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-358)
-    contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
+  local isRecipes=tab=="now" and not prof.gathering
+  local isMats=tab=="mats" and not prof.gathering
+  trainerAction1:SetShown(isTrainers)
+  trainerAction2:SetShown(isTrainers)
+  trainerInfo:SetShown(isTrainers)
+  for _,mode in ipairs(sorts) do
+    local b=sortButtons[mode.key]
+    b:SetShown(isRecipes)
+    b:SetText((self.db.ui.recipeSort==mode.key and "● " or "")..mode.label)
   end
+  bankButton:SetShown(isMats)
+  bankDetails:SetShown(isMats)
+  bankButton:SetText("Bankmaterialien: "..(self.db.includeBank and "AN" or "AUS"))
+  bankDetails:SetText(self:BankStatus())
+  contentPanel:ClearAllPoints()
+  contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
+    (isTrainers or isRecipes or isMats) and -395 or -358)
+  contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
 
   local lines={}
   if tab=="help" then
@@ -614,26 +624,31 @@ function CP:Render()
     end
     setRows(lines)
   else
-    local options=self:Options(key)
+    local chosen,options=self:SelectedOption(key)
     local captured=self.db.lastCapture
     local current=captured and captured.key==key and captured.skill==skill
     if tab=="mats" then
-      section:SetText("Fehlende Materialien für die nächste empfohlene Herstellung")
+      section:SetText("Materialbedarf für das ausgewählte Rezept")
       if #options==0 then
         lines[#lines+1]="Kein geeignetes eingelesenes Rezept. Berufsfenster öffnen."
       else
-        local best=options[1]
-        lines[#lines+1]=GOLD.."EMPFEHLUNG  "..RESET..best.name
+        local best=chosen
+        lines[#lines+1]=GOLD.."AUSWAHL  "..RESET..best.name
+        lines[#lines+1]=MUTED.."Bankbestände sind nur beim Bankbesuch aktuell geprüft."..RESET
         for _,mat in ipairs(best.mats) do
-          local deficit=math.max(0,mat[2]-self:ItemCount(mat[1]))
+          local total,bag,bank,live=self:ItemAvailability(mat[1])
+          local deficit=math.max(0,mat[2]-total)
+          local price=self:Price(mat[1])
+          local marker=self.db.includeBank and (live and "Bank live" or "Bank Cache") or "nur Tasche"
+          lines[#lines+1]=string.format("%s: %d benötigt | Tasche %d | Bank %d (%s)",
+            self:ItemName(mat[1]),mat[2],bag,bank,marker)
           if deficit>0 then
-            local price=self:Price(mat[1])
-            lines[#lines+1]=string.format("%d × %s (Bestand %d)  |  %s",
-              deficit,self:ItemName(mat[1]),self:ItemCount(mat[1]),
-              price and gold(price*deficit) or "kein AH-Preis")
+            lines[#lines+1]=string.format("  → %d nachkaufen | %s",
+              deficit,price and gold(price*deficit) or "Preis fehlt")
+          else
+            lines[#lines+1]=GREEN.."  ✓ Material vorhanden"..RESET
           end
         end
-        if #lines==1 then lines[#lines+1]=GREEN.."Alle Materialien vorhanden."..RESET end
       end
     else
       section:SetText("Erlernte Rezepte – geschätzte Kosten je Skillpunkt")
@@ -643,20 +658,19 @@ function CP:Render()
       elseif #options==0 then
         lines[#lines+1]="Keine aktuell auswertbaren Rezepte mit eindeutigen Materialien."
       else
-        for i=1,math.min(30,#options) do
-          local o=options[i]
-          local p=o.unknown and "Preis unvollständig" or gold(o.cost)
-          lines[#lines+1]=string.format("%d. %s | %d%% Skillchance | %s | %d Teile fehlen",
-            i,o.name,math.floor(o.chance*100),p,o.missing)
-        end
+        section:SetText("Rezept anklicken = auswählen  |  Sortierung oben ändern")
       end
     end
     if not record then
       lines[#lines+1]="Beruf noch nicht auf diesem Charakter erfasst."
     end
-    setRows(lines)
+    if tab=="now" and current and #options>0 then
+      setRecipeRows(key,options,chosen)
+    else
+      setRows(lines)
+    end
   end
-  footer:SetText("CraftPilot 0.5 Alpha  |  Keine automatischen Aktionen  |  /cp hilfe")
+  footer:SetText("CraftPilot 0.6 Alpha  |  Rezeptsymbole: WoW-Client  |  /cp hilfe")
 end
 
 function CP:ToggleWindow()
