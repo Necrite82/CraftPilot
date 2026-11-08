@@ -1,0 +1,63 @@
+{
+  "catalogBase": "daecfb866ed34d512ed0885e60d9dfa706459674",
+  "outputs": {
+    "eg-LICENSE": "5eebefd3682e32d661f307a28539b304e5e52fb1eb33ba214e61d7a57663e4f0",
+    "eg-README.md": "003d94fc82c33c87a6ed345768eab28f77a684522b536086d210975820dd9a9e",
+    "eg-trainers.json": "7d43631e29cc9eee4f40bf1894c9ae94e38a3dffbcb94657b36e6c485e5096b5",
+    "eg-vendors.json": "68d27fb0b76966c0b4817f2640ccb6b9b2ffe74f43924cf342b453a75d60086d",
+    "pfQuest-LICENSE": "7ee3c5402cd719de230f3bbc59a6506a3b2b65981d0d793f143fa5b08f926510",
+    "pfQuest-units-deDE.lua": "016d4319f8a3cc4061fa5e65e7b56fd1d6ab7e59af4797cad0d1df6c9141432f",
+    "pfQuest-units-enUS.lua": "d99cd5fbd74d51e69deaf1c82bbca21e9fb082a427564c3f66d29ecc9bd98ce8",
+    "pfQuest-units.lua": "585e9dd4ac68c22b081a1c6e0b8f92eaa4f7d8ad19ffa0f392096baa39c95e7c",
+    "pfQuest-vendors.json": "62d19ff5bec46e6375831ce24b8498b9f8ae545a9a7535cca8ed323219dd44f5",
+    "questie-LICENSE-review.md": "d9937e385c401d234ef416b91f00290f8ea8e517f39ed4359aed99115770d8c9",
+    "validation.json": "660d12bcfea7e75f3d2a8ef27c262e2e4d7b78ae3baccef84242388956fb0e98"
+  },
+  "reviewedOn": "2026-11-08",
+  "schemaVersion": 1,
+  "sources": {
+    "eg": {
+      "copyright": "Efficient Games",
+      "datasetStand": "wowf 1.60.1.70862; collected 2026-11-07 to 2026-11-08",
+      "files": {
+        "DATASETS.md": "26b7e8b16cbded12148ca61abe651e148957aadb73a1ba02484e75edf1a9d604",
+        "LICENSE": "5eebefd3682e32d661f307a28539b304e5e52fb1eb33ba214e61d7a57663e4f0",
+        "README.md": "003d94fc82c33c87a6ed345768eab28f77a684522b536086d210975820dd9a9e",
+        "data/index.json": "89b1bb7bb5b0d7bfdcc83153ea815466e1ddcceb2924b8f92d152035fce026b0",
+        "data/wowf/1.60.1.70862/trainers.json": "549ff046e68fdcfea175313d3cfbdfaa5a60ac809608779c79e326d83eb189e7",
+        "data/wowf/1.60.1.70862/vendors.json": "b8538d3a848d730ab668bd9c8983e99b0766a865709e3b454faf8ae8da4a25ea"
+      },
+      "license": "CC-BY-4.0",
+      "repository": "JIVESCORP/eg-link-output-wowf",
+      "revision": "156f29c9af78b1586883e8eb94a13467eb89638c",
+      "url": "https://github.com/JIVESCORP/eg-link-output-wowf"
+    },
+    "pf": {
+      "copyright": "Copyright (c) 2017-2021 Eric Mauser (Shagu)",
+      "datasetStand": "Classic reference; exact client build unspecified",
+      "files": {
+        "LICENSE": "7ee3c5402cd719de230f3bbc59a6506a3b2b65981d0d793f143fa5b08f926510",
+        "README.md": "bb60e21e7ad238cf55855086fff8a13c7f035a2ad5b5f5012823dfb19d78ffff",
+        "db/deDE/units.lua": "b91008f613425b841b5cd536ce2af4df8120c474366416a5df8fc9490cab1eda",
+        "db/enUS/units.lua": "f2ae827b04668c0236919f702485038a4d56330be00652d7c2970dc7e27e2922",
+        "db/items.lua": "b173e338ff04fdece3b4bfcbb1b66aff4bb9d23fa7a13890311ea2cbc447d808",
+        "db/units.lua": "b8de09aa33fd4b16edb2287b8c4224c86e6ee420e717a4d428e2935c22c4a922"
+      },
+      "license": "MIT",
+      "repository": "shagu/pfQuest",
+      "revision": "104f35678ca39ab1fb78b655f815cc7016f5e0c8",
+      "url": "https://github.com/shagu/pfQuest"
+    },
+    "questie": {
+      "copyright": "See original LICENSE.md; contributor-specific consent",
+      "datasetStand": "license review only; no dataset imported",
+      "files": {
+        "LICENSE.md": "d9937e385c401d234ef416b91f00290f8ea8e517f39ed4359aed99115770d8c9"
+      },
+      "license": "unresolved-historical-coverage",
+      "repository": "Questie/QuestieDB",
+      "revision": "f863e106c837f1e30e6dae0e44b166be9bceb5f1",
+      "url": "https://github.com/Questie/QuestieDB"
+    }
+  }
+}

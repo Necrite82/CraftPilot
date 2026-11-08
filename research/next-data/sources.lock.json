@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "sources": {
+    "eg": {
+      "repository": "JIVESCORP/eg-link-output-wowf",
+      "revision": "156f29c9af78b1586883e8eb94a13467eb89638c",
+      "license": "CC-BY-4.0",
+      "copyright": "Efficient Games",
+      "datasetStand": "wowf 1.60.1.70862; collected 2026-11-07 to 2026-11-08",
+      "url": "https://github.com/JIVESCORP/eg-link-output-wowf",
+      "files": {
+        "data/index.json": "89b1bb7bb5b0d7bfdcc83153ea815466e1ddcceb2924b8f92d152035fce026b0",
+        "data/wowf/1.60.1.70862/trainers.json": "549ff046e68fdcfea175313d3cfbdfaa5a60ac809608779c79e326d83eb189e7",
+        "data/wowf/1.60.1.70862/vendors.json": "b8538d3a848d730ab668bd9c8983e99b0766a865709e3b454faf8ae8da4a25ea",
+        "DATASETS.md": "26b7e8b16cbded12148ca61abe651e148957aadb73a1ba02484e75edf1a9d604",
+        "LICENSE": "5eebefd3682e32d661f307a28539b304e5e52fb1eb33ba214e61d7a57663e4f0",
+        "README.md": "003d94fc82c33c87a6ed345768eab28f77a684522b536086d210975820dd9a9e"
+      }
+    },
+    "pf": {
+      "repository": "shagu/pfQuest",
+      "revision": "104f35678ca39ab1fb78b655f815cc7016f5e0c8",
+      "license": "MIT",
+      "copyright": "Copyright (c) 2017-2021 Eric Mauser (Shagu)",
+      "datasetStand": "Classic reference; exact client build unspecified",
+      "url": "https://github.com/shagu/pfQuest",
+      "files": {
+        "db/deDE/units.lua": "b91008f613425b841b5cd536ce2af4df8120c474366416a5df8fc9490cab1eda",
+        "db/enUS/units.lua": "f2ae827b04668c0236919f702485038a4d56330be00652d7c2970dc7e27e2922",
+        "db/items.lua": "b173e338ff04fdece3b4bfcbb1b66aff4bb9d23fa7a13890311ea2cbc447d808",
+        "db/units.lua": "b8de09aa33fd4b16edb2287b8c4224c86e6ee420e717a4d428e2935c22c4a922",
+        "LICENSE": "7ee3c5402cd719de230f3bbc59a6506a3b2b65981d0d793f143fa5b08f926510",
+        "README.md": "bb60e21e7ad238cf55855086fff8a13c7f035a2ad5b5f5012823dfb19d78ffff"
+      }
+    },
+    "questie": {
+      "repository": "Questie/QuestieDB",
+      "revision": "f863e106c837f1e30e6dae0e44b166be9bceb5f1",
+      "license": "unresolved-historical-coverage",
+      "copyright": "See original LICENSE.md; contributor-specific consent",
+      "datasetStand": "license review only; no dataset imported",
+      "url": "https://github.com/Questie/QuestieDB",
+      "files": {
+        "LICENSE.md": "d9937e385c401d234ef416b91f00290f8ea8e517f39ed4359aed99115770d8c9"
+      }
+    }
+  }
+}
