@@ -3,6 +3,11 @@ local methods = {}
 methods.__index = function(self,key)
   if key=="CreateFontString" then return function() return setmetatable({},methods) end end
 
+  if key=="SetSize" then return function(t,w,h) t.width=w;t.height=h end end
+  if key=="SetWidth" then return function(t,w) t.width=w end end
+  if key=="GetWidth" then return function(t) return rawget(t,"width") end end
+  if key=="GetHeight" then return function(t) return rawget(t,"height") end end
+  if key=="SetShown" then return function(t,shown) t.visible=shown end end
   if key=="SetPoint" then return function(t,...) t.point={...} end end
   if key=="GetPoint" then return function(t)
     local point=rawget(t,"point");if point then return table.unpack(point) end
@@ -39,12 +44,28 @@ UiMapPoint={CreateFromCoordinates=function(map,x,y)
 end}
 C_SuperTrack={SetSuperTrackedUserWaypoint=function() end}
 local owned={ [2589]=2, [2840]=1 }
+local bankOwned={ [2589]=5, [2840]=0 }
+function time() return 1794140000 end
+local registeredSkinName
 C_Item={
-  GetItemCount=function(id) return owned[id] or 0 end,
+  GetItemCount=function(id,withBank)
+    return (owned[id] or 0)+(withBank and (bankOwned[id] or 0) or 0)
+  end,
   GetItemNameByID=function(id) return "Item "..id end,
 }
 local prices={ [2589]=20, [2840]=50 }
 Auctionator={API={v1={GetAuctionPriceByItemID=function(_,id) return prices[id] end}}}
+EllesmereUI={
+  RegisterSkin=function(name,fn)
+    registeredSkinName=name
+    local api={}
+    for _,key in ipairs({"Shell","Panel","CloseButton","Button","Tab","ScrollBar",
+      "ApplyBarFill","SquareIcon","SetTabSelection"}) do
+      api[key]=function() end
+    end
+    fn(api)
+  end
+}
 local observedSkill=110
 local observedID=197
 C_TradeSkillUI={
@@ -70,6 +91,9 @@ for _,path in ipairs({"Data.lua","Core.lua","UI.lua"}) do
   chunk("CraftPilot",CP)
 end
 CP:Initialize()
+assert(registeredSkinName=="CraftPilot" and CP.ellesmereSkin)
+assert(CP.db.includeBank==true)
+assert(CP.db.ui.recipeSort=="cost")
 for _,key in ipairs(CP.Data.order) do
   assert(CP.Data.professions[key],"Missing profession "..key)
   local stages=CP.Data.stages[key]
@@ -89,9 +113,29 @@ local options=CP:Options("tailoring")
 assert(#options==1 and options[1].id==2964)
 assert(options[1].missing==1 and options[1].unknown==false)
 assert(options[1].cost==20)
+assert(CP:BankStatus():find("unbekannt"))
+CP.bankIsOpen=true
+CP:SnapshotBankMaterials()
+assert(CP.db.bank.items[2589]==5)
+assert(CP:BankStatus()=="Bank LIVE")
+assert(CP:ItemCount(2589)==7)
+CP.bankIsOpen=false
+bankOwned[2589]=0 -- The saved bank snapshot must not silently change.
+assert(CP:ItemCount(2589)==7)
+assert(CP:BankStatus():find("zuletzt erfasst"))
+assert(CP:Options("tailoring")[1].cost==0)
+CP.db.includeBank=false
+assert(CP:ItemCount(2589)==2)
+assert(CP:Options("tailoring")[1].cost==20)
+CP.db.includeBank=true
 CP.db.mode="value"
 options=CP:Options("tailoring")
 assert(options[1].cost==110)
+CP.db.ui.selectedRecipes.tailoring=2964
+assert(CP:SelectedOption("tailoring").id==2964)
+CP.db.ui.recipeSort="name"
+assert(CP:SortedOptions("tailoring")[1].name=="Mock recipe 2964")
+CP.db.ui.recipeSort="cost"
 CP.db.mode="cash"
 CP.db.view="tailoring"
 local npc,rank=CP:FindTrainer("tailoring")
@@ -121,6 +165,13 @@ CP.db.ui.skin="dark"
 CP:ApplyTheme()
 CP.db.ui.skin="auto"
 CP:ApplyTheme()
+CP.frame:SetSize(945,780)
+CP:SaveWindowPosition()
+assert(CP.db.ui.width==945 and CP.db.ui.height==780)
+local oldPos=CP.db.ui.position
+CP:ResetWindowPosition()
+assert(CP.db.ui.position==nil)
+
 CP.db.professions.enchanting={skill=205,cap=225,name="Enchanting"}
 local target=CP:FindTrainer("enchanting")
 assert(target.name:find("Annora") and target.indoor)
@@ -184,4 +235,4 @@ assert(CP:FindTrainer("alchemy").name=="Rogvar")
 C_Map.GetBestMapForUnit=function() return 999 end
 local trainers,rank3,best3,nearest3=CP:TrainerChoices("alchemy")
 assert(#trainers>0 and nearest3==nil)
-print("PASS: eight professions, milestone splits, trainer choices, map distance, UI help, position, skins")
+print("PASS: professions, bank snapshots, recipe sorting, selection, Ellesmere skin, resizing, trainer routing")
