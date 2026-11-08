@@ -55,7 +55,10 @@ C_Item={
   GetItemNameByID=function(id) return "Item "..id end,
 }
 local prices={ [2589]=20, [2840]=50 }
-Auctionator={API={v1={GetAuctionPriceByItemID=function(_,id) return prices[id] end}}}
+Auctionator={API={v1={
+  GetAuctionPriceByItemID=function(_,id) return prices[id] end,
+  GetAuctionAgeByItemID=function(_,id) return id==2589 and 9 or 0 end
+}}}
 EllesmereUI={
   RegisterSkin=function(name,fn)
     registeredSkinName=name
@@ -87,12 +90,34 @@ C_TradeSkillUI={
   end,
 }
 local CP={}
-for _,path in ipairs({"Data.lua","Core.lua","UI.lua"}) do
+for _,path in ipairs({
+  "Data.lua",
+  "ThirdParty/CraftLadder/Alchemy.lua",
+  "ThirdParty/CraftLadder/Blacksmithing.lua",
+  "ThirdParty/CraftLadder/Enchanting.lua",
+  "ThirdParty/CraftLadder/Engineering.lua",
+  "ThirdParty/CraftLadder/Leatherworking.lua",
+  "ThirdParty/CraftLadder/Tailoring.lua",
+  "ThirdParty/CraftLadder/MiningSmelting.lua",
+  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
 CP:Initialize()
 assert(registeredSkinName=="CraftPilot" and CP.ellesmereSkin)
+assert(CP:CatalogCount("tailoring")>300)
+assert(CP:CatalogCount("engineering")>150)
+assert(CP:CatalogCount("alchemy")>120)
+assert(CP:Catalog("mining").recipes[2657].makes==2840)
+assert(CP:Catalog("herbalism")==nil)
+local _,price=CP:PriceFreshness(2589)
+assert(price.price and price.ageDays==9 and price.freshness=="stale")
+assert(CP:PriceDetails(999999).freshness=="missing")
+local candidates=CP:CatalogCandidateRecipes("tailoring",1)
+assert(#candidates>0)
+local provisional=CP:GenerateAutomaticRoute("tailoring",1,4)
+assert(provisional and provisional.reached>1 and #provisional.steps>0)
+
 assert(CP.db.includeBank==true)
 assert(CP.db.ui.recipeSort=="cost")
 for _,key in ipairs(CP.Data.order) do
@@ -232,6 +257,16 @@ CP.db.professions.herbalism={skill=202,cap=225,name="Herbalism"}
 CP.db.professions.alchemy={skill=210,cap=225,name="Alchemy"}
 assert(CP:FindTrainer("herbalism").name=="Jandi")
 assert(CP:FindTrainer("alchemy").name=="Rogvar")
+-- Cross-profession copper smelting only when Mining is actually learned.
+local realGetProfessionInfo=GetProfessionInfo
+GetProfessionInfo=function(i)
+  if i==2 then return "Mining",0,90,150,1,0,186,0 end
+  if i==3 then return "Engineering",0,90,150,1,0,202,0 end
+end
+CP.db.professions.mining={skill=90,cap=150,name="Mining"}
+assert(CP:OwnsProfession("mining"))
+assert(#CP:RecipesMaking(2840,"engineering",90)>0)
+GetProfessionInfo=realGetProfessionInfo
 
 -- Hardware-event-bound opening: learned primary professions only.
 local opened={}
@@ -293,4 +328,4 @@ assert(CP:PlanShopping("alchemy").first==130)
 C_Map.GetBestMapForUnit=function() return 999 end
 local trainers,rank3,best3,nearest3=CP:TrainerChoices("alchemy")
 assert(#trainers>0 and nearest3==nil)
-print("PASS: professions, bank, native profession click, stages/material cards, partial range planner and shopping aggregation")
+print("PASS: GPL catalog, smelting, scan freshness, recursive route, profession UI and shopping plans")
