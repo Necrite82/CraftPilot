@@ -1,11 +1,10 @@
-# Installationspaket / Installation package
+# CraftPilot 0.5.0-alpha – Installationspaket / Installation
 
-**CraftPilot 0.4.0-alpha** (World of Warcraft: Forever, Interface 16001)
+[Installations-ZIP herunterladen / Download the install-ready archive](CraftPilot-0.5.0-alpha.zip)
 
-[Installations-ZIP herunterladen / Download ZIP](CraftPilot-0.4.0-alpha.zip)
+Das Paket enthält den vollständigen Ordner `CraftPilot/`, einschließlich `CraftPilot.toc`, Lua-Dateien, GPL-3.0-Lizenz und README. Es kann direkt in das AddOns-Verzeichnis von World of Warcraft: Forever entpackt werden. Danach `/cp` eingeben.
 
-Das ZIP enthält einen unmittelbar installierbaren Ordner `CraftPilot/` mit den vier benötigten Addon-Dateien und der GPL-3.0-Lizenz. Zum Installieren diesen Ordner in das AddOns-Verzeichnis von WoW Forever entpacken, das Spiel starten und `/cp` eingeben.
+The archive includes the install-ready `CraftPilot/` folder, TOC, Lua modules, GPL-3.0 license and README. Extract it into the World of Warcraft: Forever AddOns directory and open `/cp`.
 
-The archive contains an install-ready `CraftPilot/` folder with four addon files and the GPL-3.0 license. Extract the folder into WoW Forever's AddOns directory, then run `/cp` in-game.
-
-**Alpha-Hinweis / Alpha notice:** Syntax- und Mock-Tests sind automatisiert; die Funktion im Forever-Liveclient ist noch nicht bestätigt. Für bekannte Einschränkungen bitte die [README](../README.md) beachten.
+**Version:** 0.5.0-alpha (Interface 16001).
+**Status:** Automated Lua checks; live-game compatibility still needs to be verified.

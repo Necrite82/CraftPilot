@@ -17,3 +17,18 @@ jobs:
           for file in *.lua tests/*.lua; do luac5.4 -p "$file"; done
       - name: Run smoke tests
         run: lua5.4 tests/test.lua
+      - name: Verify install ZIP matches the source
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          archive = Path("dist/CraftPilot-0.5.0-alpha.zip")
+          assert archive.is_file(), "Missing install ZIP"
+          expected = ["CraftPilot.toc", "Data.lua", "Core.lua", "UI.lua", "LICENSE", "README.md"]
+          with ZipFile(archive) as zipfile:
+              assert zipfile.testzip() is None, "Corrupt ZIP entry"
+              assert set(zipfile.namelist()) == {"CraftPilot/" + name for name in expected}
+              for filename in expected:
+                  assert zipfile.read("CraftPilot/" + filename) == Path(filename).read_bytes(), filename
+          print("PASS: install-ready 0.5.0-alpha ZIP matches repository files")
+          PY
