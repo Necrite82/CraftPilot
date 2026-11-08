@@ -268,6 +268,11 @@ function CP:TrainerChoices(key)
   table.sort(entries,function(a,b)
     if a.canTeach~=b.canTeach then return a.canTeach end
     if a.inZone~=b.inZone then return a.inZone end
+    if a.canTeach and b.canTeach then
+      local aExact=a.npc.cap==required
+      local bExact=b.npc.cap==required
+      if aExact~=bExact then return aExact end
+    end
     if a.distance and b.distance and a.distance~=b.distance then
       return a.distance<b.distance
     end
