@@ -59,19 +59,20 @@ function CP:BankCount(itemID)
     local value=math.max(0,self:RawItemCount(itemID,true)-self:RawItemCount(itemID,false))
     bank.items[itemID]=value
     if type(time)=="function" then bank.scannedAt=time() end
-    return value,true
+    return value,true,true
   end
   local cached=bank.items[itemID]
-  return type(cached)=="number" and math.max(0,cached) or 0,false
+  return type(cached)=="number" and math.max(0,cached) or 0,false,
+    type(cached)=="number"
 end
 
 function CP:ItemAvailability(itemID)
   local bags=self:RawItemCount(itemID,false)
   if self.db and self.db.includeBank then
-    local bank,live=self:BankCount(itemID)
-    return bags+bank,bags,bank,live
+    local bank,live,known=self:BankCount(itemID)
+    return bags+bank,bags,bank,live,known
   end
-  return bags,bags,0,false
+  return bags,bags,0,false,true
 end
 
 function CP:ItemCount(itemID)
@@ -235,6 +236,7 @@ function CP:CaptureProfession()
     end
   end
   self.db.lastCapture={key=key,skill=skill,filtered=filtered,count=count}
+  if self.bankIsOpen then self:SnapshotBankMaterials() end
   return true
 end
 
