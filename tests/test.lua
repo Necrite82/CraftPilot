@@ -117,6 +117,13 @@ local candidates=CP:CatalogCandidateRecipes("tailoring",1)
 assert(#candidates>0)
 local provisional=CP:GenerateAutomaticRoute("tailoring",1,4)
 assert(provisional and provisional.reached>1 and #provisional.steps>0)
+local benchmarkStart=os.clock()
+local midRange=CP:GenerateAutomaticRoute("tailoring",30,100)
+assert(midRange and midRange.first==30 and midRange.target==100)
+assert(midRange.reached>30 and #midRange.steps>0)
+print(string.format("Benchmark: tailoring 30–100 reached %d, %.3f seconds, %d steps",
+  midRange.reached,os.clock()-benchmarkStart,#midRange.steps))
+
 
 assert(CP.db.includeBank==true)
 assert(CP.db.ui.recipeSort=="cost")
