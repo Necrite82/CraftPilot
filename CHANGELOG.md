@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.0-alpha — 2026-11-08
+
+- GPL-3.0-Rezeptkatalog für sechs Herstellungsberufe aus dem Craft-Ladder-Datenstand 1.60.1.70425–70450 integriert; Bergbau-Schmelzrezepte für Herstellungswege ergänzt.
+- Ursprungsautoren, Quellrevision und fremde Lizenzen klar nachgewiesen und erhalten.
+- Automatischer, heuristischer Skillweg-Vorschlag im Einkaufsplan samt Trainerannahmen und detaillierter Zukaufliste.
+- Rekursive make-or-buy-Materialrechnung mit Zwischenprodukten und vorhandenen Taschen-/Bankbeständen (beispielsweise Erz zu Barren zu Bauteil).
+- Auctionator-Preisalter über öffentliche API eingelesen und als frisch, älter, veraltet oder unbekannt angezeigt.
+- Lua- und Datenbanktests erweitert und Installation-ZIP aktualisiert.
+
+**Grenzen:** Datenstand aus älterem Forever-Build; spätere Trainerangebote, Lernvoraussetzungen und Rezeptänderungen erfordern Ingame-Prüfung. Die schrittweise Heuristik garantiert weder einen vollständigen noch den weltweit günstigsten Weg zum Zielskill.
+
+
 ## 0.7.0-alpha — 2026-11-08
 
 - Materialien, Skilletappen, Hilfe und Sammelberuf-Übersichten auf einheitliche Karten mit dezenten visuellen Markierungen umgestellt.
