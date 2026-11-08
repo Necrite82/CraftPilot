@@ -3,6 +3,7 @@ local D = CP.Data
 
 local W, H = 750, 676
 local GOLD = "|cffffd878"
+local BLUE = "|cff79c6f1"
 local GREEN = "|cff89e1aa"
 local MUTED = "|cff9dabb8"
 local RESET = "|r"
@@ -24,6 +25,9 @@ local function button(parent, width, height, x, y, caption, callback)
   b:SetText(caption)
   b:SetScript("OnClick", callback)
   allButtons[#allButtons+1] = b
+  if CP.ellesmereSkin and type(CP.ellesmereSkin.Button)=="function" then
+    pcall(CP.ellesmereSkin.Button,b)
+  end
   return b
 end
 
@@ -48,6 +52,13 @@ frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
 frame:SetBackdrop(backdrop)
 frame:SetMovable(true)
 frame:EnableMouse(true)
+if type(frame.SetResizable)=="function" then frame:SetResizable(true) end
+if type(frame.SetResizeBounds)=="function" then
+  frame:SetResizeBounds(750,570,1100,930)
+elseif type(frame.SetMinResize)=="function" then
+  frame:SetMinResize(750,570)
+  if type(frame.SetMaxResize)=="function" then frame:SetMaxResize(1100,930) end
+end
 if type(frame.SetClampedToScreen)=="function" then frame:SetClampedToScreen(true) end
 frame:Hide()
 CP.frame = frame
@@ -71,11 +82,32 @@ end)
 local title = text(header, "GameFontNormalLarge", 16, -12, 410, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 16, -36, 450,
   "WoW Forever  |  Acht Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.5.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.6.0-alpha")
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
+local resizeGrip=CreateFrame("Button",nil,frame)
+resizeGrip:SetSize(24,24)
+resizeGrip:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-3,3)
+if type(resizeGrip.SetNormalTexture)=="function" then
+  resizeGrip:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+  resizeGrip:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+  resizeGrip:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+end
+resizeGrip:SetScript("OnMouseDown",function()
+  if type(frame.StartSizing)=="function" then frame:StartSizing("BOTTOMRIGHT") end
+end)
+resizeGrip:SetScript("OnMouseUp",function()
+  if type(frame.StopMovingOrSizing)=="function" then frame:StopMovingOrSizing() end
+  if CP.SaveWindowPosition then CP:SaveWindowPosition() end
+end)
 
 local themeName = text(frame,"GameFontDisableSmall",18,-82,250,"")
+local stageProgress=CreateFrame("StatusBar",nil,frame)
+stageProgress:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-319)
+stageProgress:SetSize(W-36,5)
+if type(stageProgress.SetStatusBarTexture)=="function" then stageProgress:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8") end
+if type(stageProgress.SetMinMaxValues)=="function" then stageProgress:SetMinMaxValues(0,300) end
+if type(stageProgress.SetStatusBarColor)=="function" then stageProgress:SetStatusBarColor(.91,.68,.31,1) end
 local skinButton = button(frame,170,23, W-198,-78,"Design: Automatisch",function()
   if not CP.db then return end
   local current=CP.db.ui.skin
@@ -85,6 +117,7 @@ local skinButton = button(frame,170,23, W-198,-78,"Design: Automatisch",function
 end)
 
 local professionButtons={}
+local professionOrder={}
 for i,key in ipairs(D.order) do
   local col=(i-1)%4
   local row=math.floor((i-1)/4)
@@ -93,6 +126,7 @@ for i,key in ipairs(D.order) do
       CP:ChangeView(key)
   end)
   professionButtons[key]=b
+  professionOrder[#professionOrder+1]=b
 end
 
 local tabs={
@@ -103,10 +137,12 @@ local tabs={
   {key="help", label="Hilfe / Befehle"}
 }
 local tabButtons={}
+local orderedTabs={}
 for i,t in ipairs(tabs) do
   tabButtons[t.key]=button(frame,139,27,18+(i-1)*143,-183,t.label,function()
     CP:OpenTab(t.key)
   end)
+  orderedTabs[#orderedTabs+1]=tabButtons[t.key]
 end
 
 local summary = CreateFrame("Frame", nil, frame, "BackdropTemplate")
@@ -125,6 +161,27 @@ local trainerAction2=button(frame,186,25,220,-358,"Nächsten markieren",function
   CP:TrainerWaypoint("nearest")
 end)
 local trainerInfo=text(frame,"GameFontDisableSmall",425,-361,285,"")
+local sortButtons={}
+local sorts={
+  {key="cost",label="Preis"},
+  {key="chance",label="Skillchance"},
+  {key="missing",label="Zukaufmenge"},
+  {key="name",label="Name"},
+}
+for i,item in ipairs(sorts) do
+  sortButtons[item.key]=button(frame,115,25,18+(i-1)*119,-358,item.label,function()
+    CP.db.ui.recipeSort=item.key
+    CP:Render()
+  end)
+  sortButtons[item.key]:Hide()
+end
+local bankButton=button(frame,250,25,18,-358,"Bank: einschalten",function()
+  CP.db.includeBank=not CP.db.includeBank
+  CP:Refresh(false)
+end)
+bankButton:Hide()
+local bankDetails=text(frame,"GameFontDisableSmall",283,-361,410,"")
+bankDetails:Hide()
 trainerAction1:Hide()
 trainerAction2:Hide()
 trainerInfo:Hide()
@@ -146,9 +203,11 @@ scroll:SetScrollChild(content)
 
 local rows={}
 local trainerButtons={}
+local recipeButtons={}
 local function clearRows()
   for _,r in ipairs(rows) do r:Hide() end
   for _,b in ipairs(trainerButtons) do b:Hide() end
+  for _,b in ipairs(recipeButtons) do b:Hide() end
 end
 
 local function setRows(lines)
@@ -225,6 +284,9 @@ local helpRows={
   "/cp mode cash".."     Nur zusätzlichen Zukauf berücksichtigen",
   "/cp mode value".."     Marktwert vorhandener Materialien mitrechnen",
   "/cp bank on|off".."     Bankbestände ein- oder ausschließen",
+  "/cp sort cost|chance|missing|name".."     Rezeptsortierung",
+  "Bankbestand wird beim Öffnen des Bankschalters erfasst.",
+  "Ein letzter Bankstand kann veraltet sein – vor größeren Einkäufen prüfen.",
   GOLD.."BERUFE"..RESET,
   "/cp ingi".."   Ingenieurskunst      /cp bergbau   Bergbau",
   "/cp schmied".."   Schmiedekunst       /cp vz   Verzauberkunst",
