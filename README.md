@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.4.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.5.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -33,15 +33,18 @@ Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die sec
 | Eigene Materialien | Taschenbestände abziehen; optional Bankbestände, soweit die Spiel-API sie bereitstellt |
 | Auktionshauspreise | Letzte gespeicherte Einzelpreise aus Auctionator auswerten |
 | Kostenmodus | Zusätzliche Ausgaben minimieren oder den Marktwert eigener Materialien berücksichtigen |
-| Skill-Etappen | Orientierung von 1 bis 300 für alle sechs Berufe |
-| Wegpunkte | Hinterlegte Berufslehrer für Allianz und Horde mit TomTom oder Karten-Fallback |
+| Skill-Etappen | Kürzere, nach Material- und Ausbildungswechseln strukturierte Abschnitte von 1 bis 300 für alle acht Berufe |
+| Wegpunkte | Liste aller hinterlegten Lehrer der eigenen Fraktion; einzeln per Klick auswählbar, mit Rang-Empfehlung und Same-Map-Abstand |
 | Einkaufsliste | Fehlende Materialien für **die nächste empfohlene Herstellung** |
+| Oberfläche | Verschiebbares Fenster, gespeicherte Position und fünf Registerkarten |
+| Themes | Automatischer Stil mit Blizzard-Templates und optional ElvUI-Hooks; Dunkel/Klassisch auswählbar |
+| Hilfe | Integrierte Befehlsübersicht über `/cp hilfe` |
 
 **Keine Automatisierung:** CraftPilot kauft, verkauft, bewegt den Charakter, lernt und stellt nichts selbstständig her.
 
 ## Installation
 
-1. Das **[CraftPilot-0.4.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.4.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.5.0-alpha Installations-ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.5.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -64,7 +67,13 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 | \`/cp leder\` | Lederverarbeitung |
 | \`/cp kraeuter\` | Kräuterkunde |
 | \`/cp alchemie\` | Alchemie |
-| \`/cp trainer\` | Berufslehrer-Wegpunkt setzen |
+| `/cp trainer` | Empfohlenen Lehrer markieren |
+| `/cp lehrer` | Liste hinterlegter Lehrer und direkte Auswahl öffnen |
+| `/cp naechster` | Nächsten Lehrer auf derselben Karte markieren |
+| `/cp etappen` | Skill-Etappen öffnen |
+| `/cp hilfe` | Ingame-Hilfe öffnen |
+| `/cp resetpos` | Fensterposition zurücksetzen |
+| `/cp skin auto` / `dark` / `classic` | Darstellungsmodus ändern |
 | \`/cp liste\` | Fehlende Materialien für die nächste Herstellung ausgeben |
 | \`/cp refresh\` | Geöffnetes Berufsfenster erneut einlesen |
 | \`/cp mode cash\` | Zusätzliche Ausgaben minimieren |
@@ -79,6 +88,10 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 - Rezepte mit nicht eindeutig auslesbaren Reagenzien werden nicht preislich bewertet. Bei Alchemie können bestimmte Rezepte zusätzliche Geräte, Voraussetzungen oder Abklingzeiten haben.
 - Enchants können ein geeignetes Zielitem und eine passende Runenrute erfordern; solche Voraussetzungen fließen nicht immer in die Materialrechnung ein.
 - Die geschätzten Skillchancen für gelbe/grüne Rezepte sind Näherungen. Die tatsächlichen Erfolge schwanken.
+- Die Lehrerliste enthält **alle hinterlegten, fraktionskompatiblen** Trainer. Die gespeicherte NPC-Datenbank ist nicht vollständig.
+- „Empfohlen“ bedeutet: Der Trainer kann den nächsten benötigten Berufs-Rang lehren. Ein geeigneter Trainer auf der aktuellen Karte wird bevorzugt.
+- „Nächster“ ist ausschließlich ein Vergleich der Kartenkoordinaten **auf derselben Karte**, keine Entfernung in Metern und keine Schätzung der Reisezeit über Zonengrenzen.
+- Auto-Skinning kann die von Blizzard bereitgestellten UI-Templates und ggf. vorhandene ElvUI-Skin-Funktionen nutzen. Für andere UI-Komplettpakete gibt es keine garantierte automatische Übernahme.
 - Trainerkoordinaten sind Reisehilfen, keine Live-Prüfung der Trainerangebote. Der Uldaman-Wegpunkt markiert den Zugang, nicht Annoras Standort im Inneren.
 - Noch keine automatisierte Verarbeitung gekaufter oder selbst hergestellter Zwischenprodukte für eine vollständige Zukunftsroute.
 
