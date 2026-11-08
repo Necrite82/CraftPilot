@@ -1,0 +1,19 @@
+name: Lua checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lua:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - name: Check Lua syntax
+        run: |
+          for file in *.lua tests/*.lua; do luac5.4 -p "$file"; done
+      - name: Run smoke tests
+        run: lua5.4 tests/test.lua

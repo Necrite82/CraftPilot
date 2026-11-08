@@ -2,85 +2,63 @@
 
 **An in-game profession planning addon for World of Warcraft: Forever.**
 
-CraftPilot is designed to help players level professions with fewer unnecessary purchases. It combines a curated profession route with known recipes, available materials and, when possible, recently recorded auction prices.
+CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** `0.2.0-alpha` · WoW Forever 1.60.x (Interface 16001) · **Not yet verified in the live game client**
+**Status:** 0.3.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
-[Deutsche Dokumentation](README.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+[Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
-## Current scope
+## Supported professions
 
-The initial version covers **Engineering and Mining (skill 1–300)**.
+Engineering, Mining, Blacksmithing, Enchanting, Tailoring and Leatherworking.
 
-| Area | Features |
-| --- | --- |
-| Engineering | Curated 1–300 reference route, selected recipes, intermediate components and estimated materials |
-| Mining | Ore skill ranges, recommended zones and trainer guidance up to 300 |
-| Personal planning | Takes learned recipes and recorded materials into account |
-| Prices | Compares additional purchase cost and the market value of owned materials using stored Auctionator prices |
-| Smelting | Can consider known smelting recipes as an alternative to buying bars |
-| Navigation | Built-in locations for profession trainers and selected recipe vendors; TomTom or supported map waypoints |
-| Interface | Current step, alternative recipes, route overview and shopping list |
+All six have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and the last stored auction prices. Mining uses an ore progression overview instead.
 
-### Cost modes
+**Important limitation:** The 1–300 milestones are **not** a complete offline recipe catalog or a globally optimized 1–300 crafting route. This early alpha focuses on verifying recipe capture, cost estimates and trainer navigation in the game.
 
-- **Cash (`/cp mode cash`):** Focus on the additional gold required, using owned materials first.
-- **Value (`/cp mode value`):** Include the known market value of materials already in inventory.
+## Features
 
-Recommendations depend on the available recipe, inventory and price data. Missing data may limit the calculation.
+- Reads profession level, learned recipes, reagent quantities and current recipe difficulty from the open profession window.
+- Compares estimated additional gold cost versus the market value of materials already owned.
+- Optionally includes bank materials, depending on game API availability.
+- Uses cached Auctionator prices; no real-time auction lookup.
+- Provides six profession milestone guides from skill 1 to 300.
+- Provides built-in Alliance/Horde trainer destinations through TomTom or a supported map waypoint.
+- Shows missing materials for the **next recommended craft**.
+- Does not automate buying, crafting, training or movement.
 
 ## Installation
 
-This project is in alpha. **Source files or a release package still need to be published in this repository** before it can be installed from GitHub.
-
-Once a compatible package is available:
-
-1. Obtain the CraftPilot package for WoW Forever.
-2. Place the `CraftPilot` folder in the game's `AddOns` directory, with `CraftPilot.toc` directly inside that folder.
-3. Enable the addon in the game.
-4. Use `/cp` to open the panel. Open the Engineering and Mining profession windows once so available recipes can be recorded.
-
-**Optional addons:** Auctionator provides stored auction prices; TomTom provides navigation arrows. Without Auctionator, cost estimates are limited. Without TomTom, CraftPilot attempts an available built-in map waypoint.
+1. Download the repository ZIP from **Code → Download ZIP** (or use a compatible release when available).
+2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
+3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
+4. Auctionator and TomTom are recommended but optional.
 
 ## Commands
 
 | Command | Action |
 | --- | --- |
-| `/cp` or `/craftpilot` | Toggle the addon window |
-| `/cp ingi` | Engineering |
-| `/cp bergbau` | Mining |
-| `/cp refresh` | Refresh recorded data |
-| `/cp trainer` | Profession trainer waypoint |
-| `/cp rezept` | Waypoint for a recorded recipe source |
-| `/cp liste` | Print the shopping list |
-| `/cp mode cash` | Minimize additional purchases |
-| `/cp mode value` | Include the market value of owned materials |
-| `/cp bank on` / `/cp bank off` | Include or exclude bank inventory when available |
+| \`/cp\` / \`/craftpilot\` | Toggle window |
+| \`/cp ingi\` | Engineering |
+| \`/cp bergbau\` | Mining |
+| \`/cp schmied\` | Blacksmithing |
+| \`/cp vz\` | Enchanting |
+| \`/cp schneider\` | Tailoring |
+| \`/cp leder\` | Leatherworking |
+| \`/cp trainer\` | Trainer waypoint |
+| \`/cp liste\` | Missing materials for one craft |
+| \`/cp refresh\` | Refresh the open profession |
+| \`/cp mode cash\` / \`/cp mode value\` | Choose cost model |
+| \`/cp bank on\` / \`/cp bank off\` | Include or exclude bank materials |
 
-## Alpha limitations
+## Limitations
 
-The current version **does not guarantee the mathematically cheapest route from 1 to 300**. It uses a curated reference route and compares currently known alternatives, making local planning decisions. Skill-up probabilities may change the number of crafts required.
+The alpha does not guarantee a cheapest complete 1–300 route. Recipe difficulties and reagent data must come from the game client. Yellow/green skill-up chances are estimates. Auctionator data is a stored snapshot, not a live offer or guaranteed available quantity. Some enchants require a target item and a runed rod beyond the reagents shown. Trainer coordinates are navigation references and must be checked in game; the Annora marker points to the Uldaman entrance.
 
-- The recipe and vendor databases are not exhaustive.
-- Auctionator prices are snapshots, not guaranteed live prices or available quantities.
-- Some trainer, vendor and recipe details still require in-game verification.
-- Mining routes refer to zones, not individual randomized ore spawn points.
-- The addon does not automate purchases, crafting, NPC interactions or movement.
+For bug reports, include the game build, addon version, profession, skill level, reproduction steps and relevant Lua errors. Do not post private information.
 
-## Roadmap
+## License
 
-- Expand and validate Forever recipe and trainer data
-- Improve multi-step route optimization
-- Support additional crafting professions
-- Improve intermediate-material and recipe-source planning
-- Better handling of missing or outdated market prices
+CraftPilot's own code is licensed under **GNU GPL-3.0-only**; see [LICENSE](LICENSE). Third-party addons and game assets retain their own rights. Sources and limitations are documented in [DATA_SOURCES.md](DATA_SOURCES.md).
 
-## Feedback and contributions
-
-Bug reports, incorrect trainer locations and feature requests are welcome. Useful reports include the game version, profession and skill level, reproduction steps, and Lua errors where relevant. Do not post account details or other private information.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-## Disclaimer
-
-CraftPilot is an independent community project and is not affiliated with Blizzard Entertainment. World of Warcraft and related names are trademarks of their respective owners.
+World of Warcraft is a trademark of Blizzard Entertainment. This is an independent community project, not affiliated with Blizzard.

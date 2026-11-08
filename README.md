@@ -1,86 +1,91 @@
 # CraftPilot
 
-**Ein Ingame-Berufsplaner für World of Warcraft: Forever.**
+**Ingame-Berufsplanung für World of Warcraft: Forever.**
 
-CraftPilot hilft dabei, Berufe möglichst material- und kosteneffizient zu leveln. Statt einer festen Rezeptliste berücksichtigt das Addon bekannte Rezepte, vorhandene Materialien und – sofern verfügbar – die zuletzt erfassten Auktionshauspreise. Die nächsten Schritte, fehlenden Materialien und passende Lehrer lassen sich direkt im Spiel anzeigen.
+CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Projektstatus:** `0.2.0-alpha` · WoW Forever 1.60.x (Interface 16001) · **Noch nicht im Live-Client verifiziert**
+**Entwicklungsstand:** 0.3.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
-[English documentation](README.en.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+[English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
-## Aktueller Funktionsumfang
+## Unterstützte Berufe
 
-Die erste Ausbaustufe konzentriert sich auf **Ingenieurskunst und Bergbau (Skill 1–300)**.
+- Ingenieurskunst
+- Bergbau
+- Schmiedekunst
+- Verzauberkunst
+- Schneiderei
+- Lederverarbeitung
 
-| Bereich | Funktionen |
+Für jeden Beruf ist eine **1–300-Etappenübersicht** hinterlegt. Für die fünf Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach ihren geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau hat stattdessen eine Übersicht geeigneter Erz- und Skillbereiche.
+
+**Wichtige Abgrenzung:** Die 1–300-Etappen sind eine Orientierung und noch **keine vollständige Offline-Rezeptdatenbank**. Eine durchgehend durchgerechnete, global günstigste Einkaufs- und Herstellungsroute bis 300 sowie sämtliche Lehrerrezepte, Händler- und Beuterezepte sind noch nicht implementiert. Diese Alpha ist zunächst für das Testen von Rezeptauslesung, Kostenvergleich und Navigation gedacht.
+
+## Funktionen
+
+| Funktion | Beschreibung |
 | --- | --- |
-| Ingenieurskunst | Hinterlegte 1–300-Referenzroute mit ausgewählten Rezepten, Zwischenprodukten und Materialbedarf |
-| Bergbau | Erz- und Skillbereiche bis 300 mit Gebiets- und Lehrerhinweisen |
-| Individuelle Planung | Abgleich mit bekannten Rezepten und aktuell erfassten Materialien |
-| Kosten | Vergleich von Zukaufkosten und Materialwert anhand gespeicherter Auctionator-Preise |
-| Schmelzen | Bekannte Schmelzrezepte können als Alternative zum Kauf von Barren berücksichtigt werden |
-| Navigation | Hinterlegte Lehrer- und ausgewählte Rezeptverkäufer-Positionen; Wegpunkte mit TomTom oder unterstützter Spielkartenfunktion |
-| Oberfläche | Kompakte Routenübersicht, nächste Schritte, Alternativen und Einkaufsliste |
+| Beruf erkennen | Ingenieurskunst, Bergbau, Schmiedekunst, Verzauberkunst, Schneiderei, Lederverarbeitung |
+| Rezepte erfassen | Bekannte Rezepte, Reagenzien und aktuelle Schwierigkeitsfarben aus dem geöffneten Berufsfenster übernehmen |
+| Kostenvergleich | Aktuell mögliche Rezepte nach geschätzten Kosten pro Skillpunkt sortieren |
+| Eigene Materialien | Taschenbestände abziehen; optional Bankbestände, soweit die Spiel-API sie bereitstellt |
+| Auktionshauspreise | Letzte gespeicherte Einzelpreise aus Auctionator auswerten |
+| Kostenmodus | Zusätzliche Ausgaben minimieren oder den Marktwert eigener Materialien berücksichtigen |
+| Skill-Etappen | Orientierung von 1 bis 300 für alle sechs Berufe |
+| Wegpunkte | Hinterlegte Berufslehrer für Allianz und Horde mit TomTom oder Karten-Fallback |
+| Einkaufsliste | Fehlende Materialien für **die nächste empfohlene Herstellung** |
 
-### Zwei Kostenmodelle
-
-- **Zukauf minimieren:** Bereits vorhandene Materialien werden bevorzugt eingesetzt. Relevant ist vor allem, was zusätzlich gekauft werden müsste.
-- **Materialwert berücksichtigen:** Eigene Materialien werden mit ihrem bekannten Marktwert bewertet, damit ihre Verwendung nicht automatisch als kostenlos gilt.
-
-Eine Empfehlung hängt von den verfügbaren Daten ab. Fehlen Preise, Rezeptinformationen oder Bestände, wird die Berechnung entsprechend eingeschränkt.
+**Keine Automatisierung:** CraftPilot kauft, verkauft, bewegt den Charakter, lernt und stellt nichts selbstständig her.
 
 ## Installation
 
-Das Projekt befindet sich noch in der Alpha-Phase. **Der GitHub-Quellcode bzw. ein Release-Paket muss zunächst veröffentlicht sein**, bevor eine Installation über dieses Repository möglich ist.
+1. Unter **Code → Download ZIP** den aktuellen Stand laden, oder ein passendes Release-Paket verwenden, sobald eines angeboten wird.
+2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
+3. WoW Forever starten und das Addon aktivieren.
+4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
+5. **Das Berufsfenster im Spiel einmal öffnen**, damit CraftPilot die gelernten Rezepte und die aktuelle Skillfarbe übernimmt.
 
-Sobald ein Paket verfügbar ist:
+**Empfohlen:** eine Forever-kompatible Version von [Auctionator](https://www.curseforge.com/wow/addons/auctionator) und [TomTom](https://www.curseforge.com/wow/addons/tomtom). Die Addons sind optional, verbessern aber Kostenabschätzungen und Navigation.
 
-1. Die zu WoW Forever passende CraftPilot-Version beziehen.
-2. Den Addon-Ordner `CraftPilot` im `AddOns`-Verzeichnis der WoW-Forever-Installation ablegen. Die Datei `CraftPilot.toc` muss direkt in diesem Ordner liegen.
-3. Das Spiel starten und CraftPilot in der Addonliste aktivieren.
-4. Das Fenster mit `/cp` öffnen und die Berufsfenster für Ingenieurskunst und Bergbau einmal aufrufen, damit bekannte Rezepte eingelesen werden.
-
-**Optionale Erweiterungen:** Auctionator für gespeicherte Auktionshauspreise und TomTom für Navigationspfeile. Ohne Auctionator sind Preisberechnungen nur eingeschränkt möglich; ohne TomTom wird, soweit vom Client unterstützt, ein Karten-Wegpunkt versucht.
+Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Bei einem Skillaufstieg das Berufsfenster erneut öffnen beziehungsweise aktualisieren.
 
 ## Befehle
 
 | Befehl | Funktion |
 | --- | --- |
-| `/cp` oder `/craftpilot` | Fenster öffnen oder schließen |
-| `/cp ingi` | Ingenieurskunst-Plan anzeigen |
-| `/cp bergbau` | Bergbau-Plan anzeigen |
-| `/cp refresh` | Eingelesene Daten aktualisieren |
-| `/cp trainer` | Wegpunkt zum passenden Berufslehrer |
-| `/cp rezept` | Wegpunkt zu einer hinterlegten Rezeptquelle |
-| `/cp liste` | Einkaufsliste im Chat ausgeben |
-| `/cp mode cash` | Zusätzliche Ausgaben minimieren |
-| `/cp mode value` | Marktwert vorhandener Materialien berücksichtigen |
-| `/cp bank on` / `/cp bank off` | Bankbestände ein- oder ausschließen, soweit auslesbar |
+| \`/cp\` oder \`/craftpilot\` | Fenster öffnen / schließen |
+| \`/cp ingi\` | Ingenieurskunst |
+| \`/cp bergbau\` | Bergbau |
+| \`/cp schmied\` | Schmiedekunst |
+| \`/cp vz\` | Verzauberkunst |
+| \`/cp schneider\` | Schneiderei |
+| \`/cp leder\` | Lederverarbeitung |
+| \`/cp trainer\` | Berufslehrer-Wegpunkt setzen |
+| \`/cp liste\` | Fehlende Materialien für die nächste Herstellung ausgeben |
+| \`/cp refresh\` | Geöffnetes Berufsfenster erneut einlesen |
+| \`/cp mode cash\` | Zusätzliche Ausgaben minimieren |
+| \`/cp mode value\` | Eigene Materialien zum Marktwert berücksichtigen |
+| \`/cp bank on\` / \`/cp bank off\` | Bankbestände nach API-Verfügbarkeit ein-/ausschalten |
 
-## Grenzen der Alpha-Version
+## Alpha-Hinweise
 
-CraftPilot ist **noch kein vollständiger, global kostenoptimaler 1–300-Rechner**. Die aktuelle Planung verwendet eine ausgewählte Referenzroute und vergleicht zusätzliche bekannte Rezepte. Entscheidungen erfolgen schrittweise; wechselnde Skillchancen können den tatsächlichen Materialverbrauch verändern.
+- Kein Anspruch auf die mathematisch günstigste gesamte Skillroute 1–300.
+- Aufgeführte Etappen sind **keine** Mengen- oder Preisgarantie.
+- Auctionator-Preise sind **gespeicherte Scans**, keine Echtzeitpreise, Lagerbestände oder garantierten Kaufmöglichkeiten.
+- Rezepte mit nicht eindeutig auslesbaren Reagenzien werden nicht preislich bewertet.
+- Enchants können ein geeignetes Zielitem und eine passende Runenrute erfordern; solche Voraussetzungen fließen nicht immer in die Materialrechnung ein.
+- Die geschätzten Skillchancen für gelbe/grüne Rezepte sind Näherungen. Die tatsächlichen Erfolge schwanken.
+- Trainerkoordinaten sind Reisehilfen, keine Live-Prüfung der Trainerangebote. Der Uldaman-Wegpunkt markiert den Zugang, nicht Annoras Standort im Inneren.
+- Noch keine automatisierte Verarbeitung gekaufter oder selbst hergestellter Zwischenprodukte für eine vollständige Zukunftsroute.
 
-- Nicht jedes Forever-Rezept und jede Rezeptquelle ist bereits enthalten.
-- Auctionator liefert einen **gespeicherten Preisstand**, keine garantierten Live-Preise oder verfügbaren Auktionsmengen.
-- Einige Händler-, Lehrer- und Rezeptdaten müssen noch im tatsächlichen Forever-Client geprüft werden.
-- Wegpunkte führen zu festen Anlaufstellen, nicht zu zufällig erscheinenden Erzvorkommen.
-- Das Addon führt keine Käufe, Herstellungsaktionen, Trainerinteraktionen oder Bewegungen automatisch aus.
+## Mithelfen und testen
 
-## Geplante Entwicklung
+Zur Fehlerdiagnose im Spiel zunächst \`/console scriptErrors 1\` setzen. Bei einem Issue bitte Clientversion, CraftPilot-Version, Beruf, Skillstand, Vorgehensweise und gegebenenfalls Lua-Fehler angeben. Keine persönlichen Daten oder Zugangsdaten hochladen.
 
-- Erweiterung und Prüfung der Forever-Rezept- und Lehrerdatenbank
-- Bessere Planung über mehrere Skillstufen statt ausschließlich lokaler Entscheidungen
-- Mehr Herstellungsberufe und alternative Skillrouten
-- Präzisere Berücksichtigung von Zwischenprodukten, Rezeptquellen und verfügbaren Beständen
-- Verbessertes Feedback bei fehlenden oder veralteten Preisdaten
+Die Lua-Syntax und Grundfunktionen werden automatisiert mit [Lua-Smoketests](tests/test.lua) geprüft. Diese Tests ersetzen **keinen** Test im echten Forever-Client.
 
-## Fehler melden und mitwirken
+## Lizenz und Daten
 
-Fehlerberichte, Hinweise zu falschen NPC-Positionen und Verbesserungsvorschläge sind willkommen. Besonders hilfreich sind die Spielversion, der Beruf und Skillstand, eine kurze Beschreibung der Schritte sowie gegebenenfalls Lua-Fehlertexte. Bitte keine Zugangsdaten, Charakter- oder anderen privaten Informationen veröffentlichen.
+CraftPilot-Quellcode ist unter **GNU GPL-3.0-only** lizenziert, siehe [LICENSE](LICENSE). Fremde Addons und Spieldaten unterliegen weiterhin den Rechten ihrer jeweiligen Inhaber. Die Datenherkunft und Grenzen sind in [DATA_SOURCES.md](DATA_SOURCES.md) erläutert.
 
-Hinweise zur Mitarbeit stehen in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Hinweis
-
-CraftPilot ist ein unabhängiges Community-Projekt und steht in keiner Verbindung zu Blizzard Entertainment. World of Warcraft und zugehörige Bezeichnungen sind Marken ihrer jeweiligen Rechteinhaber.
+World of Warcraft ist eine Marke von Blizzard Entertainment. CraftPilot ist ein unabhängiges Community-Projekt und nicht mit Blizzard verbunden.
