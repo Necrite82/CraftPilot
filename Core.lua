@@ -254,7 +254,7 @@ end
 local odds={ [0]=1, [1]=0.70, [2]=0.35, [3]=0 }
 function CP:Options(profession)
   local p=self.db.professions[profession]
-  if not p or (D.professions[profession].gathering and not D.professions[profession].crafting) then return {} end
+  if not p or (type(p.cap)=="number" and p.skill>=p.cap) or (D.professions[profession].gathering and not D.professions[profession].crafting) then return {} end
   local values={}
   -- Recipe difficulty refers only to the skill at the time of capture.
   for id,recipe in pairs(self.db.recipes[profession] or {}) do
@@ -275,12 +275,13 @@ function CP:Options(profession)
         end
       end
       values[#values+1]={id=id, name=recipe.name, icon=recipe.icon, outputItemID=recipe.outputItemID, mats=recipe.mats,
-        chance=chance, cost=cost/chance, missing=missing,
+        chance=chance, difficulty=recipe.difficulty, cost=cost/chance, missing=missing,
         unknown=#unknown>0, unknownItems=unknown}
     end
   end
   table.sort(values,function(a,b)
     if a.unknown~=b.unknown then return not a.unknown end
+    if self.db.ui.preferReliableSkill and (a.chance<.5)~=(b.chance<.5) then return a.chance>=.5 end
     if a.cost~=b.cost then return a.cost<b.cost end
     if a.missing~=b.missing then return a.missing<b.missing end
     if a.chance~=b.chance then return a.chance>b.chance end

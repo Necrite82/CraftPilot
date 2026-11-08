@@ -16,3 +16,7 @@ Third-party modules in this directory are redistributed under their original GPL
 ## Camping subset added in 0.11
 
 `Camp.lua` is preserved unchanged from the same pinned revision, generated 2026-10-16 for build 1.60.1.70425. `CampingRecipes.lua` is a marked filtered derivative containing eight matching cooking/first-aid records, with no unrelated recipe tables. Fishing input was inspected and yielded no matching recipes. Input URLs and checksums are in `CAMP_SOURCES.json`; `tools/import_camping.py` reproduces the import. Original contributors, notices and GPL-3.0 terms above apply. See `docs/CAMPING_SOURCES.md` for validation, scope and remaining unknowns.
+
+## Secondary skill-range subset in 0.12.1
+
+`SecondarySkillRanges.lua` is a marked GPL-3.0 derivative containing only 162 cooking/first-aid recipe spell IDs and their four color thresholds. Its two input files are already pinned and hashed in `CAMP_SOURCES.json`. Original notices above remain applicable. No material lists, vendor tables, names or gathering datasets are included in this subset. Reproduce with `tools/import_skill_ranges.py`.

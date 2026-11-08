@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","GodMode.lua","Updates.lua"}) do
+  "ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","GodMode.lua","Updates.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -631,7 +631,7 @@ CP.db.recipes.cooking[sample.maker]=prior
 
 -- Real slider callbacks exercise both directions, including inverted minimap visibility.
 CP:OpenTab("settings")
-for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails"}) do
+for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill"}) do
   local control
   for _,candidate in ipairs(createdFrames) do
     local spec=rawget(candidate,"craftSpec")
@@ -712,11 +712,99 @@ assert(#CP:CampingShoppingCards()>2)
 CP.db.campingPlan=originalCampPlan;owned[4470]=oldWood
 print("PASS: God-Mode opportunity costs, sale deductions, stale/missing safeguards and shared camping shopping")
 
+-- Color interval boundaries are inclusive at the beginning and exclusive at the next color.
+assert(CP:ValidSkillColors({1,10,20,30}))
+for skill,difficulty in pairs({[1]=0,[9]=0,[10]=1,[19]=1,[20]=2,[29]=2,[30]=3}) do
+ assert(CP:ReferenceDifficulty({1,10,20,30},skill)==difficulty)
+end
+assert(not CP:ValidSkillColors({65,50,62,75}))
+assert(not CP:ValidSkillColors({1,10,0/0,30}))
+assert(CP:CatalogSkillChance({colors={65,50,62,75}},65)==0)
+local secondaryCount=0
+for _,map in pairs(CP.SecondarySkillRanges) do
+ for _,colors in pairs(map) do assert(CP:ValidSkillColors(colors));secondaryCount=secondaryCount+1 end
+end
+assert(secondaryCount==162)
+local oldProf,oldRecipes=CP.db.professions.engineering,CP.db.recipes.engineering
+local priorCostMode=CP.db.mode;CP.db.mode="cash"
+local oldStock,oldP1,oldP2=owned[50001],prices[50001],prices[50002]
+local oldSelected=CP.db.ui.selectedRecipes.engineering
+CP.db.professions.engineering={skill=10,cap=75}
+CP.db.recipes.engineering={
+ [990001]={name="Cheap green",learned=true,snapshotSkill=10,difficulty=2,mats={{50001,1}}},
+ [990002]={name="Orange alternative",learned=true,snapshotSkill=10,difficulty=0,mats={{50002,1}}},
+}
+owned[50001]=1;prices[50001]=100;prices[50002]=100
+CP.db.ui.preferReliableSkill=true
+assert(CP:Options("engineering")[1].id==990002)
+CP.db.ui.preferReliableSkill=false
+assert(CP:Options("engineering")[1].id==990001)
+CP.db.ui.preferReliableSkill=true
+prices[50002]=nil
+assert(CP:Options("engineering")[1].id==990001,"Unpriced orange must not win")
+prices[50002]=100
+CP.db.ui.selectedRecipes.engineering=990001
+assert(CP:SelectedOption("engineering").id==990001,"Explicit green selection must remain usable")
+local fakeCatalog=CP:Catalog("engineering")
+fakeCatalog.recipes[990001]={name="Old recipe",learn=1,colors={1,20,30,40},mats={[50001]=99},get={{kind="trainer"}}}
+local _,conflict=CP:RecipeRangeData("engineering",990001)
+assert(conflict and CP:RecipeRangeText("engineering",990001):find("abweichend",1,true))
+local foundLive,foundFuture
+for _,candidate in ipairs(CP:CatalogCandidateRecipes("engineering",10)) do
+ if candidate.id==990001 then foundLive=candidate end
+end
+for _,candidate in ipairs(CP:CatalogCandidateRecipes("engineering",11)) do
+ if candidate.id==990001 then foundFuture=candidate end
+end
+assert(foundLive and foundLive.chance==.35 and foundLive.recipe.mats[50001]==1)
+assert(not foundFuture,"A conflicting reference must not extrapolate future colors")
+local realCatalogRecipes=fakeCatalog.recipes
+fakeCatalog.recipes={
+ [990001]={learn=1,colors={1,1,1,40},mats={[50001]=1},get={{kind="trainer"}}},
+ [990002]={learn=1,colors={1,40,50,60},mats={[50002]=1},get={{kind="trainer"}}},
+}
+owned[50001]=3
+CP.db.ui.preferReliableSkill=false
+assert(CP:GenerateAutomaticRoute("engineering",10,11).steps[1].id==990001)
+CP.db.ui.preferReliableSkill=true
+assert(CP:GenerateAutomaticRoute("engineering",10,11).steps[1].id==990002)
+fakeCatalog.recipes=realCatalogRecipes
+owned[50001]=1
+
+CP.db.recipes.engineering[990001].difficulty=0
+fakeCatalog.recipes[990001].colors={1,10,20,30}
+local ranges=CP:RecipeRangeText("engineering",990001)
+assert(ranges:find("1-9",1,true) and ranges:find("10-19",1,true) and ranges:find("20-29",1,true) and ranges:find("ab 30",1,true))
+CP.db.recipes.engineering[990001].mats=nil
+for _,candidate in ipairs(CP:CatalogCandidateRecipes("engineering",10)) do assert(candidate.id~=990001) end
+CP.db.recipes.engineering[990001].mats={{50001,1}}
+local priorCapture=CP.db.lastCapture
+CP.db.lastCapture={key="engineering",skill=10}
+CP.db.view="engineering";CP:OpenTab("now")
+local rangeSeen=false
+for _,control in ipairs(createdFrames) do
+ local recipe=rawget(control,"craftRecipe")
+ if recipe and recipe.id==990001 then
+  assert(control.rangeLabel.displayText and control.height==80)
+  rangeSeen=true
+ end
+end
+assert(rangeSeen)
+CP.db.lastCapture=priorCapture
+assert(#CP:ProfessionAuditCards()==13)
+CP:OpenTab("audit")
+fakeCatalog.recipes[990001]=nil
+CP.db.professions.engineering,CP.db.recipes.engineering=oldProf,oldRecipes
+CP.db.mode=priorCostMode
+CP.db.ui.selectedRecipes.engineering=oldSelected
+owned[50001],prices[50001],prices[50002]=oldStock,oldP1,oldP2
+print("PASS: all color boundaries, secondary subset, green policy, live conflicts, native materials and audit view")
+
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.12.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.12.0","0.12.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.12.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.12.0-alpha"))
+assert(CP:IsNewerVersion("0.12.1-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.12.1","0.12.1-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.12.1-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.12.1-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -734,10 +822,10 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.12.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.12.1-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
-assert(#sent==2 and sent[2][2]=="V|0.12.0-alpha")
+assert(#sent==2 and sent[2][2]=="V|0.12.1-alpha")
 CP:OpenReleaseLink()
 assert(CP.releaseLinkEdit.displayText==CP.releaseURL)
 CP.Say=priorSay;C_ChatInfo=nil
@@ -756,7 +844,7 @@ for _,locale in ipairs({"enUS","enGB","frFR"}) do
   assert(translated.Data.professions.cooking.name=="Cooking")
   for _,key in ipairs(translated.Data.order) do
     translated.db.view=key
-    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","god","settings"}) do translated:OpenTab(tab) end
+    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","god","audit","settings"}) do translated:OpenTab(tab) end
   end
   for _,page in ipairs({"fires","objects","buffs","shopping"}) do
     translated.db.ui.campingPage=page

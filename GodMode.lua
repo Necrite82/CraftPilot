@@ -140,6 +140,8 @@ function CP:GodModeCards(key)
       icon=self:RecipeIcon(key,id),color=advantage and "green" or "blue",
       action=function() CP:ChooseGodRecipe(key,id);CP:Render() end}
     if self.db.ui.godRecipe==id then
+      cards[#cards+1]={title=self:RecipeColorLabel(key,id),detail=self:RecipeRangeText(key,id),
+        footer=L("Aktuelle Farbe aus dem Client; vollständige Grenzwerte separat gekennzeichnet."),color="blue"}
       cards[#cards+1]={title=row.crafts..L(" Herstellungen · Skillchance ")..math.floor(row.chance*100).."%",
         detail=string.format(L("Ø %.2f Skillpunkte; wirtschaftlicher Aufwand je Punkt: "),row.points)..self:FormatMoney(row.value),
         footer=L("Chancen sind Schätzwerte. Endprodukte werden nicht als Verkaufserlös angerechnet."),color="gold"}

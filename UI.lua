@@ -99,7 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.12.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.12.1-alpha")
 local godButton=button(header,112,23,W-270,-10,"God-Mode",function() CP:OpenTab("god") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
@@ -403,7 +403,7 @@ local function setRecipeRows(key,options,chosen)
   for i,entry in ipairs(options) do
     local b=recipeButtons[i]
     if not b then
-      b=button(content,W-113,57,5,-(i-1)*61,"",function()
+      b=button(content,W-113,80,5,-(i-1)*84,"",function()
         if b.craftRecipe and CP.db then
           CP.db.ui.selectedRecipes[CP.db.view]=b.craftRecipe.id
           CP:Render()
@@ -411,6 +411,7 @@ local function setRecipeRows(key,options,chosen)
       end)
       b.nameLabel=text(b,"GameFontHighlight",48,-7,W-180,"")
       b.infoLabel=text(b,"GameFontDisableSmall",48,-30,W-180,"")
+      b.rangeLabel=text(b,"GameFontDisableSmall",48,-54,W-180,"")
       if type(b.CreateTexture)=="function" then
         local icon=b:CreateTexture(nil,"ARTWORK")
         if icon then
@@ -423,7 +424,7 @@ local function setRecipeRows(key,options,chosen)
         end
         local marker=b:CreateTexture(nil,"OVERLAY")
         if marker then
-          marker:SetSize(3,45)
+          marker:SetSize(3,68)
           marker:SetPoint("LEFT",b,"LEFT",1,0)
           b.craftStripe=marker
         end
@@ -432,8 +433,8 @@ local function setRecipeRows(key,options,chosen)
     end
     b.craftRecipe=entry
     b:ClearAllPoints()
-    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*61)
-    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,57)
+    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*84)
+    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,80)
     if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
       local texture=entry.icon
       if not texture and entry.outputItemID and C_Item and type(C_Item.GetItemIconByID)=="function" then
@@ -444,13 +445,13 @@ local function setRecipeRows(key,options,chosen)
     end
     if b.craftStripe and type(b.craftStripe.SetColorTexture)=="function" then
       if chosen and entry.id==chosen.id then
-        b.craftStripe:SetColorTexture(.20,.81,.66,.95)
+        b.craftStripe:SetColorTexture(.91,.68,.31,.95)
       else
         b.craftStripe:SetColorTexture(.37,.48,.67,.70)
       end
     end
     local active=chosen and entry.id==chosen.id
-    b.nameLabel:SetText((active and GREEN..L("AUSGEWÄHLT  ")..RESET or "")
+    b.nameLabel:SetText((active and GOLD..L("AUSGEWÄHLT  ")..RESET or "")
       ..entry.name)
     local price=entry.unknown and L("Preis unvollständig") or gold(entry.cost)
     local ids={}
@@ -458,11 +459,12 @@ local function setRecipeRows(key,options,chosen)
     local summary=CP.PriceSummary and CP:PriceSummary(ids)
     local ageInfo=summary and (summary.stale>0 and L(" · AH ALT")
       or (summary.unknown>0 and L(" · Scan ?") or "")) or ""
-    b.infoLabel:SetText(string.format(L("Skill %.0f%%  |  %s / Skillpunkt  |  %d Teile fehlen%s"),
+    b.rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
+    b.infoLabel:SetText(CP:RecipeColorLabel(key,entry.id).." | "..string.format(L("Chance ca. %.0f%% | %s / Punkt | %d fehlen%s"),
       entry.chance*100,price,entry.missing,ageInfo))
     b:Show()
   end
-  content:SetHeight(math.max(270,#options*61+16))
+  content:SetHeight(math.max(270,#options*84+16))
   if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
@@ -470,7 +472,7 @@ end
 -- Graphics are composed from native flat textures and client-provided item icons.
 local function setVisualCards(entries)
   clearRows()
-  local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help")
+  local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help" or CP.db.ui.tab=="audit")
   local cardHeight=settingsView and 92 or 73
   for i,entry in ipairs(entries) do
     local b=visualCards[i]
@@ -783,6 +785,7 @@ local function layout()
     b:SetWidth(width-113)
     if b.nameLabel then b.nameLabel:SetWidth(width-180) end
     if b.infoLabel then b.infoLabel:SetWidth(width-180) end
+    if b.rangeLabel then b.rangeLabel:SetWidth(width-180) end
   end
   for _,b in ipairs(visualCards) do
     b:SetWidth(width-113)
@@ -801,7 +804,7 @@ registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
-  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,god=true,settings=true,help=true}
+  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,god=true,audit=true,settings=true,help=true}
   if tab=="help" then tab="settings" end
   if not valid[tab] then return end
   self.db.ui.tab=tab
@@ -827,7 +830,7 @@ function CP:Render()
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end
   if tab~="settings" and tab~="help" then self.pendingSettingsReset=nil end
-  local settingsView=tab=="settings" or tab=="help"
+  local settingsView=tab=="settings" or tab=="help" or tab=="audit"
   summary:SetShown(not settingsView)
   stageProgress:SetShown(not settingsView)
   section:ClearAllPoints()
@@ -921,6 +924,9 @@ function CP:Render()
   if tab=="settings" or tab=="help" then
     section:SetText(L("Einstellungen · anklicken zum Ändern"))
     setVisualCards(self:SettingsCards())
+  elseif tab=="audit" then
+    section:SetText(L("Berufsdaten · Farbgrenzen und Clientabgleich"))
+    setVisualCards(self:ProfessionAuditCards())
   elseif tab=="god" then
     section:SetText(L("God-Mode · verkaufen, behalten oder anders skillen"))
     setVisualCards(self:GodModeCards(key))
@@ -1028,7 +1034,7 @@ function CP:Render()
             title=string.format(L("%d–%d · %dx %s"),step.first,step.last,
               step.crafts,step.name),
             detail=L("Skillchance aus früherem Forever-Client · ")..stamp,
-            footer=L("Zeitpunkt und Anzahl sind geschätzt; Skillfarbe im Spiel prüfen."),
+            footer=self:RecipeRangeText(key,step.id),
             icon=self:RecipeIcon(key,step.id),
             color=step.uncertain and "gold" or "green"
           }
@@ -1180,7 +1186,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.12.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.12.1 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

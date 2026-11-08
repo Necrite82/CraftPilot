@@ -4,9 +4,9 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ['CraftPilot.toc', 'Locale.lua', 'Locales/enUS.lua', 'Camping.lua', 'GodMode.lua', 'Updates.lua', 'Data.lua', 'Core.lua', 'Catalog.lua',
+FILES = ['CraftPilot.toc', 'Locale.lua', 'Locales/enUS.lua', 'Camping.lua', 'GodMode.lua', 'Updates.lua', 'SkillInfo.lua', 'ThirdParty/CraftLadder/SecondarySkillRanges.lua', 'Data.lua', 'Core.lua', 'Catalog.lua',
          'PriceHistory.lua', 'Route.lua', 'UI.lua', 'Settings.lua', 'Media/CraftPilot.tga', 'LICENSE',
-         'README.md', 'DATA_SOURCES.md', 'docs/CAMPING_SOURCES.md',
+         'README.md', 'DATA_SOURCES.md', 'docs/CAMPING_SOURCES.md', 'docs/PROFESSION_STATUS.md',
          'ThirdParty/CraftLadder/Camp.lua', 'ThirdParty/CraftLadder/CampingRecipes.lua',
          'ThirdParty/CraftLadder/CAMP_SOURCES.json',
          'ThirdParty/CraftLadder/CREDITS.txt', 'ThirdParty/CraftLadder/SOURCE.md']
