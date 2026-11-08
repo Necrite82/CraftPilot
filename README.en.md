@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.6.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.7.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 
 ## Installation
 
-1. Download the **[CraftPilot-0.6.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.6.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.7.0-alpha installation ZIP](https://raw.githubusercontent.com/Necrite82/CraftPilot/main/dist/CraftPilot-0.7.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -60,6 +60,18 @@ All eight have a **1–300 milestone overview**. Currently learned crafting reci
 | \`/cp refresh\` | Refresh the open profession |
 | \`/cp mode cash\` / \`/cp mode value\` | Choose cost model |
 | \`/cp bank on\` / \`/cp bank off\` | Include or exclude bank materials |
+
+## New in 0.7: visual cards and flexible shopping plans
+
+The **Materials**, **Milestones**, **Help** and **Gathering** views now use consistent visual cards. A milestone can be clicked to select its skill interval as the current planning range. Materials show required quantities, bags, last known bank stock, missing amounts and saved auction estimates.
+
+Clicking a **learned crafting profession** attempts to open the game's trade-skill panel directly through `C_TradeSkillUI.OpenTradeSkill`. A user hardware event is required. The client may reject the action, and not all gathering professions expose a crafting window. Toggle this behavior with `/cp autoopen on|off`.
+
+### Adjustable range planning
+
+Open **Shopping Plan**, set a start and target skill (for example **30–100**), choose a currently learned recipe in the crafting tab, then add a chosen number of crafts. Repeat with more recipes. CraftPilot aggregates the ingredients for the **explicitly selected recipes and quantities**, subtracts available bag/known bank counts and estimates additional purchases from stored Auctionator prices. Use **List in chat** or `/cp einkauf` to print the missing ingredients.
+
+**Quick step +10** builds only a provisional immediate step, using the current recipe difficulty and stopping at the current training cap. It does **not** claim to plan a full future 30–100 route. Future unknown recipes and changing skill-up chances require more data; the recipe plan may not achieve its target skill. Intermediate components are counted as gross ingredients rather than an optimized production graph.
 
 ## New in 0.6: banking, themes and recipe cards
 
