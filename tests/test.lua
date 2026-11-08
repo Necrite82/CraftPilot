@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua"}) do
+  "Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","GodMode.lua","Updates.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -645,6 +645,104 @@ for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","known
   assert(control.craftSpec.value==before,"Switch did not restore")
 end
 
+-- Economic comparison: valuable owned silver can lose to a cheap purchased substitute.
+local savedProf,savedRecs,savedPlan=CP.db.professions.engineering,CP.db.recipes.engineering,CP.db.plans.engineering
+CP.db.professions.engineering={skill=10,cap=75}
+CP.db.recipes.engineering={
+ [900001]={name="Use silver",learned=true,snapshotSkill=10,difficulty=0,mats={{50001,4}}},
+ [900002]={name="Buy substitute",learned=true,snapshotSkill=10,difficulty=0,mats={{50002,2},{50002,2}}},
+ [900003]={name="Not learned",learned=false,snapshotSkill=10,difficulty=0,mats={{50002,1}}},
+ [900004]={name="Gray",learned=true,snapshotSkill=10,difficulty=3,mats={{50002,1}}},
+}
+owned[50001]=4;prices[50001]=1000;prices[50002]=100
+CP.db.ui.godCut=5
+local comparison=CP:GodModeComparison("engineering")
+assert(#comparison.rows==2 and comparison.baseline.id==900001)
+local alternative=comparison.rows[1]
+assert(alternative.id==900002 and alternative.buy==400 and alternative.advantage==3400 and alternative.reliable)
+assert(#alternative.materials==1 and alternative.materials[1].missing==4)
+assert(alternative.preserve[1].quantity==4 and alternative.preserve[1].net==3800)
+assert(owned[50001]==4,"Comparison changed inventory")
+CP.db.plans.engineering={start=10,target=20,crafts={[900001]=2}}
+assert(CP:ChooseGodRecipe("engineering",900002))
+assert(CP.db.ui.selectedRecipes.engineering==900002 and CP.db.plans.engineering.crafts[900001]==2)
+assert(not CP:ChooseGodRecipe("engineering",900003))
+CP.db.view="engineering";CP:OpenTab("god")
+local godCards=CP:GodModeCards("engineering")
+for _,card in ipairs(godCards) do
+ if card.title=="Diese Variante als Einkaufsplan übernehmen" then card.action() end
+end
+assert(CP.db.plans.engineering.crafts[900002]==1 and CP.db.plans.engineering.crafts[900001]==nil)
+assert(CP:UndoGodPlan("engineering"))
+assert(CP.db.plans.engineering.crafts[900001]==2 and CP.db.plans.engineering.crafts[900002]==nil)
+local oldAge=Auctionator.API.v1.GetAuctionAgeByItemID
+Auctionator.API.v1.GetAuctionAgeByItemID=function() return 10 end
+comparison=CP:GodModeComparison("engineering")
+for _,row in ipairs(comparison.rows) do assert(not row.reliable) end
+Auctionator.API.v1.GetAuctionAgeByItemID=oldAge
+prices[50001]=nil
+comparison=CP:GodModeComparison("engineering")
+for _,row in ipairs(comparison.rows) do assert(not row.reliable) end
+prices[50001]=1000
+CP.db.ui.godCut=30
+comparison=CP:GodModeComparison("engineering")
+assert(comparison.rows[1].advantage==2400)
+CP.db.professions.engineering.cap=10
+assert(#CP:GodModeComparison("engineering").rows==0,"No skill-ups at the profession cap")
+CP.db.ui.godCut=5
+CP.db.professions.engineering,CP.db.recipes.engineering,CP.db.plans.engineering=savedProf,savedRecs,savedPlan
+owned[50001]=nil;prices[50001]=nil;prices[50002]=nil
+
+-- Shared camping plan multiplies quantities and subtracts stock once across professions.
+local originalCampPlan=CP.db.campingPlan
+CP.db.campingPlan={}
+assert(CP:AddCampingCraft(279981,5))
+assert(CP:AddCampingCraft(279938,2))
+assert(not CP:AddCampingCraft(0,1) and not CP:AddCampingCraft(279981,1.5))
+local oldWood=owned[4470]
+owned[4470]=3
+local shopping=CP:CampingShopping()
+local foundWood
+for _,mat in ipairs(shopping.materials) do if mat.id==4470 then foundWood=mat end end
+assert(#shopping.steps==2 and foundWood.quantity==9 and foundWood.missing==6)
+assert(CP:AddCampingCraft(279981,-5))
+assert(#CP:CampingShopping().steps==1)
+CP.db.ui.campingPage="shopping";CP:OpenTab("camping")
+assert(#CP:CampingShoppingCards()>2)
+CP.db.campingPlan=originalCampPlan;owned[4470]=oldWood
+print("PASS: God-Mode opportunity costs, sale deductions, stale/missing safeguards and shared camping shopping")
+
+-- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
+assert(CP:IsNewerVersion("0.12.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.12.0","0.12.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.12.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.12.0-alpha"))
+local priorSay=CP.Say
+local notices=0
+CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
+assert(not CP:ReceiveVersion("other","V|0.13.0-alpha","GUILD"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha","WHISPER"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha|evil","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha","GUILD"))
+assert(notices==1 and CP.db.latestSeenVersion=="0.13.0-alpha")
+assert(CP:VersionStatus():find("0.13.0",1,true))
+local sent={}
+C_ChatInfo={RegisterAddonMessagePrefix=function(prefix) assert(prefix=="CraftPilotVer");return true end,
+ SendAddonMessage=function(prefix,payload,channel) sent[#sent+1]={prefix,payload,channel} end}
+CP:InitializeVersionChecks()
+assert(CP.versionChecksReady)
+assert(CP:SendVersion("GUILD",true))
+assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
+assert(#sent==1 and sent[1][2]=="Q|0.12.0-alpha")
+CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
+CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
+assert(#sent==2 and sent[2][2]=="V|0.12.0-alpha")
+CP:OpenReleaseLink()
+assert(CP.releaseLinkEdit.displayText==CP.releaseURL)
+CP.Say=priorSay;C_ChatInfo=nil
+print("PASS: semantic version comparison, one-time notices, message filtering, throttling and copy link")
+
 -- Load the actual TOC into fresh addon tables to test language at construction time.
 for _,locale in ipairs({"enUS","enGB","frFR"}) do
   GetLocale=function() return locale end
@@ -658,9 +756,9 @@ for _,locale in ipairs({"enUS","enGB","frFR"}) do
   assert(translated.Data.professions.cooking.name=="Cooking")
   for _,key in ipairs(translated.Data.order) do
     translated.db.view=key
-    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","settings"}) do translated:OpenTab(tab) end
+    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","god","settings"}) do translated:OpenTab(tab) end
   end
-  for _,page in ipairs({"fires","objects","buffs"}) do
+  for _,page in ipairs({"fires","objects","buffs","shopping"}) do
     translated.db.ui.campingPage=page
     for _,card in ipairs(translated:CampingCards("cooking")) do
       assert(not (card.title or ""):find("Nicht als erlernt",1,true))
