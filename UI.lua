@@ -636,10 +636,10 @@ function CP:Render()
         lines[#lines+1]=GOLD.."AUSWAHL  "..RESET..best.name
         lines[#lines+1]=MUTED.."Bankbestände sind nur beim Bankbesuch aktuell geprüft."..RESET
         for _,mat in ipairs(best.mats) do
-          local total,bag,bank,live=self:ItemAvailability(mat[1])
+          local total,bag,bank,live,known=self:ItemAvailability(mat[1])
           local deficit=math.max(0,mat[2]-total)
           local price=self:Price(mat[1])
-          local marker=self.db.includeBank and (live and "Bank live" or "Bank Cache") or "nur Tasche"
+          local marker=self.db.includeBank and (live and "Bank live" or (known and "letzter Stand" or "unbekannt")) or "nur Tasche"
           lines[#lines+1]=string.format("%s: %d benötigt | Tasche %d | Bank %d (%s)",
             self:ItemName(mat[1]),mat[2],bag,bank,marker)
           if deficit>0 then
