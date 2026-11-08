@@ -117,6 +117,10 @@ function CP:ItemName(itemID)
 end
 
 function CP:Price(itemID)
+  if type(self.PriceDetails)=="function" then
+    local data=self:PriceDetails(itemID)
+    return data and data.price
+  end
   local a = _G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
   local p = a and safe(a.GetAuctionPriceByItemID, "CraftPilot", itemID)
   if type(p) == "number" and p > 0 then return p end
@@ -506,6 +510,7 @@ function CP:PlanFor(key)
     self.db.plans[key]=p
   end
   if type(p.crafts)~="table" then p.crafts={} end
+  if type(p.autoMode)~="boolean" then p.autoMode=false end
   p.start=clampSkill(p.start)
   p.target=clampSkill(p.target)
   if p.start>=p.target then p.target=math.min(300,p.start+1) end
@@ -519,6 +524,8 @@ function CP:SetPlanRange(key,first,last)
   local a,b=clampSkill(first),clampSkill(last)
   if a>=b then return false end
   p.start,p.target=a,b
+  p.autoRoute=nil
+  p.autoMode=false
   return true
 end
 
@@ -530,6 +537,7 @@ function CP:AddPlanCraft(key,recipeID,quantity)
      or type(recipe.mats)~="table" or #recipe.mats==0
      or count<1 or count>999 then return false end
   p.crafts[recipeID]=math.min(9999,(p.crafts[recipeID] or 0)+count)
+  p.autoMode=false
   return true
 end
 
@@ -538,6 +546,8 @@ function CP:ClearPlanCraft(key,recipeID)
   if not p then return end
   if type(recipeID)=="number" then p.crafts[recipeID]=nil
   else p.crafts={} end
+  p.autoMode=false
+  p.autoRoute=nil
 end
 
 function CP:DraftPlanStep(key)
@@ -625,6 +635,8 @@ function CP:PlanShopping(key)
 end
 
 function CP:PrintPlanShopping(key)
+  local plan=self:PlanFor(key)
+  if plan and plan.autoMode and self:PrintRouteShopping(key) then return end
   local result=self:PlanShopping(key)
   if not result then return end
   self:Say(("Einkaufsliste %s, Skill %d–%d: %d geplante Herstellungen")
@@ -683,6 +695,12 @@ local function command(input)
     if CP.OpenTab then CP:OpenTab("plan") end
   elseif text=="einkauf" then
     CP:PrintPlanShopping(CP.db.view)
+  elseif text=="autoplan" then
+    local ok,result=CP:BuildRouteForCurrentPlan(CP.db.view)
+    if ok then
+      CP:Say("Vorschlag erstellt: "..#result.steps.." Schritte, bis Skill "..result.reached..".")
+      CP:Refresh(false)
+    else CP:Say(result or "Kein geeigneter Rezeptkatalog.") end
   elseif text=="autoopen on" or text=="autoopen off" then
     CP.db.ui.autoOpen=text=="autoopen on"
     CP:Say("Berufsfenster automatisch öffnen: "..(CP.db.ui.autoOpen and "AN" or "AUS"))
