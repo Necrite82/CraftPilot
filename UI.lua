@@ -400,6 +400,111 @@ local function setRecipeRows(key,options,chosen)
   if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
+-- Shared visual cards for stages, materials and shopping plans.
+-- Graphics are composed from native flat textures and client-provided item icons.
+local function setVisualCards(entries)
+  clearRows()
+  local cardHeight=73
+  for i,entry in ipairs(entries) do
+    local b=visualCards[i]
+    if not b then
+      b=CreateFrame("Button",nil,content,"BackdropTemplate")
+      b:SetSize(W-110,cardHeight-5)
+      b:SetBackdrop(backdrop)
+      b.titleLabel=text(b,"GameFontNormal",55,-7,W-170,"")
+      b.detailLabel=text(b,"GameFontHighlightSmall",55,-30,W-170,"")
+      b.footLabel=text(b,"GameFontDisableSmall",55,-51,W-170,"")
+      if type(b.CreateTexture)=="function" then
+        b.craftIcon=b:CreateTexture(nil,"ARTWORK")
+        if b.craftIcon then
+          b.craftIcon:SetSize(32,32)
+          b.craftIcon:SetPoint("LEFT",b,"LEFT",12,3)
+        end
+        b.craftStripe=b:CreateTexture(nil,"OVERLAY")
+        if b.craftStripe then
+          b.craftStripe:SetSize(3,52)
+          b.craftStripe:SetPoint("LEFT",b,"LEFT",2,0)
+        end
+        b.craftDot=b:CreateTexture(nil,"OVERLAY")
+        if b.craftDot then
+          b.craftDot:SetSize(8,8)
+          b.craftDot:SetPoint("BOTTOMLEFT",b,"BOTTOMLEFT",22,8)
+        end
+      end
+      b:SetScript("OnClick",function()
+        if type(b.craftAction)=="function" then b.craftAction() end
+      end)
+      visualCards[i]=b
+      if CP.ellesmereSkin and type(CP.ellesmereSkin.Panel)=="function" then
+        pcall(CP.ellesmereSkin.Panel,b)
+      end
+    end
+    b.craftAction=entry.action
+    b:ClearAllPoints()
+    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*cardHeight)
+    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,cardHeight-5)
+    local r,g,bl=.32,.47,.69
+    if entry.color=="green" then r,g,bl=.19,.75,.55 end
+    if entry.color=="gold" then r,g,bl=.90,.69,.28 end
+    if entry.color=="red" then r,g,bl=.93,.42,.36 end
+    if type(b.SetBackdropColor)=="function" and not CP.ellesmereSkin then
+      b:SetBackdropColor(.08,.10,.13,.85)
+    end
+    if b.craftStripe and type(b.craftStripe.SetColorTexture)=="function" then
+      b.craftStripe:SetColorTexture(r,g,bl,1)
+    end
+    if b.craftDot and type(b.craftDot.SetColorTexture)=="function" then
+      b.craftDot:SetColorTexture(r,g,bl,1)
+    end
+    if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
+      b.craftIcon:SetTexture(entry.icon or "Interface\\Icons\\INV_Misc_Note_01")
+    end
+    b.titleLabel:SetText(entry.title or "")
+    b.detailLabel:SetText(entry.detail or "")
+    b.footLabel:SetText(entry.footer or "")
+    b:Show()
+  end
+  content:SetHeight(math.max(280,#entries*cardHeight+15))
+  if type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
+end
+
+local function itemIcon(id)
+  if C_Item and type(C_Item.GetItemIconByID)=="function" then
+    local ok,texture=pcall(C_Item.GetItemIconByID,id)
+    if ok and texture then return texture end
+  end
+  return "Interface\\Icons\\INV_Misc_Bag_08"
+end
+
+local function materialCards(materials,caption)
+  local entries={}
+  if caption then entries[#entries+1]={
+    title=caption,detail="Taschen live · Bank letzter Stand · AH-Preise aus gespeichertem Scan",
+    footer="Nicht erfasste Bankmaterialien gelten nicht als bestätigt vorhanden.",color="gold",
+    icon="Interface\\Icons\\INV_Misc_Bag_08"}
+  end
+  for _,m in ipairs(materials) do
+    local qty=m.required or m[2] or 0
+    local id=m.id or m[1]
+    local total,bags,bank,live,known=CP:ItemAvailability(id)
+    local missing=math.max(0,qty-total)
+    local price=CP:Price(id)
+    local status=live and "LIVE" or (known and "LETZTER STAND" or "UNBEKANNT")
+    entries[#entries+1]={
+      title=(CP:ItemName(id)).."  ·  benötigt "..qty.."  ·  fehlt "..missing,
+      detail="Tasche "..bags.."  ·  Bank "..bank.." ("..status..")  ·  Gesamt "..total,
+      footer=missing>0 and (price and "Voraussichtlicher Zukauf "..gold(missing*price)
+        or "Für fehlende Materialien liegt kein AH-Preis vor")
+        or "✓ Genügend Material laut erfasstem Bestand",
+      icon=itemIcon(id),color=missing>0 and "red" or "green"
+    }
+  end
+  if #entries==0 then entries[1]={
+    title="Keine Materialien",detail="Rezept im Tab Jetzt skillen auswählen.",
+    icon="Interface\\Icons\\INV_Misc_Note_01"} end
+  setVisualCards(entries)
+end
+
 local footer=text(frame,"GameFontDisableSmall",19,-645,W-40,
   "Alpha: Keine automatischen Käufe oder Herstellungsaktionen. Preise sind AH-Snapshots.")
 
