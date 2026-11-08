@@ -371,46 +371,60 @@ local helpRows={
   "vorhandene Blizzard-Templates und, wenn verfügbar, die ElvUI-Skin-Schnittstelle."
 }
 
-local themeKey
+-- Official EllesmereUI third-party skinning API (not copied UI assets).
+local function useSkin(S,fn,...)
+  if S and type(S[fn])=="function" then
+    pcall(S[fn],...)
+  end
+end
+
+local function registerEllesmereUI()
+  local eui=_G.EllesmereUI
+  if type(eui)~="table" or type(eui.RegisterSkin)~="function" then return end
+  pcall(eui.RegisterSkin,"CraftPilot",function(S)
+    CP.ellesmereSkin=S
+    useSkin(S,"Shell",frame)
+    useSkin(S,"Panel",header)
+    useSkin(S,"Panel",summary)
+    useSkin(S,"Panel",contentPanel)
+    useSkin(S,"CloseButton",close)
+    for _,b in ipairs(allButtons) do useSkin(S,"Button",b) end
+    for _,b in ipairs(orderedTabs) do useSkin(S,"Tab",b) end
+    if scroll.ScrollBar then useSkin(S,"ScrollBar",scroll.ScrollBar) end
+    useSkin(S,"ApplyBarFill",stageProgress)
+    if CP.db then CP:ApplyTheme() end
+  end)
+end
+
 function CP:ApplyTheme()
   if not self.db then return end
   local pref=self.db.ui.skin or "auto"
-  local E=_G.ElvUI
-  if type(E)=="table" and type(E.GetModule)~="function" and type(E[1])=="table" then E=E[1] end
-  local dark=pref~="classic"
+  local hasEUI=pref=="auto" and type(self.ellesmereSkin)=="table"
   local name=pref=="classic" and "Klassisch" or (pref=="dark" and "Dunkel" or "Automatisch")
+  local dark=pref~="classic"
   local palette=dark and {0.065,0.075,0.092} or {0.16,0.115,0.07}
   local sub=dark and {0.11,0.125,0.145} or {0.22,0.16,0.095}
   local border=dark and {0.36,0.32,0.24,1} or {0.56,0.40,0.23,1}
-  color(frame,palette[1],palette[2],palette[3],0.98,border)
-  color(header,sub[1],sub[2],sub[3],0.99,border)
-  color(summary,sub[1],sub[2],sub[3],0.96,border)
-  color(contentPanel,palette[1],palette[2],palette[3],0.88,border)
-  skinButton:SetText("Design: "..name)
-  local applied=false
-  if pref=="auto" and type(E)=="table" and type(E.GetModule)=="function" then
-    local ok,skins=pcall(E.GetModule,E,"Skins",true)
-    if ok and type(skins)=="table" then
-      if type(frame.SetTemplate)=="function" then pcall(frame.SetTemplate,frame,"Transparent") end
-      if type(skins.HandleButton)=="function" then
-        for _,b in ipairs(allButtons) do
-          if not b.craftElvUISkinned then
-            local worked=pcall(skins.HandleButton,skins,b)
-            if worked then b.craftElvUISkinned=true;applied=true end
-          end
-        end
-      end
-    end
+  -- Leave all Ellesmere surfaces alone in Auto. Ellesmere manages its own theme
+  -- and any future live recoloring.
+  if not hasEUI then
+    color(frame,palette[1],palette[2],palette[3],0.98,border)
+    color(header,sub[1],sub[2],sub[3],0.99,border)
+    color(summary,sub[1],sub[2],sub[3],0.96,border)
+    color(contentPanel,palette[1],palette[2],palette[3],0.88,border)
   end
-  themeName:SetText("Oberfläche: "..(applied and "ElvUI-Skin"
-    or ((pref=="auto" and "Blizzard / UI-Templates") or name)))
-  themeKey=pref
+  skinButton:SetText("Design: "..name)
+  themeName:SetText("Oberfläche: "..(hasEUI and "EllesmereUI"
+    or (pref=="auto" and "Blizzard / Standard" or name)))
 end
 
 local restored=false
 function CP:RestoreWindowPosition()
   if restored or not self.db then return end
   restored=true
+  local width=math.max(750,math.min(1100,self.db.ui.width or W))
+  local height=math.max(570,math.min(930,self.db.ui.height or H))
+  frame:SetSize(width,height)
   local pos=self.db.ui.position
   if type(pos)=="table" and type(pos.point)=="string"
      and type(pos.relPoint)=="string" and type(pos.x)=="number"
@@ -422,6 +436,10 @@ end
 
 function CP:SaveWindowPosition()
   if not self.db then return end
+  local width=type(frame.GetWidth)=="function" and frame:GetWidth()
+  local height=type(frame.GetHeight)=="function" and frame:GetHeight()
+  if type(width)=="number" then self.db.ui.width=math.max(750,math.min(1100,width)) end
+  if type(height)=="number" then self.db.ui.height=math.max(570,math.min(930,height)) end
   local point,_,relPoint,x,y=frame:GetPoint(1)
   if type(point)=="string" and type(relPoint)=="string" and
      type(x)=="number" and type(y)=="number" then
@@ -436,6 +454,56 @@ function CP:ResetWindowPosition()
   frame:SetPoint("CENTER",UIParent,"CENTER",0,0)
   self:Say("Fensterposition zurückgesetzt.")
 end
+
+local function layout()
+  local width=type(frame.GetWidth)=="function" and frame:GetWidth() or W
+  local height=type(frame.GetHeight)=="function" and frame:GetHeight() or H
+  if type(width)~="number" then width=W end
+  if type(height)~="number" then height=H end
+  local inner=width-36
+  header:SetWidth(width-20)
+  summary:SetWidth(inner)
+  stageProgress:SetWidth(inner)
+  content:SetWidth(width-96)
+  title:SetWidth(math.max(290,width-240))
+  subtitle:SetWidth(math.max(290,width-240))
+  build:ClearAllPoints()
+  build:SetPoint("TOPRIGHT",header,"TOPRIGHT",-42,-40)
+  skinButton:ClearAllPoints()
+  skinButton:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-78)
+  status:SetWidth(inner-26)
+  rankText:SetWidth(inner-26)
+  priceText:SetWidth(inner-26)
+  section:SetWidth(inner)
+  footer:ClearAllPoints()
+  footer:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",19,22)
+  footer:SetWidth(width-62)
+  local profWidth=(inner-15)/4
+  for i,b in ipairs(professionOrder) do
+    b:ClearAllPoints()
+    b:SetSize(profWidth,27)
+    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+((i-1)%4)*(profWidth+5),
+      -111-math.floor((i-1)/4)*32)
+  end
+  local tabWidth=(inner-16)/5
+  for i,b in ipairs(orderedTabs) do
+    b:ClearAllPoints()
+    b:SetSize(tabWidth,27)
+    b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*(tabWidth+4),-183)
+  end
+  for _,row in ipairs(rows) do row:SetWidth(width-113) end
+  for _,b in ipairs(trainerButtons) do
+    b:SetWidth(width-113)
+  end
+  for _,b in ipairs(recipeButtons) do
+    b:SetWidth(width-113)
+    if b.nameLabel then b.nameLabel:SetWidth(width-180) end
+    if b.infoLabel then b.infoLabel:SetWidth(width-180) end
+  end
+end
+frame:SetScript("OnSizeChanged",function() layout() end)
+layout()
+registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
