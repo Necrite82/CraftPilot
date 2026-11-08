@@ -86,7 +86,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   "WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben")
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.10.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.10.1-alpha")
 local settingsButton=button(header,112,23,W-270,-10,"Einstellungen",function() CP:OpenTab("settings") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
@@ -1094,7 +1094,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.10 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
+  footer:SetText("CraftPilot 0.10.1 Alpha  |  Früherer Forever-Datenstand · Preisalter prüfen")
 end
 
 function CP:ToggleWindow()

@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.10.0-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.10.1-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.10.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.10.0-alpha/CraftPilot-0.10.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.10.1-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.10.1-alpha/CraftPilot-0.10.1-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +107,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.10.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.10.1-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
