@@ -961,6 +961,7 @@ LibQuestieDB.RequireContract=function() return false end
 assert(CP:QuestieNpcLocation(991)==nil)
 LibQuestieDB=nil
 print("PASS: optional QuestieDB contract/flavor checks, normalized valid points and safe fallback")
+assert(loadfile("tests/compatibility.lua"))(CP,createdFrames)
 
 -- Flat cost calculation distinguishes cash, owned value and conditional sale proceeds.
 local savedCostMode,savedCut=CP.db.mode,CP.db.ui.economyCut
@@ -1035,10 +1036,10 @@ print("PASS: cash versus economic costs, one-time book fees, missing prices, rou
 assert(loadfile("tests/planning.lua"))(CP)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.15.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.15.0","0.15.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.15.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.15.0-alpha"))
+assert(CP:IsNewerVersion("0.15.1-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.15.1","0.15.1-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.15.1-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.15.1-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -1056,7 +1057,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.15.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.15.1-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)

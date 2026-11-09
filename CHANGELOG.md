@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.15.1-alpha
+
+Korrektur der Erkennung gepackter QuestieDB-Forever-Versionen und eigene Berufserkennung über die aktuelle Berufs-API, insbesondere Erste Hilfe. Getrennte Statusmeldungen für fehlende API, falschen Datenstand und fehlende Paketkennung. [Details](docs/RELEASE_0.15.1-alpha.md).
+
 ## 0.15.0-alpha
 
 Gemeinsame Vorratsreservierungen für Berufs- und Campingpläne, Prioritäten, Neubewertung bei Änderungen und erfasster Herstellungsfortschritt. Kaufrezepte vergleichen Rezept- und Materialkosten mit erlernten Alternativen. Lokale Fehlerberichte mit Vorschau und vorbereitetem GitHub-Issue-Link. [Details](docs/RELEASE_0.15.0-alpha.md).
