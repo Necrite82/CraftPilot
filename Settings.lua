@@ -12,6 +12,8 @@ end
 
 function CP:InitializeControls()
   local ui=self.db.ui
+  if type(ui.useQuestieDB)~="boolean" then ui.useQuestieDB=true end
+  if type(ui.showVendorRecipes)~="boolean" then ui.showVendorRecipes=true end
   if type(ui.preferReliableSkill)~="boolean" then ui.preferReliableSkill=true end
   if ui.skillPolicyVersion~=1 then
     for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
@@ -108,10 +110,11 @@ function CP:ToggleSetting(key)
   if not self.db then return end
   if key=="bank" then self.db.includeBank=not self.db.includeBank
   elseif key=="mode" then self.db.mode=self.db.mode=="cash" and "value" or "cash"
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true})[key] then
     self.db.ui[key]=not self.db.ui[key]
   else return end
   self.pendingSettingsReset=nil
+  if key=="showVendorRecipes" and not self.db.ui.showVendorRecipes then self.db.ui.vendorOnly=nil end
   if key=="showAllProfessions" and not self.db.ui.showAllProfessions then self:PreferOwnedProfession() end
   self:UpdateMinimapButton()
   -- A different route policy must not leave an old automatic proposal visible.
@@ -174,6 +177,7 @@ function CP:SettingsCards()
     end),
     card(L("Sprache: ")..(CP.locale=="deDE" and "Deutsch" or "English"),L("Automatisch nach Clientsprache; andere Sprachen verwenden Englisch."),nil),
     card(CP:VersionStatus(),L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),function() CP:OpenReleaseLink() end,ICON,L("Anklicken: Release-Link kopieren")),
+    card(self:QuestieStatus(),L("Zusätzlich installiertes Datenaddon lokal für Händlernamen und Standorte nutzen."),toggle("useQuestieDB")),
     card(L("Minimap-Button: ")..state(not ui.hideMinimap),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),toggle("hideMinimap")),
     slider(L("Minimap-Position: "),math.floor(ui.minimapAngle),0,359,1,L(" Grad"),function(value)
       ui.minimapAngle=value;CP:PositionMinimapButton()
@@ -189,6 +193,7 @@ function CP:SettingsCards()
     card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
     card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
     card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im Clever skillen vergleichbar."),toggle("preferReliableSkill")),
+    card(L("Kaufrezepte anzeigen: ")..state(ui.showVendorRecipes),L("Passende kaufbare Rezepte direkt in Jetzt skillen anzeigen."),toggle("showVendorRecipes")),
     card(L("Berufsdaten prüfen"),L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),function() CP:OpenTab("audit") end),
     card(L("Auto-Route: ")..(ui.knownRecipesOnly and L("nur erlernte Rezepte") or L("Katalogvorschläge zulassen")),L("Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein."),toggle("knownRecipesOnly")),
     card(L("Quelldetails: ")..state(ui.showSourceDetails),L("Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar."),toggle("showSourceDetails")),

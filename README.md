@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.12.2-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.13.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.12.2-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.12.2-alpha/CraftPilot-0.12.2-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.13.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.13.0-alpha/CraftPilot-0.13.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das vorbereitete Entwicklungspaket ist `dist/CraftPilot-0.12.2-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das vorbereitete Entwicklungspaket ist `dist/CraftPilot-0.13.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -238,3 +238,17 @@ Für Kochen und Erste Hilfe sind nur 162 zusätzliche Zahlenreihen aus den berei
 ## Neu in 0.12.2: Clever skillen
 
 Der wirtschaftliche Rezeptvergleich heißt jetzt **Clever skillen** (englisch: **Smart Skilling**). Die Implementierung liegt in `Economy.lua`. Vorhandener AH-Abzug, Rezeptauswahl, geöffneter Bereich und der rückgängig machbare Einkaufsplan werden automatisch übernommen. Die Berechnungen und das bestehende Design bleiben in dieser Version unverändert.
+
+## Neu in 0.13: Kaufrezepte und direkte Rezeptwahl
+
+In **Jetzt skillen** erscheinen passende, noch nicht erlernte Kaufrezepte aus den vorhandenen Katalogen. Der Filter **Kaufrezepte** zeigt sie mit einem Klick allein; **Alle Rezepte** kehrt zurück. Eine Kaufrezeptzeile anklicken zeigt Händler, bekannten Rezeptpreis und Standort unmittelbar darunter. Ein Händlerklick setzt TomTom oder den vorhandenen Kartenwegpunkt. Fehlt ein gültiger Standort, wird kein Ziel erfunden. Fraktion, Skill, bekannte Ruf-/Spezialisierungsbedingungen, Feiertage und besondere Währungen begrenzen die einfachen Kaufvorschläge. Bestände, Preise und Live-Angebote sind vor Ort zu prüfen; die Vorschläge garantieren keine Verfügbarkeit oder günstigste Route.
+
+Erlernte Rezepte öffnen beim bewussten Rezeptklick die direkte Auswahl im eigenen Berufsfenster, sofern der Client `C_TradeSkillUI.OpenRecipe` anbietet. Im Kampf wird dieser Aufruf unterlassen. Ohne Direktwahl-API bleibt die allgemeine Berufsöffnung mit einem erklärenden Hinweis. Das Addon stellt nichts automatisch her. Nach Einlesen eines inzwischen erlernten Kaufrezepts wechselt die Auswahl zurück zum normalen Rezept. Ein noch nicht gelerntes Kaufrezept wird nicht als erlernte Planoption behandelt.
+
+71 gezielt ausgewählte Händlerrezepte aus Kochen und Erster Hilfe ergänzen die bereits enthaltenen Herstellungsdaten. Ihr Import enthält nur diese Rezepte und referenzierte NPCs; die Eingaben sind bereits hash-gepinnt. Reproduzieren: `python tools/import_vendor_recipes.py --source-dir work/camping-inputs --check`.
+
+### Optionale QuestieDB-Anbindung
+
+Ein zusätzlich installiertes QuestieDB wird lokal und nur lesend über seine öffentliche API angesprochen. CraftPilot prüft den unterstützten API-Vertrag und den aktiven Forever-Datenstand. Geeignete NPC-Namen und Standorte können Händlerangaben ergänzen; zusätzliche Item-Händler werden nur aufgenommen, wenn ihre Fraktionszuordnung bereits im vorhandenen Katalog bekannt ist. Die AreaID-/UiMap-Zuordnung wird getrennt ausgewertet; Prozentwerte werden für Wegpunkte normalisiert. Ungültige, nicht zuordenbare und ausdrücklich phasenabhängige Punkte werden verworfen. Fehlende oder inkompatible Zusatzdaten fallen auf die vorhandenen Angaben zurück.
+
+Unter Einstellungen steht, ob das optionale Modul verfügbar, ausgeschaltet oder im Entwicklungsmodus ist. Dort lässt sich seine Verwendung abschalten. Kein QuestieDB-Code und keine QuestieDB-Datenbank werden in CraftPilot gebündelt. Die API-Abfragen senden keine Spieler- oder Kontodaten an einen Server und schreiben keine Datenkorrekturen ins andere Addon. Eine vollständige Funktions- oder Datenprüfung im Forever-Client ist damit nicht behauptet.

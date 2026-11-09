@@ -20,3 +20,7 @@ Third-party modules in this directory are redistributed under their original GPL
 ## Secondary skill-range subset in 0.12.1
 
 `SecondarySkillRanges.lua` is a marked GPL-3.0 derivative containing only 162 cooking/first-aid recipe spell IDs and their four color thresholds. Its two input files are already pinned and hashed in `CAMP_SOURCES.json`. Original notices above remain applicable. No material lists, vendor tables, names or gathering datasets are included in this subset. Reproduce with `tools/import_skill_ranges.py`.
+
+## Vendor subset in 0.13
+
+`VendorRecipes.lua` is a marked GPL-3.0 derivative limited to 71 cooking/first-aid crafting recipes with vendor sources and their referenced NPC rows. Inputs are the existing Cooking/FirstAid entries in `CAMP_SOURCES.json`; no new full recipe or gathering databases are bundled. Original notices above remain applicable. `tools/import_vendor_recipes.py` verifies pinned hashes and reproduces the output.

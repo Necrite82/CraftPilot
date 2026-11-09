@@ -99,7 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.12.2-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.13.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
@@ -209,6 +209,10 @@ for i,item in ipairs(sorts) do
   end)
   sortButtons[item.key]:Hide()
 end
+local vendorFilter=button(frame,218,25,494,-358,L("Kaufrezepte"),function()
+  CP.db.ui.vendorOnly=not CP.db.ui.vendorOnly;CP:Render()
+end)
+vendorFilter:Hide()
 local bankButton=button(frame,250,25,18,-358,L("Bank: einschalten"),function()
   CP.db.includeBank=not CP.db.includeBank
   CP:Refresh(false)
@@ -251,6 +255,7 @@ local rangeApply=button(frame,93,25,332,-352,L("Bereich OK"),function()
 end)
 local planAdd=button(frame,142,25,431,-352,L("Rezept +"),function()
   local key=CP.db.view
+  if CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe then CP:Say(L("Erst das Kaufrezept lernen und den Beruf neu einlesen."));return end
   local chosen=CP:SelectedOption(key)
   if not chosen then CP:Say(L("Bitte erst ein aktuelles Rezept wählen."));return end
   if CP:AddPlanCraft(key,chosen.id,fieldNumber(rangeQty,1)) then CP:Render()
@@ -329,6 +334,7 @@ local resetContentScroll=true
 local lastContentContext
 local trainerButtons={}
 local recipeButtons={}
+local vendorButtons={}
 local visualCards={}
 local function gold(value)
   return CP:FormatMoney(value)
@@ -338,6 +344,7 @@ local function clearRows()
   for _,r in ipairs(rows) do r:Hide() end
   for _,b in ipairs(trainerButtons) do b:Hide() end
   for _,b in ipairs(recipeButtons) do b:Hide() end
+  for _,b in ipairs(vendorButtons) do b:Hide() end
   for _,b in ipairs(visualCards) do b:Hide() end
 end
 
@@ -400,13 +407,13 @@ end
 -- artwork copied from another addon. Recipe icons come from the game client.
 local function setRecipeRows(key,options,chosen)
   clearRows()
+  local offset,vendorIndex=0,0
   for i,entry in ipairs(options) do
     local b=recipeButtons[i]
     if not b then
-      b=button(content,W-113,80,5,-(i-1)*84,"",function()
+      b=button(content,W-113,80,5,-offset,"",function()
         if b.craftRecipe and CP.db then
-          CP.db.ui.selectedRecipes[CP.db.view]=b.craftRecipe.id
-          CP:Render()
+          CP:ActivateRecipeRow(CP.db.view,b.craftRecipe)
         end
       end)
       b.nameLabel=text(b,"GameFontHighlight",48,-7,W-180,"")
@@ -433,7 +440,7 @@ local function setRecipeRows(key,options,chosen)
     end
     b.craftRecipe=entry
     b:ClearAllPoints()
-    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*84)
+    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
     b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,80)
     if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
       local texture=entry.icon
@@ -443,28 +450,50 @@ local function setRecipeRows(key,options,chosen)
       end
       b.craftIcon:SetTexture(texture or "Interface\\Icons\\INV_Misc_Note_01")
     end
-    if b.craftStripe and type(b.craftStripe.SetColorTexture)=="function" then
-      if chosen and entry.id==chosen.id then
-        b.craftStripe:SetColorTexture(.91,.68,.31,.95)
-      else
-        b.craftStripe:SetColorTexture(.37,.48,.67,.70)
-      end
-    end
-    local active=chosen and entry.id==chosen.id
+    local active=entry.vendorRecipe and CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe==entry.id
+      or (not entry.vendorRecipe and chosen and entry.id==chosen.id and not (CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe))
+    if b.craftStripe then b.craftStripe:SetColorTexture(active and .91 or .37,active and .68 or .48,active and .31 or .67,.95) end
     b.nameLabel:SetText((active and GOLD..L("AUSGEWÄHLT  ")..RESET or "")
       ..entry.name)
+    b.rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
+    if entry.vendorRecipe then
+      b.nameLabel:SetText(L("KAUFREZEPT: ")..entry.name)
+      b.infoLabel:SetText(L("Noch nicht erlernt · Rezeptpreis ab ")..(entry.recipeCost and gold(entry.recipeCost) or L("unbekannt"))..L(" · Angebot prüfen"))
+    else
     local price=entry.unknown and L("Preis unvollständig") or gold(entry.cost)
     local ids={}
     for _,mat in ipairs(entry.mats) do ids[#ids+1]=mat[1] end
     local summary=CP.PriceSummary and CP:PriceSummary(ids)
     local ageInfo=summary and (summary.stale>0 and L(" · AH ALT")
       or (summary.unknown>0 and L(" · Scan ?") or "")) or ""
-    b.rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
     b.infoLabel:SetText(CP:RecipeColorLabel(key,entry.id).." | "..string.format(L("Chance ca. %.0f%% | %s / Punkt | %d fehlen%s"),
       entry.chance*100,price,entry.missing,ageInfo))
+    end
     b:Show()
+    offset=offset+84
+    if entry.vendorRecipe and active then
+      for _,vendor in ipairs(entry.vendors) do
+        vendorIndex=vendorIndex+1
+        local row=vendorButtons[vendorIndex]
+        if not row then
+          row=button(content,W-113,57,5,-offset,"",function() end)
+          row.nameLabel=text(row,"GameFontHighlight",14,-7,W-155,"")
+          row.infoLabel=text(row,"GameFontDisableSmall",14,-31,W-155,"")
+          row:SetScript("OnClick",function() if row.vendorTarget then CP:SetWaypoint(row.vendorTarget) end end)
+          vendorButtons[vendorIndex]=row
+        end
+        row.vendorTarget=vendor.location
+        row:ClearAllPoints();row:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
+        row:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,57)
+        row:SetEnabled(vendor.location~=nil)
+        local place=vendor.location and string.format("%s %.1f / %.1f",vendor.location.zone,vendor.location.x*100,vendor.location.y*100) or L("Standort unbekannt")
+        row.nameLabel:SetText(vendor.name.." | "..place)
+        row.infoLabel:SetText((vendor.cost and gold(vendor.cost) or L("Preis fehlt")).." | "..L("Angebot prüfen · Klick: TomTom/Kartenwegpunkt"))
+        row:Show();offset=offset+61
+      end
+    end
   end
-  content:SetHeight(math.max(270,#options*84+16))
+  content:SetHeight(math.max(270,offset+16))
   if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
@@ -787,6 +816,9 @@ local function layout()
     if b.infoLabel then b.infoLabel:SetWidth(width-180) end
     if b.rangeLabel then b.rangeLabel:SetWidth(width-180) end
   end
+  for _,b in ipairs(vendorButtons) do
+    b:SetWidth(width-113);b.nameLabel:SetWidth(width-150);b.infoLabel:SetWidth(width-150)
+  end
   for _,b in ipairs(visualCards) do
     b:SetWidth(width-113)
     if b.titleLabel then b.titleLabel:SetWidth(width-175) end
@@ -825,7 +857,7 @@ function CP:Render()
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
   economyButton.selectionMarker:SetShown(tab=="economy")
-  local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)
+  local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)..":"..tostring(self.db.ui.vendorOnly)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end
@@ -889,6 +921,10 @@ function CP:Render()
   local isTrainers=tab=="trainers"
   local gatheringOnly=prof.gathering and not prof.crafting
   local isRecipes=tab=="now" and not gatheringOnly
+  local vendorOffers=isRecipes and self:VendorRecipeOptions(key) or {}
+  vendorFilter:SetShown(isRecipes)
+  vendorFilter:SetText(self.db.ui.vendorOnly and L("Alle Rezepte") or (L("Kaufrezepte").." ("..#vendorOffers..")"))
+  vendorFilter.selectionMarker:SetShown(self.db.ui.vendorOnly==true)
   local isMats=tab=="mats" and not gatheringOnly
   local isPlan=tab=="plan" and not gatheringOnly
   trainerAction1:SetShown(isTrainers)
@@ -1179,14 +1215,22 @@ function CP:Render()
       lines[#lines+1]=L("Beruf noch nicht auf diesem Charakter erfasst.")
     end
     if tab=="now" then
-      if current and #options>0 then
-        setRecipeRows(key,options,chosen)
+      local offers=vendorOffers
+      if self.db.ui.vendorOnly then
+        if #offers>0 then setRecipeRows(key,offers,nil)
+        else setRows({L("Keine passenden Kaufrezepte für diesen Skill hinterlegt.")}) end
+      elseif (current and #options>0) or #offers>0 then
+        local overview={}
+        if current then for _,entry in ipairs(options) do overview[#overview+1]=entry end end
+        for _,entry in ipairs(offers) do overview[#overview+1]=entry end
+        section:SetText(L("Rezeptklick: Beruf öffnen · Kaufrezeptklick: Händler zeigen"))
+        setRecipeRows(key,overview,chosen)
       else
         setRows(lines)
       end
     end
   end
-  footer:SetText("CraftPilot 0.12.2 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.13.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()
