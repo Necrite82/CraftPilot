@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.15.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.16.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.15.1-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.1-alpha/CraftPilot-0.15.1-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.16.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.16.0-alpha/CraftPilot-0.16.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das aktuelle Installationspaket ist `dist/CraftPilot-0.15.1-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.16.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -282,3 +282,24 @@ Der Nutzer prüft/ergänzt die Vorschau, wählt **GitHub-Link kopieren**, drück
 Gepackte QuestieDB-Versionen können über `ModeIndicator.GetStatus()` keine Erweiterung melden. CraftPilot prüft dann im Baked-Modus die `X-Flavor`-Kennung des tatsächlich geladenen Pakets. Eine ausdrücklich andere Erweiterung wird weiterhin abgelehnt. Der Schalter erlaubt die optionale Anbindung; er beweist allein keine verfügbaren Daten. API-, Datenstand- und Paketkennungsprobleme werden getrennt angezeigt. QuestieDB wird weiterhin separat installiert.
 
 Fehlt ein gelernter Beruf in den Rückgaben der älteren Berufsliste, fragt CraftPilot zusätzlich `C_TradeSkillUI.GetProfessionInfoBySkillLineID` ab. Ein positiver aktueller Skill mit passender Berufs-ID und Kapazität zählt als eigener Beruf, auch bei Erste Hilfe. Gespeicherte Referenzwerte und fremde verlinkte Berufsfenster zählen nicht als Besitznachweis. Änderungen an erlernten Fähigkeiten aktualisieren die Anzeige.
+
+## Marktpreise, Bestände und Auctionator in 0.16
+
+Dieser gemeinsame Release enthält auch die Korrekturen für **QuestieDB Baked/Forever** und **Erste Hilfe als eigenen Beruf**. Es genügt, diese Version zu installieren. QuestieDB bleibt separat installiert und optional.
+
+Rezepte zeigen den gespeicherten **AH-Stückpreis**, dessen Alter, den möglichen **Netto-Stückerlös nach AH-Abzug** und den getrennten **Händlerankaufspreis**. Diese Angaben erscheinen auch an Materialkarten, Campingobjekten, eingeplanten Rezeptschritten und in der Kostenkalkulation. Ein Händler-Verkaufspreis ist kein Händler-Kaufpreis. Nicht zugeordnete Ergebnisse, Verzauberungsdienste, kalte Item-Caches und fehlende Scanwerte werden nicht als Nullpreis ausgegeben. Die Preise sind je Stück, kein pauschaler Gewinn pro Herstellung. Mögliche Ergebnisverkäufe werden nicht automatisch vom benötigten Einkaufsbudget abgezogen.
+
+Die Rezeptzeile zeigt Zutaten mit Symbolen und **Tasche/Bank**; beim Überfahren stehen die einzelnen Namen, Bestände, Reservierungen und Fehlmengen im Tooltip. In der Materialansicht und Kalkulation stehen dieselben Bestände ausgeschrieben. Eine ausgeschaltete Bank wird markiert. Ein Bankwert bleibt der letzte erfasste Stand.
+
+**Behalten/Verkaufen:** explizite Planmengen haben Vorrang. Weitere erlernte Skillrezepte und mögliche Katalog-Folgerezepte bis zum geplanten Ziel, sonst höchstens 25 Skillpunkte voraus, liefern einen Hinweis zum Vormerken. Das ist keine zusätzlich reservierte Menge und keine Zusage, dass das Referenzrezept aktuell verfügbar ist. Ohne Bedarfshinweis wird der AH-Netto-Stückpreis mit dem Händlerankauf verglichen. Fehlende, undatierte oder über drei Tage alte AH-Preise verhindern eine positive Vergleichsempfehlung. Bekannte Binde-beim-Aufheben-/Questgegenstände werden nicht fürs AH empfohlen; die tatsächliche Bindung eines vorhandenen Exemplars und eigene Nutzung bleiben selbst zu prüfen. Nachfrage und verlorene AH-Einstellgebühren sind nicht modelliert.
+
+### Einkaufsliste für einen Skillbereich
+
+1. **Einkaufsplan** öffnen und **Start Y / Ziel X** wählen.
+2. **Auto-Route** erstellen oder erlernte Rezeptschritte mit ihren Mengen selbst planen. Der manuelle Plan exportiert genau diese Schritte, keine automatisch ergänzte vollständige Skillroute.
+3. **Auctionator-Einkaufsliste erstellen** anklicken. Ist noch kein Schritt geplant, wird für den gewählten Bereich eine Auto-Route erzeugt. Geänderte Auto-Routen werden vor dem Export neu bewertet; ein bereits fortgeschrittener Charakter beginnt dabei am aktuellen Skill.
+4. Die Liste **CraftPilot - Beruf Y-X** steht in Auctionator mit exakten Suchnamen und Fehlmengen. Tasche, einbezogene Bank und andere Planreservierungen werden berücksichtigt. Gleiche Listennamen werden aktualisiert; andere Listen bleiben erhalten. Gibt es keine Fehlmengen mehr, wird die gleichnamige CraftPilot-Liste geleert. Der Kauf bleibt manuell.
+
+Auto-Routen verrechnen die geplante Herstellungskette. Manuelle Pläne ordnen ausdrücklich eingeplante Zwischenprodukte vor ihren Verbrauchern ein und rechnen die aktuell erfasste Mindest-Ausbeute an. Diese Zwischenprodukte werden dann nicht nochmals eingekauft. Es werden keine zusätzlichen manuellen Herstellungsschritte erfunden. Ungeklärte Zutaten/Ausbeuten, zyklische Ketten, nicht auflösbare Itemnamen oder eine vor dem Ziel abbrechende Auto-Route sperren den Export mit einem Hinweis. Vorhandene Pläne bleiben nutzbar; für die neue Ausbeute-Erfassung die eigenen Berufsfenster einmal öffnen.
+
+Unter **Camping → Einkauf** steht derselbe Export für fehlende Camping-Zutaten. Er benötigt eine aktivierte kompatible Auctionator-Version mit öffentlicher Einkaufslisten-API. Das AH muss zum Erstellen der Liste nicht offen sein; Auctionator kann bei offenem AH bereits die Suche starten. Es wird keine Auctionator-Datenbank direkt verändert oder mitgeliefert.

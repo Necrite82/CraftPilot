@@ -65,6 +65,20 @@ function CP:CatalogSource(key,recipeID,skill)
   return nil
 end
 
+local function withClientMaterials(self,key,id,recipe)
+  local native=(self.db.recipes[key] or {})[id]
+  if not native or not native.learned then return recipe end
+  if type(native.mats)~="table" or #native.mats==0 then return nil end
+  local effective={}
+  for k,v in pairs(recipe) do effective[k]=v end
+  effective.mats={}
+  for _,mat in ipairs(native.mats) do effective.mats[mat[1]]=(effective.mats[mat[1]] or 0)+mat[2] end
+  effective.name=native.name or recipe.name
+  if native.outputKnown then effective.makes=native.outputItemID
+  else effective.makes=native.outputItemID or recipe.makes end
+  if type(native.outputMin)=="number" and native.outputMin>0 then effective.count=native.outputMin end
+  return effective
+end
 function CP:CatalogCandidateRecipes(key,skill)
   local data=self:Catalog(key)
   local out={}
@@ -75,16 +89,8 @@ function CP:CatalogCandidateRecipes(key,skill)
       local source=self:CatalogSource(key,id,skill)
       local effective=recipe
       if source=="known" then
-        local native=self.db.recipes[key][id]
-        if type(native.mats)~="table" or #native.mats==0 then source=nil
-        else
-          effective={}
-          for k,v in pairs(recipe) do effective[k]=v end
-          effective.mats={}
-          for _,mat in ipairs(native.mats) do effective.mats[mat[1]]=(effective.mats[mat[1]] or 0)+mat[2] end
-          effective.name=native.name or recipe.name
-          effective.makes=native.outputItemID or recipe.makes
-        end
+        effective=withClientMaterials(self,key,id,recipe)
+        if not effective then source=nil end
       end
       if source then out[#out+1]={id=id,recipe=effective,chance=chance,source=source} end
     end
@@ -124,7 +130,8 @@ function CP:RecipesMaking(itemID,owner,skill)
     local effective=entry.key==owner and skill or
       ((self.db.professions[entry.key] or {}).skill or 0)
     if qualified and self:CatalogSource(entry.key,entry.id,effective) then
-      out[#out+1]=entry
+      local recipe=withClientMaterials(self,entry.key,entry.id,entry.recipe)
+      if recipe and recipe.makes==itemID then out[#out+1]={key=entry.key,id=entry.id,recipe=recipe} end
     end
   end
   return out

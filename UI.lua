@@ -99,7 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.15.1-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.16.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -167,7 +167,7 @@ local tabs={
   {key="mats", label=L("Materialien")},
   {key="plan", label=L("Einkaufsplan")},
   {key="trainers", label=L("Lehrer")},
-  {key="camping", label="Camping"},
+  {key="camping", label=L("Camping")},
   {key="settings", label=L("Einstellungen")}
 }
 local tabButtons={}
@@ -420,6 +420,15 @@ local function setRecipeRows(key,options,chosen)
       b.nameLabel=text(b,"GameFontHighlight",48,-7,W-180,"")
       b.infoLabel=text(b,"GameFontDisableSmall",48,-30,W-180,"")
       b.rangeLabel=text(b,"GameFontDisableSmall",48,-54,W-180,"")
+      b.stockLabel=text(b,"GameFontHighlightSmall",48,-76,W-180,"")
+      b.marketLabel=text(b,"GameFontHighlightSmall",48,-100,W-180,"")
+      b:SetScript("OnEnter",function()
+        if not GameTooltip or not b.craftRecipe then return end
+        GameTooltip:SetOwner(b,"ANCHOR_RIGHT");GameTooltip:ClearLines();GameTooltip:AddLine(b.craftRecipe.name or "CraftPilot")
+        for line in CP:RecipeStockText(CP.db.view,b.craftRecipe.id):gmatch("[^\n]+") do GameTooltip:AddLine(line,.85,.85,.85,true) end
+        GameTooltip:Show()
+      end)
+      b:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
       if type(b.CreateTexture)=="function" then
         local icon=b:CreateTexture(nil,"ARTWORK")
         if icon then
@@ -442,7 +451,7 @@ local function setRecipeRows(key,options,chosen)
     b.craftRecipe=entry
     b:ClearAllPoints()
     b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
-    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,80)
+    b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or (W-95))-8,122)
     if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
       local texture=entry.icon
       if not texture and entry.outputItemID and C_Item and type(C_Item.GetItemIconByID)=="function" then
@@ -457,6 +466,17 @@ local function setRecipeRows(key,options,chosen)
     b.nameLabel:SetText((active and GOLD..L("AUSGEWÄHLT  ")..RESET or "")
       ..entry.name)
     b.rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
+    b.marketLabel:SetWidth((type(b.GetWidth)=="function" and b:GetWidth() or W-110)-65)
+    b.stockLabel:SetWidth((type(b.GetWidth)=="function" and b:GetWidth() or W-110)-65)
+    b.stockLabel:SetText(CP:RecipeStockText(key,entry.id,true))
+    local stockHeight=b.stockLabel:GetStringHeight()
+    stockHeight=type(stockHeight)=="number" and stockHeight or 16
+    b.marketLabel:ClearAllPoints();b.marketLabel:SetPoint("TOPLEFT",b,"TOPLEFT",48,-(82+stockHeight))
+    b.marketLabel:SetText(CP:RecipeMarketText(key,entry.id))
+    local marketHeight=b.marketLabel:GetStringHeight()
+    local rowHeight=math.max(146,94+stockHeight+(type(marketHeight)=="number" and marketHeight or 34))
+    b:SetHeight(rowHeight)
+    if b.craftStripe then b.craftStripe:SetHeight(rowHeight-12) end
     if entry.vendorRecipe then
       b.nameLabel:SetText(L("KAUFREZEPT: ")..entry.name)
       b.infoLabel:SetText(L("Noch nicht erlernt · Rezeptpreis ab ")..(entry.recipeCost and gold(entry.recipeCost) or L("unbekannt"))..L(" · Angebot prüfen"))
@@ -471,7 +491,7 @@ local function setRecipeRows(key,options,chosen)
       entry.chance*100,price,entry.missing,ageInfo))
     end
     b:Show()
-    offset=offset+84
+    offset=offset+rowHeight+4
     if entry.vendorRecipe and active then
       local comparison=CP:VendorSkillComparison(key,entry)
       vendorIndex=vendorIndex+1
@@ -525,8 +545,12 @@ end
 local function setVisualCards(entries)
   clearRows()
   local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help" or CP.db.ui.tab=="audit" or CP.db.ui.tab=="reservations")
-  local cardHeight=settingsView and 92 or 73
+  local baseHeight=settingsView and 92 or 73
+  local offset=0
   for i,entry in ipairs(entries) do
+    local market=entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
+      or (entry.tooltipItem and CP:ItemMarketText(entry.tooltipItem))
+    local cardHeight=market and 122 or baseHeight
     local b=visualCards[i]
     if not b then
       b=CreateFrame("Button",nil,content,"BackdropTemplate")
@@ -535,6 +559,7 @@ local function setVisualCards(entries)
       b.titleLabel=text(b,"GameFontNormal",55,-7,W-170,"")
       b.detailLabel=text(b,"GameFontHighlightSmall",55,-30,W-170,"")
       b.footLabel=text(b,"GameFontDisableSmall",55,-51,W-170,"")
+      b.marketLabel=text(b,"GameFontHighlightSmall",55,-52,W-170,"")
       if type(b.CreateTexture)=="function" then
         b.artFrame=CreateFrame("Frame",nil,b)
         b.artFrame:SetAllPoints(b)
@@ -626,9 +651,9 @@ local function setVisualCards(entries)
       b.detailLabel:Show()
     end
     b.footLabel:ClearAllPoints()
-    b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,settingsView and -72 or -51)
+    b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,market and -100 or (settingsView and -72 or -51))
     b:ClearAllPoints()
-    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-(i-1)*cardHeight)
+    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
     b:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,cardHeight-5)
     local r,g,bl=.32,.47,.69
     if entry.color=="green" then r,g,bl=.19,.75,.55 end
@@ -650,9 +675,21 @@ local function setVisualCards(entries)
     b.detailLabel:SetText(entry.detail or "")
     b.titleLabel:SetFontObject(entry.emphasis and "GameFontNormalLarge" or "GameFontNormal")
     b.footLabel:SetText(entry.footer or "")
+    b.marketLabel:SetWidth((type(b.GetWidth)=="function" and b:GetWidth() or W-110)-70)
+    b.marketLabel:SetText(market or "");b.marketLabel:SetShown(market~=nil)
+    if market then
+      local measured=b.marketLabel:GetStringHeight()
+      measured=type(measured)=="number" and measured or 34
+      local footHeight=b.footLabel:GetStringHeight()
+      footHeight=type(footHeight)=="number" and footHeight or 14
+      cardHeight=math.max(cardHeight,52+measured+footHeight+24)
+      b.footLabel:ClearAllPoints();b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-(52+measured+8))
+      b:SetHeight(cardHeight-5)
+    end
+    offset=offset+cardHeight
     b:Show()
   end
-  content:SetHeight(math.max(280,#entries*cardHeight+15))
+  content:SetHeight(math.max(280,offset+15))
   if resetContentScroll and type(scroll.SetVerticalScroll)=="function" then scroll:SetVerticalScroll(0) end
 end
 
@@ -685,7 +722,7 @@ local function materialCards(materials,caption)
       footer=(missing>0 and (price and L("Zukauf ")..gold(missing*price)
         or L("Fehlender Preis"))
         or L("Genügend Material")).." · "..age,
-      icon=itemIcon(id),color=missing>0 and "red" or "green"
+      tooltipItem=id,icon=itemIcon(id),color=missing>0 and "red" or "green"
     }
   end
   if #entries==0 then entries[1]={
@@ -873,7 +910,7 @@ end
 
 
 function CP:Render()
-  self:InvalidateReservations()
+  self:InvalidateReservations();self.marketUseCache=nil
   if not self.db then return end
   self:RestoreWindowPosition()
   self:ApplyTheme()
@@ -1040,7 +1077,7 @@ function CP:Render()
         cards[#cards+1]={title=self:RecipeName(key,recipeID,option.name),
           detail=L("Aktuell erlernt · Skillchance ")..math.floor(option.chance*100).."%",
           footer=L("Aktueller Schritt aus dem Client; kein vorausberechneter Skillweg."),
-          icon=self:RecipeIcon(key,recipeID),color="blue",
+          recipeKey=key,recipeID=recipeID,icon=self:RecipeIcon(key,recipeID),color="blue",
           action=function() CP.db.ui.selectedRecipes[key]=recipeID;CP:OpenTab("plan") end}
       end
       cards[#cards+1]={title=L("Noch keine geprüfte Etappenübersicht"),
@@ -1067,7 +1104,7 @@ function CP:Render()
     else
       local route=self:AutoRouteShopping(key)
       if route then
-        local cards={self:CostSummaryCard("plan",key),self:PlanReviewCard(key)}
+        local cards={self:CostSummaryCard("plan",key),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
         cards[#cards+1]={
           title=string.format(L("AUTO-ROUTE · %d -> %d · berechnet bis %d"),
             route.first,route.target,route.reached),
@@ -1100,7 +1137,7 @@ function CP:Render()
             title=string.format(L("%d–%d · %dx %s"),step.first,step.last,
               step.crafts,step.name),
             detail=L("Skillchance aus früherem Forever-Client · ")..stamp,
-            footer=self:RecipeRangeText(key,step.id),
+            footer=self:RecipeRangeText(key,step.id),recipeKey=key,recipeID=step.id,
             icon=self:RecipeIcon(key,step.id),
             color=step.uncertain and "gold" or "green"
           }
@@ -1117,7 +1154,7 @@ function CP:Render()
               title=node.count.."x "..node.name,
               detail=L("Im Plan hergestellte Einheit(en) oder Zwischenprodukt."),
               footer=L("Nur soweit eigene Berufe und Rezeptquellen dies erlauben."),
-              icon=self:RecipeIcon(key,node.id),color="blue"
+              recipeKey=key,recipeID=node.id,icon=self:RecipeIcon(key,node.id),color="blue"
             }
           end
         end
@@ -1132,7 +1169,7 @@ function CP:Render()
             detail=mat.cost and (L("Zukauf ")..gold(mat.cost).." · "..mat.source)
               or L("Preis fehlt – Kosten nicht vollständig"),
             footer=age,
-            icon=itemIcon(mat.id),
+            tooltipItem=mat.id,icon=itemIcon(mat.id),
             color=(mat.freshness=="stale" or mat.freshness=="aging" or not mat.price)
               and "red" or "green"
           }
@@ -1140,7 +1177,10 @@ function CP:Render()
         setVisualCards(cards)
       else
       local plan=self:PlanShopping(key)
-      local cards={self:CostSummaryCard("plan",key),self:PlanReviewCard(key)}
+      local cards={self:CostSummaryCard("plan",key),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
+      if plan.chainUnresolved then cards[#cards+1]={title=L("Herstellungskette noch ungeklärt"),
+        detail=L("Berufsfenster öffnen: Materialien und Ausbeute der Zwischenprodukte fehlen oder sind zyklisch."),
+        footer=L("Angezeigte Bruttomengen sind kein vollständiger Auctionator-Export."),color="gold"} end
       local range=plan.last-plan.first
       local summary=string.format(L("Skill %d -> %d   ·   %d Herstellungen eingeplant"),
         plan.first,plan.last,plan.crafts)
@@ -1167,7 +1207,7 @@ function CP:Render()
             title=step.quantity.." x "..step.name,
             detail=L("Dieser Schritt wird in die gemeinsame Materialliste eingerechnet."),
             footer=L("Klicken zum Entfernen dieses Rezepts aus dem Plan"),
-            icon=self:RecipeIcon(key,id),
+            recipeKey=key,recipeID=id,icon=self:RecipeIcon(key,id),
             color="green",
             action=function() CP:ClearPlanCraft(key,id);CP:Render() end
           }
@@ -1178,7 +1218,7 @@ function CP:Render()
           title=L("Zusammengefasste Materialien"),
           detail=L("Bekannte Zukaufpreise: ")..gold(plan.purchaseCopper)
             ..(plan.noPrice>0 and ("  ·  "..plan.noPrice..L(" Preise fehlen")) or ""),
-          footer=L("Bruttomengen für deine gewählten Herstellungen. Keine Zwischenprodukt-Verrechnung."),
+          footer=L("Materialbedarf nach Verrechnung geplanter Zwischenprodukte; bei fehlender Ausbeute bleibt der Export gesperrt."),
           icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"
         }
         for _,m in ipairs(plan.materials) do
@@ -1189,8 +1229,8 @@ function CP:Render()
             or L("Bestand ausreichend")
           cards[#cards+1]={
             title=m.name..L(" · benötigt ")..m.required..L(" · fehlt ")..m.missing,
-            detail=L("Tasche ")..m.bag.." · Bank "..m.bank.." ("..status..")"..L(" · Reserviert: ")..m.reserved,
-            footer=cost,icon=itemIcon(m.id),color=color
+            detail=L("Tasche ")..m.bag..L(" · Bank ")..m.bank.." ("..status..")"..L(" · Reserviert: ")..m.reserved,
+            footer=cost,tooltipItem=m.id,icon=itemIcon(m.id),color=color
           }
         end
       end
@@ -1260,7 +1300,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.15.1 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.16.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

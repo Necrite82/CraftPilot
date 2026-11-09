@@ -233,7 +233,8 @@ function CP:CampingShoppingCards()
     detail=L("Material-Zukauf: ")..self:FormatMoney(plan.cost),
     footer=self:BankStatus(),color="gold"}}
   table.insert(cards,1,self:CostSummaryCard("camping",self.db.view))
-  table.insert(cards,2,self:PlanReviewCard("camping"))
+  table.insert(cards,2,self:AuctionatorExportCard(self.db.view,"camping"))
+  table.insert(cards,3,self:PlanReviewCard("camping"))
   if #plan.steps==0 then cards[#cards+1]={title=L("Camping-Objekte zum Plan hinzufügen"),
     detail=L("Ein Feuer oder Objekt aufklappen und +1 oder +5 wählen."),color="blue"} end
   if plan.unknown>0 or plan.noPrice>0 then cards[#cards+1]={title=L("Einkauf unvollständig"),

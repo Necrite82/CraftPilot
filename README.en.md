@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.15.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.16.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.15.1-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.1-alpha/CraftPilot-0.15.1-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.16.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.16.0-alpha/CraftPilot-0.16.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +107,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.15.1-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.16.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
@@ -138,3 +138,19 @@ Review/edit the preview, select **Copy GitHub link**, press **Ctrl+C**, open it 
 Packaged QuestieDB can omit expansion from `ModeIndicator.GetStatus()`. In Baked mode CraftPilot now checks the loaded addon’s `X-Flavor` metadata instead. Explicitly different flavors are still rejected, and missing API, wrong flavor and missing package markers have distinct messages. QuestieDB remains a separately installed optional addon.
 
 Learned professions missing from legacy return slots can now be recognized through `C_TradeSkillUI.GetProfessionInfoBySkillLineID`, including First Aid at low skill. Positive current skill, matching profession ID and a valid cap are required. Saved reference values and linked/guild/NPC profession views are not ownership evidence. Skill/spell changes refresh the display.
+
+## Prices, stock and Auctionator in 0.16
+
+This combined release includes the **QuestieDB Baked/Forever** and **First Aid ownership** fixes. Install this version only; QuestieDB remains a separate optional addon.
+
+Recipe results and ingredient cards show cached **AH unit price and age**, possible **net unit proceeds after the AH cut**, and the separate **vendor sale price**. Prices also appear in camping, planned steps and the cost breakdown. Vendor sale and purchase prices are distinct. Missing results, enchant services, uncached item data and absent scan prices are not zero values. These are unit values, not guaranteed profit per craft; potential output sales never reduce upfront purchasing funds.
+
+Recipe rows show ingredient icons with **Bags/Bank** counts; hover for full names, stock, reservations and shortages. Material/cost views retain explicit counts. Disabled bank use is marked; bank stock remains the last captured snapshot.
+
+Advice protects explicit plan requirements first. Learned skill recipes and possible reference follow-ups within the planned target, otherwise the next 25 skill points, suggest retaining materials without inventing reserved quantities or promising availability. Otherwise fresh AH net proceeds are compared with vendor sale value. Missing, undated or over-three-day-old AH prices cannot support a positive comparison. Known bind-on-pickup/quest items are not recommended for AH; check the actual item's binding and your own intended use. Demand and failed-auction deposits are not modeled.
+
+### Skill-range shopping list
+
+Choose **Shopping Plan → Start Y / Target X**, then create an **automatic route** or explicitly add learned recipe steps and quantities. Click **Create Auctionator shopping list**. An empty plan generates an automatic route; manual choices export only their selected steps. Changed automatic plans are reevaluated from current skill as appropriate. The list **CraftPilot - Profession Y-X** contains exact search names and missing quantities after stock and other reservations. Matching CraftPilot lists are replaced, other lists are preserved, and zero shortages clear the matching list. Buying stays manual.
+
+Planned intermediates are not purchased twice. Manual chains use captured minimum output quantities and order producers before consumers without adding unselected crafts. Unknown ingredients/output, cyclic chains, unresolved names and automatic routes stopping before their target block export with an explanation. Open your profession windows once to capture the new output-quantity fields. **Camping → Shopping** has the same export. A compatible Auctionator with the public shopping-list API is required; the AH need not be open to create a list, although Auctionator can start a search if it is open. No direct database writes or bundled Auctionator code are used.
