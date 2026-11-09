@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.16.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.17.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.16.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.16.0-alpha/CraftPilot-0.16.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.17.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.17.0-alpha/CraftPilot-0.17.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das aktuelle Installationspaket ist `dist/CraftPilot-0.16.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.17.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -303,3 +303,11 @@ Die Rezeptzeile zeigt Zutaten mit Symbolen und **Tasche/Bank**; beim Überfahren
 Auto-Routen verrechnen die geplante Herstellungskette. Manuelle Pläne ordnen ausdrücklich eingeplante Zwischenprodukte vor ihren Verbrauchern ein und rechnen die aktuell erfasste Mindest-Ausbeute an. Diese Zwischenprodukte werden dann nicht nochmals eingekauft. Es werden keine zusätzlichen manuellen Herstellungsschritte erfunden. Ungeklärte Zutaten/Ausbeuten, zyklische Ketten, nicht auflösbare Itemnamen oder eine vor dem Ziel abbrechende Auto-Route sperren den Export mit einem Hinweis. Vorhandene Pläne bleiben nutzbar; für die neue Ausbeute-Erfassung die eigenen Berufsfenster einmal öffnen.
 
 Unter **Camping → Einkauf** steht derselbe Export für fehlende Camping-Zutaten. Er benötigt eine aktivierte kompatible Auctionator-Version mit öffentlicher Einkaufslisten-API. Das AH muss zum Erstellen der Liste nicht offen sein; Auctionator kann bei offenem AH bereits die Suche starten. Es wird keine Auctionator-Datenbank direkt verändert oder mitgeliefert.
+
+## Nicht gelernte Lehrerrezepte und vollständige Ansicht (0.17)
+
+**Jetzt skillen** und **Clever skillen** berücksichtigen passende, noch nicht gelernte Lehrerrezepte. Material-Zukauf und einmalige Lerngebühr werden mit erlernten Optionen verglichen. Mögliche Zukaufvorteile stehen vorn; unbekannte oder geschätzte Gebühren gelten nicht als gesicherte Ersparnis. Die Beispielmenge umfasst etwa fünf erwartete Punkte bei heutiger Skillfarbe, keine Simulation künftiger Farbwechsel. Reise und eventuell neu benötigte Werkzeuge sind nicht eingepreist. In Clever skillen kann ein fehlender Goldbetrag erscheinen.
+
+Unter dem Vorschlag steht ein passender Lehrer mit direktem Wegpunkt. Aktuelle Karte und dortige Koordinatennähe haben Vorrang. Explizite Lehrerbeschränkungen werden beachtet; ein allgemeiner Berufs-Lehrer ist nur ein mögliches Ziel. Aktuelles Angebot vor Ort prüfen. Noch nicht gelernte Rezepte werden nicht als bereits erlernte manuelle Herstellungsoptionen behandelt.
+
+Der Ansichtsknopf wechselt **Sinnvolle Rezepte → Nicht gelernt → Alle Rezepte**. Alle zeigt zusätzlich zukünftige und andere im vorhandenen Katalog oder Client-Snapshot enthaltene Rezepte, ausgegraut mit Lernskill. Die Anzeige verspricht keinen vollständigen aktuellen Spielkatalog; fehlende Quellen/Voraussetzungen bleiben zu prüfen.

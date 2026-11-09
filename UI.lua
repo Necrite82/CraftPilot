@@ -99,7 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.16.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.17.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -211,7 +211,9 @@ for i,item in ipairs(sorts) do
   sortButtons[item.key]:Hide()
 end
 local vendorFilter=button(frame,218,25,494,-358,L("Kaufrezepte"),function()
-  CP.db.ui.vendorOnly=not CP.db.ui.vendorOnly;CP:Render()
+  if CP.db.ui.allRecipes then CP.db.ui.allRecipes=false;CP.db.ui.vendorOnly=false
+  elseif CP.db.ui.vendorOnly then CP.db.ui.vendorOnly=false;CP.db.ui.allRecipes=true
+  else CP.db.ui.vendorOnly=true end;CP:Render()
 end)
 vendorFilter:Hide()
 local bankButton=button(frame,250,25,18,-358,L("Bank: einschalten"),function()
@@ -477,7 +479,15 @@ local function setRecipeRows(key,options,chosen)
     local rowHeight=math.max(146,94+stockHeight+(type(marketHeight)=="number" and marketHeight or 34))
     b:SetHeight(rowHeight)
     if b.craftStripe then b.craftStripe:SetHeight(rowHeight-12) end
-    if entry.vendorRecipe then
+    b:SetAlpha(entry.dimmed and .5 or 1)
+    if entry.referenceOnly then
+      b.infoLabel:SetText(entry.referenceStatus)
+    elseif entry.trainerRecipe then
+      b.nameLabel:SetText(L("LEHRERREZEPT: ")..entry.name)
+      local c=entry.comparison
+      local benefit=c.cashSaving and c.cashSaving>0 and (L(" · Günstiger inkl. Lernen: ")..gold(c.cashSaving)..L(" / erwartetem Punkt")) or L(" · Lernkosten im Vergleich enthalten")
+      b.infoLabel:SetText(L("Lernen einmalig: ")..(c.cost.feeUnknown and L("unbekannt") or gold(c.cost.fee))..benefit)
+    elseif entry.vendorRecipe then
       b.nameLabel:SetText(L("KAUFREZEPT: ")..entry.name)
       b.infoLabel:SetText(L("Noch nicht erlernt · Rezeptpreis ab ")..(entry.recipeCost and gold(entry.recipeCost) or L("unbekannt"))..L(" · Angebot prüfen"))
     else
@@ -492,7 +502,8 @@ local function setRecipeRows(key,options,chosen)
     end
     b:Show()
     offset=offset+rowHeight+4
-    if entry.vendorRecipe and active then
+    if entry.vendorRecipe and not entry.referenceOnly and (active or entry.trainerRecipe) then
+      if active then
       local comparison=CP:VendorSkillComparison(key,entry)
       vendorIndex=vendorIndex+1
       local calc=vendorButtons[vendorIndex]
@@ -507,14 +518,17 @@ local function setRecipeRows(key,options,chosen)
       calc:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,78);calc:SetEnabled(true)
       calc.nameLabel:SetText(comparison.crafts..L("x herstellen + Rezept: ")
         ..(comparison.cost.cashComplete and "" or L("Bekannter Teil: "))..CP:FormatCostMoney(comparison.cost.cash))
-      local advantage=comparison.saving and comparison.saving>0
-        and (L("Möglicher Vorteil je erwartetem Skillpunkt: ")..CP:FormatCostMoney(comparison.saving))
+      local advantage=(entry.trainerRecipe and comparison.cashSaving or comparison.saving) and (entry.trainerRecipe and comparison.cashSaving or comparison.saving)>0
+        and (L("Möglicher Vorteil je erwartetem Skillpunkt: ")..CP:FormatCostMoney(entry.trainerRecipe and comparison.cashSaving or comparison.saving))
         or L("Kein gesicherter Kostenvorteil gegenüber erlernten Rezepten.")
       calc.infoLabel:SetText(advantage..L(" · Heutige Skillfarbe; Reise nicht enthalten. Klick: Kalkulation"))
       local recipeID,crafts=entry.id,comparison.crafts
       calc:SetScript("OnClick",function() CP:OpenCostCalculation("recipe",key,recipeID,crafts) end)
       calc:Show();offset=offset+82
-      for _,vendor in ipairs(entry.vendors) do
+      end
+      local targets=entry.vendors
+      if entry.trainerRecipe and not active then targets=entry.vendors[1] and {entry.vendors[1]} or {} end
+      for _,vendor in ipairs(targets) do
         vendorIndex=vendorIndex+1
         local row=vendorButtons[vendorIndex]
         if not row then
@@ -531,7 +545,7 @@ local function setRecipeRows(key,options,chosen)
         row:SetEnabled(vendor.location~=nil)
         local place=vendor.location and string.format("%s %.1f / %.1f",vendor.location.zone,vendor.location.x*100,vendor.location.y*100) or L("Standort unbekannt")
         row.nameLabel:SetText(vendor.name.." | "..place)
-        row.infoLabel:SetText((vendor.cost and gold(vendor.cost) or L("Preis fehlt")).." | "..L("Angebot prüfen · Klick: TomTom/Kartenwegpunkt"))
+        row.infoLabel:SetText((vendor.cost and gold(vendor.cost) or L("Preis fehlt")).." | "..(entry.trainerRecipe and L("Lehrer · Angebot prüfen · Klick: Wegpunkt") or L("Angebot prüfen · Klick: TomTom/Kartenwegpunkt")))
         row:Show();offset=offset+61
       end
     end
@@ -986,8 +1000,9 @@ function CP:Render()
   local gatheringOnly=prof.gathering and not prof.crafting
   local isRecipes=tab=="now" and not gatheringOnly
   local vendorOffers=isRecipes and self:VendorRecipeOptions(key) or {}
+  if isRecipes then for _,entry in ipairs(self:TrainerRecipeOptions(key)) do vendorOffers[#vendorOffers+1]=entry end end
   vendorFilter:SetShown(isRecipes)
-  vendorFilter:SetText(self.db.ui.vendorOnly and L("Alle Rezepte") or (L("Kaufrezepte").." ("..#vendorOffers..")"))
+  vendorFilter:SetText(self.db.ui.allRecipes and L("Ansicht: Alle Rezepte") or (self.db.ui.vendorOnly and L("Ansicht: Nicht gelernt") or L("Ansicht: Sinnvolle Rezepte")))
   vendorFilter.selectionMarker:SetShown(self.db.ui.vendorOnly==true)
   local isMats=tab=="mats" and not gatheringOnly
   local isPlan=tab=="plan" and not gatheringOnly
@@ -1286,13 +1301,16 @@ function CP:Render()
     end
     if tab=="now" then
       local offers=vendorOffers
-      if self.db.ui.vendorOnly then
+      if self.db.ui.allRecipes then
+        setRecipeRows(key,self:AllRecipeOptions(key,options,offers),chosen)
+      elseif self.db.ui.vendorOnly then
         if #offers>0 then setRecipeRows(key,offers,nil)
         else setRows({L("Keine passenden Kaufrezepte für diesen Skill hinterlegt.")}) end
       elseif (current and #options>0) or #offers>0 then
         local overview={}
+        for _,entry in ipairs(offers) do if entry.trainerRecipe and entry.comparison.cashSaving and entry.comparison.cashSaving>0 then overview[#overview+1]=entry end end
         if current then for _,entry in ipairs(options) do overview[#overview+1]=entry end end
-        for _,entry in ipairs(offers) do overview[#overview+1]=entry end
+        for _,entry in ipairs(offers) do if not (entry.trainerRecipe and entry.comparison.cashSaving and entry.comparison.cashSaving>0) then overview[#overview+1]=entry end end
         section:SetText(L("Rezeptklick: Beruf öffnen · Kaufrezeptklick: Händler zeigen"))
         setRecipeRows(key,overview,chosen)
       else
@@ -1300,7 +1318,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.16.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.17.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

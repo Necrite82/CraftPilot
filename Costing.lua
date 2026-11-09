@@ -64,7 +64,8 @@ function CP:RecipeAcquisitionCost(key,id,owner)
   if not reference then return 0,true end
   local bookStock=reference.item and (owner and self:AvailableForPlan(reference.item,owner) or self:ItemAvailability(reference.item)) or 0
   if reference.item and bookStock>0 then return 0,false,nil,false,reference.item end
-  local cheapest
+  local trainerFee,guessed,eligible=self:TrainerRecipeFee(key,id)
+  local cheapest=eligible and not guessed and trainerFee or nil
   for _,vendor in ipairs(self:RecipeVendors(key,id)) do
     if vendor.cost and (not cheapest or vendor.cost<cheapest) then cheapest=vendor.cost end
   end
@@ -101,7 +102,7 @@ function CP:CostCalculation(kind,key,id,quantity)
   if kind=="recipe" or kind=="economy" then
     quantity=math.max(1,math.min(999,math.floor(tonumber(quantity) or 1)))
     local native,reference,displayName=recipeData(self,key,id)
-    if native then
+    if native and (native.learned or native.mats) then
       if native.mats then for _,mat in ipairs(native.mats) do add(required,mat[1],mat[2]*quantity) end else unknown=unknown+1 end
     elseif reference and reference.mats then for item,n in pairs(reference.mats) do add(required,item,n*quantity) end
     else unknown=unknown+1 end
