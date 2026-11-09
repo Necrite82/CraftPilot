@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.17.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.18.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.17.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.17.0-alpha/CraftPilot-0.17.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.18.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.18.0-alpha/CraftPilot-0.18.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +107,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.17.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.18.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
@@ -162,3 +162,13 @@ Now skilling and Smart Skilling include eligible unlearned trainer recipes with 
 A suitable trainer waypoint appears directly below each proposal. Current-map locations and same-map proximity are preferred; restricted trainer IDs are respected. General profession trainers are candidate destinations, not confirmed current recipe offers. Unlearned recipes do not become learned manual crafting steps.
 
 The view button cycles Useful recipes / Unlearned / All recipes. All also shows inactive and future recipes in the available catalogue/client snapshot, greyed out with learning skill. It does not promise a complete current game database.
+
+## Readable costs and personal shopping (0.18)
+
+Recipe cards use labelled purchases-per-craft, net-AH-per-output-unit and vendor-per-output-unit fields. The compact stock line is consumed ingredient units; full per-item inventory remains in the tooltip/table. The cost dashboard separates material purchases, one-time learning and PAY NOW from economic stock value. Output sale values are per unit, not guaranteed craft profits.
+
+Materials, profession/camping shopping and costs share aligned Item / Need / Bags / Bank / Buy / AH-unit / Purchase-cost tables. Shortages sort first, then name. Native game tooltips are preserved where available and supplemented with CraftPilot cost/inventory data. Report a bug is directly beside the footer version.
+
+Use **+ Shopping list** on the selected recipe for its current one-craft shortages, or **Add missing materials** in the cost window for that calculation. Open **Shopping Plan → Personal shopping list** to enter a client-resolvable name, item link or ID, set quantities, click rows to edit, or remove with × / quantity zero. Export sends these explicit purchase quantities to Auctionator without deducting stock again.
+
+Personal shopping is separate from skill plans. Repeated recipe additions accumulate current shortage snapshots and purchases do not automatically remove them. Use the profession plan for multi-recipe shared-stock and intermediate netting.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.18.0-alpha
+
+Strukturierte Kostenfelder und Materialtabellen, originale Tooltips mit CraftPilot-Zusatzdaten, Fehler melden direkt neben der Version sowie eine unabhängige manuelle Einkaufsliste mit Rezept-Fehlmengenübernahme und Auctionator-Export. [Details](docs/RELEASE_0.18.0-alpha.md).
+
 ## 0.17.0-alpha
 
 Nicht erlernte Lehrerrezepte inklusive einmaliger Lernkosten und Materialkosten vergleichen; passende Lehrer direkt als Wegpunkt. Umschaltbare Ansichten sinnvoll/nicht gelernt/alle, mit ausgegrauten zukünftigen Katalogrezepten. [Details](docs/RELEASE_0.17.0-alpha.md).
