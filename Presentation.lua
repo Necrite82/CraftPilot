@@ -2,6 +2,24 @@
 local _,CP=...
 local L=CP.L
 local bg={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1}
+function CP:StyleActionButton(b)
+  b:SetBackdrop(bg);b:SetBackdropColor(.075,.115,.15,1);b:SetBackdropBorderColor(.28,.4,.5,1)
+  local label=b:CreateFontString(nil,"OVERLAY","GameFontNormalSmall");label:SetAllPoints(b);label:SetJustifyH("CENTER");label:SetWordWrap(false);b:SetFontString(label);b:SetNormalFontObject("GameFontNormalSmall");b:SetHighlightFontObject("GameFontHighlightSmall");b:SetDisabledFontObject("GameFontDisableSmall")
+  b:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
+  local h=b:GetHighlightTexture();if h then h:SetVertexColor(.35,.55,.75,.16) end
+end
+function CP:RenderCheckbox(b,spec,width)
+  if not rawget(b,"settingCheck") then
+    local check=CreateFrame("CheckButton",nil,b,"BackdropTemplate")
+    check:SetSize(20,20);check:SetPoint("TOPRIGHT",b,"TOPRIGHT",-12,-9);check:SetBackdrop(bg)
+    check:SetBackdropColor(.03,.06,.08,1);check:SetBackdropBorderColor(.4,.55,.65,1)
+    check:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
+    check:SetScript("OnClick",function(c) local current=c.craftCheckSpec;current.apply(not current.checked) end)
+    b.settingCheck=check
+  end
+  b.settingCheck.craftCheckSpec=spec;b.settingCheck:SetChecked(spec.checked);b.settingCheck:Show()
+  b.titleLabel:SetWidth(width-100)
+end
 function CP:CreateFlatAction(parent,width,height,action)
   local b=CreateFrame("Button",nil,parent,"BackdropTemplate")
   b:SetSize(width,height);b:SetBackdrop(bg);b:SetBackdropColor(.045,.07,.095,.98);b:SetBackdropBorderColor(.18,.25,.32,1)
@@ -50,7 +68,7 @@ function CP:ShowCraftTooltip(owner,key,id,item)
   if not shown then tip:AddLine(id and self:RecipeName(key,id) or self:ItemName(item)) end
   tip:AddLine(" ");tip:AddLine("CraftPilot",1,.8,.35)
   if id then
-    local c=self:CostCalculation("recipe",key,id,1)
+    local c=self:CostCalculation("recipe",key,id,self:RequestedRecipeQuantity(key,id))
     tip:AddDoubleLine(L("Zukauf / Herstellung"),self:DisplayMoney(c.buy),.8,.85,.9,1,.8,.35)
     if c.fee>0 or c.feeUnknown then tip:AddDoubleLine(L("Lernen · einmalig"),c.feeUnknown and L("unbekannt") or self:DisplayMoney(c.fee)) end
     tip:AddLine(" ");tip:AddDoubleLine(L("Material"),L("Bedarf · Tasche · Bank · Kaufen"),1,.8,.35,1,.8,.35)
@@ -123,7 +141,7 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
   parent:SetSize(width,math.max(30,y));return y
 end
 function CP:RecipeDisplayData(key,id)
-  local c=self:CostCalculation("recipe",key,id,1)
+  local c=self:CostCalculation("recipe",key,id,self:RequestedRecipeQuantity(key,id))
   local output=self:RecipeMarketOutput(key,id)
   local m=output and self:ItemMarket(output) or nil
   local bag,bank,buy=0,0,0
@@ -150,13 +168,15 @@ function CP:LayoutRecipeCard(b,key,entry,width)
   b.stockSummary:ClearAllPoints();b.stockSummary:SetPoint("TOPLEFT",b,"TOPLEFT",48,-(metricY+58))
   b.stockSummary:SetText(string.format(L("Vorrat genutzt (Einheiten)   Tasche %d    Bank %s    Zukauf %d"),d.bag,not self.db.includeBank and L("aus") or (d.bankUnknown and "?" or tostring(d.bank)),d.buy))
   local learning=entry.vendorRecipe and not entry.referenceOnly
-  self:MetricStrip(b,{{label=learning and L("Start · Lernen + 1 Herstellung") or L("Zukauf / Herstellung"),
+  self:MetricStrip(b,{{label=string.format(L("Zukauf für %dx"),self:RequestedRecipeQuantity(key,entry.id))..(learning and L(" + Lernen") or ""),
       value=(learning and d.cost.cashComplete or (not learning and d.cost.missingBuy==0 and d.cost.unknownRecipes==0))
         and self:DisplayMoney(learning and d.cost.cash or d.cost.buy) or L("unvollständig")},
     {label=L("AH netto / Ergebnisstück"),value=self:DisplayMoney(d.market and not d.market.bound and d.market.net or nil),color={.55,.9,.7}},
     {label=L("Händler / Ergebnisstück"),value=self:DisplayMoney(d.market and d.market.vendor)}},48,metricY,width-60)
   b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,key,entry.id) end)
   local rh=height(b.rangeLabel,16);local h=math.max(164,metricY+86+rh)
+  if not entry.referenceOnly then h=self:QuantityControl(b,key,entry.id,entry.active,h,width)
+  elseif rawget(b,"quantityLabel") then b.quantityLabel:Hide();b.quantityInput:Hide();b.quantityReset:Hide();b.quantityCaption:Hide();b.followupNote:Hide() end
   b:SetHeight(h);if b.craftStripe then b.craftStripe:SetHeight(h-12) end
   return h
 end
@@ -164,11 +184,13 @@ function CP:LayoutVisualCard(b,entry,width)
   b:SetScript("OnEnter",nil)
   b:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
   if rawget(b,"dataTable") then b.dataTable:Hide() end
-  if entry.materialTable then
+  if entry.materialTable or entry.productionRows then
     for _,name in ipairs({"titleLabel","detailLabel","footLabel","marketLabel","craftIcon","craftStripe","craftDot"}) do if rawget(b,name) then b[name]:Hide() end end
     for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
     b.dataTable=rawget(b,"dataTable") or CreateFrame("Frame",nil,b)
     b.dataTable:ClearAllPoints();b.dataTable:SetPoint("TOPLEFT",b,"TOPLEFT",0,-2);b.dataTable:Show()
+    for _,name in ipairs({"tableHeaders","tableRows","productionHeaders","productionRows"}) do for _,part in ipairs(rawget(b.dataTable,name) or {}) do part:Hide() end end
+    if entry.productionRows then return self:DrawProductionTable(b.dataTable,entry.productionRows,entry.recipeKey,width),true end
     return self:DrawMaterialTable(b.dataTable,entry.materialTable,width),true
   end
   for _,name in ipairs({"titleLabel","detailLabel","footLabel","craftIcon","craftStripe","craftDot"}) do if rawget(b,name) then b[name]:Show() end end
@@ -204,7 +226,7 @@ function CP:CostOutputRows(context)
   end
   if context.kind=="plan" then
     local p=self:PlanFor(context.key)
-    if p.autoMode and p.autoRoute then for _,s in ipairs(p.autoRoute.intermediates or {}) do add(context.key,s.id) end
+    if p.autoMode and p.autoRoute then for _,s in ipairs(p.autoRoute.intermediates or {}) do add(s.key or context.key,s.id) end
     else for id in pairs(p.crafts) do add(context.key,id) end end
   elseif context.kind=="camping" then for _,s in ipairs(self:CampingShopping().steps) do add(s.row.prof,s.row.id) end
   else add(context.key,context.id) end
@@ -213,6 +235,7 @@ end
 function CP:RenderCostDashboard(result,context)
   local f=self.costWindow
   f.caption:SetText(result.title)
+  self:CostQuantityControls(f,context)
   local metricY=math.max(72,49+height(f.caption,16)+10)
   self:MetricStrip(f,{{label=L("Material-Zukauf"),value=self:DisplayMoney(result.buy)},
     {label=L("Lernen · einmalig"),value=self:DisplayMoney(result.fee)..(result.feeUnknown and " + ?" or "")},
@@ -269,16 +292,16 @@ function CP:CreateCostDashboard()
   f:SetSize(800,690);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true);f:SetMovable(true);f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart",f.StartMoving);f:SetScript("OnDragStop",f.StopMovingOrSizing)
   f:SetBackdrop(bg);f:SetBackdropColor(.035,.055,.075,.99);f:SetBackdropBorderColor(.4,.5,.57,1)
-  self:DisplayLabel(f,"GameFontNormalLarge",22,18,735,L("Kostenkalkulation"))
+  self:DisplayLabel(f,"GameFontNormalLarge",22,18,440,L("Kostenkalkulation"))
   f.caption=self:DisplayLabel(f,"GameFontHighlight",22,46,735,"")
   f.notice=self:DisplayLabel(f,"GameFontDisableSmall",22,130,735,"")
   f.scroll=CreateFrame("ScrollFrame",nil,f,"UIPanelScrollFrameTemplate")
   f.list=CreateFrame("Frame",nil,f.scroll);f.list:SetSize(730,100);f.scroll:SetScrollChild(f.list)
   local hint=self:DisplayLabel(f,"GameFontDisableSmall",22,0,735,L("AH: letzter Scan · Bank: letzter Stand · Stückerlöse sind kein garantierter Gewinn. Bindung, Nachfrage und Reise prüfen."))
   hint:ClearAllPoints();hint:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,46)
-  local refresh=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");refresh:SetSize(180,25);refresh:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,14);refresh:SetText(L("Neu berechnen"));refresh:SetScript("OnClick",function() CP:RefreshCostWindow() end)
-  local add=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");add:SetSize(230,25);add:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",214,14);add:SetText(L("+ Fehlmengen zur Einkaufsliste"));add:SetScript("OnClick",function() CP:AddCostDeficits(CP.costContext) end)
-  local shopping=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");shopping:SetSize(220,25);shopping:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",456,14);shopping:SetText(L("Manuelle Einkaufsliste"));shopping:SetScript("OnClick",function() CP:OpenPersonalShopping() end)
+  local refresh=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(refresh);refresh:SetSize(180,25);refresh:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,14);refresh:SetText(L("Neu berechnen"));refresh:SetScript("OnClick",function() CP:RefreshCostWindow() end)
+  local add=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(add);add:SetSize(230,25);add:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",214,14);add:SetText(L("+ Fehlmengen zur Einkaufsliste"));add:SetScript("OnClick",function() CP:AddCostDeficits(CP.costContext) end)
+  local shopping=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(shopping);shopping:SetSize(220,25);shopping:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",456,14);shopping:SetText(L("Manuelle Einkaufsliste"));shopping:SetScript("OnClick",function() CP:OpenPersonalShopping() end)
   local close=CreateFrame("Button",nil,f,"UIPanelCloseButton");close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() f:Hide() end)
   UISpecialFrames[#UISpecialFrames+1]="CraftPilotCostWindow";return f
 end

@@ -58,13 +58,13 @@ local function recipeData(self,key,id)
   return native,reference,displayName
 end
 function CP:CostRecipeData(key,id) return recipeData(self,key,id) end
-function CP:RecipeAcquisitionCost(key,id,owner)
+function CP:RecipeAcquisitionCost(key,id,owner,atSkill)
   local native,reference=recipeData(self,key,id)
   if native and native.learned then return 0,false end
   if not reference then return 0,true end
   local bookStock=reference.item and (owner and self:AvailableForPlan(reference.item,owner) or self:ItemAvailability(reference.item)) or 0
   if reference.item and bookStock>0 then return 0,false,nil,false,reference.item end
-  local trainerFee,guessed,eligible=self:TrainerRecipeFee(key,id)
+  local trainerFee,guessed,eligible=self:TrainerRecipeFee(key,id,atSkill)
   local cheapest=eligible and not guessed and trainerFee or nil
   for _,vendor in ipairs(self:RecipeVendors(key,id)) do
     if vendor.cost and (not cheapest or vendor.cost<cheapest) then cheapest=vendor.cost end
@@ -80,7 +80,7 @@ function CP:RecipeAcquisitionCost(key,id,owner)
   end
   return cheapest or 0,cheapest==nil
 end
-function CP:CostCalculation(kind,key,id,quantity)
+function CP:CostCalculation(kind,key,id,quantity,routeOverride)
   local owner=kind=="camping" and "camping" or key
   local required,unknown={},0
   local fee,feeUnknown=0,false
@@ -88,11 +88,11 @@ function CP:CostCalculation(kind,key,id,quantity)
   local sale,points,saleBlocked=0,nil,false
   local feeStale,feeUndated=0,0
   local fees={}
-  local function includeFee(profession,recipeID)
+  local function includeFee(profession,recipeID,atSkill)
     local marker=profession..":"..recipeID
     if fees[marker] then return end
     fees[marker]=true
-    local amount,missing,age,auction,book=self:RecipeAcquisitionCost(profession,recipeID,owner)
+    local amount,missing,age,auction,book=self:RecipeAcquisitionCost(profession,recipeID,owner,atSkill)
     fee=fee+amount;feeUnknown=feeUnknown or missing
     if book then add(required,book,1) end
     if auction then
@@ -128,7 +128,7 @@ function CP:CostCalculation(kind,key,id,quantity)
       includeFee(step.row.prof,step.row.id)
     end
   elseif kind=="plan" then
-    local route=self:AutoRouteShopping(key)
+    local route=routeOverride or self:AutoRouteShopping(key)
     if route then
       title=L("Gespeicherte Auto-Route")
       if type(route.ownedMaterials)=="table" then
@@ -136,10 +136,10 @@ function CP:CostCalculation(kind,key,id,quantity)
         for item,n in pairs(route.ownedMaterials) do add(required,item,n) end
       else unknown=unknown+1 end
       local recipes={}
-      for _,step in ipairs(route.steps) do
+      for _,step in ipairs(route.intermediates or route.steps) do
         if not recipes[step.id] then
           recipes[step.id]=true
-          includeFee(key,step.id)
+          includeFee(step.key or key,step.id,step.first or step.skill)
         end
       end
     else
@@ -213,10 +213,10 @@ function CP:OpenCurrentCostCalculation()
     end
   end
   if self.db.ui.selectedVendorKey==key and self.db.ui.selectedVendorRecipe then
-    return self:OpenCostCalculation("recipe",key,self.db.ui.selectedVendorRecipe,1)
+    return self:OpenCostCalculation("recipe",key,self.db.ui.selectedVendorRecipe,self:RequestedRecipeQuantity(key,self.db.ui.selectedVendorRecipe))
   end
   local chosen=self:SelectedOption(key)
-  if chosen then return self:OpenCostCalculation("recipe",key,chosen.id,1) end
+  if chosen then return self:OpenCostCalculation("recipe",key,chosen.id,self:RequestedRecipeQuantity(key,chosen.id)) end
   self:Say(L("Rezept auswählen oder Einkaufsplan öffnen."))
 end
 function CP:OpenCostCalculation(kind,key,id,quantity)

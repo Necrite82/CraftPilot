@@ -592,7 +592,7 @@ function CP:ClearPlanCraft(key,recipeID)
   local p=self:PlanFor(key)
   if not p then return end
   if type(recipeID)=="number" then p.crafts[recipeID]=nil
-  else p.crafts={} end
+  else p.crafts={};p.preferences=nil;p.materialPreferences=nil end
   p.autoMode=false
   p.autoRoute=nil
   self:InvalidateReservations();self:StampPlan(key)

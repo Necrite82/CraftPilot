@@ -8,58 +8,22 @@ local function shallow(t)
   return out
 end
 local function stateClone(s)
-  return {stock=shallow(s.stock),bought=shallow(s.bought),
+  return {skillEffort=shallow(s.skillEffort),stock=shallow(s.stock),bought=shallow(s.bought),
     crafted=shallow(s.crafted), spent=s.spent,missing=shallow(s.missing),
-    stale=shallow(s.stale),notes=shallow(s.notes),ownedRemaining=shallow(s.ownedRemaining),usedOwned=shallow(s.usedOwned)}
+    stale=shallow(s.stale),notes=shallow(s.notes),ownedRemaining=shallow(s.ownedRemaining),usedOwned=shallow(s.usedOwned),materialPrefs=s.materialPrefs,producerKeys=shallow(s.producerKeys),producerSkills=shallow(s.producerSkills),ignoredMaterials=shallow(s.ignoredMaterials),training=s.training,feesCharged=shallow(s.feesCharged),learningUnknown=shallow(s.learningUnknown)}
 end
-local function baseState()
-  return {stock={},bought={},crafted={},spent=0,missing={},stale={},notes={},ownedRemaining={},usedOwned={}}
+local function baseState(materialPrefs)
+  return {skillEffort={},stock={},bought={},crafted={},spent=0,missing={},stale={},notes={},ownedRemaining={},usedOwned={},materialPrefs=materialPrefs,producerKeys={},producerSkills={},ignoredMaterials={},training=0,feesCharged={},learningUnknown={}}
 end
 local function countSet(t)
   local n=0 for _ in pairs(t) do n=n+1 end return n
 end
-local function ingredientUnitCost(itemID,owner,skill,active,depth)
-  depth=depth or 0
-  if depth>8 or active[itemID] then return nil end
-  active[itemID]=true
-  local current=CP:PriceDetails(itemID).price
-  for _,entry in ipairs(CP:RecipesMaking(itemID,owner,skill)) do
-    local recipe=entry.recipe
-    local total=0
-    local possible=true
-    for reagent,qty in pairs(recipe.mats or {}) do
-      local cost=ingredientUnitCost(reagent,owner,skill,active,depth+1)
-      if cost==nil then possible=false;break end
-      total=total+cost*qty
-    end
-    if possible then
-      local yield=math.max(1,tonumber(recipe.count or recipe.yield) or 1)
-      local each=total/yield
-      if current==nil or each<current then current=each end
-    end
-  end
-  active[itemID]=nil
-  return current
-end
-
-local function cheapestCraftFor(itemID,owner,skill)
-  local lowest,lowestTotal
-  for _,entry in ipairs(CP:RecipesMaking(itemID,owner,skill)) do
-    local total=0
-    local valid=true
-    local path={[itemID]=true}
-    for reagent,qty in pairs(entry.recipe.mats or {}) do
-      local unit=ingredientUnitCost(reagent,owner,skill,path,1)
-      if unit==nil then valid=false;break end
-      total=total+qty*unit
-    end
-    if valid then
-      local yield=math.max(1,tonumber(entry.recipe.count or entry.recipe.yield) or 1)
-      total=total/yield
-      if not lowestTotal or total<lowestTotal then lowest,lowestTotal=entry,total end
-    end
-  end
-  return lowest,lowestTotal
+local function chargeLearning(st,key,id,skill)
+  local marker=key..":"..id
+  if st.feesCharged[marker] then return end
+  local fee,unknown=CP:RecipeAcquisitionCost(key,id,key,skill)
+  st.training=st.training+fee;st.feesCharged[marker]=true
+  if unknown then st.learningUnknown[marker]=true end
 end
 
 local function consume(st,id,needed,owner,skill,active,depth)
@@ -78,21 +42,34 @@ local function consume(st,id,needed,owner,skill,active,depth)
   local short=needed-available
   if short<=0 then return end
   local market=CP:PriceDetails(id)
-  local recipe,craftCost
-  if depth<8 and not active[id] then
-    recipe,craftCost=cheapestCraftFor(id,owner,skill)
-  end
-  if recipe and craftCost and (not market.price or craftCost < market.price) then
+  local preference=st.materialPrefs and st.materialPrefs[id]
+  local chosen,chosenState,chosenCost,chosenUnknown
+  if depth<8 and not active[id] and preference~=0 then
     active[id]=true
-    local output=math.max(1,tonumber(recipe.recipe.count or recipe.recipe.yield) or 1)
-    local crafts=math.ceil(short/output)
-    for reagent,qty in pairs(recipe.recipe.mats) do
-      consume(st,reagent,qty*crafts,owner,skill,active,depth+1)
+    for _,recipe in ipairs(CP:RecipesMaking(id,owner,skill)) do
+      local trial=stateClone(st)
+      local output=math.max(1,tonumber(recipe.recipe.count or recipe.recipe.yield) or 1)
+      local crafts=math.ceil(short/output)
+      local at=recipe.key==owner and skill or (CP.db.professions[recipe.key] or {}).skill
+      chargeLearning(trial,recipe.key,recipe.id,at)
+      for reagent,qty in pairs(recipe.recipe.mats or {}) do consume(trial,reagent,qty*crafts,owner,skill,active,depth+1) end
+      trial.crafted[recipe.id]=(trial.crafted[recipe.id] or 0)+crafts
+      trial.producerKeys[recipe.id]=recipe.key;trial.producerSkills[recipe.id]=trial.producerSkills[recipe.id] or at
+      trial.stock[id]=trial.stock[id]+crafts*output-short
+      local cost=trial.spent+trial.training-st.spent-st.training
+      local unknown=countSet(trial.missing)+countSet(trial.learningUnknown)-countSet(st.missing)-countSet(st.learningUnknown)
+      local preferred=preference==recipe.id
+      local bestPreferred=chosen and preference==chosen.id
+      if not chosen or (preferred and not bestPreferred) or (preferred==bestPreferred and (unknown<chosenUnknown or (unknown==chosenUnknown and (cost<chosenCost or (cost==chosenCost and recipe.id<chosen.id))))) then
+        chosen,chosenState,chosenCost,chosenUnknown=recipe,trial,cost,unknown
+      end
     end
     active[id]=nil
-    st.crafted[recipe.id]=(st.crafted[recipe.id] or 0)+crafts
-    local surplus=crafts*output-short
-    st.stock[id]=st.stock[id]+surplus
+  end
+  if preference and preference~=0 and (not chosen or chosen.id~=preference) then st.ignoredMaterials[id]=true end
+  if chosen and (preference==chosen.id or (chosenUnknown==0 and (not market.price or chosenCost<market.price*short))) then
+    if preference and preference~=0 and chosen.id~=preference then chosenState.ignoredMaterials[id]=true end
+    for k,v in pairs(chosenState) do st[k]=v end
   else
     st.bought[id]=(st.bought[id] or 0)+short
     if market.price then st.spent=st.spent+market.price*short
@@ -113,6 +90,8 @@ local function evaluate(st,candidate,crafts,owner,skill)
     trial.stock[output]=(trial.stock[output] or CP:AvailableForPlan(output,owner))+crafts*units
   end
   trial.crafted[candidate.id]=(trial.crafted[candidate.id] or 0)+crafts
+  trial.producerKeys[candidate.id]=owner;trial.producerSkills[candidate.id]=trial.producerSkills[candidate.id] or skill
+  chargeLearning(trial,owner,candidate.id,skill)
   return trial
 end
 
@@ -125,44 +104,62 @@ local function better(a,b)
   return a.id<b.id
 end
 
-function CP:GenerateAutomaticRoute(key,first,last)
+function CP:GenerateAutomaticRoute(key,first,last,preferences,materialPrefs)
   self:InvalidateReservations()
   local from=math.max(1,math.min(299,math.floor(tonumber(first) or 1)))
   local finish=math.max(from+1,math.min(300,math.floor(tonumber(last) or 300)))
-  local state=baseState()
+  local state=baseState(materialPrefs)
   local steps={}
   local skill=from
   local noCandidate
   local assumptions=0
+  local ignoredPreferences={}
+  local preferencesApplied=0
   local catalog=self:Catalog(key)
   if not catalog then return nil,L("Für diesen Beruf ist kein Herstellungs-Katalog vorhanden.") end
   while skill<finish do
     local candidateRows=self:CatalogCandidateRecipes(key,skill)
     local selected,selectedTrial,ranking
     for _,candidate in ipairs(candidateRows) do
-      local crafts=math.max(1,math.ceil(1/candidate.chance))
+      local effort=state.skillEffort[candidate.id] or 0
+      local nextEffort=effort+1/candidate.chance
+      local crafts=math.max(1,math.ceil(nextEffort-1e-9)-math.ceil(effort-1e-9))
       local trial=evaluate(state,candidate,crafts,key,skill)
+      trial.skillEffort[candidate.id]=nextEffort
+      local quote,points=trial,1
+      local colors=candidate.recipe.colors
+      local horizon=finish
+      if colors then horizon=math.min(horizon,skill<(colors[3] or skill) and colors[3] or colors[4] or finish) end
+      if preferences then for at=skill+1,horizon-1 do if preferences[at] and preferences[at]~=candidate.id then horizon=at;break end end end
+      if CP.ExpectedCrafts and horizon>skill+1 then
+        local batch,reached,exact=CP:ExpectedCrafts(key,candidate.id,candidate.recipe,skill,horizon)
+        if exact then batch=math.max(1,math.ceil(effort+exact-1e-9)-math.ceil(effort-1e-9)) end
+        if reached>skill+1 then quote=evaluate(state,candidate,batch,key,skill);points=reached-skill end
+      end
       local option={
-        unknown=countSet(trial.missing)-countSet(state.missing),
-        delta=trial.spent-state.spent,count=crafts,id=candidate.id,
+        preferred=preferences and preferences[skill]==candidate.id or false,
+        unknown=countSet(quote.missing)-countSet(state.missing)+countSet(quote.learningUnknown)-countSet(state.learningUnknown),
+        delta=(quote.spent+quote.training-state.spent-state.training)/points,count=crafts,id=candidate.id,
         greenPenalty=(self.db.ui.preferReliableSkill and candidate.chance<.5) and 1 or 0
       }
       -- Unknown material prices must not accidentally win as zero-cost items.
-      if option.unknown>0 then option.unknown=1000+countSet(trial.missing) end
-      if better(option,ranking) then
+      if option.unknown>0 then option.unknown=1000+countSet(quote.missing)+countSet(quote.learningUnknown) end
+      if not ranking or (option.preferred and not ranking.preferred) or (option.preferred==ranking.preferred and better(option,ranking)) then
         selected,selectedTrial,ranking=candidate,trial,option
       end
     end
+    if preferences and preferences[skill] and not (ranking and ranking.preferred) then ignoredPreferences[skill]=preferences[skill] end
     if not selected then noCandidate=skill;break end
+    if ranking.preferred then preferencesApplied=preferencesApplied+1 end
     local old=steps[#steps]
     local crafts=ranking.count
     if old and old.id==selected.id then
       old.crafts=old.crafts+crafts
-      old.last=skill+1
+      old.last=skill+1;old.preferred=old.preferred or ranking.preferred
     else
       steps[#steps+1]={id=selected.id,key=key,name=self:RecipeName(key,selected.id,selected.recipe.name),
         first=skill,last=skill+1,crafts=crafts,
-        source=selected.source,uncertain=selected.source~="known"}
+        source=selected.source,uncertain=selected.source~="known",preferred=ranking.preferred}
     end
     if selected.source~="known" then assumptions=assumptions+1 end
     state=selectedTrial
@@ -180,18 +177,19 @@ function CP:GenerateAutomaticRoute(key,first,last)
   table.sort(materials,function(a,b) return a.name<b.name end)
   local intermediates={}
   for recipeID,count in pairs(state.crafted) do
-    local rec=catalog.recipes[recipeID] or
+    local producerKey=state.producerKeys[recipeID] or key
+    local rec=(self:Catalog(producerKey) and self:Catalog(producerKey).recipes[recipeID]) or catalog.recipes[recipeID] or
       (self:Catalog("mining") and self:Catalog("mining").recipes[recipeID])
-    intermediates[#intermediates+1]={id=recipeID,
+    intermediates[#intermediates+1]={id=recipeID,key=producerKey,skill=state.producerSkills[recipeID],output=rec and rec.makes,units=rec and (rec.count or rec.yield or 1)*count,
       name=rec and rec.name or (L("Rezept ")..recipeID),count=count}
   end
   table.sort(intermediates,function(a,b) return a.name<b.name end)
   return {
-    first=from,target=finish,reached=skill,steps=steps,materials=materials,
+    first=from,target=finish,reached=skill,steps=steps,materials=materials,plannerVersion=2,
     intermediates=intermediates,
-    price=state.spent,unpriced=countSet(state.missing),
+    price=state.spent,learning=state.training,unpriced=countSet(state.missing)+countSet(state.learningUnknown),
     stale=countSet(state.stale),unknownAge=countSet(state.notes),
-    assumptions=assumptions,blocked=noCandidate,
+    assumptions=assumptions,blocked=noCandidate,preferencesApplied=preferencesApplied,ignoredPreferences=countSet(ignoredPreferences)+countSet(state.ignoredMaterials),
     dataset=self.catalogBuild,source=self.catalogUpstream,
     isEstimate=true,ownedMaterials=shallow(state.usedOwned)
   }
@@ -200,7 +198,7 @@ end
 function CP:BuildRouteForCurrentPlan(key)
   local p=self:PlanFor(key)
   if not p then return false end
-  local route,errorText=self:GenerateAutomaticRoute(key,p.start,p.target)
+  local route,errorText=self:GenerateAutomaticRoute(key,p.start,p.target,p.preferences,p.materialPreferences)
   if not route then return false,errorText end
   p.autoRoute=route
   p.autoMode=true

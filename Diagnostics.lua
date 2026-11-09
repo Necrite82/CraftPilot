@@ -124,7 +124,7 @@ function CP:OpenDiagnosticReport()
     link:SetSize(600,26);link:SetPoint("BOTTOMLEFT",24,72);link:SetAutoFocus(false)
     link:SetScript("OnEscapePressed",function(box) box:ClearFocus() end);frame.link=link
     local function button(x,width,text,action)
-      local b=CreateFrame("Button",nil,frame,"UIPanelButtonTemplate")
+      local b=CreateFrame("Button",nil,frame,"BackdropTemplate");CP:StyleActionButton(b)
       b:SetSize(width,28);b:SetPoint("BOTTOMLEFT",x,24);b:SetText(text);b:SetScript("OnClick",action)
     end
     button(22,185,L("GitHub-Link kopieren"),function()

@@ -20,7 +20,8 @@ end
 
 local allButtons = {}
 local function button(parent, width, height, x, y, caption, callback)
-  local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+  local b = CreateFrame("Button", nil, parent, "BackdropTemplate")
+  CP:StyleActionButton(b)
   b:SetSize(width, height)
   b:SetPoint("TOPLEFT", parent, "TOPLEFT", x, y)
   b:SetText(caption)
@@ -99,7 +100,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.18.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.19.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -259,6 +260,9 @@ end)
 local planAdd=button(frame,142,25,431,-352,L("Rezept +"),function()
   local key=CP.db.view
   if CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe then CP:Say(L("Erst das Kaufrezept lernen und den Beruf neu einlesen."));return end
+  local p=CP:PlanFor(key)
+  local a,z=fieldNumber(rangeStart,p.start),fieldNumber(rangeEnd,p.target)
+  if (a~=p.start or z~=p.target) and not CP:SetPlanRange(key,a,z) then CP:Say(L("Ungültiger Bereich."));return end
   local chosen=CP:SelectedOption(key)
   if not chosen then CP:Say(L("Bitte erst ein aktuelles Rezept wählen."));return end
   if CP:AddPlanCraft(key,chosen.id,fieldNumber(rangeQty,1)) then CP:Render()
@@ -294,6 +298,17 @@ end)
 local planHint=text(frame,"GameFontDisableSmall",588,-386,150,L("GPL-Katalog"))
 local planControls={rangeLabel,rangeStart,targetLabel,rangeEnd,quantityLabel,
  rangeQty,rangeApply,planAdd,planDraft,planPrint,planClear,autoRouteButton,planHint}
+local planExport=button(frame,180,26,390,-250,L("An Auctionator"),function()
+  local p=CP:PlanFor(CP.db.view)
+  if fieldNumber(rangeStart,p.start)~=p.start or fieldNumber(rangeEnd,p.target)~=p.target then CP:Say(L("Bereich geändert · zuerst Plan erstellen."));return end
+  CP:ExportToAuctionator(CP.db.view);CP:Render()
+end)
+local planPages={}
+for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="details",label=L("Details & Kosten")},{key="personal",label=L("Eigene Liste")}}) do
+  planPages[i]=button(frame,160,26,18+(i-1)*166,-286,page.label,function()
+    if page.key=="personal" then CP:OpenPersonalShopping() else CP.db.ui.planPage=page.key;CP:Render() end
+  end)
+end
 local syncedPlan
 local campControls={}
 for i,page in ipairs({{key="fires",label=L("Campfires")},{key="buffs",label=L("Buffs")},{key="objects",label=L("Objekte & Ausbauten")},{key="shopping",label=L("Einkauf")}}) do
@@ -309,12 +324,14 @@ campControls[5]=campingFilter
 for _,control in ipairs(campControls) do control:Hide() end
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
-  local marker=key..":"..p.start..":"..p.target
+  local selected=CP:SelectedOption(key)
+  local selectedID=selected and selected.id
+  local marker=key..":"..p.start..":"..p.target..":"..tostring(selectedID)..":"..tostring(selectedID and CP:RecipeQuantityOverride(key,selectedID))
   if marker==syncedPlan then return end
   syncedPlan=marker
   rangeStart:SetText(tostring(p.start))
   rangeEnd:SetText(tostring(p.target))
-  rangeQty:SetText("1")
+  rangeQty:SetText(tostring(selectedID and CP:RequestedRecipeQuantity(key,selectedID) or 1))
 end
 
 local contentPanel=CreateFrame("Frame",nil,frame,"BackdropTemplate")
@@ -501,6 +518,7 @@ local function setRecipeRows(key,options,chosen)
     b.infoLabel:SetText(CP:RecipeColorLabel(key,entry.id).." | "..string.format(L("Chance ca. %.0f%% | %s / Punkt | %d fehlen%s"),
       entry.chance*100,price,entry.missing,ageInfo))
     end
+    entry.active=active
     rowHeight=CP:LayoutRecipeCard(b,key,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))
     CP:RecipeShoppingButton(b,key,entry,active)
     b:Show()
@@ -612,6 +630,7 @@ local function setVisualCards(entries)
         pcall(CP.ellesmereSkin.Panel,b)
       end
     end
+    if rawget(b,"settingCheck") then b.settingCheck:Hide() end
     b.craftAction=entry.action
     b.tooltipItem=entry.tooltipItem
     b.tooltipSpell=entry.tooltipSpell
@@ -703,6 +722,7 @@ local function setVisualCards(entries)
       b.footLabel:ClearAllPoints();b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-(52+measured+8))
       b:SetHeight(cardHeight-5)
     end
+    if entry.checkbox then CP:RenderCheckbox(b,entry.checkbox,(b:GetWidth() or W-110)) end
     if not entry.slider then
       cardHeight=CP:LayoutVisualCard(b,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))+5
       b:SetHeight(cardHeight-5)
@@ -929,7 +949,7 @@ end
 
 
 function CP:Render()
-  self:InvalidateReservations();self.marketUseCache=nil
+  self:InvalidateReservations();self.marketUseCache=nil;self.unlockCache=nil
   if not self.db then return end
   self:RestoreWindowPosition()
   self:ApplyTheme()
@@ -940,16 +960,16 @@ function CP:Render()
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
   economyButton.selectionMarker:SetShown(tab=="economy")
-  local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)..":"..tostring(self.db.ui.vendorOnly)
+  local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)..":"..tostring(self.db.ui.vendorOnly)..":"..tostring(self.db.ui.planPage)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end
   if tab~="settings" and tab~="help" then self.pendingSettingsReset=nil end
   local settingsView=tab=="settings" or tab=="help" or tab=="audit" or tab=="reservations"
-  summary:SetShown(not settingsView)
-  stageProgress:SetShown(not settingsView)
+  summary:SetShown(not settingsView and tab~="plan")
+  stageProgress:SetShown(not settingsView and tab~="plan")
   section:ClearAllPoints()
-  section:SetPoint("TOPLEFT",frame,"TOPLEFT",19,settingsView and -226 or -334)
+  section:SetPoint("TOPLEFT",frame,"TOPLEFT",19,(settingsView or tab=="plan") and -226 or -334)
   if type(stageProgress.SetValue)=="function" then
     stageProgress:SetValue(math.max(0,math.min(300,skill)))
   end
@@ -1025,19 +1045,38 @@ function CP:Render()
   bankButton:SetText(L("Bankmaterialien: ")..(self.db.includeBank and L("AN") or L("AUS")))
   bankDetails:SetText(self:BankStatus())
   for _,control in ipairs(planControls) do control:SetShown(isPlan) end
+  planExport:SetShown(isPlan)
+  for _,b in ipairs(planPages) do b:SetShown(isPlan) end
   for _,control in ipairs(campControls) do control:SetShown(tab=="camping") end
   campingFilter:SetText(self.db.ui.campingAll==false and L("Alle Camping-Berufe") or L("Nur gewählter Beruf"))
   if isPlan then
-    planClear:SetText(self.pendingPlanClear==key and L("Bestätigen?") or L("Plan leeren"))
+    if not ({shopping=true,crafts=true,details=true})[self.db.ui.planPage] then self.db.ui.planPage="shopping" end
+    local page=self.db.ui.planPage
     syncPlanFields(key)
-    local choice=self:SelectedOption(key)
-    planHint:SetText(L("Katalog ")..self:CatalogCount(key)..L(" Rezepte"))
-    autoRouteButton:SetEnabled(self:Catalog(key)~=nil)
-    autoRouteButton:SetText(self.db.ui.knownRecipesOnly and L("Auto: nur erlernt") or L("Auto-Route"))
+    local inner=(frame:GetWidth() or W)-36
+    local function place(c,x,y,w) c:ClearAllPoints();c:SetPoint("TOPLEFT",frame,"TOPLEFT",x,-y);if w then c:SetWidth(w) end end
+    place(rangeLabel,18,256);place(rangeStart,54,250);place(targetLabel,120,256);place(rangeEnd,150,250)
+    place(autoRouteButton,220,250,156);autoRouteButton:SetText(L("Plan erstellen"));autoRouteButton:SetEnabled(self:Catalog(key)~=nil)
+    place(planExport,388,250,180)
+    rangeApply:Hide();planDraft:Hide();planPrint:Hide();planClear:Hide();planAdd:Hide();rangeQty:Hide();quantityLabel:Hide()
+    if page=="crafts" then
+      place(quantityLabel,18,326);place(rangeQty,83,320,55);place(planAdd,150,320,200);place(planClear,362,320,135);place(planDraft,509,320,inner-491)
+      quantityLabel:Show();rangeQty:Show();planAdd:Show();planClear:Show();planDraft:Show()
+      local p=self:PlanFor(key);local choice=self:SelectedOption(key)
+      planAdd:SetText(L("Gewähltes Rezept hinzufügen"));planAdd:SetEnabled(choice~=nil and not p.autoMode and not (self.db.ui.selectedVendorKey==key and self.db.ui.selectedVendorRecipe))
+    elseif page=="details" then
+      place(planPrint,18,320,150);place(planClear,180,320,150);planPrint:Show();planClear:Show()
+    end
+    planClear:SetText(self.pendingPlanClear==key and L("Bestätigen?") or L("Plan leeren"))
+    local c=self:CostCalculation("plan",key)
+    place(planHint,580,257,math.max(120,inner-562));planHint:SetText((c.cashComplete and L("Kosten: ") or L("Ab: "))..self:FormatCostMoney(c.cash))
+    local tabWidth=(inner-18)/4
+    for i,b in ipairs(planPages) do place(b,18+(i-1)*(tabWidth+6),286,tabWidth);b.selectionMarker:SetShown(({"shopping","crafts","details","personal"})[i]==page) end
   end
+
   contentPanel:ClearAllPoints()
   contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
-    settingsView and -250 or (isPlan and -423 or ((isTrainers or isRecipes or isMats or tab=="camping") and -395 or -358)))
+    settingsView and -250 or (isPlan and ((self.db.ui.planPage=="crafts" or self.db.ui.planPage=="details") and -360 or -326) or ((isTrainers or isRecipes or isMats or tab=="camping") and -395 or -358)))
   contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
 
   local lines={}
@@ -1113,128 +1152,9 @@ function CP:Render()
     }
     setVisualCards(cards)
   elseif tab=="plan" then
-    section:SetText(L("Einkaufsplan · frei wählbarer Bereich · bekannte Rezepte"))
-    if gatheringOnly then
-      setVisualCards({{
-        title=L("Sammelberuf · kein Rezept-Einkaufsplan"),
-        detail=L("Kräuter und Erze haben keine feste Anzahl für garantierte Skillpunkte."),
-        footer=L("Nutze die Etappen und Lehrerübersicht für deinen Sammelweg."),
-        icon="Interface\\Icons\\INV_Misc_Herb_07",color="gold"
-      }})
-    else
-      local route=self:AutoRouteShopping(key)
-      if route then
-        local cards={self:CostSummaryCard("plan",key),self:ManualShoppingCard(),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
-        cards[#cards+1]={
-          title=string.format(L("AUTO-ROUTE · %d -> %d · berechnet bis %d"),
-            route.first,route.target,route.reached),
-          detail=#route.steps..L(" Fertigungsetappen"),
-          footer=route.blocked and (L("Bei ")..route.blocked..L(" fehlt ein geeignetes Trainerrezept."))
-            or L("Vorschlag aus Client-Katalog; keine garantierte oder mathematisch globale Optimum-Route."),
-          icon="Interface\\Icons\\INV_Misc_Note_01",
-          color=route.blocked and "red" or "gold"
-        }
-        if route.unpriced>0 or route.stale>0 or route.unknownAge>0 then
-          cards[#cards+1]={
-            title=L("Preiswarnungen"),
-            detail=route.unpriced..L(" ohne Preis · ")..route.stale..L(" veraltet · ")
-              ..route.unknownAge..L(" mit unbekanntem Scan-Alter"),
-            footer=L("Vor Einkäufen Auctionator erneut scannen; Preise variieren."),
-            icon="Interface\\Icons\\INV_Misc_Coin_01",color="red"
-          }
-        end
-        cards[#cards+1]={
-          title=self.db.ui.showSourceDetails and (L("Datengrundlage: ")..self.catalogBuild) or L("Planungsgrundlage · Details aufklappen"),
-          detail=route.assumptions..L(" Schritte verwenden Lehrer-/Startrezepte ohne aktuelle Spielbestätigung."),
-          footer=self.db.ui.showSourceDetails and (self.catalogUpstream..L(" · Hotfixes und Angebote im Spiel prüfen.")) or L("Früherer Forever-Datenstand; Trainerangebote im Spiel prüfen."),
-          action=function() CP:ToggleSetting("showSourceDetails") end,
-          icon="Interface\\Icons\\INV_Misc_Book_09",color="gold"
-        }
-        for _,step in ipairs(route.steps) do
-          local stamp=step.source=="known" and L("im Spiel gelernt")
-            or (step.source=="trainer" and L("beim Lehrer prüfen") or L("Startrezept"))
-          cards[#cards+1]={
-            title=string.format(L("%d–%d · %dx %s"),step.first,step.last,
-              step.crafts,step.name),
-            detail=L("Skillchance aus früherem Forever-Client · ")..stamp,
-            footer=self:RecipeRangeText(key,step.id),recipeKey=key,recipeID=step.id,
-            icon=self:RecipeIcon(key,step.id),
-            color=step.uncertain and "gold" or "green"
-          }
-        end
-        if #route.intermediates>0 then
-          cards[#cards+1]={
-            title=L("Herstellungs- und Zwischenproduktkette"),
-            detail=L("Rohstoffe werden entweder gekauft oder über günstigere bekannte Rezepte verarbeitet."),
-            footer=L("Die Preiswahl berücksichtigt vorhandene Materialien einmalig je Plan."),
-            icon="Interface\\Icons\\INV_Misc_Bag_08",color="blue"
-          }
-          for _,node in ipairs(route.intermediates) do
-            cards[#cards+1]={
-              title=node.count.."x "..node.name,
-              detail=L("Im Plan hergestellte Einheit(en) oder Zwischenprodukt."),
-              footer=L("Nur soweit eigene Berufe und Rezeptquellen dies erlauben."),
-              recipeKey=key,recipeID=node.id,icon=self:RecipeIcon(key,node.id),color="blue"
-            }
-          end
-        end
-        if #route.materials==0 then
-          cards[#cards+1]={title=L("Kein Zukauf erkannt"),detail=L("Laut zuletzt erfassten Beständen und den geschätzten Schritten."),
-            footer=L("Auf unbekannte Zutaten und veraltete Bankdaten achten."),color="green"}
-        end
-        cards[#cards+1]={materialTable=self:CostCalculation("plan",key).materials}
-        setVisualCards(cards)
-      else
-      local plan=self:PlanShopping(key)
-      local cards={self:CostSummaryCard("plan",key),self:ManualShoppingCard(),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
-      if plan.chainUnresolved then cards[#cards+1]={title=L("Herstellungskette noch ungeklärt"),
-        detail=L("Berufsfenster öffnen: Materialien und Ausbeute der Zwischenprodukte fehlen oder sind zyklisch."),
-        footer=L("Angezeigte Bruttomengen sind kein vollständiger Auctionator-Export."),color="gold"} end
-      local range=plan.last-plan.first
-      local summary=string.format(L("Skill %d -> %d   ·   %d Herstellungen eingeplant"),
-        plan.first,plan.last,plan.crafts)
-      local expected=plan.expectedSkillUps>0
-        and string.format(L("Momentane Skillchance: Ø etwa %.1f mögliche Punkte"),plan.expectedSkillUps)
-        or L("Skillzuwachs unbekannt, keine garantierte Zielerreichung")
-      cards[#cards+1]={
-        title=summary,
-        detail=expected,
-        footer=L("Zielbereich ")..range..L(" Skillpunkte. Keine Prognose für ungeöffnete/künftige Rezepte."),
-        icon="Interface\\Icons\\INV_Misc_Note_01",color="gold"
-      }
-      if #plan.steps==0 then
-        cards[#cards+1]={
-          title=L("Schritt 1: Rezept auswählen"),
-          detail=L("In Jetzt skillen ein gelerntes Rezept anklicken, hier Menge wählen."),
-          footer=L("Rezept + fügt es dem Plan hinzu; Schnellschritt +10 erstellt nur den ersten Entwurf."),
-          icon="Interface\\Icons\\INV_Misc_Bag_08",color="blue"
-        }
-      else
-        for _,step in ipairs(plan.steps) do
-          local id=step.id
-          cards[#cards+1]={
-            title=step.quantity.." x "..step.name,
-            detail=L("Dieser Schritt wird in die gemeinsame Materialliste eingerechnet."),
-            footer=L("Klicken zum Entfernen dieses Rezepts aus dem Plan"),
-            recipeKey=key,recipeID=id,icon=self:RecipeIcon(key,id),
-            color="green",
-            action=function() CP:ClearPlanCraft(key,id);CP:Render() end
-          }
-        end
-      end
-      if #plan.materials>0 then
-        cards[#cards+1]={
-          title=L("Zusammengefasste Materialien"),
-          detail=L("Bekannte Zukaufpreise: ")..gold(plan.purchaseCopper)
-            ..(plan.noPrice>0 and ("  ·  "..plan.noPrice..L(" Preise fehlen")) or ""),
-          footer=L("Materialbedarf nach Verrechnung geplanter Zwischenprodukte; bei fehlender Ausbeute bleibt der Export gesperrt."),
-          icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"
-        }
-        cards[#cards+1]={materialTable=self:CostCalculation("plan",key).materials}
-      end
-      setVisualCards(cards)
-      end
-    end
+    section:SetText(prof.name..L(" · Einkaufsplan · Skill ")..skill)
+    if gatheringOnly then setVisualCards({{title=L("Sammelberuf · kein Rezept-Einkaufsplan"),detail=L("Nutze die Etappen und Lehrerübersicht für deinen Sammelweg."),color="blue"}})
+    else setVisualCards(self:PlanPageCards(key,self.db.ui.planPage or "shopping")) end
   elseif gatheringOnly then
     section:SetText(prof.name..L(": aktueller Sammelabschnitt"))
     local current=self:CurrentStage(key)
@@ -1301,7 +1221,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.18.0 Alpha")
+  footer:SetText("CraftPilot 0.19.0 Alpha")
   local footerWidth=footer:GetStringWidth();if type(footerWidth)=="number" and footerWidth>0 then footer:SetWidth(footerWidth) end
 end
 

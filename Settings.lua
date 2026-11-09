@@ -160,10 +160,12 @@ function CP:SettingsCards()
     local row={title=title,detail=detail,footer=footer or L("Anklicken zum Ändern"),action=action,icon=icon or ICON,color="blue"}
     local key=toggleKeys[action]
     if key and key~="mode" then
-      row.slider={kind="toggle",key=key,value=enabled(key) and 1 or 0,min=0,max=1,step=1,apply=function(value)
-        if (value==1)~=enabled(key) then CP:ToggleSetting(key) end
+      row.checkbox={key=key,checked=enabled(key),apply=function(value)
+        if value~=enabled(key) then CP:ToggleSetting(key) end
       end}
-      row.footer=L("Schalter ziehen oder anklicken: AN / AUS")
+      row.title=title:gsub(": "..state(enabled(key)).."$","")
+      row.footer=""
+
     end
     return row
   end
