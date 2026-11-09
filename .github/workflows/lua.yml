@@ -21,6 +21,8 @@ jobs:
         run: python3 tools/import_camping.py --source-dir "$RUNNER_TEMP/camping-inputs" --download --check
       - name: Verify secondary skill-range subset
         run: python3 tools/import_skill_ranges.py --source-dir "$RUNNER_TEMP/camping-inputs" --check
+      - name: Verify secondary vendor subset
+        run: python3 tools/import_vendor_recipes.py --source-dir "$RUNNER_TEMP/camping-inputs" --check
       - name: Verify historical 0.8 ZIP remains unchanged
         run: |
           python3 - <<'PY'

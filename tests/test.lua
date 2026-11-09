@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -631,7 +631,7 @@ CP.db.recipes.cooking[sample.maker]=prior
 
 -- Real slider callbacks exercise both directions, including inverted minimap visibility.
 CP:OpenTab("settings")
-for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill"}) do
+for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB"}) do
   local control
   for _,candidate in ipairs(createdFrames) do
     local spec=rawget(candidate,"craftSpec")
@@ -816,21 +816,156 @@ assert(CP.db.plans.engineering.crafts[900001]==3)
 CP.db=beforeMigration
 print("PASS: renamed economy module preserves settings, selected view and previous plan")
 
+-- Vendor recipes use existing records, respect faction/restrictions and expose one-click waypoints.
+local originalCatalog=CP:Catalog("engineering")
+local oldRecipeTable,oldNpcTable=originalCatalog.recipes,originalCatalog.npcs
+local oldProfession,oldNative=CP.db.professions.engineering,CP.db.recipes.engineering
+local savedFaction,savedProfessions,savedProfessionInfo=UnitFactionGroup,GetProfessions,GetProfessionInfo
+local savedLastCapture=CP.db.lastCapture
+UnitFactionGroup=function() return "Alliance" end
+GetProfessions=function() return 1 end
+GetProfessionInfo=function() return "Engineering",0,10,75,1,0,202 end
+CP.db.professions.engineering={skill=10,cap=75}
+CP.db.recipes.engineering={[99100]={name="Learned",learned=true,snapshotSkill=10,difficulty=0,mats={{2589,1}}}}
+originalCatalog.recipes={
+ [99101]={name="Vendor recipe",item=999331,learn=10,colors={10,20,30,40},mats={[2589]=1},get={
+ {kind="vendor",npc=991,cost=500,faction="A"},{kind="vendor",npc=992,cost=10,faction="H"},{kind="vendor",npc=993,npcName="Unknown place",faction="AH"}}},
+ [99102]={name="Reputation",item=999332,learn=1,colors={1,20,30,40},rep={1,4},get={{kind="vendor",npc=991}}},
+ [99103]={name="Holiday",item=999333,learn=1,colors={1,20,30,40},get={{kind="vendor",npc=991,event="Holiday"}}},
+ [99104]={name="Currency",item=999334,learn=1,colors={1,20,30,40},get={{kind="vendor",npc=991,otherCost={1,2}}}},
+ [99105]={name="Gray",item=999335,learn=1,colors={1,1,1,10},get={{kind="vendor",npc=991}}},
+}
+originalCatalog.npcs={[991]={name="Vendor A",faction="A",map=1453,zone="Stormwind",x=50,y=75},
+ [992]={name="Vendor H",faction="H",map=1454,zone="Orgrimmar",x=40,y=60}}
+local offers=CP:VendorRecipeOptions("engineering")
+assert(#offers==1 and offers[1].id==99101 and #offers[1].vendors==2 and offers[1].recipeCost==500)
+assert(offers[1].vendors[1].location.x==.5 and offers[1].vendors[1].location.y==.75)
+CP.db.lastCapture={key="engineering",skill=10};CP.db.view="engineering";CP:OpenTab("now")
+local vendorRecipeButton
+for _,control in ipairs(createdFrames) do
+ local row=rawget(control,"craftRecipe")
+ if row and row.id==99101 then vendorRecipeButton=control end
+end
+assert(vendorRecipeButton)
+local filterButton
+for _,control in ipairs(createdFrames) do
+ local text=rawget(control,"displayText")
+ if type(text)=="string" and text:find("Kaufrezepte (",1,true) then filterButton=control end
+end
+assert(filterButton)
+filterButton:GetScript("OnClick")(filterButton)
+assert(CP.db.ui.vendorOnly)
+filterButton:GetScript("OnClick")(filterButton)
+assert(not CP.db.ui.vendorOnly)
+vendorRecipeButton:GetScript("OnClick")(vendorRecipeButton)
+assert(CP.db.ui.selectedVendorRecipe==99101)
+local targetButton
+for _,control in ipairs(createdFrames) do if type(rawget(control,"vendorTarget"))=="table" and control.vendorTarget.name=="Vendor A" then targetButton=control end end
+assert(targetButton)
+local tomTarget,savedTomTom
+savedTomTom=TomTom
+TomTom={AddWaypoint=function(_,map,x,y) tomTarget={map,x,y};return "uid" end}
+targetButton:GetScript("OnClick")(targetButton)
+assert(tomTarget[1]==1453 and tomTarget[2]==.5 and tomTarget[3]==.75)
+TomTom=savedTomTom
+-- Protected recipe opening stays in the direct user-click path.
+local originalOpenRecipe=C_TradeSkillUI.OpenRecipe
+local opened=0
+C_TradeSkillUI.OpenRecipe=function(id)
+ for level=2,14 do local info=debug.getinfo(level,"n");if not info then break end;assert(info.name~="pcall") end
+ assert(id==99100);opened=opened+1
+end
+local learnedButton
+for _,control in ipairs(createdFrames) do local row=rawget(control,"craftRecipe");if row and row.id==99100 then learnedButton=control end end
+assert(learnedButton)
+learnedButton:GetScript("OnClick")(learnedButton)
+assert(opened==1 and CP.db.ui.selectedVendorRecipe==nil)
+assert(not CP:OpenLearnedRecipe("engineering",99101))
+InCombatLockdown=function() return true end
+assert(not CP:OpenLearnedRecipe("engineering",99100) and opened==1)
+InCombatLockdown=nil
+local fallbackOpens=0
+local savedGeneralOpen=CP.OpenOwnedProfession
+C_TradeSkillUI.OpenRecipe=nil
+CP.OpenOwnedProfession=function(_,key) assert(key=="engineering");fallbackOpens=fallbackOpens+1;return true end
+assert(CP:OpenLearnedRecipe("engineering",99100) and fallbackOpens==1)
+CP.OpenOwnedProfession=savedGeneralOpen
+CP.db.ui.selectedVendorKey="engineering";CP.db.ui.selectedVendorRecipe=99101;CP.db.ui.vendorOnly=true
+local savedBase,savedIDs,savedInfo=C_TradeSkillUI.GetBaseProfessionInfo,C_TradeSkillUI.GetAllRecipeIDs,C_TradeSkillUI.GetRecipeInfo
+C_TradeSkillUI.GetBaseProfessionInfo=function() return {professionID=202,professionName="Engineering",skillLevel=10,maxSkillLevel=75} end
+C_TradeSkillUI.GetAllRecipeIDs=function() return {99101} end
+C_TradeSkillUI.GetRecipeInfo=function() return {name="Now learned",learned=true,relativeDifficulty=0} end
+assert(CP:CaptureProfession())
+assert(CP.db.ui.selectedVendorRecipe==nil and CP.db.ui.selectedRecipes.engineering==99101 and CP.db.ui.vendorOnly==false)
+assert(#CP:VendorRecipeOptions("engineering")==0)
+C_TradeSkillUI.GetBaseProfessionInfo,C_TradeSkillUI.GetAllRecipeIDs,C_TradeSkillUI.GetRecipeInfo=savedBase,savedIDs,savedInfo
+local secondaryVendors=0
+for _,catalog in pairs(CP.VendorRecipeCatalogs) do
+ for _,record in pairs(catalog.recipes) do assert(record.item and record.colors and record.mats);secondaryVendors=secondaryVendors+1 end
+end
+assert(secondaryVendors==71)
+C_TradeSkillUI.OpenRecipe=originalOpenRecipe
+originalCatalog.recipes,originalCatalog.npcs=oldRecipeTable,oldNpcTable
+CP.db.professions.engineering,CP.db.recipes.engineering=oldProfession,oldNative
+CP.db.lastCapture=savedLastCapture
+UnitFactionGroup,GetProfessions,GetProfessionInfo=savedFaction,savedProfessions,savedProfessionInfo
+CP.db.ui.selectedVendorRecipe=nil;CP.db.ui.selectedVendorKey=nil
+print("PASS: vendor eligibility, flat row actions, TomTom coordinates and protected direct recipe opening")
+
+-- Optional QuestieDB API is read-only and refuses another flavor or invalid coordinates.
+assert(CP:QuestieProvider()==nil)
+local providerGets=0
+LibQuestieDB={RequireContract=function(version) return version==1 end,
+ ModeIndicator={GetStatus=function() return {expansion="Forever",mode="baked"} end},
+ Npc={Get=function(id,key)
+  providerGets=providerGets+1
+  if key=="name" then return "Localized vendor" end
+  if key=="spawns" then return {[1519]={{-1,-1},{55,65},{10,20,123}},[999999]={{40,40}}} end
+ end},
+ Support={Get=function(name) assert(name=="ZoneDB");return {private={areaIdToUiMapId="return {[1519]=1453}"}} end}}
+local qLocation,qName=CP:QuestieNpcLocation(991)
+assert(qName=="Localized vendor" and qLocation.map==1453 and qLocation.x==.55 and qLocation.y==.65)
+LibQuestieDB.Item={Get=function(item,key) assert(key=="vendors");return {994,0} end}
+local c=CP:Catalog("engineering")
+local priorRecord,priorNPC=c.recipes[99107],c.npcs[994]
+local savedSide=UnitFactionGroup
+UnitFactionGroup=function() return "Alliance" end
+c.recipes[99107]={item=999333,get={}}
+c.npcs[994]={name="Known neutral vendor",faction="AH",map=1453,zone="Stormwind",x=50,y=60}
+local extraVendors=CP:RecipeVendors("engineering",99107)
+assert(#extraVendors==1 and extraVendors[1].id==994 and extraVendors[1].location.x==.55 and extraVendors[1].cost==nil)
+c.recipes[99107],c.npcs[994]=priorRecord,priorNPC
+UnitFactionGroup=savedSide
+
+assert(CP:QuestieStatus():find("aktiv",1,true))
+LibQuestieDB.ModeIndicator.GetStatus=function() return {expansion="Vanilla",mode="baked"} end
+assert(CP:QuestieNpcLocation(991)==nil)
+LibQuestieDB.ModeIndicator.GetStatus=function() return {expansion="Forever",mode="source"} end
+assert(CP:QuestieStatus():find("Entwicklungsmodus",1,true))
+CP.db.ui.useQuestieDB=false
+local readsBefore=providerGets
+assert(CP:QuestieNpcLocation(991)==nil and providerGets==readsBefore)
+CP.db.ui.useQuestieDB=true
+LibQuestieDB.RequireContract=function() return false end
+assert(CP:QuestieNpcLocation(991)==nil)
+LibQuestieDB=nil
+print("PASS: optional QuestieDB contract/flavor checks, normalized valid points and safe fallback")
+
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.12.2-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.12.2","0.12.2-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.12.2-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.12.2-alpha"))
+assert(CP:IsNewerVersion("0.13.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.13.0","0.13.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.13.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.13.0-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
-assert(not CP:ReceiveVersion("other","V|0.13.0-alpha","GUILD"))
-assert(not CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha","WHISPER"))
-assert(not CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha|evil","GUILD"))
-assert(CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha","GUILD"))
-assert(CP:ReceiveVersion("CraftPilotVer","V|0.13.0-alpha","GUILD"))
-assert(notices==1 and CP.db.latestSeenVersion=="0.13.0-alpha")
-assert(CP:VersionStatus():find("0.13.0",1,true))
+assert(not CP:ReceiveVersion("other","V|0.99.0-alpha","GUILD"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha","WHISPER"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha|evil","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha","GUILD"))
+assert(notices==1 and CP.db.latestSeenVersion=="0.99.0-alpha")
+assert(CP:VersionStatus():find("0.99.0",1,true))
 local sent={}
 C_ChatInfo={RegisterAddonMessagePrefix=function(prefix) assert(prefix=="CraftPilotVer");return true end,
  SendAddonMessage=function(prefix,payload,channel) sent[#sent+1]={prefix,payload,channel} end}
@@ -838,10 +973,10 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.12.2-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.13.0-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
-assert(#sent==2 and sent[2][2]=="V|0.12.2-alpha")
+assert(#sent==2 and sent[2][2]=="V|"..CP.version)
 CP:OpenReleaseLink()
 assert(CP.releaseLinkEdit.displayText==CP.releaseURL)
 CP.Say=priorSay;C_ChatInfo=nil

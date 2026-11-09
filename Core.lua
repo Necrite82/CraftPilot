@@ -248,6 +248,12 @@ function CP:CaptureProfession()
     end
   end
   self.db.lastCapture={key=key,skill=skill,filtered=filtered,count=count}
+  local selected=self.db.ui.selectedVendorRecipe
+  if self.db.ui.selectedVendorKey==key and known[selected] and known[selected].learned then
+    self.db.ui.selectedRecipes[key]=selected
+    self.db.ui.selectedVendorRecipe=nil;self.db.ui.selectedVendorKey=nil
+    self.db.ui.vendorOnly=false
+  end
   if self.bankIsOpen then self:SnapshotBankMaterials() end
   return true
 end
@@ -755,7 +761,7 @@ end
 
 local events=CreateFrame("Frame")
 local names={"PLAYER_LOGIN","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE",
-  "TRADE_SKILL_DATA_SOURCE_CHANGED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP",
+  "TRADE_SKILL_DATA_SOURCE_CHANGED","NEW_RECIPE_LEARNED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP",
   "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED"}
 for _,name in ipairs(names) do pcall(events.RegisterEvent,events,name) end
 local function schedule(capture)
@@ -792,6 +798,6 @@ events:SetScript("OnEvent",function(_,event)
     if CP.db then CP:Refresh(false) end
   elseif CP.db and (event~="BAG_UPDATE_DELAYED" or (CP.frame and CP.frame:IsShown())) then
     schedule(event=="TRADE_SKILL_SHOW" or event=="TRADE_SKILL_LIST_UPDATE"
-      or event=="TRADE_SKILL_DATA_SOURCE_CHANGED")
+      or event=="TRADE_SKILL_DATA_SOURCE_CHANGED" or event=="NEW_RECIPE_LEARNED")
   end
 end)

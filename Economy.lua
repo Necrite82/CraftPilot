@@ -87,6 +87,8 @@ end
 function CP:ChooseEconomyRecipe(key,id)
   for _,row in ipairs(self:EconomyComparison(key).rows) do
     if row.id==id then
+      self.db.ui.selectedVendorRecipe=nil
+      self.db.ui.selectedVendorKey=nil
       self.db.ui.selectedRecipes[key]=id
       self.db.ui.economyRecipe=id
       -- Only replace the proposal after an explicit choice; existing manual plans remain intact.
