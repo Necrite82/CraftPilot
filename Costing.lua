@@ -178,7 +178,7 @@ local function money(self,value)
   return self:FormatCostMoney(value)
 end
 function CP:RefreshCostWindow()
-  self:InvalidateReservations();self.marketUseCache=nil
+  self:InvalidateReservations();self.marketUseCache=nil;self.routeAdvice=nil
   local frame=self.costWindow
   if not frame or not frame:IsShown() or not self.costContext then return end
   local context=self.costContext

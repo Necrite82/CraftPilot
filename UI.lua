@@ -100,7 +100,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.19.1-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.20.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -301,7 +301,7 @@ local autoRouteButton=button(frame,142,25,435,-383,L("Auto-Route"),function()
     CP:Say(L("Ungültiger Bereich."))
     return
   end
-  local ok,route=CP:BuildRouteForCurrentPlan(key)
+  local ok,route=CP:RequestRouteBuild(key)
   if not ok then CP:Say(route or L("Keine Kandidaten.")) end
   CP:Render()
 end)
@@ -966,7 +966,7 @@ end
 
 
 function CP:Render()
-  self:InvalidateReservations();self.marketUseCache=nil;self.unlockCache=nil
+  self:InvalidateReservations();self.marketUseCache=nil;self.unlockCache=nil;self.routeAdvice=nil
   if not self.db then return end
   self:RestoreWindowPosition()
   self:ApplyTheme()
@@ -1082,8 +1082,8 @@ function CP:Render()
     local inner=(frame:GetWidth() or W)-36
     local function place(c,x,y,w) c:ClearAllPoints();c:SetPoint("TOPLEFT",frame,"TOPLEFT",x,-y);if w then c:SetWidth(w) end end
     place(rangeLabel,18,256);place(rangeStart,54,250);place(targetLabel,120,256);place(rangeEnd,150,250)
-    place(autoRouteButton,220,250,156);autoRouteButton:SetText(L("Plan erstellen"));autoRouteButton:SetEnabled(self:Catalog(key)~=nil)
-    place(planExport,388,250,180)
+    place(autoRouteButton,220,250,156);autoRouteButton:SetText(self:RouteBuildPending(key) and L("Berechne…") or L("Plan erstellen"));autoRouteButton:SetEnabled(self:Catalog(key)~=nil and not self:RouteBuildPending(key))
+    place(planExport,388,250,180);planExport:SetEnabled(not self:RouteBuildPending(key))
     rangeApply:Hide();planDraft:Hide();planPrint:Hide();planClear:Hide();planAdd:Hide();rangeQty:Hide();quantityLabel:Hide()
     if page=="crafts" then
       place(quantityLabel,18,326);place(rangeQty,83,320,55);place(planAdd,150,320,200);place(planClear,362,320,135);place(planDraft,509,320,inner-491)
@@ -1095,7 +1095,7 @@ function CP:Render()
     end
     planClear:SetText(self.pendingPlanClear==key and L("Bestätigen?") or L("Plan leeren"))
     local c=self:CostCalculation("plan",key)
-    place(planHint,580,257,math.max(120,inner-562));planHint:SetText((c.cashComplete and L("Kosten: ") or L("Ab: "))..self:FormatCostMoney(c.cash))
+    place(planHint,580,257,math.max(120,inner-562));planHint:SetText(self:RouteBuildPending(key) and L("Berechne…") or ((c.cashComplete and L("Kosten: ") or L("Ab: "))..self:FormatCostMoney(c.cash)))
     local tabWidth=(inner-12)/3
     for i,b in ipairs(planPages) do place(b,18+(i-1)*(tabWidth+6),286,tabWidth);b.selectionMarker:SetShown(({"shopping","crafts","details"})[i]==page) end
   end
@@ -1252,7 +1252,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.19.1 Alpha")
+  footer:SetText("CraftPilot 0.20.0 Alpha")
   local footerWidth=footer:GetStringWidth();if type(footerWidth)=="number" and footerWidth>0 then footer:SetWidth(footerWidth) end
 end
 

@@ -15,6 +15,7 @@ function CP:InitializeControls()
   if type(ui.useQuestieDB)~="boolean" then ui.useQuestieDB=true end
   if type(ui.showVendorRecipes)~="boolean" then ui.showVendorRecipes=true end
   if type(ui.preferReliableSkill)~="boolean" then ui.preferReliableSkill=true end
+  self:InitializeSkillPolicy()
   if ui.skillPolicyVersion~=1 then
     for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
     ui.skillPolicyVersion=1
@@ -110,6 +111,8 @@ function CP:ToggleSetting(key)
   if not self.db then return end
   if key=="bank" then self.db.includeBank=not self.db.includeBank
   elseif key=="mode" then self.db.mode=self.db.mode=="cash" and "value" or "cash"
+  elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
+    self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
   elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true})[key] then
     self.db.ui[key]=not self.db.ui[key]
   else return end
@@ -119,6 +122,7 @@ function CP:ToggleSetting(key)
   self:UpdateMinimapButton()
   -- A different route policy must not leave an old automatic proposal visible.
   if key=="preferReliableSkill" or key=="knownRecipesOnly" or key=="bank" or key=="mode" then
+    self:CancelRouteBuild()
     for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
   end
   self:Refresh(false)
@@ -177,6 +181,12 @@ function CP:SettingsCards()
     slider(L("Clever skillen: AH-Abzug "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value)
       ui.economyCut=value;CP:Render()
     end),
+    card(L("Gelbe Rezepte verwenden: ")..state(ui.allowYellow~=false),L("Gilt für automatische Vorschläge und Routen; der Händlerkatalog bleibt vollständig."),toggle("allowYellow")),
+    slider(L("Gelb: weitere Skillpunkte "),ui.yellowPoints or 0,0,75,1,"",function(value) ui.yellowPoints=value;CP:SkillPolicyChanged() end),
+    card(L("Grüne Rezepte verwenden: ")..state(ui.allowGreen~=false),L("Die erwartete zusätzliche Herstellungsmenge wird über die Skillchance eingerechnet."),toggle("allowGreen")),
+    slider(L("Grün: weitere Skillpunkte "),ui.greenPoints or 0,0,75,1,"",function(value) ui.greenPoints=value;CP:SkillPolicyChanged() end),
+    card(L("Punktgrenzen pro Rezept"),L("Ab dem Wechsel auf Gelb oder Grün. 0 = ganze Farbphase. Fehlt eine passende Farbgrenze, zählt die erste eingelesene Beobachtung."),nil,ICON,L("Geänderte Einstellungen: bestehende Routen im Einkaufsplan neu bewerten.")),
+    card(L("Vorausschauend planen: ")..state(ui.planAhead~=false),L("Vergleicht früh hergestellte Zwischenprodukte mit ihrem Bedarf in späteren Schritten der gewählten Route."),toggle("planAhead")),
     card(L("Sprache: ")..(CP.locale=="deDE" and "Deutsch" or "English"),L("Automatisch nach Clientsprache; andere Sprachen verwenden Englisch."),nil),
     card(CP:VersionStatus(),L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),function() CP:OpenReleaseLink() end,ICON,L("Anklicken: Release-Link kopieren")),
     card(self:QuestieStatus(),L("Zusätzlich installiertes Datenaddon lokal für Händlernamen und Standorte nutzen."),toggle("useQuestieDB")),

@@ -3,7 +3,7 @@
 ## Notes: Profession planning, materials, AH prices and trainer waypoints for WoW Forever
 ## Author: CraftPilot contributors
 ## IconTexture: Interface\AddOns\CraftPilot\Media\CraftPilot
-## Version: 0.19.1-alpha
+## Version: 0.20.0-alpha
 ## OptionalDeps: Auctionator, TomTom, EllesmereUI, QuestieDB
 ## SavedVariablesPerCharacter: CraftPilotDB
 
@@ -22,6 +22,7 @@ ThirdParty\CraftLadder\MiningSmelting.lua
 ThirdParty\CraftLadder\SecondarySkillRanges.lua
 ThirdParty\CraftLadder\VendorRecipes.lua
 SkillInfo.lua
+SkillPolicy.lua
 Core.lua
 Catalog.lua
 PriceHistory.lua
@@ -44,3 +45,4 @@ ManualShopping.lua
 CraftSuggestions.lua
 PlanUX.lua
 VendorBrowser.lua
+ForwardPlanning.lua

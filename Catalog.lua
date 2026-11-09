@@ -90,7 +90,7 @@ function CP:CatalogCandidateRecipes(key,skill)
   if not data then return out end
   for id,recipe in pairs(data.recipes) do
     local chance=self:RecipeChanceAt(key,id,recipe,skill)
-    if chance>0 and type(recipe.mats)=="table" and next(recipe.mats) then
+    if chance>0 and self:SkillPolicyAllows(key,id,recipe,skill,chance) and type(recipe.mats)=="table" and next(recipe.mats) then
       local source=self:CatalogSource(key,id,skill)
       local effective=recipe
       if source=="known" then

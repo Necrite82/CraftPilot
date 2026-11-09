@@ -82,18 +82,23 @@ end
 function CP:PlanFingerprint(owner)
   local required,unknown,recipes=self:PlanRequirements(owner)
   local parts={"unknown="..unknown,"bank="..tostring(self.db.includeBank),"cut="..tostring(self.db.ui.economyCut),
-    "mode="..tostring(self.db.mode),"known="..tostring(self.db.ui.knownRecipesOnly),"reliable="..tostring(self.db.ui.preferReliableSkill)}
+    "policy="..self:SkillPolicyToken(),"mode="..tostring(self.db.mode),"known="..tostring(self.db.ui.knownRecipesOnly),"reliable="..tostring(self.db.ui.preferReliableSkill)}
   local watched={};for id in pairs(required) do watched[id]=true end
   if owner~="camping" then
     local prof=self.db.professions[owner] or {}
     parts[#parts+1]="skill="..tostring(prof.skill)..":"..tostring(prof.cap)
     local plan=self.db.plans[owner] or {}
     parts[#parts+1]="range="..tostring(plan.start)..":"..tostring(plan.target)
+    if plan.autoMode and plan.autoRoute then
+      for _,nodes in ipairs({plan.autoRoute.steps or {},plan.autoRoute.intermediates or {}}) do
+        for _,node in ipairs(nodes) do for item in pairs(node.mats or {}) do watched[item]=true end;if node.output then watched[node.output]=true end end
+      end
+    end
     local learned={}
     for id,record in pairs(self.db.recipes[owner] or {}) do
       if record.learned then
-        learned[#learned+1]=id..":"..tostring(record.difficulty)..":"..tostring(record.disabled)
-        for _,mat in ipairs(record.mats or {}) do watched[mat[1]]=true end
+        learned[#learned+1]=id..":"..tostring(record.difficulty)..":"..tostring(record.disabled)..":"..tostring(record.outputItemID)..":"..tostring(record.outputMin)..":"..tostring(record.colorObservedStart)
+        for _,mat in ipairs(record.mats or {}) do watched[mat[1]]=true;learned[#learned+1]=id..":mat:"..mat[1]..":"..mat[2] end
       end
     end
     table.sort(learned);parts[#parts+1]=table.concat(learned,",")
@@ -121,7 +126,7 @@ function CP:PlanNeedsReview(owner)
   if not previous then self:StampPlan(owner);return false end
   return previous~=self:PlanFingerprint(owner)
 end
-function CP:ReevaluatePlan(owner)
+function CP:ReevaluatePlan(owner,background)
   if owner~="camping" then
     local plan=self:PlanFor(owner)
     if plan and plan.autoMode then
@@ -129,9 +134,11 @@ function CP:ReevaluatePlan(owner)
       if current>=plan.target then plan.autoMode=false;plan.autoRoute=nil;plan.crafts={};plan.completed=true
       else
         plan.start=math.max(plan.start or 1,1,current)
-        local ok,reason=self:BuildRouteForCurrentPlan(owner)
+        local ok,reason
+        if background then ok,reason=self:RequestRouteBuild(owner) else ok,reason=self:BuildRouteForCurrentPlan(owner) end
         if not ok then self:Say(reason or L("Plan konnte nicht neu bewertet werden."));return false end
         plan.completedCrafts=0
+        if self:RouteBuildPending(owner) then return true end
       end
     end
   end
@@ -145,7 +152,7 @@ function CP:PlanReviewCard(owner)
   return {title=changed and L("Plan geändert · neu bewerten") or L("Planbewertung aktuell"),
     detail=progress>0 and (L("Herstellungen seit letzter Bewertung: ")..progress) or L("Preise, Bestände, Reservierungen und Skill werden berücksichtigt."),
     footer=L("Anklicken: neu bewerten; manuelle Rezeptwahl bleibt erhalten."),color=changed and "gold" or "blue",
-    action=function() CP:ReevaluatePlan(owner);CP:Render() end}
+    action=function() CP:ReevaluatePlan(owner,true);CP:Render() end}
 end
 function CP:ReservationCards()
   local ledger=self:ReservationLedger()
