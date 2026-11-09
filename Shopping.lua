@@ -4,7 +4,7 @@ local L=CP.L
 function CP:RecipeStockText(key,id,compact)
   local native,reference=self:CostRecipeData(key,id)
   local mats={}
-  if native then for _,mat in ipairs(native.mats or {}) do mats[mat[1]]=(mats[mat[1]] or 0)+mat[2] end
+  if native and (native.learned or native.mats) then for _,mat in ipairs(native.mats or {}) do mats[mat[1]]=(mats[mat[1]] or 0)+mat[2] end
   else for item,n in pairs(reference and reference.mats or {}) do mats[item]=n end end
   local ids={};for item in pairs(mats) do ids[#ids+1]=item end;table.sort(ids)
   local parts={}

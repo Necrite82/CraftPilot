@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -861,13 +861,15 @@ assert(vendorRecipeButton)
 local filterButton
 for _,control in ipairs(createdFrames) do
  local text=rawget(control,"displayText")
- if type(text)=="string" and text:find("Kaufrezepte (",1,true) then filterButton=control end
+ if type(text)=="string" and text:find("Ansicht: Sinnvolle Rezepte",1,true) then filterButton=control end
 end
 assert(filterButton)
 filterButton:GetScript("OnClick")(filterButton)
 assert(CP.db.ui.vendorOnly)
 filterButton:GetScript("OnClick")(filterButton)
-assert(not CP.db.ui.vendorOnly)
+assert(not CP.db.ui.vendorOnly and CP.db.ui.allRecipes)
+filterButton:GetScript("OnClick")(filterButton)
+assert(not CP.db.ui.allRecipes)
 vendorRecipeButton:GetScript("OnClick")(vendorRecipeButton)
 assert(CP.db.ui.selectedVendorRecipe==99101)
 local targetButton
@@ -1036,12 +1038,13 @@ print("PASS: cash versus economic costs, one-time book fees, missing prices, rou
 assert(loadfile("tests/planning.lua"))(CP)
 assert(loadfile("tests/market.lua"))(CP)
 assert(loadfile("tests/shopping.lua"))(CP)
+assert(loadfile("tests/trainer_recipes.lua"))(CP)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.16.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.16.0","0.16.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.16.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.16.0-alpha"))
+assert(CP:IsNewerVersion("0.17.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.17.0","0.17.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.17.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.17.0-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -1059,7 +1062,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.16.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.17.0-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)

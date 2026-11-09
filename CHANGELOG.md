@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.17.0-alpha
+
+Nicht erlernte Lehrerrezepte inklusive einmaliger Lernkosten und Materialkosten vergleichen; passende Lehrer direkt als Wegpunkt. Umschaltbare Ansichten sinnvoll/nicht gelernt/alle, mit ausgegrauten zukünftigen Katalogrezepten. [Details](docs/RELEASE_0.17.0-alpha.md).
+
 ## 0.16.0-alpha
 
 Gemeinsamer Release mit QuestieDB-/Erste-Hilfe-Korrekturen, AH-/Netto-/Händler-Stückpreisen, Behalten-/Verkaufshinweisen, Taschen-/Bankangaben direkt am Rezept und Auctionator-Einkaufslisten für manuelle Pläne sowie Skillbereich-Auto-Routen. Geplante Zwischenprodukte werden verrechnet. [Details](docs/RELEASE_0.16.0-alpha.md).

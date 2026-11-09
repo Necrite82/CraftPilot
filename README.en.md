@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.16.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.17.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.16.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.16.0-alpha/CraftPilot-0.16.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.17.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.17.0-alpha/CraftPilot-0.17.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +107,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.16.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.17.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
@@ -154,3 +154,11 @@ Advice protects explicit plan requirements first. Learned skill recipes and poss
 Choose **Shopping Plan → Start Y / Target X**, then create an **automatic route** or explicitly add learned recipe steps and quantities. Click **Create Auctionator shopping list**. An empty plan generates an automatic route; manual choices export only their selected steps. Changed automatic plans are reevaluated from current skill as appropriate. The list **CraftPilot - Profession Y-X** contains exact search names and missing quantities after stock and other reservations. Matching CraftPilot lists are replaced, other lists are preserved, and zero shortages clear the matching list. Buying stays manual.
 
 Planned intermediates are not purchased twice. Manual chains use captured minimum output quantities and order producers before consumers without adding unselected crafts. Unknown ingredients/output, cyclic chains, unresolved names and automatic routes stopping before their target block export with an explanation. Open your profession windows once to capture the new output-quantity fields. **Camping → Shopping** has the same export. A compatible Auctionator with the public shopping-list API is required; the AH need not be open to create a list, although Auctionator can start a search if it is open. No direct database writes or bundled Auctionator code are used.
+
+## Unlearned trainer recipes and all-recipes view (0.17)
+
+Now skilling and Smart Skilling include eligible unlearned trainer recipes with ingredient purchases plus a one-time learning fee. Possible cash savings appear first; missing/guessed fees cannot claim confirmed savings. Comparison batches target about five expected points at current colour, not a future colour-change simulation. Travel and newly required tools are excluded; Smart Skilling can show a wallet shortfall.
+
+A suitable trainer waypoint appears directly below each proposal. Current-map locations and same-map proximity are preferred; restricted trainer IDs are respected. General profession trainers are candidate destinations, not confirmed current recipe offers. Unlearned recipes do not become learned manual crafting steps.
+
+The view button cycles Useful recipes / Unlearned / All recipes. All also shows inactive and future recipes in the available catalogue/client snapshot, greyed out with learning skill. It does not promise a complete current game database.

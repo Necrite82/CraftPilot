@@ -109,13 +109,16 @@ end
 -- Equal expected-point comparison of integer batches at today's skill colour.
 -- Recipe acquisition is charged once; travel and future colour changes are excluded.
 function CP:VendorSkillComparison(key,entry)
-  local count=math.max(1,math.ceil(1/entry.chance))
+  local count=math.max(1,math.ceil((entry.comparePoints or 1)/entry.chance))
   local cost=self:CostCalculation("recipe",key,entry.id,count)
   local points=count*entry.chance
-  local best
+  local best,cashBest
   for _,option in ipairs(self:Options(key)) do
-    local n=math.max(1,math.ceil(1/option.chance))
+    local n=math.max(1,math.ceil((entry.comparePoints or 1)/option.chance))
     local baseline=self:CostCalculation("recipe",key,option.id,n)
+    if baseline.cashComplete and baseline.stale==0 and baseline.unknownAge==0 and baseline.unknownBank==0 then
+      local unit=baseline.cash/(n*option.chance);if not cashBest or unit<cashBest then cashBest=unit end
+    end
     if baseline.economicComplete and baseline.stale==0 and baseline.unknownAge==0 and baseline.unknownBank==0 then
       local unit=baseline.economic/(n*option.chance)
       if not best or unit<best then best=unit end
@@ -123,7 +126,8 @@ function CP:VendorSkillComparison(key,entry)
   end
   local reliable=cost.economicComplete and cost.stale==0 and cost.unknownAge==0 and cost.unknownBank==0
   return {cost=cost,crafts=count,points=points,unit=cost.economic/points,
-    saving=reliable and best and best-cost.economic/points or nil}
+    saving=reliable and best and best-cost.economic/points or nil,
+    cashSaving=cost.cashComplete and cost.stale==0 and cost.unknownAge==0 and cost.unknownBank==0 and cashBest and cashBest-cost.cash/points or nil}
 end
 function CP:ActivateRecipeRow(key,entry)
   if entry.vendorRecipe then

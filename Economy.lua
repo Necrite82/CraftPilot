@@ -135,6 +135,7 @@ function CP:EconomyCards(key)
   if plan and plan.economyPrevious then cards[#cards+1]={title=L("Vorherigen Einkaufsplan wiederherstellen"),
     detail=L("Letzte Übernahme aus Clever skillen rückgängig machen."),color="gold",
     action=function() CP:UndoEconomyPlan(key);CP:OpenTab("plan") end} end
+  for _,card in ipairs(self:TrainerProposalCards(key)) do cards[#cards+1]=card end
   local baseline=comparison.baseline
   if not baseline then
     cards[#cards+1]={title=L("Noch kein vollständiger Vergleich"),detail=L("Eigenes Berufsfenster öffnen und AH-Preise aktualisieren."),color="gold"}
