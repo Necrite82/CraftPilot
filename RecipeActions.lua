@@ -106,6 +106,25 @@ function CP:OpenLearnedRecipe(key,id)
   self:Say(L("Direkte Rezeptwahl nicht verfügbar; Rezept im Berufsfenster auswählen."))
   return opened
 end
+-- Equal expected-point comparison of integer batches at today's skill colour.
+-- Recipe acquisition is charged once; travel and future colour changes are excluded.
+function CP:VendorSkillComparison(key,entry)
+  local count=math.max(1,math.ceil(1/entry.chance))
+  local cost=self:CostCalculation("recipe",key,entry.id,count)
+  local points=count*entry.chance
+  local best
+  for _,option in ipairs(self:Options(key)) do
+    local n=math.max(1,math.ceil(1/option.chance))
+    local baseline=self:CostCalculation("recipe",key,option.id,n)
+    if baseline.economicComplete and baseline.stale==0 and baseline.unknownAge==0 and baseline.unknownBank==0 then
+      local unit=baseline.economic/(n*option.chance)
+      if not best or unit<best then best=unit end
+    end
+  end
+  local reliable=cost.economicComplete and cost.stale==0 and cost.unknownAge==0 and cost.unknownBank==0
+  return {cost=cost,crafts=count,points=points,unit=cost.economic/points,
+    saving=reliable and best and best-cost.economic/points or nil}
+end
 function CP:ActivateRecipeRow(key,entry)
   if entry.vendorRecipe then
     self.db.ui.selectedVendorRecipe=(self.db.ui.selectedVendorKey~=key or self.db.ui.selectedVendorRecipe~=entry.id) and entry.id or nil

@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.10.2-alpha · Forever 1.60.x · Interface 16001 · **Not verified in the live game client**
+**Status:** 0.15.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.10.2-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.10.2-alpha/CraftPilot-0.10.2-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.15.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.0-alpha/CraftPilot-0.15.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +107,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.10.2-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.15.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
@@ -119,4 +119,16 @@ Lua regression tests cover the controls. Actual in-game minimap appearance and c
 
 ## Fixes in 0.10.2
 
-Open professions directly from the click path before rendering, without a pcall wrapper. Replace font-dependent indicators with graphical marks. Keep branding on a child frame outside the panel regions faded by EllesmereUI. Add settings sliders for width, height and minimap angle. Live-client verification is still pending.
+Open professions directly from the click path before rendering, without a pcall wrapper. Replace font-dependent indicators with graphical marks. Keep branding on a child frame outside the panel regions faded by EllesmereUI. Add settings sliders for width, height and minimap angle.
+
+## Shared planning and error reports
+
+Profession and camping plans now share stock. **Settings → Stock reservations** lists allocation priority; click a plan to move it first. Other plans count reserved materials as purchases. Physical bag/bank totals remain visible. Reservations are planning calculations and do not lock game items.
+
+**Plan changed → Reevaluate** detects changes to prices, stock, reservations, recipes and skill. Manual choices stay intact; automatic routes can be rebuilt from current skill. Recognized successful crafts reduce manual profession/camping quantities. Automatic routes show craft progress and stay marked as the old calculation until reevaluated.
+
+Expanded vendor recipes compare a current-colour craft batch including one-time recipe acquisition against learned recipes. Economic cost includes the net AH value of used stock. Incomplete or stale comparisons cannot claim savings. Travel and future colour changes are excluded.
+
+**Settings → Report a bug** stores up to 20 distinct CraftPilot errors locally. It uses a native Lua listener where available, optional !BugGrabber, and blocked CraftPilot action events. Without a native listener, !BugGrabber is needed for Lua stacks. Reports include addon/client version, locale, current view and profession skill; no chat, inventory, or BugGrabber locals. Recognized player names, email addresses, URLs and local paths are filtered; review free text yourself.
+
+Review/edit the preview, select **Copy GitHub link**, press **Ctrl+C**, open it in a browser and submit using your GitHub account. Opening the link sends the included report to GitHub. No automatic upload or reporting service is used. Long links are shortened; full preview text can be copied separately. Local errors can be cleared in the same window.

@@ -194,6 +194,7 @@ function CP:AddCampingCraft(item,quantity)
       local previous=type(plan[item])=="number" and plan[item] or 0
       local amount=math.max(0,math.min(999,previous+quantity))
       plan[item]=amount>0 and amount or nil
+      self:InvalidateReservations();self:StampPlan("camping")
       return true
     end
   end
@@ -213,14 +214,14 @@ function CP:CampingShopping()
     end
   end
   for id,quantity in pairs(aggregate) do
-    local stock,bag,bank,live,known=self:ItemAvailability(id)
+    local stock,bag,bank,live,known,reserved=self:AvailableForPlan(id,"camping")
     local missing=math.max(0,quantity-stock)
     local price=self:Price(id)
     if missing>0 then
       if price then result.cost=result.cost+price*missing else result.noPrice=result.noPrice+1 end
     end
     result.materials[#result.materials+1]={id=id,quantity=quantity,missing=missing,bag=bag,bank=bank,
-      bankLive=live,bankKnown=known,price=price}
+      reserved=reserved,bankLive=live,bankKnown=known,price=price}
   end
   table.sort(result.materials,function(a,b) return a.id<b.id end)
   return result
@@ -232,6 +233,7 @@ function CP:CampingShoppingCards()
     detail=L("Material-Zukauf: ")..self:FormatMoney(plan.cost),
     footer=self:BankStatus(),color="gold"}}
   table.insert(cards,1,self:CostSummaryCard("camping",self.db.view))
+  table.insert(cards,2,self:PlanReviewCard("camping"))
   if #plan.steps==0 then cards[#cards+1]={title=L("Camping-Objekte zum Plan hinzufügen"),
     detail=L("Ein Feuer oder Objekt aufklappen und +1 oder +5 wählen."),color="blue"} end
   if plan.unknown>0 or plan.noPrice>0 then cards[#cards+1]={title=L("Einkauf unvollständig"),
@@ -245,7 +247,7 @@ function CP:CampingShoppingCards()
   end
   for _,mat in ipairs(plan.materials) do
     cards[#cards+1]={title=mat.quantity.."x "..self:ItemName(mat.id),
-      detail=L("Tasche: ")..mat.bag..L(" · Bank: ")..(mat.bankKnown and mat.bank or L("unbekannt"))..L(" · Fehlt: ")..mat.missing,
+      detail=L("Tasche: ")..mat.bag..L(" · Bank: ")..(mat.bankKnown and mat.bank or L("unbekannt"))..L(" · Fehlt: ")..mat.missing..L(" · Reserviert: ")..mat.reserved,
       footer=(mat.missing==0 and L("Kein Zukauf") or (mat.price and self:FormatMoney(mat.price*mat.missing) or L("Preis fehlt"))).." · "..self:PriceFreshness(mat.id),
       tooltipItem=mat.id,color=mat.missing==0 and "green" or "blue"}
   end

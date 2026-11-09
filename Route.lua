@@ -66,11 +66,11 @@ local function consume(st,id,needed,owner,skill,active,depth)
   if needed<=0 then return end
   depth=depth or 0
   if st.stock[id]==nil then
-    local total=CP:ItemAvailability(id)
+    local total=CP:AvailableForPlan(id,owner)
     st.stock[id]=total
   end
   local available=math.min(needed,st.stock[id])
-  if st.ownedRemaining[id]==nil then st.ownedRemaining[id]=CP:ItemAvailability(id) end
+  if st.ownedRemaining[id]==nil then st.ownedRemaining[id]=CP:AvailableForPlan(id,owner) end
   local ownedUsed=math.min(available,st.ownedRemaining[id])
   st.ownedRemaining[id]=st.ownedRemaining[id]-ownedUsed
   if ownedUsed>0 then st.usedOwned[id]=(st.usedOwned[id] or 0)+ownedUsed end
@@ -110,7 +110,7 @@ local function evaluate(st,candidate,crafts,owner,skill)
   local output=candidate.recipe.makes
   if type(output)=="number" then
     local units=math.max(1,tonumber(candidate.recipe.count or candidate.recipe.yield) or 1)
-    trial.stock[output]=(trial.stock[output] or CP:ItemAvailability(output))+crafts*units
+    trial.stock[output]=(trial.stock[output] or CP:AvailableForPlan(output,owner))+crafts*units
   end
   trial.crafted[candidate.id]=(trial.crafted[candidate.id] or 0)+crafts
   return trial
@@ -126,6 +126,7 @@ local function better(a,b)
 end
 
 function CP:GenerateAutomaticRoute(key,first,last)
+  self:InvalidateReservations()
   local from=math.max(1,math.min(299,math.floor(tonumber(first) or 1)))
   local finish=math.max(from+1,math.min(300,math.floor(tonumber(last) or 300)))
   local state=baseState()
@@ -203,6 +204,7 @@ function CP:BuildRouteForCurrentPlan(key)
   if not route then return false,errorText end
   p.autoRoute=route
   p.autoMode=true
+  self:InvalidateReservations();self:StampPlan(key)
   return true,route
 end
 

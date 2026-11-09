@@ -34,7 +34,7 @@ function CP:EconomyComparison(key)
     local aggregate={}
     for _,mat in ipairs(option.mats) do aggregate[mat[1]]=(aggregate[mat[1]] or 0)+mat[2]*crafts end
     for id,quantity in pairs(aggregate) do
-      local stock=self:ItemAvailability(id)
+      local stock=self:AvailableForPlan(id,key)
       local used=math.min(stock,quantity)
       local missing=quantity-used
       local p=self:PriceDetails(id)
@@ -111,6 +111,7 @@ function CP:ApplyEconomyPlan(key,id)
   plan.autoRoute=nil
   plan.start=(self.db.professions[key] or {}).skill or plan.start
   plan.target=math.min(300,plan.start+math.ceil(chosen.points))
+  self:InvalidateReservations();self:StampPlan(key)
   return true
 end
 
@@ -120,6 +121,7 @@ function CP:UndoEconomyPlan(key)
   if not previous then return false end
   for _,field in ipairs({"crafts","start","target","autoMode","autoRoute"}) do plan[field]=previous[field] end
   plan.economyPrevious=nil
+  self:InvalidateReservations();self:StampPlan(key)
   return true
 end
 
@@ -128,7 +130,7 @@ function CP:EconomyCards(key)
   local cards={{title=L("Clever skillen"),detail=L("Eigene Vorräte sind nicht kostenlos: Verkauf oder andere Skillrezepte vergleichen."),
     footer=L("Nur erlernte Rezepte und aktuelle Skillfarben; keine automatischen Käufe oder Verkäufe."),color="gold"}}
   cards[#cards+1]={title=L("Vergleich für den nächsten Skillschritt"),
-    detail=L("Bestehende Pläne reservieren hier keine Materialien. Keine Gesamtoptimierung bis Skill 300."),color="blue"}
+    detail=L("Vorräte anderer Pläne bleiben reserviert. Keine Gesamtoptimierung bis Skill 300."),color="blue"}
   local plan=self:PlanFor(key)
   if plan and plan.economyPrevious then cards[#cards+1]={title=L("Vorherigen Einkaufsplan wiederherstellen"),
     detail=L("Letzte Übernahme aus Clever skillen rückgängig machen."),color="gold",

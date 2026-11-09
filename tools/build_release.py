@@ -4,7 +4,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ['CraftPilot.toc', 'Locale.lua', 'Locales/enUS.lua', 'Camping.lua', 'Economy.lua', 'RecipeActions.lua', 'Costing.lua', 'QuestieBridge.lua', 'Updates.lua', 'SkillInfo.lua', 'ThirdParty/CraftLadder/SecondarySkillRanges.lua', 'ThirdParty/CraftLadder/VendorRecipes.lua', 'Data.lua', 'Core.lua', 'Catalog.lua',
+FILES = ['CraftPilot.toc', 'Locale.lua', 'Locales/enUS.lua', 'Camping.lua', 'Economy.lua', 'RecipeActions.lua', 'Costing.lua', 'Planning.lua', 'Diagnostics.lua', 'QuestieBridge.lua', 'Updates.lua', 'SkillInfo.lua', 'ThirdParty/CraftLadder/SecondarySkillRanges.lua', 'ThirdParty/CraftLadder/VendorRecipes.lua', 'Data.lua', 'Core.lua', 'Catalog.lua',
          'PriceHistory.lua', 'Route.lua', 'UI.lua', 'Settings.lua', 'Media/CraftPilot.tga', 'LICENSE',
          'README.md', 'DATA_SOURCES.md', 'docs/CAMPING_SOURCES.md', 'docs/PROFESSION_STATUS.md',
          'ThirdParty/CraftLadder/Camp.lua', 'ThirdParty/CraftLadder/CampingRecipes.lua',

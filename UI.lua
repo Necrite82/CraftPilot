@@ -99,7 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.14.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.15.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -473,6 +473,27 @@ local function setRecipeRows(key,options,chosen)
     b:Show()
     offset=offset+84
     if entry.vendorRecipe and active then
+      local comparison=CP:VendorSkillComparison(key,entry)
+      vendorIndex=vendorIndex+1
+      local calc=vendorButtons[vendorIndex]
+      if not calc then
+        calc=button(content,W-113,78,5,-offset,"",function() end)
+        calc.nameLabel=text(calc,"GameFontHighlight",14,-7,W-155,"")
+        calc.infoLabel=text(calc,"GameFontDisableSmall",14,-32,W-155,"")
+        vendorButtons[vendorIndex]=calc
+      end
+      calc.vendorTarget=nil
+      calc:ClearAllPoints();calc:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
+      calc:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,78);calc:SetEnabled(true)
+      calc.nameLabel:SetText(comparison.crafts..L("x herstellen + Rezept: ")
+        ..(comparison.cost.cashComplete and "" or L("Bekannter Teil: "))..CP:FormatCostMoney(comparison.cost.cash))
+      local advantage=comparison.saving and comparison.saving>0
+        and (L("Möglicher Vorteil je erwartetem Skillpunkt: ")..CP:FormatCostMoney(comparison.saving))
+        or L("Kein gesicherter Kostenvorteil gegenüber erlernten Rezepten.")
+      calc.infoLabel:SetText(advantage..L(" · Heutige Skillfarbe; Reise nicht enthalten. Klick: Kalkulation"))
+      local recipeID,crafts=entry.id,comparison.crafts
+      calc:SetScript("OnClick",function() CP:OpenCostCalculation("recipe",key,recipeID,crafts) end)
+      calc:Show();offset=offset+82
       for _,vendor in ipairs(entry.vendors) do
         vendorIndex=vendorIndex+1
         local row=vendorButtons[vendorIndex]
@@ -484,6 +505,7 @@ local function setRecipeRows(key,options,chosen)
           vendorButtons[vendorIndex]=row
         end
         row.vendorTarget=vendor.location
+        row:SetScript("OnClick",function() if row.vendorTarget then CP:SetWaypoint(row.vendorTarget) end end)
         row:ClearAllPoints();row:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
         row:SetSize((type(content.GetWidth)=="function" and content:GetWidth() or W-95)-8,57)
         row:SetEnabled(vendor.location~=nil)
@@ -502,7 +524,7 @@ end
 -- Graphics are composed from native flat textures and client-provided item icons.
 local function setVisualCards(entries)
   clearRows()
-  local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help" or CP.db.ui.tab=="audit")
+  local settingsView=CP.db and (CP.db.ui.tab=="settings" or CP.db.ui.tab=="help" or CP.db.ui.tab=="audit" or CP.db.ui.tab=="reservations")
   local cardHeight=settingsView and 92 or 73
   for i,entry in ipairs(entries) do
     local b=visualCards[i]
@@ -652,14 +674,14 @@ local function materialCards(materials,caption)
   for _,m in ipairs(materials) do
     local qty=m.required or m[2] or 0
     local id=m.id or m[1]
-    local total,bags,bank,live,known=CP:ItemAvailability(id)
+    local total,bags,bank,live,known,reserved=CP:AvailableForPlan(id,CP.db.view)
     local missing=math.max(0,qty-total)
     local price=CP:Price(id)
     local age=CP.PriceFreshness and CP:PriceFreshness(id) or L("Alter unbekannt")
     local status=live and "LIVE" or (known and L("LETZTER STAND") or L("UNBEKANNT"))
     entries[#entries+1]={
       title=(CP:ItemName(id))..L("  ·  benötigt ")..qty..L("  ·  fehlt ")..missing,
-      detail=L("Tasche ")..bags..L("  ·  Bank ")..bank.." ("..status..L(")  ·  Gesamt ")..total,
+      detail=L("Tasche ")..bags..L("  ·  Bank ")..bank.." ("..status..L(") · Für diesen Plan ")..total..L(" · Reserviert: ")..reserved,
       footer=(missing>0 and (price and L("Zukauf ")..gold(missing*price)
         or L("Fehlender Preis"))
         or L("Genügend Material")).." · "..age,
@@ -840,7 +862,7 @@ registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
-  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,economy=true,audit=true,settings=true,help=true}
+  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,economy=true,audit=true,reservations=true,settings=true,help=true}
   if tab=="help" then tab="settings" end
   if not valid[tab] then return end
   self.db.ui.tab=tab
@@ -851,6 +873,7 @@ end
 
 
 function CP:Render()
+  self:InvalidateReservations()
   if not self.db then return end
   self:RestoreWindowPosition()
   self:ApplyTheme()
@@ -866,7 +889,7 @@ function CP:Render()
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end
   if tab~="settings" and tab~="help" then self.pendingSettingsReset=nil end
-  local settingsView=tab=="settings" or tab=="help" or tab=="audit"
+  local settingsView=tab=="settings" or tab=="help" or tab=="audit" or tab=="reservations"
   summary:SetShown(not settingsView)
   stageProgress:SetShown(not settingsView)
   section:ClearAllPoints()
@@ -964,6 +987,9 @@ function CP:Render()
   if tab=="settings" or tab=="help" then
     section:SetText(L("Einstellungen · anklicken zum Ändern"))
     setVisualCards(self:SettingsCards())
+  elseif tab=="reservations" then
+    section:SetText(L("Gemeinsame Vorratsreservierung"))
+    setVisualCards(self:ReservationCards())
   elseif tab=="audit" then
     section:SetText(L("Berufsdaten · Farbgrenzen und Clientabgleich"))
     setVisualCards(self:ProfessionAuditCards())
@@ -1041,7 +1067,7 @@ function CP:Render()
     else
       local route=self:AutoRouteShopping(key)
       if route then
-        local cards={self:CostSummaryCard("plan",key)}
+        local cards={self:CostSummaryCard("plan",key),self:PlanReviewCard(key)}
         cards[#cards+1]={
           title=string.format(L("AUTO-ROUTE · %d -> %d · berechnet bis %d"),
             route.first,route.target,route.reached),
@@ -1114,7 +1140,7 @@ function CP:Render()
         setVisualCards(cards)
       else
       local plan=self:PlanShopping(key)
-      local cards={self:CostSummaryCard("plan",key)}
+      local cards={self:CostSummaryCard("plan",key),self:PlanReviewCard(key)}
       local range=plan.last-plan.first
       local summary=string.format(L("Skill %d -> %d   ·   %d Herstellungen eingeplant"),
         plan.first,plan.last,plan.crafts)
@@ -1163,7 +1189,7 @@ function CP:Render()
             or L("Bestand ausreichend")
           cards[#cards+1]={
             title=m.name..L(" · benötigt ")..m.required..L(" · fehlt ")..m.missing,
-            detail=L("Tasche ")..m.bag.." · Bank "..m.bank.." ("..status..")",
+            detail=L("Tasche ")..m.bag.." · Bank "..m.bank.." ("..status..")"..L(" · Reserviert: ")..m.reserved,
             footer=cost,icon=itemIcon(m.id),color=color
           }
         end
@@ -1234,7 +1260,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.14.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.15.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()
