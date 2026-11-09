@@ -4,7 +4,7 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.15.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.15.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
@@ -31,7 +31,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.15.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.0-alpha/CraftPilot-0.15.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.15.1-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.1-alpha/CraftPilot-0.15.1-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +107,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.15.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.15.1-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
@@ -132,3 +132,9 @@ Expanded vendor recipes compare a current-colour craft batch including one-time 
 **Settings → Report a bug** stores up to 20 distinct CraftPilot errors locally. It uses a native Lua listener where available, optional !BugGrabber, and blocked CraftPilot action events. Without a native listener, !BugGrabber is needed for Lua stacks. Reports include addon/client version, locale, current view and profession skill; no chat, inventory, or BugGrabber locals. Recognized player names, email addresses, URLs and local paths are filtered; review free text yourself.
 
 Review/edit the preview, select **Copy GitHub link**, press **Ctrl+C**, open it in a browser and submit using your GitHub account. Opening the link sends the included report to GitHub. No automatic upload or reporting service is used. Long links are shortened; full preview text can be copied separately. Local errors can be cleared in the same window.
+
+### Compatibility fixes in 0.15.1
+
+Packaged QuestieDB can omit expansion from `ModeIndicator.GetStatus()`. In Baked mode CraftPilot now checks the loaded addon’s `X-Flavor` metadata instead. Explicitly different flavors are still rejected, and missing API, wrong flavor and missing package markers have distinct messages. QuestieDB remains a separately installed optional addon.
+
+Learned professions missing from legacy return slots can now be recognized through `C_TradeSkillUI.GetProfessionInfoBySkillLineID`, including First Aid at low skill. Positive current skill, matching profession ID and a valid cap are required. Saved reference values and linked/guild/NPC profession views are not ownership evidence. Skill/spell changes refresh the display.

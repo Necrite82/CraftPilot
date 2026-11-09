@@ -133,25 +133,42 @@ function CP:Price(itemID)
   return nil
 end
 
--- Gathering skill is obtained from the character profession list: it does not
--- require an open crafting window to display current rank or skill.
-function CP:RefreshProfessionSkills()
-  if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return end
-  local ok,first,second,archaeology,fishing,cooking,firstaid=pcall(GetProfessions)
-  if not ok then return end
-  for _,index in ipairs({first or false,second or false,fishing or false,cooking or false,firstaid or false}) do
+-- Read ownership from live character APIs, never from a saved/reference skill.
+local function pack(...) return {n=select("#",...),...} end
+local function legacyProfessionSkills()
+  local found={}
+  if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return found end
+  local values=pack(pcall(GetProfessions))
+  if not values[1] then return found end
+  -- Keep nil holes and inspect every returned slot; layouts differ by client.
+  for i=2,values.n do
+    local index=values[i]
     if type(index)=="number" then
-      local success,name,icon,skill,cap,abilities,spellOffset,skillLine=pcall(GetProfessionInfo,index)
-      if success and type(skill)=="number" and type(cap)=="number" then
+      local ok,name,icon,skill,cap,abilities,offset,id=pcall(GetProfessionInfo,index)
+      if ok and type(skill)=="number" and type(cap)=="number" then
         for key,meta in pairs(D.professions) do
-          if meta.id==skillLine then
-            self.db.professions[key]={skill=math.max(0,skill),cap=math.max(0,cap),
-              name=type(name)=="string" and name or meta.name}
-            break
-          end
+          if meta.id==id then found[key]={skill=math.max(0,skill),cap=math.max(0,cap),name=type(name)=="string" and name or meta.name};break end
         end
       end
     end
+  end
+  return found
+end
+local function nativeOwnedProfession(key)
+  local T=_G.C_TradeSkillUI
+  if not T or safe(T.IsTradeSkillLinked) or safe(T.IsTradeSkillGuild) or safe(T.IsNPCCrafting) then return nil end
+  local meta=D.professions[key]
+  local info=safe(T.GetProfessionInfoBySkillLineID,meta.id)
+  if type(info)~="table" or (info.professionID~=meta.id and info.parentProfessionID~=meta.id)
+    or type(info.skillLevel)~="number" or info.skillLevel<=0
+    or type(info.maxSkillLevel)~="number" or info.maxSkillLevel<=0 then return nil end
+  return {skill=info.skillLevel,cap=info.maxSkillLevel,name=type(info.professionName)=="string" and info.professionName or meta.name}
+end
+function CP:RefreshProfessionSkills()
+  local found=legacyProfessionSkills()
+  for key in pairs(D.professions) do
+    local record=found[key] or nativeOwnedProfession(key)
+    if record then self.db.professions[key]=record end
   end
 end
 
@@ -484,17 +501,7 @@ end
 -- click, never from deferred timers, rendering, login or item update events.
 function CP:OwnsProfession(key)
   if not self.db or not D.professions[key] then return false end
-  if type(GetProfessions)~="function" or type(GetProfessionInfo)~="function" then return false end
-  local success,first,second,archaeology,fishing,cooking,firstaid=pcall(GetProfessions)
-  if not success then return false end
-  for _,index in ipairs({first or false,second or false,fishing or false,cooking or false,firstaid or false}) do
-    if type(index)=="number" then
-      local ok,name,icon,skill,cap,abilities,spellOffset,skillLine=
-        pcall(GetProfessionInfo,index)
-      if ok and skillLine==D.professions[key].id then return true end
-    end
-  end
-  return false
+  return legacyProfessionSkills()[key]~=nil or nativeOwnedProfession(key)~=nil
 end
 
 function CP:VisibleProfessions()
@@ -772,7 +779,7 @@ end
 local events=CreateFrame("Frame")
 local names={"PLAYER_LOGIN","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE",
   "TRADE_SKILL_DATA_SOURCE_CHANGED","NEW_RECIPE_LEARNED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP",
-  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED","UNIT_SPELLCAST_SUCCEEDED","AUCTION_HOUSE_CLOSED"}
+  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED","UNIT_SPELLCAST_SUCCEEDED","AUCTION_HOUSE_CLOSED","SKILL_LINES_CHANGED","SPELLS_CHANGED"}
 for _,name in ipairs(names) do pcall(events.RegisterEvent,events,name) end
 local function schedule(capture)
   pendingCapture=pendingCapture or capture

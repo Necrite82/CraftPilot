@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.15.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.15.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.15.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.0-alpha/CraftPilot-0.15.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.15.1-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.1-alpha/CraftPilot-0.15.1-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das aktuelle Installationspaket ist `dist/CraftPilot-0.15.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.15.1-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -276,3 +276,9 @@ Aufgeklappte Kaufrezepte vergleichen einen Herstellungsblock bei heutiger Skillf
 **Einstellungen → Fehler melden** sammelt bis zu 20 unterschiedliche CraftPilot-Fehler lokal. Unterstützt werden ein vorhandener nativer Lua-Fehlerlistener, optionales !BugGrabber und gesperrte CraftPilot-Aktionen. Ohne nativen Listener wird !BugGrabber für Lua-Stacks benötigt. Der Bericht enthält Version, Client-Build, Sprache, gewählte Ansicht und Berufsskill; keine Chat-/Inventardaten oder BugGrabber-Locals. Erkannte Spielernamen, E-Mail-Adressen, URLs und lokale Pfade werden gefiltert. Freitext vor dem Teilen selbst prüfen.
 
 Der Nutzer prüft/ergänzt die Vorschau, wählt **GitHub-Link kopieren**, drückt **Strg+C** und öffnet den Link im Browser. Bereits beim Öffnen enthält die Anfrage den Bericht; das Issue wird anschließend mit einem eigenen GitHub-Konto abgeschickt. Es gibt keinen automatischen Upload und keinen externen Meldedienst. Bei langen Berichten wird der Link gekürzt; der vollständige Vorschautext lässt sich separat kopieren. Lokale Fehler können im selben Fenster gelöscht werden.
+
+### Kompatibilitätskorrekturen in 0.15.1
+
+Gepackte QuestieDB-Versionen können über `ModeIndicator.GetStatus()` keine Erweiterung melden. CraftPilot prüft dann im Baked-Modus die `X-Flavor`-Kennung des tatsächlich geladenen Pakets. Eine ausdrücklich andere Erweiterung wird weiterhin abgelehnt. Der Schalter erlaubt die optionale Anbindung; er beweist allein keine verfügbaren Daten. API-, Datenstand- und Paketkennungsprobleme werden getrennt angezeigt. QuestieDB wird weiterhin separat installiert.
+
+Fehlt ein gelernter Beruf in den Rückgaben der älteren Berufsliste, fragt CraftPilot zusätzlich `C_TradeSkillUI.GetProfessionInfoBySkillLineID` ab. Ein positiver aktueller Skill mit passender Berufs-ID und Kapazität zählt als eigener Beruf, auch bei Erste Hilfe. Gespeicherte Referenzwerte und fremde verlinkte Berufsfenster zählen nicht als Besitznachweis. Änderungen an erlernten Fähigkeiten aktualisieren die Anzeige.

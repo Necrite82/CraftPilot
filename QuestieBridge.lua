@@ -12,16 +12,27 @@ function CP:QuestieProvider()
   if type(lib)~="table" then return nil,"absent" end
   if call(lib.RequireContract,1)~=true then return nil,"incompatible" end
   local status=lib.ModeIndicator and call(lib.ModeIndicator.GetStatus)
-  if type(status)~="table" or status.expansion~="Forever" then return nil,"flavor" end
+  local mode=type(status)=="table" and status.mode or lib.readMode
+  local expansion=type(status)=="table" and status.expansion
+  -- Upstream GetStatus reads expansion from read.source, which is absent in baked
+  -- packages. Read the same loaded TOC marker the baked backend uses instead.
+  if not expansion and mode=="baked" then
+    local metadata=(_G.C_AddOns and C_AddOns.GetAddOnMetadata) or _G.GetAddOnMetadata
+    expansion=call(metadata,type(lib.addonName)=="string" and lib.addonName or "QuestieDB","X-Flavor")
+  end
+  if not expansion then return nil,"unknownFlavor" end
+  if expansion~="Forever" then return nil,"flavor",expansion end
   if type(lib.Npc)~="table" or type(lib.Npc.Get)~="function" then return nil,"incompatible" end
-  return lib,status.mode
+  return lib,mode
 end
 function CP:QuestieStatus()
-  local lib,mode=self:QuestieProvider()
+  local lib,mode,flavor=self:QuestieProvider()
   if lib then return "QuestieDB: "..(mode=="source" and L("aktiv · Entwicklungsmodus") or L("aktiv · Forever")) end
   if mode=="disabled" then return L("QuestieDB: ausgeschaltet") end
   if mode=="absent" then return L("QuestieDB: nicht installiert (optional)") end
-  return L("QuestieDB: passende API/Forever-Daten nicht bereit")
+  if mode=="incompatible" then return L("QuestieDB: öffentliche API fehlt oder ist inkompatibel") end
+  if mode=="flavor" then return L("QuestieDB: falscher Datenstand · ")..tostring(flavor) end
+  return L("QuestieDB: installiert, Forever-Paketkennung fehlt")
 end
 function CP:QuestieItemVendors(item)
   local lib=self:QuestieProvider()
