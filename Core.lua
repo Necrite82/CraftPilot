@@ -210,20 +210,20 @@ end
 local function schematicMats(T,recipeID)
   local schematic = safe(T.GetRecipeSchematic,recipeID,false)
   if type(schematic) ~= "table" or type(schematic.reagentSlotSchematics) ~= "table" then
-    return nil
+    return nil,schematic
   end
   local mats={}
   for _,slot in ipairs(schematic.reagentSlotSchematics) do
     local qty = slot.quantityRequired or 0
     if qty > 0 then
-      if slot.reagentType ~= nil and slot.reagentType ~= 1 then return nil end
+      if slot.reagentType ~= nil and slot.reagentType ~= 1 then return nil,schematic end
       if type(slot.reagents) ~= "table" or #slot.reagents ~= 1
-          or type(slot.reagents[1].itemID) ~= "number" then return nil end
+          or type(slot.reagents[1].itemID) ~= "number" then return nil,schematic end
       mats[#mats+1] = {slot.reagents[1].itemID,qty}
     end
   end
-  if #mats == 0 then return nil end
-  return mats
+  if #mats == 0 then return nil,schematic end
+  return mats,schematic
 end
 
 function CP:CaptureProfession()
@@ -252,7 +252,8 @@ function CP:CaptureProfession()
       if detail.icon or detail.iconID then old.icon=detail.icon or detail.iconID end
       local output=safe(T.GetRecipeOutputItemData,id)
       if type(output)=="table" then
-        old.outputItemID=output.itemID or old.outputItemID
+        old.outputKnown=true
+        old.outputItemID=type(output.itemID)=="number" and output.itemID>0 and output.itemID or nil
         old.icon=output.icon or output.iconID or old.icon
       end
       old.learned=detail.learned == true
@@ -260,8 +261,10 @@ function CP:CaptureProfession()
       old.canSkillUp=detail.canSkillUp
       old.difficulty=detail.relativeDifficulty
       old.snapshotSkill=skill
-      local mats=schematicMats(T,id)
+      local mats,schematic=schematicMats(T,id)
       old.mats=mats
+      old.outputMin=schematic and schematic.quantityMin
+      old.outputMax=schematic and schematic.quantityMax
       known[id]=old
       count=count+1
     end
@@ -652,6 +655,8 @@ function CP:PlanShopping(key)
     end
   end
   table.sort(steps,function(a,b) return a.name<b.name end)
+  local resolved=self:ResolveManualPlan(key)
+  if resolved then aggregate=resolved.requirements end
   local materials={}
   local purchaseCopper=0
   local noPrice=0
@@ -675,7 +680,7 @@ function CP:PlanShopping(key)
     first=p.start,last=p.target,steps=steps,materials=materials,
     crafts=craftCount,purchaseCopper=purchaseCopper,noPrice=noPrice,
     unknownBank=unknownBank,expectedSkillUps=expected,
-    uncertainSkills=uncertainSkills
+    uncertainSkills=uncertainSkills,chainUnresolved=resolved==nil
   }
 end
 
@@ -779,7 +784,7 @@ end
 local events=CreateFrame("Frame")
 local names={"PLAYER_LOGIN","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE",
   "TRADE_SKILL_DATA_SOURCE_CHANGED","NEW_RECIPE_LEARNED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP",
-  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED","UNIT_SPELLCAST_SUCCEEDED","AUCTION_HOUSE_CLOSED","SKILL_LINES_CHANGED","SPELLS_CHANGED"}
+  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED","UNIT_SPELLCAST_SUCCEEDED","AUCTION_HOUSE_CLOSED","SKILL_LINES_CHANGED","SPELLS_CHANGED","GET_ITEM_INFO_RECEIVED"}
 for _,name in ipairs(names) do pcall(events.RegisterEvent,events,name) end
 local function schedule(capture)
   pendingCapture=pendingCapture or capture
@@ -803,6 +808,12 @@ events:SetScript("OnEvent",function(_,event,...)
     SLASH_CRAFTPILOT1="/cp"
     SLASH_CRAFTPILOT2="/craftpilot"
     SlashCmdList.CRAFTPILOT=command
+  elseif event=="GET_ITEM_INFO_RECEIVED" then
+    local item,success=...
+    if CP.marketRequested and CP.marketRequested[item]==true then
+      CP.marketRequested[item]="done"
+      if success and CP.db and CP.frame and CP.frame:IsShown() then schedule(false) end
+    end
   elseif event=="UNIT_SPELLCAST_SUCCEEDED" then
     if CP.db and CP:RecordPlannedCraft(...) then schedule(true) end
   elseif event=="BANKFRAME_OPENED" then

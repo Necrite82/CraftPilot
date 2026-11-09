@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.16.0-alpha
+
+Gemeinsamer Release mit QuestieDB-/Erste-Hilfe-Korrekturen, AH-/Netto-/Händler-Stückpreisen, Behalten-/Verkaufshinweisen, Taschen-/Bankangaben direkt am Rezept und Auctionator-Einkaufslisten für manuelle Pläne sowie Skillbereich-Auto-Routen. Geplante Zwischenprodukte werden verrechnet. [Details](docs/RELEASE_0.16.0-alpha.md).
+
 ## 0.15.1-alpha
 
 Korrektur der Erkennung gepackter QuestieDB-Forever-Versionen und eigene Berufserkennung über die aktuelle Berufs-API, insbesondere Erste Hilfe. Getrennte Statusmeldungen für fehlende API, falschen Datenstand und fehlende Paketkennung. [Details](docs/RELEASE_0.15.1-alpha.md).

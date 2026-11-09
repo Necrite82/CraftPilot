@@ -143,9 +143,12 @@ function CP:CostCalculation(kind,key,id,quantity)
       end
     else
       local plan=self:PlanFor(key)
+      local resolved=self:ResolveManualPlan(key)
+      if resolved then for item,n in pairs(resolved.requirements) do add(required,item,n) end end
       for recipe,n in pairs(plan and plan.crafts or {}) do
         local native=(self.db.recipes[key] or {})[recipe]
-        if native and native.mats then for _,mat in ipairs(native.mats) do add(required,mat[1],mat[2]*n) end
+        if native and native.mats then
+          if not resolved then for _,mat in ipairs(native.mats) do add(required,mat[1],mat[2]*n) end;unknown=unknown+1 end
         else unknown=unknown+1 end
         includeFee(key,recipe)
       end
@@ -174,7 +177,7 @@ local function money(self,value)
   return self:FormatCostMoney(value)
 end
 function CP:RefreshCostWindow()
-  self:InvalidateReservations()
+  self:InvalidateReservations();self.marketUseCache=nil
   local frame=self.costWindow
   if not frame or not frame:IsShown() or not self.costContext then return end
   local context=self.costContext
@@ -203,10 +206,11 @@ function CP:RefreshCostWindow()
   if result.unknownBank>0 then lines[#lines+1]=L("Nicht erfasste Bankbestände sind nicht eingerechnet.") end
   lines[#lines+1]=self:BankStatus()
   frame.breakdown:SetText(table.concat(lines,"\n"))
-  local detail={}
+  local detail=self:MarketCostLines(context)
   for _,mat in ipairs(result.materials) do
     detail[#detail+1]=string.format(L("%dx %s · Vorrat %d · kaufen %d"),mat.quantity,self:ItemName(mat.id),mat.used,mat.missing)
       ..L(" · Für andere Pläne reserviert: ")..mat.reserved.." · "..(mat.missing==0 and L("Kein Zukauf") or (mat.buy and money(self,mat.buy) or L("Preis fehlt")))
+      .."\n"..L("Tasche ")..mat.bag..L(" · Bank ")..(mat.bankKnown and mat.bank or L("unbekannt")).."\n"..self:ItemMarketText(mat.id)
   end
   frame.materials:SetText(#detail>0 and table.concat(detail,"\n") or L("Keine vollständigen Materialdaten verfügbar."))
   local measured=frame.materials:GetStringHeight()

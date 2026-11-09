@@ -154,7 +154,7 @@ function CP:EconomyCards(key)
       detail=L("Zukauf: ")..self:FormatMoney(row.buy)..L(" · Vorratswert: ")..self:FormatMoney(row.ownedValue),
       footer=advantage and (L("Vorteil je erwartetem Skillpunkt: ")..self:FormatMoney(row.advantage))
         or (row.reliable and L("Kein wirtschaftlicher Vorteil zum günstigsten Zukauf") or L("Vergleich unvollständig oder Preise nicht aktuell")),
-      icon=self:RecipeIcon(key,id),color=advantage and "green" or "blue",
+      recipeKey=key,recipeID=id,icon=self:RecipeIcon(key,id),color=advantage and "green" or "blue",
       action=function() CP:ChooseEconomyRecipe(key,id);CP:Render() end}
     if self.db.ui.economyRecipe==id then
       cards[#cards+1]=self:CostSummaryCard("economy",key,id,row.crafts)
