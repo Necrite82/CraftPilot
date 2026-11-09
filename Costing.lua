@@ -11,12 +11,14 @@ end
 local function add(out,id,n)
   if type(id)=="number" and type(n)=="number" and n>0 then out[id]=(out[id] or 0)+n end
 end
-function CP:CalculateMaterialCosts(requirements,fee,feeUnknown)
+function CP:CalculateMaterialCosts(requirements,fee,feeUnknown,owner)
   local cut=math.max(0,math.min(30,tonumber(self.db.ui.economyCut) or 5))/100
   local result={buy=0,fee=fee or 0,stockValue=0,missingBuy=0,missingStock=0,feeUnknown=feeUnknown==true,
     stale=0,unknownAge=0,unknownBank=0,materials={},cut=cut}
   for id,quantity in pairs(requirements or {}) do
-    local available,bag,bank,live,known=self:ItemAvailability(id)
+    local available,bag,bank,live,known,reserved
+    if owner then available,bag,bank,live,known,reserved=self:AvailableForPlan(id,owner)
+    else available,bag,bank,live,known=self:ItemAvailability(id) end
     local used=math.min(quantity,available)
     local missing=quantity-used
     local price=self:PriceDetails(id)
@@ -34,7 +36,7 @@ function CP:CalculateMaterialCosts(requirements,fee,feeUnknown)
     end
     if self.db.includeBank and not known then result.unknownBank=result.unknownBank+1 end
     result.materials[#result.materials+1]={id=id,quantity=quantity,used=used,missing=missing,bag=bag,bank=bank,
-      bankKnown=known,buy=price.price and missing*price.price,stock=net and used*net}
+      reserved=reserved or 0,bankKnown=known,buy=price.price and missing*price.price,stock=net and used*net}
   end
   table.sort(result.materials,function(a,b) return a.id<b.id end)
   result.cash=result.buy+result.fee
@@ -55,11 +57,13 @@ local function recipeData(self,key,id)
   end
   return native,reference,displayName
 end
-function CP:RecipeAcquisitionCost(key,id)
+function CP:CostRecipeData(key,id) return recipeData(self,key,id) end
+function CP:RecipeAcquisitionCost(key,id,owner)
   local native,reference=recipeData(self,key,id)
   if native and native.learned then return 0,false end
   if not reference then return 0,true end
-  if reference.item and self:ItemAvailability(reference.item)>0 then return 0,false,nil,false,reference.item end
+  local bookStock=reference.item and (owner and self:AvailableForPlan(reference.item,owner) or self:ItemAvailability(reference.item)) or 0
+  if reference.item and bookStock>0 then return 0,false,nil,false,reference.item end
   local cheapest
   for _,vendor in ipairs(self:RecipeVendors(key,id)) do
     if vendor.cost and (not cheapest or vendor.cost<cheapest) then cheapest=vendor.cost end
@@ -76,6 +80,7 @@ function CP:RecipeAcquisitionCost(key,id)
   return cheapest or 0,cheapest==nil
 end
 function CP:CostCalculation(kind,key,id,quantity)
+  local owner=kind=="camping" and "camping" or key
   local required,unknown={},0
   local fee,feeUnknown=0,false
   local title=self.Data.professions[key] and self.Data.professions[key].name or "CraftPilot"
@@ -86,7 +91,7 @@ function CP:CostCalculation(kind,key,id,quantity)
     local marker=profession..":"..recipeID
     if fees[marker] then return end
     fees[marker]=true
-    local amount,missing,age,auction,book=self:RecipeAcquisitionCost(profession,recipeID)
+    local amount,missing,age,auction,book=self:RecipeAcquisitionCost(profession,recipeID,owner)
     fee=fee+amount;feeUnknown=feeUnknown or missing
     if book then add(required,book,1) end
     if auction then
@@ -146,7 +151,7 @@ function CP:CostCalculation(kind,key,id,quantity)
       end
     end
   end
-  local result=self:CalculateMaterialCosts(required,fee,feeUnknown)
+  local result=self:CalculateMaterialCosts(required,fee,feeUnknown,owner)
   result.title=title;result.kind=kind;result.quantity=quantity;result.sale=sale;result.points=points;result.saleBlocked=saleBlocked
   result.unknownRecipes=unknown
   if unknown>0 then result.cashComplete=false;result.economicComplete=false end
@@ -169,6 +174,7 @@ local function money(self,value)
   return self:FormatCostMoney(value)
 end
 function CP:RefreshCostWindow()
+  self:InvalidateReservations()
   local frame=self.costWindow
   if not frame or not frame:IsShown() or not self.costContext then return end
   local context=self.costContext
@@ -200,7 +206,7 @@ function CP:RefreshCostWindow()
   local detail={}
   for _,mat in ipairs(result.materials) do
     detail[#detail+1]=string.format(L("%dx %s · Vorrat %d · kaufen %d"),mat.quantity,self:ItemName(mat.id),mat.used,mat.missing)
-      .." · "..(mat.missing==0 and L("Kein Zukauf") or (mat.buy and money(self,mat.buy) or L("Preis fehlt")))
+      ..L(" · Für andere Pläne reserviert: ")..mat.reserved.." · "..(mat.missing==0 and L("Kein Zukauf") or (mat.buy and money(self,mat.buy) or L("Preis fehlt")))
   end
   frame.materials:SetText(#detail>0 and table.concat(detail,"\n") or L("Keine vollständigen Materialdaten verfügbar."))
   local measured=frame.materials:GetStringHeight()
@@ -266,7 +272,7 @@ function CP:OpenCostCalculation(kind,key,id,quantity)
     hint:SetText(L("Vorratswert ist kein Zukauf. Verkäufe sind ungesichert; Zukäufe vorher finanzieren. Reise- und erfolglose AH-Gebühren fehlen."))
     local refresh=CreateFrame("Button",nil,frame,"UIPanelButtonTemplate")
     refresh:SetSize(180,26);refresh:SetPoint("BOTTOMLEFT",24,20);refresh:SetText(L("Neu berechnen"))
-    refresh:SetScript("OnClick",function() CP:RefreshCostWindow() end)
+    refresh:SetScript("OnClick",function() CP:InvalidateReservations();CP:RefreshCostWindow() end)
     local close=CreateFrame("Button",nil,frame,"UIPanelCloseButton")
     close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() frame:Hide() end)
     UISpecialFrames[#UISpecialFrames+1]="CraftPilotCostWindow"

@@ -1,0 +1,11 @@
+# CraftPilot 0.15.0-alpha
+
+- Shared stock reservations across all profession and camping plans, with a flat priority list in Settings. The same physical unit cannot finance multiple plans. Costs, current recipe comparisons, manual shopping and automatic route generation respect other plans' reservations.
+- Changed-plan notices consider prices, stock, reservations, current learned recipes, settings and skill. Click to reevaluate without replacing manual choices; automatic routes rebuild from current skill. Successful player craft events reduce manual/camping quantities once per cast GUID. Automatic routes retain their snapshot and show completed crafts until reevaluated.
+- Expanded vendor recipes now include a current-colour integer craft batch and one-time recipe cost, plus a normalized economic comparison with learned recipes. Savings require complete and fresh prices, stock valuation and bank information. Reserved materials remain explicit in cost/material views.
+- Settings → Report a bug: bounded local CraftPilot-only errors, blocked-action capture, optional native Lua listener/!BugGrabber import, editable preview, full-text copy and prefilled GitHub issue link. No silent upload, account token, chat, inventory, or BugGrabber locals. Opening the copied link transmits the included text to GitHub; submitting requires the user's GitHub account.
+- German and English interface updates; install ZIP includes the new runtime modules.
+
+Alpha acceptance: existing core game flows are treated as confirmed for this release, per maintainer direction. This does not claim a new independently observed full client run. Automated checks cover shared allocation/priority, change detection, craft-event deduplication, one-time costs, report limits/redaction, bilingual UI and archive equality. Historical recipe-source/build limits and required notices remain unchanged. No new external datasets were imported.
+
+Reservations are a planning calculation, not an inventory lock. Automatic routes are estimates, not a guaranteed global optimum. Potential sales are not guaranteed and never reduce the upfront funds required. Travel and unsuccessful AH deposits remain excluded. Lua stack collection requires a native listener or optional !BugGrabber; no direct HTTP submission is possible from the addon.

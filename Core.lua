@@ -45,6 +45,7 @@ function CP:Initialize()
   self.db = db
   if self.MigrateEconomyState then self:MigrateEconomyState() end
   if self.InitializeCostingState then self:InitializeCostingState() end
+  self:InitializePlanning();self:InitializeDiagnostics()
   if self.InitializeControls then self:InitializeControls() end
   if self.InitializeVersionChecks then self:InitializeVersionChecks() end
   self:Refresh(false)
@@ -271,9 +272,12 @@ function CP:Options(profession)
        and recipe.snapshotSkill == p.skill and chance and chance > 0
        and type(recipe.mats)=="table" then
       local cost,missing,unknown=0,0,{}
+      local aggregate={}
       for _,mat in ipairs(recipe.mats) do
-        local item,needed=mat[1],mat[2]
-        local owned=self:ItemCount(item)
+        aggregate[mat[1]]=(aggregate[mat[1]] or 0)+mat[2]
+      end
+      for item,needed in pairs(aggregate) do
+        local owned=self:AvailableForPlan(item,profession)
         local deficit=math.max(0,needed-owned)
         missing=missing+deficit
         local pricedQty=self.db.mode=="value" and needed or deficit
@@ -557,6 +561,7 @@ function CP:SetPlanRange(key,first,last)
   p.start,p.target=a,b
   p.autoRoute=nil
   p.autoMode=false
+  self:InvalidateReservations();self:StampPlan(key)
   return true
 end
 
@@ -569,6 +574,7 @@ function CP:AddPlanCraft(key,recipeID,quantity)
      or count<1 or count>999 then return false end
   p.crafts[recipeID]=math.min(9999,(p.crafts[recipeID] or 0)+count)
   p.autoMode=false
+  self:InvalidateReservations();self:StampPlan(key)
   return true
 end
 
@@ -579,6 +585,7 @@ function CP:ClearPlanCraft(key,recipeID)
   else p.crafts={} end
   p.autoMode=false
   p.autoRoute=nil
+  self:InvalidateReservations();self:StampPlan(key)
 end
 
 function CP:DraftPlanStep(key)
@@ -643,7 +650,7 @@ function CP:PlanShopping(key)
   local noPrice=0
   local unknownBank=0
   for id,required in pairs(aggregate) do
-    local total,bag,bank,live,known=self:ItemAvailability(id)
+    local total,bag,bank,live,known,reserved=self:AvailableForPlan(id,key)
     local missing=math.max(0,required-total)
     local price=self:Price(id)
     local estimate=missing>0 and price and price*missing or nil
@@ -652,7 +659,7 @@ function CP:PlanShopping(key)
     if self.db.includeBank and not known then unknownBank=unknownBank+1 end
     materials[#materials+1]={
       id=id,name=self:ItemName(id),required=required,bag=bag,bank=bank,
-      bankKnown=known,bankLive=live,missing=missing,price=price,
+      reserved=reserved,bankKnown=known,bankLive=live,missing=missing,price=price,
       cost=estimate
     }
   end
@@ -692,9 +699,11 @@ end
 
 function CP:Refresh(capture)
   if not self.db then return end
+  self:InvalidateReservations()
   self:RefreshProfessionSkills()
   if capture then self:CaptureProfession() end
   if self.Render then self:Render() end
+  self:RefreshCostWindow()
 end
 
 local aliases={
@@ -763,7 +772,7 @@ end
 local events=CreateFrame("Frame")
 local names={"PLAYER_LOGIN","TRADE_SKILL_SHOW","TRADE_SKILL_LIST_UPDATE",
   "TRADE_SKILL_DATA_SOURCE_CHANGED","NEW_RECIPE_LEARNED","BAG_UPDATE_DELAYED","PLAYER_LEVEL_UP",
-  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED"}
+  "BANKFRAME_OPENED","BANKFRAME_CLOSED","PLAYERBANKSLOTS_CHANGED","UNIT_SPELLCAST_SUCCEEDED","AUCTION_HOUSE_CLOSED"}
 for _,name in ipairs(names) do pcall(events.RegisterEvent,events,name) end
 local function schedule(capture)
   pendingCapture=pendingCapture or capture
@@ -781,12 +790,14 @@ local function schedule(capture)
     run()
   end
 end
-events:SetScript("OnEvent",function(_,event)
+events:SetScript("OnEvent",function(_,event,...)
   if event=="PLAYER_LOGIN" then
     CP:Initialize()
     SLASH_CRAFTPILOT1="/cp"
     SLASH_CRAFTPILOT2="/craftpilot"
     SlashCmdList.CRAFTPILOT=command
+  elseif event=="UNIT_SPELLCAST_SUCCEEDED" then
+    if CP.db and CP:RecordPlannedCraft(...) then schedule(true) end
   elseif event=="BANKFRAME_OPENED" then
     CP.bankIsOpen=true
     CP:SnapshotBankMaterials()

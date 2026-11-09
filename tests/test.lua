@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Diagnostics.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -811,7 +811,7 @@ print("PASS: all color boundaries, secondary subset, green policy, live conflict
 -- Old saved settings, selected view and reversible plans survive the module rename.
 local beforeMigration=CP.db
 local backup={crafts={[900001]=3},start=10,target=20}
-CP.db={professions={engineering={skill=10,cap=75}},ui={godCut=17,godRecipe=900002,tab="god"},plans={engineering={godPrevious=backup,crafts={[900002]=1}}}}
+CP.db={recipes={},professions={engineering={skill=10,cap=75}},ui={godCut=17,godRecipe=900002,tab="god"},plans={engineering={godPrevious=backup,crafts={[900002]=1}}}}
 CP:MigrateEconomyState()
 assert(CP.db.ui.economyCut==17 and CP.db.ui.economyRecipe==900002 and CP.db.ui.tab=="economy")
 assert(CP.db.ui.godCut==nil and CP.db.ui.godRecipe==nil)
@@ -847,6 +847,9 @@ originalCatalog.npcs={[991]={name="Vendor A",faction="A",map=1453,zone="Stormwin
  [992]={name="Vendor H",faction="H",map=1454,zone="Orgrimmar",x=40,y=60}}
 local offers=CP:VendorRecipeOptions("engineering")
 assert(#offers==1 and offers[1].id==99101 and #offers[1].vendors==2 and offers[1].recipeCost==500)
+local vendorCost=CP:VendorSkillComparison("engineering",offers[1])
+assert(vendorCost.cost.fee==500 and vendorCost.crafts==1 and vendorCost.points==1)
+assert(not vendorCost.saving or vendorCost.saving<=0,"An extra book fee alone cannot create a saving")
 assert(offers[1].vendors[1].location.x==.5 and offers[1].vendors[1].location.y==.75)
 CP.db.lastCapture={key="engineering",skill=10};CP.db.view="engineering";CP:OpenTab("now")
 local vendorRecipeButton
@@ -1029,11 +1032,13 @@ CP.db.ui.tab,CP.db.ui.campingPage,CP.db.ui.campingRecipe=previousTab,previousPag
 
 print("PASS: cash versus economic costs, one-time book fees, missing prices, route stock and cost popup refresh")
 
+assert(loadfile("tests/planning.lua"))(CP)
+
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.14.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.14.0","0.14.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.14.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.14.0-alpha"))
+assert(CP:IsNewerVersion("0.15.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.15.0","0.15.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.15.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.15.0-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -1051,7 +1056,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.14.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.15.0-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)

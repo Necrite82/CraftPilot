@@ -194,6 +194,8 @@ function CP:SettingsCards()
     card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
     card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im Clever skillen vergleichbar."),toggle("preferReliableSkill")),
     card(L("Kaufrezepte anzeigen: ")..state(ui.showVendorRecipes),L("Passende kaufbare Rezepte direkt in Jetzt skillen anzeigen."),toggle("showVendorRecipes")),
+    card(L("Vorratsreservierungen"),L("Gemeinsame Bestände aller Berufs- und Campingpläne; Priorität ändern."),function() CP:OpenTab("reservations") end),
+    card(L("Fehler melden"),CP:DiagnosticStatus(),function() CP:OpenDiagnosticReport() end),
     card(L("Berufsdaten prüfen"),L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),function() CP:OpenTab("audit") end),
     card(L("Auto-Route: ")..(ui.knownRecipesOnly and L("nur erlernte Rezepte") or L("Katalogvorschläge zulassen")),L("Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein."),toggle("knownRecipesOnly")),
     card(L("Quelldetails: ")..state(ui.showSourceDetails),L("Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar."),toggle("showSourceDetails")),

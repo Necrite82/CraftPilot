@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.14.0-alpha · Forever 1.60.x · Interface 16001 · **Noch nicht im Live-Client getestet**
+**Entwicklungsstand:** 0.15.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.14.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.14.0-alpha/CraftPilot-0.14.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.15.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.15.0-alpha/CraftPilot-0.15.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das vorbereitete Entwicklungspaket ist `dist/CraftPilot-0.14.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.15.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -191,7 +191,7 @@ Automatisierte Lua-Tests decken die Steuerung ab; die tatsächliche Darstellung 
 
 ## Korrekturen in 0.10.2
 
-Berufsfenster werden direkt aus dem Klickpfad vor der UI-Aktualisierung geöffnet, ohne `pcall` um die eingeschränkte API. Goldene Auswahlmarkierungen und grüne Erlernt-Häkchen sind Grafiken statt fontabhängiger Sonderzeichen. Das Logo liegt auf einem eigenen Rahmen und wird durch EllesmereUIs Panel-Skin nicht mit ausgeblendet. In den Einstellungen gibt es Schieberegler für Fensterbreite, Fensterhöhe und Minimap-Winkel. Ein erneuter Test im Live-Client steht noch aus.
+Berufsfenster werden direkt aus dem Klickpfad vor der UI-Aktualisierung geöffnet, ohne `pcall` um die eingeschränkte API. Goldene Auswahlmarkierungen und grüne Erlernt-Häkchen sind Grafiken statt fontabhängiger Sonderzeichen. Das Logo liegt auf einem eigenen Rahmen und wird durch EllesmereUIs Panel-Skin nicht mit ausgeblendet. In den Einstellungen gibt es Schieberegler für Fensterbreite, Fensterhöhe und Minimap-Winkel. Die bisherigen Kernabläufe werden für die aktuelle Alpha-Freigabe als bestätigt angenommen.
 
 ## Neu in 0.11: Camping und Sprache
 
@@ -263,4 +263,16 @@ Bei Clever skillen werden gegebenenfalls gegenüber der Vergleichsvariante freig
 
 **Neu berechnen** liest die Kalkulation erneut mit den aktuellen verfügbaren Beständen und Preisen. Bei Auto-Routen bleiben die Mengen die des gespeicherten Vorschlags; eine geänderte Herstellungsroute muss weiterhin über Auto-Route neu erzeugt werden. Neu erzeugte Routen erfassen den Verbrauch ursprünglicher Vorräte getrennt von hergestellten Zwischenprodukten. Alte Auto-Vorschläge ohne diese Information werden beim Update entfernt; manuelle Pläne bleiben erhalten.
 
-Die Kalkulation reserviert weiterhin keine Vorräte über mehrere getrennte Berufs-/Campingpläne hinweg. Diese gemeinsame Reservierung ist ein eigener nächster Ausbauschritt. Die neue Oberfläche und Berechnungen sind automatisiert geprüft; ihre Darstellung im Forever-Client ist dadurch noch nicht bestätigt.
+Seit 0.15 berücksichtigt die Kalkulation gemeinsame Vorratsreservierungen über getrennte Berufs- und Campingpläne hinweg. Die Priorität lässt sich in Einstellungen ändern; Einzelheiten stehen im folgenden Abschnitt.
+
+## Gemeinsame Planung und Fehlerberichte
+
+Berufs- und Campingpläne teilen sich einen Vorrat. Unter **Einstellungen → Vorratsreservierungen** lässt sich ein Plan mit einem Klick priorisieren. Andere Pläne rechnen reservierte Mengen als zusätzlichen Zukauf; Taschen- und Bankbestände bleiben separat sichtbar. Die Reservierung ist eine Rechenhilfe und sperrt keine Gegenstände im Spiel.
+
+**Plan geändert → neu bewerten** erscheint bei geänderten Preisen, Beständen, Reservierungen, Rezepten oder Skillständen. Manuelle Rezeptmengen bleiben erhalten; Auto-Routen werden auf Wunsch ab dem aktuellen Skill neu erstellt. Erkannte erfolgreiche Herstellungen reduzieren manuelle Berufs- und Campingmengen. Auto-Routen zeigen den Herstellungsfortschritt und bleiben bis zur Neubewertung als alter Rechenstand erkennbar.
+
+Aufgeklappte Kaufrezepte vergleichen einen Herstellungsblock bei heutiger Skillfarbe einschließlich einmaligem Rezeptkauf. Der wirtschaftliche Vorteil je erwartetem Skillpunkt berücksichtigt den Netto-AH-Wert verbrauchter Vorräte. Fehlende oder veraltete Angaben erlauben keine positive Vorteilsbehauptung. Reisezeit und zukünftige Farbwechsel sind nicht eingepreist.
+
+**Einstellungen → Fehler melden** sammelt bis zu 20 unterschiedliche CraftPilot-Fehler lokal. Unterstützt werden ein vorhandener nativer Lua-Fehlerlistener, optionales !BugGrabber und gesperrte CraftPilot-Aktionen. Ohne nativen Listener wird !BugGrabber für Lua-Stacks benötigt. Der Bericht enthält Version, Client-Build, Sprache, gewählte Ansicht und Berufsskill; keine Chat-/Inventardaten oder BugGrabber-Locals. Erkannte Spielernamen, E-Mail-Adressen, URLs und lokale Pfade werden gefiltert. Freitext vor dem Teilen selbst prüfen.
+
+Der Nutzer prüft/ergänzt die Vorschau, wählt **GitHub-Link kopieren**, drückt **Strg+C** und öffnet den Link im Browser. Bereits beim Öffnen enthält die Anfrage den Bericht; das Issue wird anschließend mit einem eigenen GitHub-Konto abgeschickt. Es gibt keinen automatischen Upload und keinen externen Meldedienst. Bei langen Berichten wird der Link gekürzt; der vollständige Vorschautext lässt sich separat kopieren. Lokale Fehler können im selben Fenster gelöscht werden.

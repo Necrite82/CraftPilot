@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.15.0-alpha
+
+Gemeinsame Vorratsreservierungen für Berufs- und Campingpläne, Prioritäten, Neubewertung bei Änderungen und erfasster Herstellungsfortschritt. Kaufrezepte vergleichen Rezept- und Materialkosten mit erlernten Alternativen. Lokale Fehlerberichte mit Vorschau und vorbereitetem GitHub-Issue-Link. [Details](docs/RELEASE_0.15.0-alpha.md).
+
 ## 0.8.0-alpha — 2026-11-08
 
 - GPL-3.0-Rezeptkatalog für sechs Herstellungsberufe aus dem Craft-Ladder-Datenstand 1.60.1.70425–70450 integriert; Bergbau-Schmelzrezepte für Herstellungswege ergänzt.
