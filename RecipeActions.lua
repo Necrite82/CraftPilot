@@ -73,7 +73,7 @@ function CP:VendorRecipeOptions(key)
     local native=(self.db.recipes[key] or {})[id]
     local chance=self:CatalogSkillChance(recipe,skill)
     if native and native.snapshotSkill==skill and odds[native.difficulty]~=nil then chance=odds[native.difficulty] end
-    if chance>0 and (recipe.learn or 1)<=skill and recipe.item and not recipe.cooldown and not recipe.tools and not recipe.twin and not recipe.unavailable
+    if chance>0 and self:SkillPolicyAllows(key,id,recipe,skill,chance) and (recipe.learn or 1)<=skill and recipe.item and not recipe.cooldown and not recipe.tools and not recipe.twin and not recipe.unavailable
       and not (native and (native.learned or native.disabled)) then
       local vendors=self:RecipeVendors(key,id)
       if #vendors>0 then

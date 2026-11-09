@@ -55,7 +55,7 @@ function CP:NextRecipeUnlock(key,skill,cap)
           if not unlock or at<unlock then unlock=at end
         end
       end
-      if unlock and self:CatalogSkillChance(recipe,unlock)>=.5 and (not best or unlock<=best.skill) then
+      if unlock and self:SkillPolicyAllows(key,id,recipe,unlock) and self:CatalogSkillChance(recipe,unlock)>=.5 and (not best or unlock<=best.skill) then
         local fee,unknown=self:RecipeAcquisitionCost(key,id,key,unlock)
         local chance=self:CatalogSkillChance(recipe,unlock);local crafts=math.ceil(5/chance);local cost=fee
         for item,n in pairs(recipe.mats or {}) do local price=self:Price(item);if price then cost=cost+price*n*crafts else unknown=true end end
@@ -70,7 +70,7 @@ function CP:ExpectedCrafts(key,id,recipe,first,last)
   local casts,reached=0,first
   for skill=first,last-1 do
     local chance=self:RecipeChanceAt(key,id,recipe,skill)
-    if chance<=0 then break end
+    if chance<=0 or not self:SkillPolicyAllows(key,id,recipe,skill,chance) then break end
     casts=casts+1/chance;reached=skill+1
   end
   return math.min(9999,math.max(1,math.ceil(casts-1e-9))),reached,casts
@@ -81,6 +81,14 @@ function CP:CraftSuggestion(key,id)
   local recipe=catalog and catalog.recipes[id]
   local native=(self.db.recipes[key] or {})[id]
   if not recipe or current>=cap then return {count=1,target=current,reference=false} end
+  local planned,nextPlanned=self:ForwardRouteStep(key)
+  if planned and planned.id==id then
+    local effective={colors=recipe.colors,mats=planned.mats or recipe.mats}
+    local count,reached=self:ExpectedCrafts(key,id,effective,current,planned.last)
+    if current==planned.first then count=planned.crafts end
+    local nextRecipe=nextPlanned and catalog.recipes[nextPlanned.id]
+    return {count=count,target=reached,reference=true,planned=true,forward=planned.forward,nextStep=nextRecipe and {id=nextPlanned.id,skill=nextPlanned.first,crafts=nextPlanned.crafts,recipe={colors=nextRecipe.colors,mats=nextPlanned.mats or nextRecipe.mats}} or nil}
+  end
   self.unlockCache=self.unlockCache or {}
   local token=key..":"..current..":"..cap
   if self.unlockCache[token]==nil then self.unlockCache[token]=self:NextRecipeUnlock(key,current,cap) or false end
@@ -105,7 +113,7 @@ function CP:FollowupNeeds(key,id,quantity,advice)
   local recipe=nextStep.recipe
   local cap=(self.db.professions[key] or {}).cap or nextStep.skill+1
   local target=math.min(cap,nextStep.skill+10,recipe.colors and recipe.colors[3] or nextStep.skill+1)
-  local count=self:ExpectedCrafts(key,nextStep.id,recipe,nextStep.skill,math.max(nextStep.skill+1,target))
+  local count=nextStep.crafts or self:ExpectedCrafts(key,nextStep.id,recipe,nextStep.skill,math.max(nextStep.skill+1,target))
   local output=self:RecipeMarketOutput(key,id)
   local native=(self.db.recipes[key] or {})[id]
   local catalog=self:RecipeVendorCatalog(key)
@@ -137,7 +145,7 @@ function CP:QuantityControl(b,key,id,active,y,width)
   end
   local advice=self:CraftSuggestion(key,id)
   b.quantityLabel:Show();b.quantityLabel:ClearAllPoints();b.quantityLabel:SetPoint("TOPLEFT",b,"TOPLEFT",48,-y);b.quantityLabel:SetWidth(width-65)
-  b.quantityLabel:SetText(advice.target>((self.db.professions[key] or {}).skill or 0) and string.format(L("Vorschlag: ca. %d Herstellungen bis Skill %d"),advice.count,advice.target) or L("Menge frei wählen · kein belastbarer Skillweg"))
+  b.quantityLabel:SetText((advice.forward and (L("Für Folgeschritte eingeplant · ")) or "")..(advice.target>((self.db.professions[key] or {}).skill or 0) and string.format(L("Vorschlag: ca. %d Herstellungen bis Skill %d"),advice.count,advice.target) or L("Menge frei wählen · kein belastbarer Skillweg")))
   b.quantityInput.recipeKey=key;b.quantityInput.recipeID=id
   b.quantityInput:ClearAllPoints();b.quantityInput:SetPoint("TOPLEFT",b,"TOPLEFT",112,-(y+23))
   b.quantityReset:ClearAllPoints();b.quantityReset:SetPoint("TOPLEFT",b,"TOPLEFT",186,-(y+23))
@@ -153,7 +161,7 @@ function CP:QuantityControl(b,key,id,active,y,width)
     notes[#notes+1]=n.made>0 and string.format(L("%s: jetzt ca. %d hergestellt · Folgeschritt braucht ca. %d · zusätzlich einplanen %d"),self:ItemName(n.id),n.made,n.next,n.short)
       or string.format(L("%s: jetzt %d · Folgeschritt %d · danach vorhanden ca. %d · zusätzlich %d"),self:ItemName(n.id),n.now,n.next,n.after,n.short)
   end end
-  if active and #notes>0 then notes[#notes+1]=L("Folgebedarf: Beispiel für bis zu 10 weitere Skillpunkte, keine feste Reservierung.") end
+  if active and #notes>0 then notes[#notes+1]=advice.planned and L("Folgebedarf aus dem nächsten Schritt deiner gespeicherten Route.") or L("Folgebedarf: Beispiel für bis zu 10 weitere Skillpunkte, keine feste Reservierung.") end
   b.followupNote:SetWidth(width-65);b.followupNote:ClearAllPoints();b.followupNote:SetPoint("TOPLEFT",b,"TOPLEFT",48,-h);b.followupNote:SetText(table.concat(notes,"\n"));b.followupNote:SetShown(#notes>0)
   local measured=b.followupNote:GetStringHeight();if #notes>0 then h=h+(type(measured)=="number" and measured or #notes*16)+8 end
   return h+8

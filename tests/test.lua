@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","Presentation.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","ManualShopping.lua","CraftSuggestions.lua","PlanUX.lua","VendorBrowser.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","SkillPolicy.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","Presentation.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","ManualShopping.lua","CraftSuggestions.lua","PlanUX.lua","VendorBrowser.lua","ForwardPlanning.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -631,7 +631,7 @@ CP.db.recipes.cooking[sample.maker]=prior
 
 -- Compact checkboxes exercise both directions, including inverted minimap visibility.
 CP:OpenTab("settings")
-for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB"}) do
+for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB","allowYellow","allowGreen","planAhead"}) do
  local control
  for _,candidate in ipairs(createdFrames) do local spec=rawget(candidate,"craftCheckSpec");if spec and spec.key==key then control=candidate end end
  assert(control,"Missing checkbox: "..key)
@@ -1034,6 +1034,7 @@ assert(loadfile("tests/trainer_recipes.lua"))(CP)
 assert(loadfile("tests/presentation.lua"))(CP,createdFrames)
 assert(loadfile("tests/plan_ux.lua"))(CP,createdFrames)
 assert(loadfile("tests/vendor_browser.lua"))(CP,createdFrames)
+assert(loadfile("tests/foresight.lua"))(CP,createdFrames)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
 assert(CP:IsNewerVersion("0.19.1-alpha","0.11.9-alpha"))
@@ -1057,7 +1058,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.19.1-alpha")
+assert(#sent==1 and sent[1][2]=="Q|"..CP.version)
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)

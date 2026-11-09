@@ -2,34 +2,38 @@ local _,CP=...
 local L=CP.L
 function CP:PlanPageCards(key,page)
   local plan=self:PlanFor(key);local route=self:AutoRouteShopping(key)
+  if self:RouteBuildPending(key) then return {{title=L("Route wird berechnet"),detail=L("Skillfarben, Folgebedarf und Einkauf werden verglichen. Das Spiel bleibt bedienbar."),footer=L("Anklicken: Berechnung abbrechen"),color="blue",action=function() CP:CancelRouteBuild(key);CP:Render() end}} end
   local c=self:CostCalculation("plan",key)
   if page=="details" then
     local cards={self:CostSummaryCard("plan",key),self:PlanReviewCard(key),{title=L("Vorräte und Preise"),detail=self:BankStatus(),footer=L("Scanpreise und Skillfarben sind Schätzungen. Ausbildungsränge und Wege ggf. zusätzlich."),color="blue"}}
     if c.stale>0 or c.unknownAge>0 then cards[#cards+1]={title=L("Preiswarnungen"),detail=c.stale..L(" veraltet · ")..c.unknownAge..L(" mit unbekanntem Scan-Alter"),footer=L("Vor Einkäufen Auctionator erneut scannen; Preise variieren."),color="gold"} end
     if route and route.ignoredPreferences and route.ignoredPreferences>0 then cards[#cards+1]={title=L("Nicht passende Vorgaben übersprungen"),detail=L("Für inzwischen ungeeignete Rezepte wurde wieder eine gültige Alternative vorgeschlagen."),color="gold"} end
-    if next(plan.preferences or {}) or next(plan.materialPreferences or {}) then cards[#cards+1]={title=L("Alle eigenen Vorgaben zurücksetzen"),detail=L("Wieder automatisch Rezepte und Zwischenprodukte vorschlagen."),action=function() plan.preferences=nil;plan.materialPreferences=nil;CP:BuildRouteForCurrentPlan(key);CP:Render() end,color="gold"} end
+    if next(plan.preferences or {}) or next(plan.materialPreferences or {}) then cards[#cards+1]={title=L("Alle eigenen Vorgaben zurücksetzen"),detail=L("Wieder automatisch Rezepte und Zwischenprodukte vorschlagen."),action=function() plan.preferences=nil;plan.materialPreferences=nil;CP:RequestRouteBuild(key);CP:Render() end,color="gold"} end
     cards[#cards+1]={title=L("Priorität der Vorräte ändern"),detail=L("Bestände zwischen Berufs- und Campingplänen aufteilen."),action=function() CP:OpenTab("reservations") end,color="blue"}
     return cards
   end
   local cards={}
   if self:PlanNeedsReview(key) then cards[#cards+1]=self:PlanReviewCard(key) end
-  if route and route.plannerVersion~=2 then cards[#cards+1]={title=L("Gespeicherte Route aktualisieren"),detail=L("Oben Plan erstellen wählen, um Lernkosten und neue Routenvorgaben vollständig neu zu berechnen."),color="gold"} end
-  if route and route.blocked then cards[#cards+1]={title=L("Route unvollständig"),detail=string.format(L("Berechnet bis %d statt %d · Rezeptdaten oder Bereich prüfen."),route.reached,route.target),color="gold"} end
+  if route and route.plannerVersion~=3 then cards[#cards+1]={title=L("Gespeicherte Route aktualisieren"),detail=L("Oben Plan erstellen wählen, um Lernkosten und neue Routenvorgaben vollständig neu zu berechnen."),color="gold"} end
+  if route and route.blocked then cards[#cards+1]={title=L("Route unvollständig"),detail=string.format(L("Berechnet bis %d statt %d · Rezeptdaten oder Bereich prüfen."),route.reached,route.target).."\n"..L("Auch die erlaubten Skillfarben und Punktgrenzen in den Einstellungen prüfen."),color="gold"} end
   if page=="crafts" then
+    if route and route.forwardPlan and route.forwardPlan.enabled then
+      local f=route.forwardPlan
+      cards[#cards+1]={title=L("Vorausschau für diesen Skillbereich"),detail=f.missingPrices and L("Fehlende Preise verhindern einen verlässlichen Vergleich der Folgeschritte.") or string.format(L("Ersparnis zum direkten Weg: %s · %d zusätzliche Herstellungen vermieden"),self:FormatCostMoney(f.saved or 0),math.max(0,f.craftsSaved or 0)),footer=L("Folgebedarf wird nur innerhalb des gewählten Bereichs verglichen; kein garantiertes globales Optimum."),color="blue"}
+    end
     local rows={}
     if route then
       local roots={}
-      for _,s in ipairs(route.steps) do roots[s.id]=true;rows[#rows+1]={id=s.id,quantity=s.crafts,first=s.first,last=s.last,name=s.name,preferred=s.preferred,automatic=true} end
+      for _,s in ipairs(route.steps) do roots[s.id]=true;rows[#rows+1]={id=s.id,quantity=s.crafts,first=s.first,last=s.last,name=s.name,preferred=s.preferred,forward=s.forward,automatic=true} end
       for _,s in ipairs(route.intermediates or {}) do if not roots[s.id] then rows[#rows+1]={id=s.id,key=s.key,quantity=s.count,first=s.skill,last=s.skill and s.skill+1,name=s.name,automatic=true,materialID=s.output,units=s.units,intermediate=true} end end
     else
       for _,s in ipairs(self:PlanShopping(key).steps) do rows[#rows+1]={id=s.id,quantity=s.quantity,name=s.name} end
     end
     if #rows==0 then return {{title=L("Noch keine Herstellungen geplant"),detail=L("Oben einen Bereich planen oder in Jetzt skillen ein Rezept wählen und hier hinzufügen."),color="blue"}} end
     if route and ((route.preferencesApplied or 0)>0 or next(plan.materialPreferences or {})) then
-      local baseline=self:GenerateAutomaticRoute(key,plan.start,plan.target)
-      local b=baseline and self:CostCalculation("plan",key,nil,nil,baseline)
+      local reference=route.automaticReference
       cards[#cards+1]={title=L("Deine Rezeptwahl · Rest der Route neu berechnet"),
-        detail=b and b.cashComplete and c.cashComplete and (L("Mehr-/Minderkosten zum automatischen Vorschlag: ")..self:FormatCostMoney(c.cash-b.cash)) or L("Preisvergleich unvollständig · Details prüfen"),
+        detail=reference and reference.complete and c.cashComplete and not self:PlanNeedsReview(key) and (L("Mehr-/Minderkosten zum automatischen Vorschlag: ")..self:FormatCostMoney(c.cash-reference.cash)) or L("Preisvergleich unvollständig · Details prüfen"),
         footer=L("Empfehlung bleibt eine Schätzung, kein garantiertes globales Optimum."),color="gold"}
     end
     cards[#cards+1]={productionRows=rows,recipeKey=key};return cards
@@ -54,7 +58,7 @@ function CP:DrawProductionTable(parent,rows,key,width)
     if not r then r=self:CreateFlatAction(parent,width,52,function() end);r.cells={};r.edit=CreateFrame("Button",nil,r,"BackdropTemplate");self:StyleActionButton(r.edit);r.edit:SetSize(68,24);r.edit:SetPoint("RIGHT",r,"RIGHT",-6,0);parent.productionRows[i]=r end
     local recipeKey=row.key or key
     local native=(self.db.recipes[recipeKey] or {})[row.id]
-    local values={row.name,row.intermediate and L("Zwischenprodukt") or (row.first and (row.first.."–"..row.last) or "—"),tostring(row.quantity),row.preferred and L("Deine Wahl") or (native and native.learned and L("Erlernt") or L("Noch lernen"))}
+    local values={row.name,row.intermediate and L("Zwischenprodukt") or (row.first and (row.first.."–"..row.last) or "—"),tostring(row.quantity),row.preferred and L("Deine Wahl") or (row.forward and L("Folgebedarf") or (native and native.learned and L("Erlernt") or L("Noch lernen")))}
     x=8
     for j=1,4 do local t=r.cells[j] or self:DisplayLabel(r,"GameFontHighlightSmall",0,0,50,"");r.cells[j]=t;t:ClearAllPoints();t:SetPoint("TOPLEFT",r,"TOPLEFT",x,-12);t:SetWidth(width*cols[j][2]-8);t:SetText(values[j]);x=x+width*cols[j][2] end
     local measured=r.cells[1]:GetStringHeight();local h=math.max(52,(type(measured)=="number" and measured or 16)+24)
@@ -77,7 +81,7 @@ function CP:ChooseRouteRecipe(key,first,last,id)
   local previous=p.preferences;local prefs={};for s,r in pairs(previous or {}) do prefs[s]=r end
   for s=math.max(p.start,first),math.min(p.target,last)-1 do prefs[s]=id end
   p.preferences=prefs
-  local ok=self:BuildRouteForCurrentPlan(key)
+  local ok=self:RequestRouteBuild(key)
   if not ok then p.preferences=previous;return false end
   return true
 end
@@ -87,7 +91,7 @@ function CP:ChooseMaterialRecipe(key,item,id,skill)
   if not valid then return false end
   local p=self:PlanFor(key);local old=p.materialPreferences;local prefs={};for k,v in pairs(old or {}) do prefs[k]=v end
   prefs[item]=id;p.materialPreferences=prefs
-  if not self:BuildRouteForCurrentPlan(key) then p.materialPreferences=old;return false end
+  if not self:RequestRouteBuild(key) then p.materialPreferences=old;return false end
   return true
 end
 function CP:OpenRouteAlternatives(key,first,last,materialItem,units)

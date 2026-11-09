@@ -122,7 +122,7 @@ function CP:TrainerRecipeOptions(key)
     local native=(self.db.recipes[key] or {})[id]
     local _,_,eligible=self:TrainerRecipeFee(key,id)
     local chance=self:RecipeChanceAt(key,id,recipe,prof.skill)
-    if eligible and chance>0 and not recipe.cooldown and not (native and (native.learned or native.disabled))
+    if eligible and chance>0 and self:SkillPolicyAllows(key,id,recipe,prof.skill,chance) and not recipe.cooldown and not (native and (native.learned or native.disabled))
       and type(recipe.mats)=="table" and next(recipe.mats) then
       local mats={};for item,n in pairs(recipe.mats) do mats[#mats+1]={item,n} end
       local fee=self:TrainerRecipeFee(key,id)

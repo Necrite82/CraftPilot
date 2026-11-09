@@ -83,11 +83,26 @@ function CP:AuctionatorExportCard(key,owner)
     action=function() CP:ExportToAuctionator(owner);CP:Render() end}
 end
 function CP:ExportToAuctionator(owner)
+  if self:RouteBuildPending(owner) then self:Say(L("Route wird berechnet · Export wartet auf einen aktuellen Plan."));return false,"pending" end
   local api=_G.Auctionator and Auctionator.API and Auctionator.API.v1
   if not api or type(api.CreateShoppingList)~="function" or type(api.ConvertToSearchString)~="function" then
     self:Say(L("Auctionator-Einkaufslisten-API fehlt. Bitte eine kompatible Auctionator-Version aktivieren."));return false,"api"
   end
   self:InvalidateReservations()
+  local cached
+  if owner~="camping" and self:CanDeferRouteBuild() then
+    local p=self:PlanFor(owner)
+    if p and (p.autoMode or not next(p.crafts)) then
+      local current=(self.db.professions[owner] or {}).skill or p.start
+      if p.autoMode and current>=p.target then self:Say(L("Zielskill bereits erreicht · Einkaufsplan neu wählen."));return false,"complete" end
+      if p.autoMode and current>p.start then p.start=current end
+      if not p.autoRoute or p.autoRoute.plannerVersion~=3 or self:PlanNeedsReview(owner) then
+        self:RequestRouteBuild(owner,function() CP:ExportToAuctionator(owner) end)
+        self:Render();return false,"pending"
+      end
+      cached=p.autoRoute
+    end
+  end
   local missing={};local name="CraftPilot - "
   if owner=="camping" then
     local plan=self:CampingShopping()
@@ -102,8 +117,9 @@ function CP:ExportToAuctionator(owner)
       if not ok then self:Say(reason or L("Auto-Route nicht verfügbar."));return false,"route" end
     elseif self:PlanNeedsReview(owner) and not self:ReevaluatePlan(owner) then return false,"review" end
     if plan.autoMode then
-      -- Always rebuild from the selected range so changed inventory and intermediates are reflected.
-      local ok,route=self:BuildRouteForCurrentPlan(owner)
+      -- A fresh deferred route is already validated; synchronous clients rebuild before export.
+      local ok,route
+      if cached then ok,route=true,cached else ok,route=self:BuildRouteForCurrentPlan(owner) end
       if not ok or route.blocked or route.reached<plan.target then
         self:Say(L("Export gestoppt: Auto-Route erreicht den Zielskill nicht. Bereich oder Rezeptdaten prüfen."));return false,"incomplete"
       end

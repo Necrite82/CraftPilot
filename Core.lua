@@ -259,6 +259,9 @@ function CP:CaptureProfession()
       old.learned=detail.learned == true
       old.disabled=detail.disabled == true
       old.canSkillUp=detail.canSkillUp
+      if old.colorObservedDifficulty~=detail.relativeDifficulty or type(old.colorObservedStart)~="number" then
+        old.colorObservedStart=skill;old.colorObservedDifficulty=detail.relativeDifficulty
+      end
       old.difficulty=detail.relativeDifficulty
       old.snapshotSkill=skill
       local mats,schematic=schematicMats(T,id)
@@ -290,6 +293,7 @@ function CP:Options(profession)
     local chance=odds[recipe.difficulty]
     if recipe.learned and not recipe.disabled and recipe.canSkillUp ~= false
        and recipe.snapshotSkill == p.skill and chance and chance > 0
+       and self:SkillPolicyAllows(profession,id,nil,p.skill,chance)
        and type(recipe.mats)=="table" then
       local cost,missing,unknown=0,0,{}
       local aggregate={}
@@ -344,6 +348,10 @@ function CP:SelectedOption(profession)
     for _,entry in ipairs(list) do
       if entry.id==selected then return entry,list end
     end
+  end
+  local step=self:ForwardRouteStep(profession)
+  if step and step.forward and self.db.ui.recipeSort=="cost" then
+    for i,entry in ipairs(list) do if entry.id==step.id then table.remove(list,i);table.insert(list,1,entry);return entry,list end end
   end
   return list[1],list
 end
@@ -589,6 +597,7 @@ function CP:AddPlanCraft(key,recipeID,quantity)
 end
 
 function CP:ClearPlanCraft(key,recipeID)
+  if self.CancelRouteBuild then self:CancelRouteBuild(key) end
   local p=self:PlanFor(key)
   if not p then return end
   if type(recipeID)=="number" then p.crafts[recipeID]=nil

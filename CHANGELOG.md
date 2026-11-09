@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.0-alpha
+
+Gelb und Grün jeweils erlauben und pro Rezept auf weitere Skillpunkte ab Farbwechsel begrenzen. Vorausschauender Vergleich früh hergestellter Zwischenprodukte über den gewählten Skillbereich, mit Kostenvergleich, Folgebedarf und Mengenhinweisen. Abbrechbare Berechnung in kleinen Abschnitten und erneute Prüfung vor dem Export. [Details](docs/RELEASE_0.20.0-alpha.md).
+
 ## 0.19.1-alpha
 
 Direkte Händlerrezept-Ansicht mit allen 698 hinterlegten Händlerrezepten, einschließlich zukünftiger, erlernter und bedingt verfügbarer Angebote. Ausgegraute Voraussetzungen, Händlerstandorte, Wegpunkte, Suche und Sortierung. Der berechnete Einkaufsvorschlag steht im Vordergrund; die manuelle Einkaufsliste ist unten separat erreichbar. [Details](docs/RELEASE_0.19.1-alpha.md).

@@ -4,9 +4,21 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.19.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.20.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.20: color preferences and follow-up planning
+
+In **Settings**, allow yellow and green recipes separately and set an additional skill-point limit for each. Limits apply **per recipe from its color transition**: yellow 10 permits up to ten skill points after turning yellow; green 3 permits three after turning green. **0 allows the entire color phase**, while the recipe can still grant skill. If no matching boundary is known, the first captured observation is used; conflicting future colors remain blocked. The existing **Prefer orange/yellow** setting additionally prioritizes more reliable colors. Disable it to compare all allowed colors primarily by cost.
+
+**Plan ahead** compares early production of X against a cheaper immediate Y when X is needed later. Select a range that includes the later crafts, such as **50–70** for an unlock at 60. The comparison includes whole-route purchases, one-time learning fees, available stock, whole-craft rounding, intermediates and explicit recipe choices. Unused output and hypothetical resale proceeds receive no fictitious credit.
+
+**Crafting** shows the follow-up designation and cost difference. A fresh saved route can promote its useful recipe under **Skill now** in default sorting when no other recipe has been selected. Quantity suggestions and follow-up needs then refer to the saved steps; explicit quantity overrides retain priority.
+
+Reevaluate or recreate saved routes after changing color settings. With the client timer/time APIs available, UI calculations run in cancellable chunks. Results are discarded if stock, prices or choices change during calculation. An export that needs a new route completes that calculation before sending current shortages to Auctionator.
+
+Forward planning checks at most 24 alternative routes in up to two passes, within the selected range, without a global-optimum guarantee. Missing baseline prices prevent a reliable follow-up comparison. Both colors initially remain allowed through their full phase; the existing orange/yellow preference is retained. Merchant and full-catalog browsing remain unrestricted. [Release details and validation](docs/RELEASE_0.20.0-alpha.md).
 
 ## New in 0.19.1: browse every stored merchant recipe
 
@@ -16,7 +28,7 @@ Cards show the merchant, location, coordinates, recorded price and requirements.
 
 **Useful recipes**, **Not learned**, **Merchant recipes** and **All recipes** are directly selectable. This is an older reference dataset rather than a complete live merchant-stock lookup: new Forever recipes, prices and current stock can be missing or different. Compatible QuestieDB data may supplement known merchants and positions. No new third-party datasets were imported.
 
-**Suggested purchases** remains the primary shopping-plan page. The separate **Personal shopping list** action is at the bottom, below the calculated shopping proposal. [Release details](docs/RELEASE_0.19.1-alpha.md).
+**Suggested purchases** remains the primary shopping-plan page. The separate **Personal shopping list** action is at the bottom, below the calculated shopping proposal. [Release details](docs/RELEASE_0.20.0-alpha.md).
 
 ## New in 0.19: skill-range planning and recipe choices
 
@@ -28,7 +40,7 @@ Use **Change** to replace a recipe step. CraftPilot recalculates the remaining r
 
 The comparison accounts for available stock, whole-craft rounding and one-time recipe learning fees. Local lookahead improves recommendations but does not guarantee a global cost optimum. Training ranks, travel, fluctuating prices and incomplete recipe data can change the result. Older saved routes are preserved with a recalculation notice.
 
-Action buttons share a flat style. Compact checkboxes replace boolean switches; numeric settings retain sliders. [Release details and validation](docs/RELEASE_0.19.1-alpha.md).
+Action buttons share a flat style. Compact checkboxes replace boolean switches; numeric settings retain sliders. [Release details and validation](docs/RELEASE_0.20.0-alpha.md).
 
 ## Supported professions
 
@@ -53,7 +65,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.19.1-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.19.1-alpha/CraftPilot-0.19.1-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.20.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.20.0-alpha/CraftPilot-0.20.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -129,7 +141,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.19.1-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.20.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
