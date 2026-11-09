@@ -10,10 +10,10 @@ end
 local function stateClone(s)
   return {stock=shallow(s.stock),bought=shallow(s.bought),
     crafted=shallow(s.crafted), spent=s.spent,missing=shallow(s.missing),
-    stale=shallow(s.stale),notes=shallow(s.notes)}
+    stale=shallow(s.stale),notes=shallow(s.notes),ownedRemaining=shallow(s.ownedRemaining),usedOwned=shallow(s.usedOwned)}
 end
 local function baseState()
-  return {stock={},bought={},crafted={},spent=0,missing={},stale={},notes={}}
+  return {stock={},bought={},crafted={},spent=0,missing={},stale={},notes={},ownedRemaining={},usedOwned={}}
 end
 local function countSet(t)
   local n=0 for _ in pairs(t) do n=n+1 end return n
@@ -70,6 +70,10 @@ local function consume(st,id,needed,owner,skill,active,depth)
     st.stock[id]=total
   end
   local available=math.min(needed,st.stock[id])
+  if st.ownedRemaining[id]==nil then st.ownedRemaining[id]=CP:ItemAvailability(id) end
+  local ownedUsed=math.min(available,st.ownedRemaining[id])
+  st.ownedRemaining[id]=st.ownedRemaining[id]-ownedUsed
+  if ownedUsed>0 then st.usedOwned[id]=(st.usedOwned[id] or 0)+ownedUsed end
   st.stock[id]=st.stock[id]-available
   local short=needed-available
   if short<=0 then return end
@@ -188,7 +192,7 @@ function CP:GenerateAutomaticRoute(key,first,last)
     stale=countSet(state.stale),unknownAge=countSet(state.notes),
     assumptions=assumptions,blocked=noCandidate,
     dataset=self.catalogBuild,source=self.catalogUpstream,
-    isEstimate=true
+    isEstimate=true,ownedMaterials=shallow(state.usedOwned)
   }
 end
 
