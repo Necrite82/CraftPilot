@@ -184,38 +184,7 @@ function CP:RefreshCostWindow()
   local context=self.costContext
   local result=self:CostCalculation(context.kind,context.key,context.id,context.quantity)
   self.costSnapshot=result
-  frame.caption:SetText(result.title)
-  frame.total:SetText((result.cashComplete and "" or L("Bekannter Teil: "))..money(self,result.cash))
-  frame.total:SetTextColor(result.cashComplete and 1 or 1,result.cashComplete and .80 or .46,.30)
-  frame.notice:SetText(result.cashComplete and L("Zusätzlich bezahlen · Rezept einmalig enthalten · Schätzung") or L("UNVOLLSTÄNDIG · fehlende Angaben sind keine Nullkosten"))
-  local lines={
-    L("Material-Zukauf: ")..money(self,result.buy),
-    L("Rezept lernen/kaufen, einmalig: ")..(result.feeUnknown and (money(self,result.fee)..L(" + unbekannter Anteil")) or money(self,result.fee)),
-    L("Verbrauchte Vorräte, Netto-AH-Wert: ")..(result.missingStock>0 and (money(self,result.stockValue)..L(" + unbekannter Anteil")) or money(self,result.stockValue)),
-    L("Wirtschaftlicher Aufwand: ")..(money(self,result.economic)..(result.economicComplete and "" or L(" + unbekannter Anteil"))),
-  }
-  if result.saleBlocked then lines[#lines+1]=L("Verkauf nicht angerechnet: Vergleich oder Preisstand unvollständig.") end
-  if result.sale>0 then
-    lines[#lines+1]=L("Freigesetzte Vorräte, möglicher Nettoverkauf: ")..money(self,result.sale)
-    lines[#lines+1]=L("Saldo nach möglichem Verkauf: ")..money(self,result.balance)
-  end
-  if result.points and result.points>0 and result.economicComplete then
-    lines[#lines+1]=L("Aufwand je erwartetem Skillpunkt: ")..money(self,result.economic/result.points)
-  end
-  lines[#lines+1]=string.format(L("Fehlende Preise: %d · alte Preise: %d · ohne Alter: %d"),result.missingBuy+result.missingStock,result.stale,result.unknownAge)
-  if result.unknownRecipes>0 then lines[#lines+1]=L("Ungeklärte Rezept-/Materialangaben: ")..result.unknownRecipes end
-  if result.unknownBank>0 then lines[#lines+1]=L("Nicht erfasste Bankbestände sind nicht eingerechnet.") end
-  lines[#lines+1]=self:BankStatus()
-  frame.breakdown:SetText(table.concat(lines,"\n"))
-  local detail=self:MarketCostLines(context)
-  for _,mat in ipairs(result.materials) do
-    detail[#detail+1]=string.format(L("%dx %s · Vorrat %d · kaufen %d"),mat.quantity,self:ItemName(mat.id),mat.used,mat.missing)
-      ..L(" · Für andere Pläne reserviert: ")..mat.reserved.." · "..(mat.missing==0 and L("Kein Zukauf") or (mat.buy and money(self,mat.buy) or L("Preis fehlt")))
-      .."\n"..L("Tasche ")..mat.bag..L(" · Bank ")..(mat.bankKnown and mat.bank or L("unbekannt")).."\n"..self:ItemMarketText(mat.id)
-  end
-  frame.materials:SetText(#detail>0 and table.concat(detail,"\n") or L("Keine vollständigen Materialdaten verfügbar."))
-  local measured=frame.materials:GetStringHeight()
-  frame.list:SetHeight(math.max(120,type(measured)=="number" and measured+12 or #detail*32+12))
+  self:RenderCostDashboard(result,context)
 end
 function CP:CostSummaryCard(kind,key,id,quantity)
   local result=self:CostCalculation(kind,key,id,quantity)
@@ -251,38 +220,7 @@ function CP:OpenCurrentCostCalculation()
   self:Say(L("Rezept auswählen oder Einkaufsplan öffnen."))
 end
 function CP:OpenCostCalculation(kind,key,id,quantity)
-  if not self.costWindow then
-    local frame=CreateFrame("Frame","CraftPilotCostWindow",UIParent,"BackdropTemplate")
-    frame:SetSize(650,600);frame:SetPoint("CENTER");frame:SetFrameStrata("DIALOG")
-    frame:SetClampedToScreen(true);frame:EnableMouse(true);frame:SetMovable(true);frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart",frame.StartMoving);frame:SetScript("OnDragStop",frame.StopMovingOrSizing)
-    frame:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})
-    frame:SetBackdropColor(.045,.06,.075,.99);frame:SetBackdropBorderColor(.75,.57,.25,1)
-    local function label(font,y)
-      local text=frame:CreateFontString(nil,"OVERLAY",font)
-      text:SetPoint("TOPLEFT",24,y);text:SetWidth(600);text:SetJustifyH("LEFT");return text
-    end
-    label("GameFontNormalLarge",-20):SetText(L("Kostenkalkulation"))
-    frame.caption=label("GameFontHighlight",-52)
-    frame.total=label("GameFontNormalLarge",-86)
-    frame.notice=label("GameFontHighlightSmall",-116)
-    frame.breakdown=label("GameFontHighlightSmall",-154);frame.breakdown:SetSpacing(6)
-    local scroll=CreateFrame("ScrollFrame",nil,frame,"UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT",24,-362);scroll:SetPoint("BOTTOMRIGHT",-45,105)
-    local list=CreateFrame("Frame",nil,scroll);list:SetSize(565,120);scroll:SetScrollChild(list)
-    local materials=list:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-    materials:SetPoint("TOPLEFT",0,-3);materials:SetWidth(560);materials:SetJustifyH("LEFT");materials:SetSpacing(7)
-    frame.list=list;frame.materials=materials
-    local hint=label("GameFontDisableSmall",-503)
-    hint:SetText(L("Vorratswert ist kein Zukauf. Verkäufe sind ungesichert; Zukäufe vorher finanzieren. Reise- und erfolglose AH-Gebühren fehlen."))
-    local refresh=CreateFrame("Button",nil,frame,"UIPanelButtonTemplate")
-    refresh:SetSize(180,26);refresh:SetPoint("BOTTOMLEFT",24,20);refresh:SetText(L("Neu berechnen"))
-    refresh:SetScript("OnClick",function() CP:InvalidateReservations();CP:RefreshCostWindow() end)
-    local close=CreateFrame("Button",nil,frame,"UIPanelCloseButton")
-    close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() frame:Hide() end)
-    UISpecialFrames[#UISpecialFrames+1]="CraftPilotCostWindow"
-    self.costWindow=frame
-  end
+  if not self.costWindow then self.costWindow=self:CreateCostDashboard() end
   self.costContext={kind=kind,key=key,id=id,quantity=quantity or 1}
   self.costWindow:Show();self:RefreshCostWindow()
 end

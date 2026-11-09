@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.17.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.18.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
@@ -48,7 +48,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.17.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.17.0-alpha/CraftPilot-0.17.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.18.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.18.0-alpha/CraftPilot-0.18.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -175,7 +175,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das aktuelle Installationspaket ist `dist/CraftPilot-0.17.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.18.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 
@@ -311,3 +311,13 @@ Unter **Camping → Einkauf** steht derselbe Export für fehlende Camping-Zutate
 Unter dem Vorschlag steht ein passender Lehrer mit direktem Wegpunkt. Aktuelle Karte und dortige Koordinatennähe haben Vorrang. Explizite Lehrerbeschränkungen werden beachtet; ein allgemeiner Berufs-Lehrer ist nur ein mögliches Ziel. Aktuelles Angebot vor Ort prüfen. Noch nicht gelernte Rezepte werden nicht als bereits erlernte manuelle Herstellungsoptionen behandelt.
 
 Der Ansichtsknopf wechselt **Sinnvolle Rezepte → Nicht gelernt → Alle Rezepte**. Alle zeigt zusätzlich zukünftige und andere im vorhandenen Katalog oder Client-Snapshot enthaltene Rezepte, ausgegraut mit Lernskill. Die Anzeige verspricht keinen vollständigen aktuellen Spielkatalog; fehlende Quellen/Voraussetzungen bleiben zu prüfen.
+
+## Lesbare Kosten und persönliche Einkaufsliste (0.18)
+
+Rezeptkarten trennen **Zukauf je Herstellung**, **AH-Nettoerlös je Ergebnisstück** und **Händlerwert je Ergebnisstück** in beschriftete Felder. Die kompakte Bestandszeile zeigt verwendete Zutaten-Einheiten; vollständige tatsächliche Bestände stehen in Tooltip und Materialtabelle. Das Kostenfenster hebt **Material-Zukauf**, **einmalige Lernkosten** und **Jetzt bezahlen** hervor. Eigene Vorratswerte sind separat vom zusätzlichen Geldbedarf aufgeführt. Ergebniswerte sind Stückwerte, keine garantierten Herstellungsgewinne.
+
+Materialien, Berufs-/Camping-Einkauf und Kostenfenster verwenden Tabellen mit **Material · Bedarf · Tasche · Bank · Kaufen · AH/Stück · Zukaufkosten**. Fehlmengen stehen zuerst, danach wird nach Gegenstandsname sortiert. Hinweise zu Reservierungen, Preisalter und unbekannten Bankwerten bleiben sichtbar. Beim Überfahren erscheinen verfügbare originale Spiel-Tooltips, ergänzt um CraftPilot-Kosten und Bestandsdaten.
+
+**+ Einkaufsliste** am ausgewählten Rezept übernimmt die aktuellen Fehlmengen für eine Herstellung. Im Kostenfenster übernimmt **+ Fehlmengen zur Einkaufsliste** die aktuell dort berechnete Menge. Über **Einkaufsplan → Manuelle Einkaufsliste** wird die persönliche Liste geöffnet. Gegenstandsname (soweit der Client ihn auflösen kann), Itemlink oder ID eingeben, Kaufmenge setzen; vorhandene Position anklicken zum Ändern oder mit × entfernen. Menge 0 entfernt ebenfalls. **An Auctionator übergeben** exportiert diese Kaufmengen ohne erneuten Abzug des Taschen-/Bankbestands.
+
+Die persönliche Liste ist unabhängig vom Skillplan. Rezept-Zugänge addieren momentane Fehlmengen; vorhandene Positionen werden dabei erhöht. Kaufmengen bleiben nach Käufen erhalten, bis sie geändert/gelöscht werden. Für mehrere Rezepte mit gemeinsamer Vorrats-/Zwischenprodukt-Verrechnung weiterhin den Skillplan verwenden. **Fehler melden** steht immer unten direkt hinter der Versionsanzeige.

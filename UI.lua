@@ -99,7 +99,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.17.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.18.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -414,7 +414,7 @@ local function setRecipeRows(key,options,chosen)
   for i,entry in ipairs(options) do
     local b=recipeButtons[i]
     if not b then
-      b=button(content,W-113,80,5,-offset,"",function()
+      b=CP:CreateFlatAction(content,W-113,80,function()
         if b.craftRecipe and CP.db then
           CP:ActivateRecipeRow(CP.db.view,b.craftRecipe)
         end
@@ -464,6 +464,7 @@ local function setRecipeRows(key,options,chosen)
     end
     local active=entry.vendorRecipe and CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe==entry.id
       or (not entry.vendorRecipe and chosen and entry.id==chosen.id and not (CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe))
+    b:SetBackdropBorderColor(active and .85 or .18,active and .64 or .25,active and .3 or .32,1)
     if b.craftStripe then b.craftStripe:SetColorTexture(active and .91 or .37,active and .68 or .48,active and .31 or .67,.95) end
     b.nameLabel:SetText((active and GOLD..L("AUSGEWÄHLT  ")..RESET or "")
       ..entry.name)
@@ -500,6 +501,8 @@ local function setRecipeRows(key,options,chosen)
     b.infoLabel:SetText(CP:RecipeColorLabel(key,entry.id).." | "..string.format(L("Chance ca. %.0f%% | %s / Punkt | %d fehlen%s"),
       entry.chance*100,price,entry.missing,ageInfo))
     end
+    rowHeight=CP:LayoutRecipeCard(b,key,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))
+    CP:RecipeShoppingButton(b,key,entry,active)
     b:Show()
     offset=offset+rowHeight+4
     if entry.vendorRecipe and not entry.referenceOnly and (active or entry.trainerRecipe) then
@@ -508,7 +511,7 @@ local function setRecipeRows(key,options,chosen)
       vendorIndex=vendorIndex+1
       local calc=vendorButtons[vendorIndex]
       if not calc then
-        calc=button(content,W-113,78,5,-offset,"",function() end)
+        calc=CP:CreateFlatAction(content,W-113,78,function() end)
         calc.nameLabel=text(calc,"GameFontHighlight",14,-7,W-155,"")
         calc.infoLabel=text(calc,"GameFontDisableSmall",14,-32,W-155,"")
         vendorButtons[vendorIndex]=calc
@@ -532,7 +535,7 @@ local function setRecipeRows(key,options,chosen)
         vendorIndex=vendorIndex+1
         local row=vendorButtons[vendorIndex]
         if not row then
-          row=button(content,W-113,57,5,-offset,"",function() end)
+          row=CP:CreateFlatAction(content,W-113,57,function() end)
           row.nameLabel=text(row,"GameFontHighlight",14,-7,W-155,"")
           row.infoLabel=text(row,"GameFontDisableSmall",14,-31,W-155,"")
           row:SetScript("OnClick",function() if row.vendorTarget then CP:SetWaypoint(row.vendorTarget) end end)
@@ -700,6 +703,14 @@ local function setVisualCards(entries)
       b.footLabel:ClearAllPoints();b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-(52+measured+8))
       b:SetHeight(cardHeight-5)
     end
+    if not entry.slider then
+      cardHeight=CP:LayoutVisualCard(b,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))+5
+      b:SetHeight(cardHeight-5)
+    else
+      for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
+      if rawget(b,"dataTable") then b.dataTable:Hide() end
+      b.titleLabel:Show();b.footLabel:Show()
+    end
     offset=offset+cardHeight
     b:Show()
   end
@@ -722,23 +733,14 @@ local function materialCards(materials,caption)
     footer=L("Nicht erfasste Bankmaterialien gelten nicht als bestätigt vorhanden."),color="gold",
     icon="Interface\\Icons\\INV_Misc_Bag_08"}
   end
+  local rows={}
   for _,m in ipairs(materials) do
-    local qty=m.required or m[2] or 0
-    local id=m.id or m[1]
-    local total,bags,bank,live,known,reserved=CP:AvailableForPlan(id,CP.db.view)
-    local missing=math.max(0,qty-total)
-    local price=CP:Price(id)
-    local age=CP.PriceFreshness and CP:PriceFreshness(id) or L("Alter unbekannt")
-    local status=live and "LIVE" or (known and L("LETZTER STAND") or L("UNBEKANNT"))
-    entries[#entries+1]={
-      title=(CP:ItemName(id))..L("  ·  benötigt ")..qty..L("  ·  fehlt ")..missing,
-      detail=L("Tasche ")..bags..L("  ·  Bank ")..bank.." ("..status..L(") · Für diesen Plan ")..total..L(" · Reserviert: ")..reserved,
-      footer=(missing>0 and (price and L("Zukauf ")..gold(missing*price)
-        or L("Fehlender Preis"))
-        or L("Genügend Material")).." · "..age,
-      tooltipItem=id,icon=itemIcon(id),color=missing>0 and "red" or "green"
-    }
+    local id=m.id or m[1];local qty=m.required or m[2] or 0
+    local total,bag,bank,live,known,reserved=CP:AvailableForPlan(id,CP.db.view)
+    local missing=math.max(0,qty-total);local price=CP:Price(id)
+    rows[#rows+1]={id=id,quantity=qty,bag=bag,bank=bank,bankKnown=known,missing=missing,reserved=reserved,buy=price and missing*price}
   end
+  if #rows>0 then entries[#entries+1]={materialTable=rows} end
   if #entries==0 then entries[1]={
     title=L("Keine Materialien"),detail=L("Rezept im Tab Jetzt skillen auswählen."),
     icon="Interface\\Icons\\INV_Misc_Note_01"} end
@@ -747,6 +749,9 @@ end
 
 local footer=text(frame,"GameFontDisableSmall",19,-645,W-40,
   L("Alpha: Keine automatischen Käufe oder Herstellungsaktionen. Preise sind AH-Snapshots."))
+
+local reportButton=button(frame,124,23,0,0,L("Fehler melden"),function() CP:OpenDiagnosticReport() end)
+reportButton:ClearAllPoints();reportButton:SetPoint("LEFT",footer,"RIGHT",6,0)
 
 -- Official EllesmereUI third-party skinning API (not copied UI assets).
 local function useSkin(S,fn,...)
@@ -861,7 +866,7 @@ local function layout()
   section:SetWidth(inner)
   footer:ClearAllPoints()
   footer:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",19,22)
-  footer:SetWidth(width-62)
+  footer:SetWidth(168)
   local profWidth=(inner-25)/6
   for _,b in pairs(professionButtons) do b:Hide() end
   for i,key in ipairs(CP.db and CP:VisibleProfessions() or D.order) do
@@ -1119,7 +1124,7 @@ function CP:Render()
     else
       local route=self:AutoRouteShopping(key)
       if route then
-        local cards={self:CostSummaryCard("plan",key),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
+        local cards={self:CostSummaryCard("plan",key),self:ManualShoppingCard(),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
         cards[#cards+1]={
           title=string.format(L("AUTO-ROUTE · %d -> %d · berechnet bis %d"),
             route.first,route.target,route.reached),
@@ -1177,22 +1182,11 @@ function CP:Render()
           cards[#cards+1]={title=L("Kein Zukauf erkannt"),detail=L("Laut zuletzt erfassten Beständen und den geschätzten Schritten."),
             footer=L("Auf unbekannte Zutaten und veraltete Bankdaten achten."),color="green"}
         end
-        for _,mat in ipairs(route.materials) do
-          local age=self:PriceFreshness(mat.id)
-          cards[#cards+1]={
-            title=string.format("%dx %s",mat.missing,mat.name),
-            detail=mat.cost and (L("Zukauf ")..gold(mat.cost).." · "..mat.source)
-              or L("Preis fehlt – Kosten nicht vollständig"),
-            footer=age,
-            tooltipItem=mat.id,icon=itemIcon(mat.id),
-            color=(mat.freshness=="stale" or mat.freshness=="aging" or not mat.price)
-              and "red" or "green"
-          }
-        end
+        cards[#cards+1]={materialTable=self:CostCalculation("plan",key).materials}
         setVisualCards(cards)
       else
       local plan=self:PlanShopping(key)
-      local cards={self:CostSummaryCard("plan",key),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
+      local cards={self:CostSummaryCard("plan",key),self:ManualShoppingCard(),self:AuctionatorExportCard(key),self:PlanReviewCard(key)}
       if plan.chainUnresolved then cards[#cards+1]={title=L("Herstellungskette noch ungeklärt"),
         detail=L("Berufsfenster öffnen: Materialien und Ausbeute der Zwischenprodukte fehlen oder sind zyklisch."),
         footer=L("Angezeigte Bruttomengen sind kein vollständiger Auctionator-Export."),color="gold"} end
@@ -1236,18 +1230,7 @@ function CP:Render()
           footer=L("Materialbedarf nach Verrechnung geplanter Zwischenprodukte; bei fehlender Ausbeute bleibt der Export gesperrt."),
           icon="Interface\\Icons\\INV_Misc_Bag_08",color="gold"
         }
-        for _,m in ipairs(plan.materials) do
-          local color=m.missing>0 and "red" or "green"
-          local status=m.bankLive and "LIVE" or (m.bankKnown and L("letzter Stand") or L("unbekannt"))
-          local cost=m.missing>0 and
-            (m.cost and (L("Zukauf ca. ")..gold(m.cost)) or L("Preis unbekannt"))
-            or L("Bestand ausreichend")
-          cards[#cards+1]={
-            title=m.name..L(" · benötigt ")..m.required..L(" · fehlt ")..m.missing,
-            detail=L("Tasche ")..m.bag..L(" · Bank ")..m.bank.." ("..status..")"..L(" · Reserviert: ")..m.reserved,
-            footer=cost,tooltipItem=m.id,icon=itemIcon(m.id),color=color
-          }
-        end
+        cards[#cards+1]={materialTable=self:CostCalculation("plan",key).materials}
       end
       setVisualCards(cards)
       end
@@ -1318,7 +1301,8 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.17.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.18.0 Alpha")
+  local footerWidth=footer:GetStringWidth();if type(footerWidth)=="number" and footerWidth>0 then footer:SetWidth(footerWidth) end
 end
 
 function CP:ToggleWindow()

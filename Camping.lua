@@ -246,11 +246,6 @@ function CP:CampingShoppingCards()
       footer=L("Anklicken: Menge um eins reduzieren"),tooltipItem=item,color="blue",
       action=function() CP:AddCampingCraft(item,-1);CP:Render() end}
   end
-  for _,mat in ipairs(plan.materials) do
-    cards[#cards+1]={title=mat.quantity.."x "..self:ItemName(mat.id),
-      detail=L("Tasche: ")..mat.bag..L(" · Bank: ")..(mat.bankKnown and mat.bank or L("unbekannt"))..L(" · Fehlt: ")..mat.missing..L(" · Reserviert: ")..mat.reserved,
-      footer=(mat.missing==0 and L("Kein Zukauf") or (mat.price and self:FormatMoney(mat.price*mat.missing) or L("Preis fehlt"))).." · "..self:PriceFreshness(mat.id),
-      tooltipItem=mat.id,color=mat.missing==0 and "green" or "blue"}
-  end
+  cards[#cards+1]={materialTable=self:CostCalculation("camping",self.db.view).materials}
   return cards
 end

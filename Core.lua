@@ -716,6 +716,7 @@ function CP:Refresh(capture)
   if capture then self:CaptureProfession() end
   if self.Render then self:Render() end
   self:RefreshCostWindow()
+  if self.RefreshPersonalShopping then self:RefreshPersonalShopping() end
 end
 
 local aliases={
@@ -812,7 +813,7 @@ events:SetScript("OnEvent",function(_,event,...)
     local item,success=...
     if CP.marketRequested and CP.marketRequested[item]==true then
       CP.marketRequested[item]="done"
-      if success and CP.db and CP.frame and CP.frame:IsShown() then schedule(false) end
+      if success and CP.db and ((CP.frame and CP.frame:IsShown()) or (CP.personalShoppingWindow and CP.personalShoppingWindow:IsShown()) or (CP.costWindow and CP.costWindow:IsShown())) then schedule(false) end
     end
   elseif event=="UNIT_SPELLCAST_SUCCEEDED" then
     if CP.db and CP:RecordPlannedCraft(...) then schedule(true) end
@@ -826,7 +827,7 @@ events:SetScript("OnEvent",function(_,event,...)
   elseif event=="PLAYERBANKSLOTS_CHANGED" then
     if CP.bankIsOpen then CP:SnapshotBankMaterials() end
     if CP.db then CP:Refresh(false) end
-  elseif CP.db and (event~="BAG_UPDATE_DELAYED" or (CP.frame and CP.frame:IsShown())) then
+  elseif CP.db and (event~="BAG_UPDATE_DELAYED" or (CP.frame and CP.frame:IsShown()) or (CP.personalShoppingWindow and CP.personalShoppingWindow:IsShown()) or (CP.costWindow and CP.costWindow:IsShown())) then
     schedule(event=="TRADE_SKILL_SHOW" or event=="TRADE_SKILL_LIST_UPDATE"
       or event=="TRADE_SKILL_DATA_SOURCE_CHANGED" or event=="NEW_RECIPE_LEARNED")
   end

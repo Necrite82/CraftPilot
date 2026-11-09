@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","Presentation.lua","ManualShopping.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -793,7 +793,7 @@ local rangeSeen=false
 for _,control in ipairs(createdFrames) do
  local recipe=rawget(control,"craftRecipe")
  if recipe and recipe.id==990001 then
-  assert(control.rangeLabel.displayText and control.height==146)
+  assert(control.rangeLabel.displayText and control.height>=164)
   rangeSeen=true
  end
 end
@@ -1039,12 +1039,13 @@ assert(loadfile("tests/planning.lua"))(CP)
 assert(loadfile("tests/market.lua"))(CP)
 assert(loadfile("tests/shopping.lua"))(CP)
 assert(loadfile("tests/trainer_recipes.lua"))(CP)
+assert(loadfile("tests/presentation.lua"))(CP,createdFrames)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.17.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.17.0","0.17.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.17.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.17.0-alpha"))
+assert(CP:IsNewerVersion("0.18.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.18.0","0.18.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.18.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.18.0-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -1062,7 +1063,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.17.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.18.0-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)
