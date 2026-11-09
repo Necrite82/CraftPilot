@@ -9,18 +9,18 @@ end
 function CP:RecipeVendorCatalog(key)
   return self:Catalog(key) or (self.VendorRecipeCatalogs and self.VendorRecipeCatalogs[key])
 end
-function CP:RecipeVendors(key,id)
+function CP:RecipeVendors(key,id,browse)
   local catalog=self:RecipeVendorCatalog(key)
   local recipe=catalog and catalog.recipes[id]
   local vendors,seen,listed={},{},{}
-  if not recipe or recipe.rep or recipe.spec then return vendors end
+  if not recipe or (not browse and (recipe.rep or recipe.spec)) then return vendors end
   for _,source in ipairs(recipe.get or {}) do
     if source.kind=="vendor" and source.npc then listed[source.npc]=true end
     local npc=(catalog.npcs or {})[source.npc]
-    if source.kind=="vendor" and type(source.npc)=="number" and not seen[source.npc]
-      and (not source.reqLevel or source.reqLevel<=(type(UnitLevel)=="function" and UnitLevel("player") or 0))
+    local eligible=(not source.reqLevel or source.reqLevel<=(type(UnitLevel)=="function" and UnitLevel("player") or 0))
       and not source.event and not source.otherCost and not source.rep
-      and factionFits(source.faction) and (not npc or factionFits(npc.faction)) then
+      and factionFits(source.faction) and (not npc or factionFits(npc.faction))
+    if source.kind=="vendor" and type(source.npc)=="number" and not seen[source.npc] and (browse or eligible) then
       seen[source.npc]=true
       local location
       if npc and type(npc.map)=="number" and npc.map>0 and type(npc.x)=="number" and type(npc.y)=="number"
@@ -32,25 +32,28 @@ function CP:RecipeVendors(key,id)
       if extra then location=extra end
       if location and localizedName then location.name=localizedName end
       vendors[#vendors+1]={id=source.npc,name=localizedName or (npc and npc.name) or source.npcName or ("NPC #"..source.npc),
-        location=location,cost=type(source.cost)=="number" and source.cost>=0 and source.cost or nil}
+        location=location,cost=not source.otherCost and type(source.cost)=="number" and source.cost>=0 and source.cost or nil,
+        source=source,faction=source.faction or (npc and npc.faction),restricted=not eligible}
     end
   end
   for _,id in ipairs(self:QuestieItemVendors(recipe.item)) do
     local npc=(catalog.npcs or {})[id]
     if type(id)=="number" and id>0 and not seen[id] and not listed[id]
-      and npc and npc.faction and factionFits(npc.faction) then
+      and ((npc and npc.faction and factionFits(npc.faction)) or browse) then
       local fallback
-      if type(npc.map)=="number" and type(npc.x)=="number" and type(npc.y)=="number"
+      if npc and type(npc.map)=="number" and type(npc.x)=="number" and type(npc.y)=="number"
         and npc.x>=0 and npc.x<=100 and npc.y>=0 and npc.y<=100 then
         fallback={name=npc.name,zone=npc.zone,map=npc.map,x=npc.x/100,y=npc.y/100}
       end
       local location,name=self:QuestieNpcLocation(id,fallback)
-      vendors[#vendors+1]={id=id,name=name or npc.name or ("NPC #"..id),location=location or fallback}
+      vendors[#vendors+1]={id=id,name=name or (npc and npc.name) or ("NPC #"..id),location=location or fallback,
+        faction=npc and npc.faction,unverified=true,restricted=not npc or not factionFits(npc.faction)}
       seen[id]=true
     end
   end
   local map=C_Map and type(C_Map.GetBestMapForUnit)=="function" and C_Map.GetBestMapForUnit("player")
   table.sort(vendors,function(a,b)
+    if a.restricted~=b.restricted then return not a.restricted end
     local sameA=a.location and a.location.map==map or false
     local sameB=b.location and b.location.map==map or false
     if sameA~=sameB then return sameA end

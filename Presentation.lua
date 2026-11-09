@@ -153,6 +153,8 @@ function CP:RecipeDisplayData(key,id)
   return {cost=c,market=m,bag=bag,bank=bank,buy=buy,bankUnknown=unknown}
 end
 function CP:LayoutRecipeCard(b,key,entry,width)
+  for _,name in ipairs({"merchantLocation","merchantRequirements","merchantWaypoint"}) do if rawget(b,name) then b[name]:Hide() end end
+  b.rangeLabel:Show()
   local d=self:RecipeDisplayData(key,entry.id)
   if not entry.vendorRecipe and not entry.referenceOnly then
     b.infoLabel:SetText(CP:RecipeColorLabel(key,entry.id).." · "..string.format(L("Skillchance ca. %.0f%%"),(entry.chance or 0)*100))
@@ -164,7 +166,7 @@ function CP:LayoutRecipeCard(b,key,entry,width)
   local metricY=math.max(57,infoY+height(b.infoLabel,16)+10)
   b.rangeLabel:ClearAllPoints();b.rangeLabel:SetPoint("TOPLEFT",b,"TOPLEFT",48,-(metricY+81));b.rangeLabel:SetWidth(width-60)
   b.stockSummary=rawget(b,"stockSummary") or self:DisplayLabel(b,"GameFontHighlightSmall",48,116,width-60,"")
-  b.stockSummary:SetWidth(width-60)
+  b.stockSummary:Show();b.stockSummary:SetWidth(width-60)
   b.stockSummary:ClearAllPoints();b.stockSummary:SetPoint("TOPLEFT",b,"TOPLEFT",48,-(metricY+58))
   b.stockSummary:SetText(string.format(L("Vorrat genutzt (Einheiten)   Tasche %d    Bank %s    Zukauf %d"),d.bag,not self.db.includeBank and L("aus") or (d.bankUnknown and "?" or tostring(d.bank)),d.buy))
   local learning=entry.vendorRecipe and not entry.referenceOnly

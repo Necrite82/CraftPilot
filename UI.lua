@@ -100,7 +100,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.19.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.19.1-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -211,12 +211,22 @@ for i,item in ipairs(sorts) do
   end)
   sortButtons[item.key]:Hide()
 end
-local vendorFilter=button(frame,218,25,494,-358,L("Kaufrezepte"),function()
-  if CP.db.ui.allRecipes then CP.db.ui.allRecipes=false;CP.db.ui.vendorOnly=false
-  elseif CP.db.ui.vendorOnly then CP.db.ui.vendorOnly=false;CP.db.ui.allRecipes=true
-  else CP.db.ui.vendorOnly=true end;CP:Render()
-end)
-vendorFilter:Hide()
+local recipeViews={}
+for i,view in ipairs({{key="useful",label=L("Sinnvolle Rezepte")},{key="unlearned",label=L("Nicht gelernt")},{key="merchants",label=L("Händlerrezepte")},{key="all",label=L("Alle Rezepte")}}) do
+  recipeViews[i]=button(frame,170,25,18+(i-1)*178,-358,view.label,function()
+    CP.db.ui.vendorBrowser=view.key=="merchants";CP.db.ui.vendorOnly=view.key=="unlearned";CP.db.ui.allRecipes=view.key=="all";CP:Render()
+  end);recipeViews[i]:Hide()
+end
+local vendorSearchLabel=text(frame,"GameFontDisableSmall",18,-393,62,L("Suche"))
+local vendorSearch=CreateFrame("EditBox",nil,frame,"InputBoxTemplate");vendorSearch:SetAutoFocus(false);vendorSearch:SetSize(250,24)
+vendorSearch:SetScript("OnTextChanged",function(box) if not box.craftSync and CP.db then CP.db.ui.vendorQuery=box:GetText();CP:Render() end end)
+vendorSearch:SetScript("OnEscapePressed",function(box) box:ClearFocus() end)
+vendorSearch:SetScript("OnEnterPressed",function(box) box:ClearFocus() end)
+local vendorSearchClear=button(frame,76,25,352,-390,L("Leeren"),function() CP.db.ui.vendorQuery="";CP:Render() end)
+local vendorBySkill=button(frame,122,25,445,-390,L("Nach Skill"),function() CP.db.ui.vendorSort="skill";CP:Render() end)
+local vendorByName=button(frame,138,25,575,-390,L("Nach Name"),function() CP.db.ui.vendorSort="name";CP:Render() end)
+local merchantControls={vendorSearchLabel,vendorSearch,vendorSearchClear,vendorBySkill,vendorByName}
+for _,c in ipairs(merchantControls) do c:Hide() end
 local bankButton=button(frame,250,25,18,-358,L("Bank: einschalten"),function()
   CP.db.includeBank=not CP.db.includeBank
   CP:Refresh(false)
@@ -304,11 +314,13 @@ local planExport=button(frame,180,26,390,-250,L("An Auctionator"),function()
   CP:ExportToAuctionator(CP.db.view);CP:Render()
 end)
 local planPages={}
-for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="details",label=L("Details & Kosten")},{key="personal",label=L("Eigene Liste")}}) do
+for i,page in ipairs({{key="shopping",label=L("Einkaufsvorschlag")},{key="crafts",label=L("Herstellen")},{key="details",label=L("Details & Kosten")}}) do
   planPages[i]=button(frame,160,26,18+(i-1)*166,-286,page.label,function()
-    if page.key=="personal" then CP:OpenPersonalShopping() else CP.db.ui.planPage=page.key;CP:Render() end
+    CP.db.ui.planPage=page.key;CP:Render()
   end)
 end
+local manualShoppingAction=button(frame,205,26,18,-630,L("Manuelle Einkaufsliste"),function() CP:OpenPersonalShopping() end)
+manualShoppingAction:ClearAllPoints();manualShoppingAction:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,14);manualShoppingAction:Hide()
 local syncedPlan
 local campControls={}
 for i,page in ipairs({{key="fires",label=L("Campfires")},{key="buffs",label=L("Buffs")},{key="objects",label=L("Objekte & Ausbauten")},{key="shopping",label=L("Einkauf")}}) do
@@ -485,6 +497,8 @@ local function setRecipeRows(key,options,chosen)
     if b.craftStripe then b.craftStripe:SetColorTexture(active and .91 or .37,active and .68 or .48,active and .31 or .67,.95) end
     b.nameLabel:SetText((active and GOLD..L("AUSGEWÄHLT  ")..RESET or "")
       ..entry.name)
+    local rowHeight=122
+    if not entry.merchantBrowse then
     b.rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
     b.marketLabel:SetWidth((type(b.GetWidth)=="function" and b:GetWidth() or W-110)-65)
     b.stockLabel:SetWidth((type(b.GetWidth)=="function" and b:GetWidth() or W-110)-65)
@@ -494,9 +508,10 @@ local function setRecipeRows(key,options,chosen)
     b.marketLabel:ClearAllPoints();b.marketLabel:SetPoint("TOPLEFT",b,"TOPLEFT",48,-(82+stockHeight))
     b.marketLabel:SetText(CP:RecipeMarketText(key,entry.id))
     local marketHeight=b.marketLabel:GetStringHeight()
-    local rowHeight=math.max(146,94+stockHeight+(type(marketHeight)=="number" and marketHeight or 34))
+    rowHeight=math.max(146,94+stockHeight+(type(marketHeight)=="number" and marketHeight or 34))
     b:SetHeight(rowHeight)
     if b.craftStripe then b.craftStripe:SetHeight(rowHeight-12) end
+    end
     b:SetAlpha(entry.dimmed and .5 or 1)
     if entry.referenceOnly then
       b.infoLabel:SetText(entry.referenceStatus)
@@ -519,12 +534,13 @@ local function setRecipeRows(key,options,chosen)
       entry.chance*100,price,entry.missing,ageInfo))
     end
     entry.active=active
-    rowHeight=CP:LayoutRecipeCard(b,key,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))
+    rowHeight=entry.merchantBrowse and CP:LayoutVendorRecipeCard(b,key,entry,(b:GetWidth() or W-110)) or CP:LayoutRecipeCard(b,key,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))
+    b:SetHeight(rowHeight);if b.craftStripe then b.craftStripe:SetHeight(rowHeight-12) end
     CP:RecipeShoppingButton(b,key,entry,active)
     b:Show()
     offset=offset+rowHeight+4
-    if entry.vendorRecipe and not entry.referenceOnly and (active or entry.trainerRecipe) then
-      if active then
+    if entry.vendorRecipe and (entry.merchantBrowse or not entry.referenceOnly) and (active or entry.trainerRecipe) then
+      if active and not entry.merchantBrowse then
       local comparison=CP:VendorSkillComparison(key,entry)
       vendorIndex=vendorIndex+1
       local calc=vendorButtons[vendorIndex]
@@ -566,8 +582,9 @@ local function setRecipeRows(key,options,chosen)
         row:SetEnabled(vendor.location~=nil)
         local place=vendor.location and string.format("%s %.1f / %.1f",vendor.location.zone,vendor.location.x*100,vendor.location.y*100) or L("Standort unbekannt")
         row.nameLabel:SetText(vendor.name.." | "..place)
-        row.infoLabel:SetText((vendor.cost and gold(vendor.cost) or L("Preis fehlt")).." | "..(entry.trainerRecipe and L("Lehrer · Angebot prüfen · Klick: Wegpunkt") or L("Angebot prüfen · Klick: TomTom/Kartenwegpunkt")))
-        row:Show();offset=offset+61
+        row.infoLabel:SetText(CP:VendorOfferPrice(vendor).." | "..(entry.trainerRecipe and L("Lehrer · Angebot prüfen · Klick: Wegpunkt") or L("Angebot prüfen · Klick: TomTom/Kartenwegpunkt"))..(CP:VendorOfferNotes(vendor)~="" and ("\n"..CP:VendorOfferNotes(vendor)) or ""))
+        local measured=row.infoLabel:GetStringHeight();local h=math.max(57,37+(type(measured)=="number" and measured or 16)+10);row:SetHeight(h)
+        row:Show();offset=offset+h+4
       end
     end
   end
@@ -960,16 +977,17 @@ function CP:Render()
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
   economyButton.selectionMarker:SetShown(tab=="economy")
-  local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)..":"..tostring(self.db.ui.vendorOnly)..":"..tostring(self.db.ui.planPage)
+  local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)..":"..tostring(self.db.ui.vendorOnly)..":"..tostring(self.db.ui.planPage)..":"..tostring(self.db.ui.vendorBrowser)..":"..tostring(self.db.ui.vendorQuery)..":"..tostring(self.db.ui.vendorSort)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end
   if tab~="settings" and tab~="help" then self.pendingSettingsReset=nil end
   local settingsView=tab=="settings" or tab=="help" or tab=="audit" or tab=="reservations"
-  summary:SetShown(not settingsView and tab~="plan")
-  stageProgress:SetShown(not settingsView and tab~="plan")
+  local merchantView=tab=="now" and not (prof.gathering and not prof.crafting) and self.db.ui.vendorBrowser==true
+  summary:SetShown(not settingsView and tab~="plan" and not merchantView)
+  stageProgress:SetShown(not settingsView and tab~="plan" and not merchantView)
   section:ClearAllPoints()
-  section:SetPoint("TOPLEFT",frame,"TOPLEFT",19,(settingsView or tab=="plan") and -226 or -334)
+  section:SetPoint("TOPLEFT",frame,"TOPLEFT",19,(settingsView or tab=="plan" or merchantView) and -226 or -334)
   if type(stageProgress.SetValue)=="function" then
     stageProgress:SetValue(math.max(0,math.min(300,skill)))
   end
@@ -1024,19 +1042,27 @@ function CP:Render()
   local isTrainers=tab=="trainers"
   local gatheringOnly=prof.gathering and not prof.crafting
   local isRecipes=tab=="now" and not gatheringOnly
-  local vendorOffers=isRecipes and self:VendorRecipeOptions(key) or {}
-  if isRecipes then for _,entry in ipairs(self:TrainerRecipeOptions(key)) do vendorOffers[#vendorOffers+1]=entry end end
-  vendorFilter:SetShown(isRecipes)
-  vendorFilter:SetText(self.db.ui.allRecipes and L("Ansicht: Alle Rezepte") or (self.db.ui.vendorOnly and L("Ansicht: Nicht gelernt") or L("Ansicht: Sinnvolle Rezepte")))
-  vendorFilter.selectionMarker:SetShown(self.db.ui.vendorOnly==true)
+  local vendorOffers=isRecipes and not merchantView and self:VendorRecipeOptions(key) or {}
+  if isRecipes and not merchantView then for _,entry in ipairs(self:TrainerRecipeOptions(key)) do vendorOffers[#vendorOffers+1]=entry end end
+  local viewKey=merchantView and "merchants" or (self.db.ui.allRecipes and "all" or (self.db.ui.vendorOnly and "unlearned" or "useful"))
+  local toolbarY=merchantView and 250 or 358
+  local inner=(frame:GetWidth() or W)-36
+  for i,b in ipairs(recipeViews) do b:SetShown(isRecipes);b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*(inner+6)/4,-toolbarY);b:SetWidth((inner-18)/4);b.selectionMarker:SetShown(({"useful","unlearned","merchants","all"})[i]==viewKey) end
+  for _,c in ipairs(merchantControls) do c:SetShown(isRecipes and merchantView) end
+  vendorSearchLabel:ClearAllPoints();vendorSearchLabel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-(toolbarY+39))
+  vendorSearch:ClearAllPoints();vendorSearch:SetPoint("TOPLEFT",frame,"TOPLEFT",86,-(toolbarY+32))
+  for _,v in ipairs({{vendorSearchClear,352},{vendorBySkill,445},{vendorByName,575}}) do v[1]:ClearAllPoints();v[1]:SetPoint("TOPLEFT",frame,"TOPLEFT",v[2],-(toolbarY+32)) end
+  if not vendorSearch:HasFocus() then vendorSearch.craftSync=true;vendorSearch:SetText(self.db.ui.vendorQuery or "");vendorSearch.craftSync=nil end
+  vendorBySkill.selectionMarker:SetShown(self.db.ui.vendorSort~="name");vendorByName.selectionMarker:SetShown(self.db.ui.vendorSort=="name")
   local isMats=tab=="mats" and not gatheringOnly
   local isPlan=tab=="plan" and not gatheringOnly
   trainerAction1:SetShown(isTrainers)
   trainerAction2:SetShown(isTrainers)
   trainerInfo:SetShown(isTrainers)
-  for _,mode in ipairs(sorts) do
+  for sortIndex,mode in ipairs(sorts) do
     local b=sortButtons[mode.key]
-    b:SetShown(isRecipes)
+    b:SetShown(isRecipes and not merchantView)
+    b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(sortIndex-1)*119,-390)
     b.selectionMarker:SetShown(self.db.ui.recipeSort==mode.key)
     b:SetText(mode.label)
   end
@@ -1045,7 +1071,7 @@ function CP:Render()
   bankButton:SetText(L("Bankmaterialien: ")..(self.db.includeBank and L("AN") or L("AUS")))
   bankDetails:SetText(self:BankStatus())
   for _,control in ipairs(planControls) do control:SetShown(isPlan) end
-  planExport:SetShown(isPlan)
+  planExport:SetShown(isPlan);manualShoppingAction:SetShown(isPlan)
   for _,b in ipairs(planPages) do b:SetShown(isPlan) end
   for _,control in ipairs(campControls) do control:SetShown(tab=="camping") end
   campingFilter:SetText(self.db.ui.campingAll==false and L("Alle Camping-Berufe") or L("Nur gewählter Beruf"))
@@ -1070,13 +1096,13 @@ function CP:Render()
     planClear:SetText(self.pendingPlanClear==key and L("Bestätigen?") or L("Plan leeren"))
     local c=self:CostCalculation("plan",key)
     place(planHint,580,257,math.max(120,inner-562));planHint:SetText((c.cashComplete and L("Kosten: ") or L("Ab: "))..self:FormatCostMoney(c.cash))
-    local tabWidth=(inner-18)/4
-    for i,b in ipairs(planPages) do place(b,18+(i-1)*(tabWidth+6),286,tabWidth);b.selectionMarker:SetShown(({"shopping","crafts","details","personal"})[i]==page) end
+    local tabWidth=(inner-12)/3
+    for i,b in ipairs(planPages) do place(b,18+(i-1)*(tabWidth+6),286,tabWidth);b.selectionMarker:SetShown(({"shopping","crafts","details"})[i]==page) end
   end
 
   contentPanel:ClearAllPoints()
   contentPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,
-    settingsView and -250 or (isPlan and ((self.db.ui.planPage=="crafts" or self.db.ui.planPage=="details") and -360 or -326) or ((isTrainers or isRecipes or isMats or tab=="camping") and -395 or -358)))
+    merchantView and -318 or (isRecipes and -427 or (settingsView and -250 or (isPlan and ((self.db.ui.planPage=="crafts" or self.db.ui.planPage=="details") and -360 or -326) or ((isTrainers or isRecipes or isMats or tab=="camping") and -395 or -358)))))
   contentPanel:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-18,49)
 
   local lines={}
@@ -1173,7 +1199,8 @@ function CP:Render()
       }
     })
   else
-    local chosen,options=self:SelectedOption(key)
+    local chosen,options
+    if merchantView then options={} else chosen,options=self:SelectedOption(key) end
     local captured=self.db.lastCapture
     local current=captured and captured.key==key and captured.skill==skill
     if tab=="mats" then
@@ -1204,7 +1231,11 @@ function CP:Render()
     end
     if tab=="now" then
       local offers=vendorOffers
-      if self.db.ui.allRecipes then
+      if self.db.ui.vendorBrowser then
+        local rows=self:VendorRecipeBrowseOptions(key,self.db.ui.vendorQuery,self.db.ui.vendorSort)
+        section:SetText(string.format(L("Händlerrezepte · %d Treffer · alle Skillstufen"),#rows))
+        if #rows>0 then setRecipeRows(key,rows,nil) else setRows({L("Keine hinterlegten Händlerrezepte für diese Suche."),L("Suche leeren oder einen anderen Beruf wählen. Der Datenbestand ist nicht vollständig live bestätigt.")}) end
+      elseif self.db.ui.allRecipes then
         setRecipeRows(key,self:AllRecipeOptions(key,options,offers),chosen)
       elseif self.db.ui.vendorOnly then
         if #offers>0 then setRecipeRows(key,offers,nil)
@@ -1221,7 +1252,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.19.0 Alpha")
+  footer:SetText("CraftPilot 0.19.1 Alpha")
   local footerWidth=footer:GetStringWidth();if type(footerWidth)=="number" and footerWidth>0 then footer:SetWidth(footerWidth) end
 end
 

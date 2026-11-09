@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.19.1-alpha
+
+Direkte Händlerrezept-Ansicht mit allen 698 hinterlegten Händlerrezepten, einschließlich zukünftiger, erlernter und bedingt verfügbarer Angebote. Ausgegraute Voraussetzungen, Händlerstandorte, Wegpunkte, Suche und Sortierung. Der berechnete Einkaufsvorschlag steht im Vordergrund; die manuelle Einkaufsliste ist unten separat erreichbar. [Details](docs/RELEASE_0.19.1-alpha.md).
+
 ## 0.19.0-alpha
 
 Vereinfachter Einkaufsplan mit fest sichtbaren Aktionen, austauschbaren Rezeptschritten und Zwischenprodukten für einen frei gewählten Skillbereich. Änderbare Herstellungsmengen, Vorschläge bis zum nächsten sinnvollen Schritt und Folgebedarfshinweise. Einheitliche flache Buttons und kompakte An/Aus-Häkchen. [Details](docs/RELEASE_0.19.0-alpha.md).
