@@ -43,6 +43,7 @@ function CP:Initialize()
   if type(db.ui.height) ~= "number" then db.ui.height=676 end
   if type(db.ui.position) ~= "table" then db.ui.position = nil end
   self.db = db
+  if self.MigrateEconomyState then self:MigrateEconomyState() end
   if self.InitializeControls then self:InitializeControls() end
   if self.InitializeVersionChecks then self:InitializeVersionChecks() end
   self:Refresh(false)

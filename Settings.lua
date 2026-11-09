@@ -17,8 +17,8 @@ function CP:InitializeControls()
     for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
     ui.skillPolicyVersion=1
   end
-  if type(ui.godCut)~="number" or ui.godCut~=ui.godCut then ui.godCut=5 end
-  ui.godCut=math.max(0,math.min(30,ui.godCut))
+  if type(ui.economyCut)~="number" or ui.economyCut~=ui.economyCut then ui.economyCut=5 end
+  ui.economyCut=math.max(0,math.min(30,ui.economyCut))
   if type(ui.minimapAngle)~="number" or ui.minimapAngle~=ui.minimapAngle then ui.minimapAngle=225 end
   if type(ui.hideMinimap)~="boolean" then ui.hideMinimap=false end
   if type(ui.knownRecipesOnly)~="boolean" then ui.knownRecipesOnly=false end
@@ -169,8 +169,8 @@ function CP:SettingsCards()
       icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
   end
   return {
-    slider(L("God-Mode: AH-Abzug "),tonumber(ui.godCut) or 5,0,30,1,"%",function(value)
-      ui.godCut=value;CP:Render()
+    slider(L("Clever skillen: AH-Abzug "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value)
+      ui.economyCut=value;CP:Render()
     end),
     card(L("Sprache: ")..(CP.locale=="deDE" and "Deutsch" or "English"),L("Automatisch nach Clientsprache; andere Sprachen verwenden Englisch."),nil),
     card(CP:VersionStatus(),L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),function() CP:OpenReleaseLink() end,ICON,L("Anklicken: Release-Link kopieren")),
@@ -188,7 +188,7 @@ function CP:SettingsCards()
     card(L("Berufsauswahl: ")..(ui.showAllProfessions and L("alle Berufe") or L("eigene zuerst")),L("Weitere Berufe bleiben über die Umschaltung erreichbar."),toggle("showAllProfessions")),
     card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
     card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
-    card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im God-Mode vergleichbar."),toggle("preferReliableSkill")),
+    card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im Clever skillen vergleichbar."),toggle("preferReliableSkill")),
     card(L("Berufsdaten prüfen"),L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),function() CP:OpenTab("audit") end),
     card(L("Auto-Route: ")..(ui.knownRecipesOnly and L("nur erlernte Rezepte") or L("Katalogvorschläge zulassen")),L("Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein."),toggle("knownRecipesOnly")),
     card(L("Quelldetails: ")..state(ui.showSourceDetails),L("Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar."),toggle("showSourceDetails")),

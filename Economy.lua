@@ -1,14 +1,27 @@
 -- CraftPilot opportunity-cost comparison of current learned recipes.
 local _,CP=...
 local L=CP.L
+function CP:MigrateEconomyState()
+  local ui=self.db.ui
+  if ui.economyCut==nil then ui.economyCut=ui.godCut end
+  if ui.economyRecipe==nil then ui.economyRecipe=ui.godRecipe end
+  if ui.tab=="god" then ui.tab="economy" end
+  ui.godCut=nil;ui.godRecipe=nil
+  for _,plan in pairs(self.db.plans) do
+    if type(plan)=="table" then
+      if plan.economyPrevious==nil then plan.economyPrevious=plan.godPrevious end
+      plan.godPrevious=nil
+    end
+  end
+end
 local function settings(self)
   local ui=self.db.ui
-  local cut=tonumber(ui.godCut)
+  local cut=tonumber(ui.economyCut)
   if not cut or cut~=cut then cut=5 end
   return math.max(0,math.min(30,cut))/100
 end
 
-function CP:GodModeComparison(key)
+function CP:EconomyComparison(key)
   local rows={}
   local cut=settings(self)
   local profession=self.db.professions[key]
@@ -71,11 +84,11 @@ function CP:GodModeComparison(key)
   return {rows=rows,baseline=baseline,cut=cut}
 end
 
-function CP:ChooseGodRecipe(key,id)
-  for _,row in ipairs(self:GodModeComparison(key).rows) do
+function CP:ChooseEconomyRecipe(key,id)
+  for _,row in ipairs(self:EconomyComparison(key).rows) do
     if row.id==id then
       self.db.ui.selectedRecipes[key]=id
-      self.db.ui.godRecipe=id
+      self.db.ui.economyRecipe=id
       -- Only replace the proposal after an explicit choice; existing manual plans remain intact.
       return true
     end
@@ -83,41 +96,41 @@ function CP:ChooseGodRecipe(key,id)
   return false
 end
 
-function CP:ApplyGodPlan(key,id)
+function CP:ApplyEconomyPlan(key,id)
   local chosen
-  for _,row in ipairs(self:GodModeComparison(key).rows) do if row.id==id then chosen=row;break end end
+  for _,row in ipairs(self:EconomyComparison(key).rows) do if row.id==id then chosen=row;break end end
   if not chosen then return false end
   local plan=self:PlanFor(key)
   if not plan then return false end
   local previous={crafts=plan.crafts,start=plan.start,target=plan.target,autoMode=plan.autoMode,autoRoute=plan.autoRoute}
   plan.crafts={}
   if not self:AddPlanCraft(key,id,chosen.crafts) then plan.crafts=previous.crafts;return false end
-  plan.godPrevious=previous
+  plan.economyPrevious=previous
   plan.autoRoute=nil
   plan.start=(self.db.professions[key] or {}).skill or plan.start
   plan.target=math.min(300,plan.start+math.ceil(chosen.points))
   return true
 end
 
-function CP:UndoGodPlan(key)
+function CP:UndoEconomyPlan(key)
   local plan=self:PlanFor(key)
-  local previous=plan and plan.godPrevious
+  local previous=plan and plan.economyPrevious
   if not previous then return false end
   for _,field in ipairs({"crafts","start","target","autoMode","autoRoute"}) do plan[field]=previous[field] end
-  plan.godPrevious=nil
+  plan.economyPrevious=nil
   return true
 end
 
-function CP:GodModeCards(key)
-  local comparison=self:GodModeComparison(key)
-  local cards={{title="God-Mode",detail=L("Eigene Vorräte sind nicht kostenlos: Verkauf oder andere Skillrezepte vergleichen."),
+function CP:EconomyCards(key)
+  local comparison=self:EconomyComparison(key)
+  local cards={{title=L("Clever skillen"),detail=L("Eigene Vorräte sind nicht kostenlos: Verkauf oder andere Skillrezepte vergleichen."),
     footer=L("Nur erlernte Rezepte und aktuelle Skillfarben; keine automatischen Käufe oder Verkäufe."),color="gold"}}
   cards[#cards+1]={title=L("Vergleich für den nächsten Skillschritt"),
     detail=L("Bestehende Pläne reservieren hier keine Materialien. Keine Gesamtoptimierung bis Skill 300."),color="blue"}
   local plan=self:PlanFor(key)
-  if plan and plan.godPrevious then cards[#cards+1]={title=L("Vorherigen Einkaufsplan wiederherstellen"),
-    detail=L("Letzte Übernahme aus God-Mode rückgängig machen."),color="gold",
-    action=function() CP:UndoGodPlan(key);CP:OpenTab("plan") end} end
+  if plan and plan.economyPrevious then cards[#cards+1]={title=L("Vorherigen Einkaufsplan wiederherstellen"),
+    detail=L("Letzte Übernahme aus Clever skillen rückgängig machen."),color="gold",
+    action=function() CP:UndoEconomyPlan(key);CP:OpenTab("plan") end} end
   local baseline=comparison.baseline
   if not baseline then
     cards[#cards+1]={title=L("Noch kein vollständiger Vergleich"),detail=L("Eigenes Berufsfenster öffnen und AH-Preise aktualisieren."),color="gold"}
@@ -125,7 +138,7 @@ function CP:GodModeCards(key)
   end
   cards[#cards+1]={title=L("Günstigster Zukauf: ")..baseline.name,
     detail=L("Zukauf je erwartetem Skillpunkt: ")..self:FormatMoney(baseline.cash),
-    footer=L("Vorratswert wird beim God-Mode zusätzlich berücksichtigt."),color="blue"}
+    footer=L("Vorratswert wird beim Clever skillen zusätzlich berücksichtigt."),color="blue"}
   cards[#cards+1]={title=L("AH-Abzug: ")..math.floor(comparison.cut*100+.5).."%",
     detail=L("Auktionserlös geschätzt; Verkauf, Nachfrage und Verkaufbarkeit im Spiel prüfen."),
     footer=L("Abzug in Einstellungen ändern; mögliche erfolglose Einstellgebühren sind nicht berechnet."),color="gold"}
@@ -138,8 +151,8 @@ function CP:GodModeCards(key)
       footer=advantage and (L("Vorteil je erwartetem Skillpunkt: ")..self:FormatMoney(row.advantage))
         or (row.reliable and L("Kein wirtschaftlicher Vorteil zum günstigsten Zukauf") or L("Vergleich unvollständig oder Preise nicht aktuell")),
       icon=self:RecipeIcon(key,id),color=advantage and "green" or "blue",
-      action=function() CP:ChooseGodRecipe(key,id);CP:Render() end}
-    if self.db.ui.godRecipe==id then
+      action=function() CP:ChooseEconomyRecipe(key,id);CP:Render() end}
+    if self.db.ui.economyRecipe==id then
       cards[#cards+1]={title=self:RecipeColorLabel(key,id),detail=self:RecipeRangeText(key,id),
         footer=L("Aktuelle Farbe aus dem Client; vollständige Grenzwerte separat gekennzeichnet."),color="blue"}
       cards[#cards+1]={title=row.crafts..L(" Herstellungen · Skillchance ")..math.floor(row.chance*100).."%",
@@ -153,8 +166,8 @@ function CP:GodModeCards(key)
         footer=mat.missing>0 and (mat.price and self:FormatMoney(mat.price*mat.missing) or L("Preis fehlt")) or L("Kein Zukauf"),
         tooltipItem=mat.id,color="blue"} end
       cards[#cards+1]={title=L("Diese Variante als Einkaufsplan übernehmen"),detail=row.crafts.."x "..row.name,
-        footer=L("Ersetzt den aktuellen Plan; im God-Mode einmal rückgängig machbar."),color="gold",
-        action=function() if CP:ApplyGodPlan(key,id) then CP:OpenTab("plan") end end}
+        footer=L("Ersetzt den aktuellen Plan; im Clever skillen einmal rückgängig machbar."),color="gold",
+        action=function() if CP:ApplyEconomyPlan(key,id) then CP:OpenTab("plan") end end}
     end
   end
   return cards
