@@ -10,13 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Lua 5.4
-        run: sudo apt-get update && sudo apt-get install -y lua5.4
-      - name: Check Lua syntax
+      - name: Install Lua 5.1 and 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+      - name: Check Lua 5.1 and 5.4 syntax
         run: |
-          for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
-      - name: Run smoke tests
-        run: lua5.4 tests/test.lua
+          for version in 5.1 5.4; do
+            for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+          done
+      - name: Run Lua 5.1 and 5.4 regressions
+        run: for version in 5.1 5.4; do "lua$version" tests/test.lua; done
       - name: Verify pinned camping import
         run: python3 tools/import_camping.py --source-dir "$RUNNER_TEMP/camping-inputs" --download --check
       - name: Verify secondary skill-range subset

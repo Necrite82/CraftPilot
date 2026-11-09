@@ -100,7 +100,7 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.20.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.20.1-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
@@ -217,16 +217,18 @@ for i,view in ipairs({{key="useful",label=L("Sinnvolle Rezepte")},{key="unlearne
     CP.db.ui.vendorBrowser=view.key=="merchants";CP.db.ui.vendorOnly=view.key=="unlearned";CP.db.ui.allRecipes=view.key=="all";CP:Render()
   end);recipeViews[i]:Hide()
 end
-local vendorSearchLabel=text(frame,"GameFontDisableSmall",18,-393,62,L("Suche"))
-local vendorSearch=CreateFrame("EditBox",nil,frame,"InputBoxTemplate");vendorSearch:SetAutoFocus(false);vendorSearch:SetSize(250,24)
-vendorSearch:SetScript("OnTextChanged",function(box) if not box.craftSync and CP.db then CP.db.ui.vendorQuery=box:GetText();CP:Render() end end)
-vendorSearch:SetScript("OnEscapePressed",function(box) box:ClearFocus() end)
-vendorSearch:SetScript("OnEnterPressed",function(box) box:ClearFocus() end)
-local vendorSearchClear=button(frame,76,25,352,-390,L("Leeren"),function() CP.db.ui.vendorQuery="";CP:Render() end)
-local vendorBySkill=button(frame,122,25,445,-390,L("Nach Skill"),function() CP.db.ui.vendorSort="skill";CP:Render() end)
-local vendorByName=button(frame,138,25,575,-390,L("Nach Name"),function() CP.db.ui.vendorSort="name";CP:Render() end)
-local merchantControls={vendorSearchLabel,vendorSearch,vendorSearchClear,vendorBySkill,vendorByName}
-for _,c in ipairs(merchantControls) do c:Hide() end
+-- Keep related controls in one table: Lua 5.1 limits captured locals per function.
+local merchantUI={}
+merchantUI.searchLabel=text(frame,"GameFontDisableSmall",18,-393,62,L("Suche"))
+merchantUI.search=CreateFrame("EditBox",nil,frame,"InputBoxTemplate");merchantUI.search:SetAutoFocus(false);merchantUI.search:SetSize(250,24)
+merchantUI.search:SetScript("OnTextChanged",function(box) if not box.craftSync and CP.db then CP.db.ui.vendorQuery=box:GetText();CP:Render() end end)
+merchantUI.search:SetScript("OnEscapePressed",function(box) box:ClearFocus() end)
+merchantUI.search:SetScript("OnEnterPressed",function(box) box:ClearFocus() end)
+merchantUI.clear=button(frame,76,25,352,-390,L("Leeren"),function() CP.db.ui.vendorQuery="";CP:Render() end)
+merchantUI.bySkill=button(frame,122,25,445,-390,L("Nach Skill"),function() CP.db.ui.vendorSort="skill";CP:Render() end)
+merchantUI.byName=button(frame,138,25,575,-390,L("Nach Name"),function() CP.db.ui.vendorSort="name";CP:Render() end)
+merchantUI.controls={merchantUI.searchLabel,merchantUI.search,merchantUI.clear,merchantUI.bySkill,merchantUI.byName}
+for _,c in ipairs(merchantUI.controls) do c:Hide() end
 local bankButton=button(frame,250,25,18,-358,L("Bank: einschalten"),function()
   CP.db.includeBank=not CP.db.includeBank
   CP:Refresh(false)
@@ -1048,12 +1050,12 @@ function CP:Render()
   local toolbarY=merchantView and 250 or 358
   local inner=(frame:GetWidth() or W)-36
   for i,b in ipairs(recipeViews) do b:SetShown(isRecipes);b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*(inner+6)/4,-toolbarY);b:SetWidth((inner-18)/4);b.selectionMarker:SetShown(({"useful","unlearned","merchants","all"})[i]==viewKey) end
-  for _,c in ipairs(merchantControls) do c:SetShown(isRecipes and merchantView) end
-  vendorSearchLabel:ClearAllPoints();vendorSearchLabel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-(toolbarY+39))
-  vendorSearch:ClearAllPoints();vendorSearch:SetPoint("TOPLEFT",frame,"TOPLEFT",86,-(toolbarY+32))
-  for _,v in ipairs({{vendorSearchClear,352},{vendorBySkill,445},{vendorByName,575}}) do v[1]:ClearAllPoints();v[1]:SetPoint("TOPLEFT",frame,"TOPLEFT",v[2],-(toolbarY+32)) end
-  if not vendorSearch:HasFocus() then vendorSearch.craftSync=true;vendorSearch:SetText(self.db.ui.vendorQuery or "");vendorSearch.craftSync=nil end
-  vendorBySkill.selectionMarker:SetShown(self.db.ui.vendorSort~="name");vendorByName.selectionMarker:SetShown(self.db.ui.vendorSort=="name")
+  for _,c in ipairs(merchantUI.controls) do c:SetShown(isRecipes and merchantView) end
+  merchantUI.searchLabel:ClearAllPoints();merchantUI.searchLabel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-(toolbarY+39))
+  merchantUI.search:ClearAllPoints();merchantUI.search:SetPoint("TOPLEFT",frame,"TOPLEFT",86,-(toolbarY+32))
+  for _,v in ipairs({{merchantUI.clear,352},{merchantUI.bySkill,445},{merchantUI.byName,575}}) do v[1]:ClearAllPoints();v[1]:SetPoint("TOPLEFT",frame,"TOPLEFT",v[2],-(toolbarY+32)) end
+  if not merchantUI.search:HasFocus() then merchantUI.search.craftSync=true;merchantUI.search:SetText(self.db.ui.vendorQuery or "");merchantUI.search.craftSync=nil end
+  merchantUI.bySkill.selectionMarker:SetShown(self.db.ui.vendorSort~="name");merchantUI.byName.selectionMarker:SetShown(self.db.ui.vendorSort=="name")
   local isMats=tab=="mats" and not gatheringOnly
   local isPlan=tab=="plan" and not gatheringOnly
   trainerAction1:SetShown(isTrainers)
@@ -1252,7 +1254,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.20.0 Alpha")
+  footer:SetText("CraftPilot 0.20.1 Alpha")
   local footerWidth=footer:GetStringWidth();if type(footerWidth)=="number" and footerWidth>0 then footer:SetWidth(footerWidth) end
 end
 

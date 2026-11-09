@@ -1,7 +1,7 @@
 name: Publish GitHub alpha
 on:
   push:
-    tags: ['v0.9.0-alpha', 'v0.10.2-alpha', 'v0.11.0-alpha', 'v0.11.1-alpha', 'v0.12.0-alpha', 'v0.12.1-alpha', 'v0.12.2-alpha', 'v0.13.0-alpha', 'v0.14.0-alpha', 'v0.15.0-alpha', 'v0.15.1-alpha', 'v0.16.0-alpha', 'v0.17.0-alpha', 'v0.18.0-alpha', 'v0.19.0-alpha', 'v0.19.1-alpha', 'v0.20.0-alpha']
+    tags: ['v0.9.0-alpha', 'v0.10.2-alpha', 'v0.11.0-alpha', 'v0.11.1-alpha', 'v0.12.0-alpha', 'v0.12.1-alpha', 'v0.12.2-alpha', 'v0.13.0-alpha', 'v0.14.0-alpha', 'v0.15.0-alpha', 'v0.15.1-alpha', 'v0.16.0-alpha', 'v0.17.0-alpha', 'v0.18.0-alpha', 'v0.19.0-alpha', 'v0.19.1-alpha', 'v0.20.0-alpha', 'v0.20.1-alpha']
 permissions:
   contents: write
 jobs:
@@ -13,11 +13,13 @@ jobs:
         with:
           python-version: '3.13'
       - name: Install Lua
-        run: sudo apt-get update && sudo apt-get install -y lua5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
       - name: Validate runtime
         run: |
-          for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do luac5.4 -p "$file"; done
-          lua5.4 tests/test.lua
+          for version in 5.1 5.4; do
+            for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+          done
+          for version in 5.1 5.4; do "lua$version" tests/test.lua; done
       - name: Verify install archive
         run: python tools/build_release.py --check
       - name: Publish prerelease

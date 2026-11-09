@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.20.1-alpha
+
+Behebt den Lua-5.1-Ladefehler der Oberfläche und den daraus folgenden Fehler beim Minimap-Klick. Vollständige Syntax- und Funktionstests laufen vor Pull-Request-Übernahme und Veröffentlichung nun unter Lua 5.1 und 5.4. [Details](docs/RELEASE_0.20.1-alpha.md).
+
 ## 0.20.0-alpha
 
 Gelb und Grün jeweils erlauben und pro Rezept auf weitere Skillpunkte ab Farbwechsel begrenzen. Vorausschauender Vergleich früh hergestellter Zwischenprodukte über den gewählten Skillbereich, mit Kostenvergleich, Folgebedarf und Mengenhinweisen. Abbrechbare Berechnung in kleinen Abschnitten und erneute Prüfung vor dem Export. [Details](docs/RELEASE_0.20.0-alpha.md).
