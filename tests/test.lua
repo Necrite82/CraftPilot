@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","Presentation.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","ManualShopping.lua","CraftSuggestions.lua","PlanUX.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","Presentation.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","ManualShopping.lua","CraftSuggestions.lua","PlanUX.lua","VendorBrowser.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -853,18 +853,15 @@ for _,control in ipairs(createdFrames) do
  if row and row.id==99101 then vendorRecipeButton=control end
 end
 assert(vendorRecipeButton)
-local filterButton
+local filters={}
 for _,control in ipairs(createdFrames) do
  local text=rawget(control,"displayText")
- if type(text)=="string" and text:find("Ansicht: Sinnvolle Rezepte",1,true) then filterButton=control end
+ if text=="Sinnvolle Rezepte" or text=="Nicht gelernt" or text=="Alle Rezepte" or text=="Händlerrezepte" then filters[text]=control end
 end
-assert(filterButton)
-filterButton:GetScript("OnClick")(filterButton)
-assert(CP.db.ui.vendorOnly)
-filterButton:GetScript("OnClick")(filterButton)
-assert(not CP.db.ui.vendorOnly and CP.db.ui.allRecipes)
-filterButton:GetScript("OnClick")(filterButton)
-assert(not CP.db.ui.allRecipes)
+filters["Nicht gelernt"]:GetScript("OnClick")();assert(CP.db.ui.vendorOnly)
+filters["Alle Rezepte"]:GetScript("OnClick")();assert(not CP.db.ui.vendorOnly and CP.db.ui.allRecipes)
+filters["Händlerrezepte"]:GetScript("OnClick")();assert(CP.db.ui.vendorBrowser)
+filters["Sinnvolle Rezepte"]:GetScript("OnClick")();assert(not CP.db.ui.allRecipes and not CP.db.ui.vendorBrowser)
 vendorRecipeButton:GetScript("OnClick")(vendorRecipeButton)
 assert(CP.db.ui.selectedVendorRecipe==99101)
 local targetButton
@@ -1036,12 +1033,13 @@ assert(loadfile("tests/shopping.lua"))(CP)
 assert(loadfile("tests/trainer_recipes.lua"))(CP)
 assert(loadfile("tests/presentation.lua"))(CP,createdFrames)
 assert(loadfile("tests/plan_ux.lua"))(CP,createdFrames)
+assert(loadfile("tests/vendor_browser.lua"))(CP,createdFrames)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.19.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.19.0","0.19.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.19.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.19.0-alpha"))
+assert(CP:IsNewerVersion("0.19.1-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.19.1","0.19.1-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.19.1-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.19.1-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -1059,7 +1057,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.19.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.19.1-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)
@@ -1089,6 +1087,10 @@ for _,locale in ipairs({"enUS","enGB","frFR"}) do
       assert(not (card.title or ""):find("Nicht als erlernt",1,true))
     end
   end
+  translated.db.ui.vendorBrowser=true
+  for _,key in ipairs({"engineering","blacksmithing","tailoring","leatherworking","alchemy","enchanting","cooking","firstaid"}) do translated.db.view=key;translated:OpenTab("now") end
+  local englishScope=translated:VendorRecipeBrowseOptions("engineering","3979")
+  assert(#englishScope==1 and not englishScope[1].requirements:find("Beruf",1,true))
   for german,english in pairs(translated.English) do
     local function placeholders(s)
       local values={};for value in s:gmatch("%%[sdif]") do values[#values+1]=value end

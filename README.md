@@ -4,13 +4,23 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.19.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.19.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 
+## Neu in 0.19.1: Händlerrezepte vollständig durchsehen
+
+Unter **Jetzt skillen → Händlerrezepte** stehen alle **698 im gebündelten Datenstand hinterlegten Händlerrezepte** der acht Herstellungsberufe einschließlich Kochen und Erster Hilfe. Skill, Charakterlevel, Ausbildungsgrenze, Werkzeug, Ruf, Spezialisierung, Abklingzeit oder bereits erlernte Rezepte entfernen keine Einträge aus dieser Ansicht. Noch nicht passende Voraussetzungen werden ausgegraut angezeigt. Einschränkungen von Händlern (z. B. Fraktion, Ereignis oder zusätzliche Währung) bleiben mit Hinweis sichtbar. Der Schalter für Kaufrezept-Vorschläge beeinflusst nur die aktuellen Skillvorschläge, nicht dieses Verzeichnis.
+
+Rezeptkarten zeigen Händler, Standort, Koordinaten, hinterlegten Preis und Voraussetzungen. **Wegpunkt** führt direkt zur ersten passenden hinterlegten Position; ein Rezeptklick zeigt weitere Händlerangebote. Nach Rezept, Händler, Gebiet oder Rezept-/Gegenstands-ID suchen und nach Skill oder Name sortieren. Das Zielfernrohr **Accurate Scope** bei **Mazk Snipeshot** (Rezeptgegenstand 13310, Berufsskill 180) ist auch unterhalb dieses Skills sichtbar.
+
+Die Ansichten **Sinnvolle Rezepte**, **Nicht gelernt**, **Händlerrezepte** und **Alle Rezepte** sind direkt anwählbar. Der Katalog ist ein älterer Referenzstand und keine vollständige Live-Bestandsabfrage aller Händler; neue Forever-Rezepte, Preise und momentane Warenbestände können fehlen oder abweichen. QuestieDB kann bei passenden Daten weitere bekannte Händler und Standorte ergänzen. Es wurden keine neuen Fremddatensätze importiert.
+
+Im Einkaufsplan bleibt der **Einkaufsvorschlag** die vorrangige Ansicht. Die **Manuelle Einkaufsliste** ist als getrennte Aktion unten erreichbar und steht nicht über dem berechneten Einkauf. [Release-Details](docs/RELEASE_0.19.1-alpha.md).
+
 ## Neu in 0.19: Bereich planen und Rezepte austauschen
 
-Im **Einkaufsplan** einen Bereich wie **50–70** wählen und **Plan erstellen** anklicken. Bereich, Erstellen und **An Auctionator** bleiben über der Liste sichtbar. **Einkaufen** zeigt die Fehlmengen; **Herstellen** die Rezeptschritte und Zwischenprodukte; **Details & Kosten** die Kalkulation und Bestandspriorität. Eine unabhängige **Eigene Liste** bleibt direkt erreichbar.
+Im **Einkaufsplan** einen Bereich wie **50–70** wählen und **Plan erstellen** anklicken. Bereich, Erstellen und **An Auctionator** bleiben über der Liste sichtbar. **Einkaufsvorschlag** zeigt die Fehlmengen; **Herstellen** die Rezeptschritte und Zwischenprodukte; **Details & Kosten** die Kalkulation und Bestandspriorität. Die unabhängige **Manuelle Einkaufsliste** ist unten separat erreichbar.
 
 Über **Ändern** einen Rezeptschritt austauschen. CraftPilot berechnet den weiteren Verlauf und den Einkauf neu, markiert die eigene Wahl und zeigt den Kostenunterschied zur automatischen Route, sofern alle Preise bekannt sind. Auch Zwischenprodukte können anders hergestellt oder ausdrücklich gekauft werden. **Automatische Empfehlung verwenden** setzt eine einzelne Wahl zurück; unter Details lassen sich alle Vorgaben zurücksetzen. Nicht mehr passende Vorgaben werden übersprungen und als Hinweis angezeigt.
 
@@ -18,7 +28,7 @@ In **Jetzt skillen** stehen ungefähre Herstellungsmengen bis zum nächsten geei
 
 Materialvorräte, Rundung auf ganze Herstellungen und einmalige Rezept-Lernkosten fließen in den Vergleich ein. Der Bereichsplaner nutzt eine lokale Vorausschau; er garantiert keinen weltweit günstigsten Weg. Ausbildungsränge, Reiseaufwand, schwankende Preise und unvollständige Rezeptdaten können das Ergebnis verändern. Gespeicherte ältere Routen bleiben erhalten und erhalten einen Hinweis zur Neuberechnung.
 
-Die Aktionsbuttons verwenden einen einheitlichen flachen Stil. An/Aus-Optionen haben kompakte Häkchen; Zahlenwerte behalten Schieberegler. [Release-Details und Prüfungen](docs/RELEASE_0.19.0-alpha.md).
+Die Aktionsbuttons verwenden einen einheitlichen flachen Stil. An/Aus-Optionen haben kompakte Häkchen; Zahlenwerte behalten Schieberegler. [Release-Details und Prüfungen](docs/RELEASE_0.19.1-alpha.md).
 
 ## Unterstützte Berufe
 
@@ -60,7 +70,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.19.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.19.0-alpha/CraftPilot-0.19.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.19.1-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.19.1-alpha/CraftPilot-0.19.1-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -187,7 +197,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das aktuelle Installationspaket ist `dist/CraftPilot-0.19.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.19.1-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 

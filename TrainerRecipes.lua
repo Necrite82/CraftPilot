@@ -26,7 +26,7 @@ function CP:TrainerRecipeFee(key,id,atSkill)
 end
 function CP:AllRecipeOptions(key,learned,offers)
   local out,seen={},{}
-  for _,rows in ipairs({learned,offers}) do for _,entry in ipairs(rows) do out[#out+1]=entry;seen[entry.id]=true end end
+  for _,rows in ipairs({learned,offers,self:VendorRecipeBrowseOptions(key)}) do for _,entry in ipairs(rows) do if not seen[entry.id] then out[#out+1]=entry;seen[entry.id]=true end end end
   local catalog=self:RecipeVendorCatalog(key)
   local recipes={}
   for id,r in pairs(catalog and catalog.recipes or {}) do recipes[id]=r end

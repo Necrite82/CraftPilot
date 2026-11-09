@@ -4,13 +4,23 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.19.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.19.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
+## New in 0.19.1: browse every stored merchant recipe
+
+Under **Skill now → Merchant recipes**, browse all **698 merchant recipes in the bundled dataset**, covering the eight crafting professions including Cooking and First Aid. Skill, character level, training cap, tools, reputation, specialization, cooldowns and already learned recipes do not remove entries. Unmet requirements appear dimmed. Merchant restrictions such as faction, events or additional currency remain visible with notes. The setting for vendor skill suggestions does not hide this directory.
+
+Cards show the merchant, location, coordinates, recorded price and requirements. **Waypoint** targets the first suitable stored location; clicking the recipe reveals other offers. Search by recipe, merchant, zone or recipe/item ID; sort by skill or name. **Accurate Scope** from **Mazk Snipeshot** (recipe item 13310, profession skill 180) remains visible below its required skill.
+
+**Useful recipes**, **Not learned**, **Merchant recipes** and **All recipes** are directly selectable. This is an older reference dataset rather than a complete live merchant-stock lookup: new Forever recipes, prices and current stock can be missing or different. Compatible QuestieDB data may supplement known merchants and positions. No new third-party datasets were imported.
+
+**Suggested purchases** remains the primary shopping-plan page. The separate **Personal shopping list** action is at the bottom, below the calculated shopping proposal. [Release details](docs/RELEASE_0.19.1-alpha.md).
+
 ## New in 0.19: skill-range planning and recipe choices
 
-In **Shopping plan**, choose a range such as **50–70** and click **Create plan**. The range, creation and **Send to Auctionator** controls stay above the scrolling list. **Shopping** shows shortages, **Crafting** lists recipe steps and intermediates, and **Details & costs** contains the calculation and stock priority. The independent **Personal list** remains directly accessible.
+In **Shopping plan**, choose a range such as **50–70** and click **Create plan**. The range, creation and **Send to Auctionator** controls stay above the scrolling list. **Suggested purchases** shows shortages, **Crafting** lists recipe steps and intermediates, and **Details & costs** contains the calculation and stock priority. The independent **Personal shopping list** remains separately accessible at the bottom.
 
 Use **Change** to replace a recipe step. CraftPilot recalculates the remaining route and purchases, marks your choice and compares its cost with the automatic route when prices are complete. Intermediate recipes can also be changed, or their output explicitly bought. Reset individual choices with **Use automatic recommendation**, or reset all choices under Details. Choices that no longer qualify are skipped with a notice.
 
@@ -18,7 +28,7 @@ Use **Change** to replace a recipe step. CraftPilot recalculates the remaining r
 
 The comparison accounts for available stock, whole-craft rounding and one-time recipe learning fees. Local lookahead improves recommendations but does not guarantee a global cost optimum. Training ranks, travel, fluctuating prices and incomplete recipe data can change the result. Older saved routes are preserved with a recalculation notice.
 
-Action buttons share a flat style. Compact checkboxes replace boolean switches; numeric settings retain sliders. [Release details and validation](docs/RELEASE_0.19.0-alpha.md).
+Action buttons share a flat style. Compact checkboxes replace boolean switches; numeric settings retain sliders. [Release details and validation](docs/RELEASE_0.19.1-alpha.md).
 
 ## Supported professions
 
@@ -43,7 +53,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.19.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.19.0-alpha/CraftPilot-0.19.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.19.1-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.19.1-alpha/CraftPilot-0.19.1-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -119,7 +129,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.19.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.19.1-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 
