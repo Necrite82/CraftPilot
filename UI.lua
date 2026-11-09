@@ -99,8 +99,8 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.12.1-alpha")
-local godButton=button(header,112,23,W-270,-10,"God-Mode",function() CP:OpenTab("god") end)
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.12.2-alpha")
+local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -739,8 +739,8 @@ local function layout()
   stageProgress:SetWidth(inner)
   content:SetWidth(width-96)
   title:SetWidth(math.max(240,width-400))
-  godButton:ClearAllPoints()
-  godButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-150,-10)
+  economyButton:ClearAllPoints()
+  economyButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-150,-10)
   subtitle:SetWidth(math.max(240,width-300))
   build:ClearAllPoints()
   build:SetPoint("TOPRIGHT",header,"TOPRIGHT",-42,-40)
@@ -804,7 +804,7 @@ registerEllesmereUI()
 
 function CP:OpenTab(tab)
   if not self.db then return end
-  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,god=true,audit=true,settings=true,help=true}
+  local valid={now=true,stages=true,mats=true,plan=true,trainers=true,camping=true,economy=true,audit=true,settings=true,help=true}
   if tab=="help" then tab="settings" end
   if not valid[tab] then return end
   self.db.ui.tab=tab
@@ -824,7 +824,7 @@ function CP:Render()
   local skill=record and record.skill or 0
   local cap=record and record.cap or 0
   local tab=self.db.ui.tab or "now"
-  godButton.selectionMarker:SetShown(tab=="god")
+  economyButton.selectionMarker:SetShown(tab=="economy")
   local context=key..":"..tab..":"..tostring(self.db.ui.campingPage)..":"..tostring(self.db.ui.campingAll)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
@@ -927,9 +927,9 @@ function CP:Render()
   elseif tab=="audit" then
     section:SetText(L("Berufsdaten · Farbgrenzen und Clientabgleich"))
     setVisualCards(self:ProfessionAuditCards())
-  elseif tab=="god" then
-    section:SetText(L("God-Mode · verkaufen, behalten oder anders skillen"))
-    setVisualCards(self:GodModeCards(key))
+  elseif tab=="economy" then
+    section:SetText(L("Clever skillen · verkaufen, behalten oder anders skillen"))
+    setVisualCards(self:EconomyCards(key))
   elseif tab=="camping" then
     section:SetText(L("Camping · Objekte, Ausbauten und Materialien"))
     setVisualCards(self:CampingCards(key))
@@ -1186,7 +1186,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.12.1 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.12.2 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

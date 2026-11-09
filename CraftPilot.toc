@@ -3,7 +3,7 @@
 ## Notes: Profession planning, materials, AH prices and trainer waypoints for WoW Forever
 ## Author: CraftPilot contributors
 ## IconTexture: Interface\AddOns\CraftPilot\Media\CraftPilot
-## Version: 0.12.1-alpha
+## Version: 0.12.2-alpha
 ## OptionalDeps: Auctionator, TomTom, EllesmereUI
 ## SavedVariablesPerCharacter: CraftPilotDB
 
@@ -28,5 +28,5 @@ Route.lua
 UI.lua
 Settings.lua
 Camping.lua
-GodMode.lua
+Economy.lua
 Updates.lua

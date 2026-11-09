@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","GodMode.lua","Updates.lua"}) do
+  "ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -655,8 +655,8 @@ CP.db.recipes.engineering={
  [900004]={name="Gray",learned=true,snapshotSkill=10,difficulty=3,mats={{50002,1}}},
 }
 owned[50001]=4;prices[50001]=1000;prices[50002]=100
-CP.db.ui.godCut=5
-local comparison=CP:GodModeComparison("engineering")
+CP.db.ui.economyCut=5
+local comparison=CP:EconomyComparison("engineering")
 assert(#comparison.rows==2 and comparison.baseline.id==900001)
 local alternative=comparison.rows[1]
 assert(alternative.id==900002 and alternative.buy==400 and alternative.advantage==3400 and alternative.reliable)
@@ -664,32 +664,32 @@ assert(#alternative.materials==1 and alternative.materials[1].missing==4)
 assert(alternative.preserve[1].quantity==4 and alternative.preserve[1].net==3800)
 assert(owned[50001]==4,"Comparison changed inventory")
 CP.db.plans.engineering={start=10,target=20,crafts={[900001]=2}}
-assert(CP:ChooseGodRecipe("engineering",900002))
+assert(CP:ChooseEconomyRecipe("engineering",900002))
 assert(CP.db.ui.selectedRecipes.engineering==900002 and CP.db.plans.engineering.crafts[900001]==2)
-assert(not CP:ChooseGodRecipe("engineering",900003))
-CP.db.view="engineering";CP:OpenTab("god")
-local godCards=CP:GodModeCards("engineering")
-for _,card in ipairs(godCards) do
+assert(not CP:ChooseEconomyRecipe("engineering",900003))
+CP.db.view="engineering";CP:OpenTab("economy")
+local economyCards=CP:EconomyCards("engineering")
+for _,card in ipairs(economyCards) do
  if card.title=="Diese Variante als Einkaufsplan übernehmen" then card.action() end
 end
 assert(CP.db.plans.engineering.crafts[900002]==1 and CP.db.plans.engineering.crafts[900001]==nil)
-assert(CP:UndoGodPlan("engineering"))
+assert(CP:UndoEconomyPlan("engineering"))
 assert(CP.db.plans.engineering.crafts[900001]==2 and CP.db.plans.engineering.crafts[900002]==nil)
 local oldAge=Auctionator.API.v1.GetAuctionAgeByItemID
 Auctionator.API.v1.GetAuctionAgeByItemID=function() return 10 end
-comparison=CP:GodModeComparison("engineering")
+comparison=CP:EconomyComparison("engineering")
 for _,row in ipairs(comparison.rows) do assert(not row.reliable) end
 Auctionator.API.v1.GetAuctionAgeByItemID=oldAge
 prices[50001]=nil
-comparison=CP:GodModeComparison("engineering")
+comparison=CP:EconomyComparison("engineering")
 for _,row in ipairs(comparison.rows) do assert(not row.reliable) end
 prices[50001]=1000
-CP.db.ui.godCut=30
-comparison=CP:GodModeComparison("engineering")
+CP.db.ui.economyCut=30
+comparison=CP:EconomyComparison("engineering")
 assert(comparison.rows[1].advantage==2400)
 CP.db.professions.engineering.cap=10
-assert(#CP:GodModeComparison("engineering").rows==0,"No skill-ups at the profession cap")
-CP.db.ui.godCut=5
+assert(#CP:EconomyComparison("engineering").rows==0,"No skill-ups at the profession cap")
+CP.db.ui.economyCut=5
 CP.db.professions.engineering,CP.db.recipes.engineering,CP.db.plans.engineering=savedProf,savedRecs,savedPlan
 owned[50001]=nil;prices[50001]=nil;prices[50002]=nil
 
@@ -710,7 +710,7 @@ assert(#CP:CampingShopping().steps==1)
 CP.db.ui.campingPage="shopping";CP:OpenTab("camping")
 assert(#CP:CampingShoppingCards()>2)
 CP.db.campingPlan=originalCampPlan;owned[4470]=oldWood
-print("PASS: God-Mode opportunity costs, sale deductions, stale/missing safeguards and shared camping shopping")
+print("PASS: Clever skillen opportunity costs, sale deductions, stale/missing safeguards and shared camping shopping")
 
 -- Color interval boundaries are inclusive at the beginning and exclusive at the next color.
 assert(CP:ValidSkillColors({1,10,20,30}))
@@ -800,11 +800,27 @@ CP.db.ui.selectedRecipes.engineering=oldSelected
 owned[50001],prices[50001],prices[50002]=oldStock,oldP1,oldP2
 print("PASS: all color boundaries, secondary subset, green policy, live conflicts, native materials and audit view")
 
+-- Old saved settings, selected view and reversible plans survive the module rename.
+local beforeMigration=CP.db
+local backup={crafts={[900001]=3},start=10,target=20}
+CP.db={professions={engineering={skill=10,cap=75}},ui={godCut=17,godRecipe=900002,tab="god"},plans={engineering={godPrevious=backup,crafts={[900002]=1}}}}
+CP:MigrateEconomyState()
+assert(CP.db.ui.economyCut==17 and CP.db.ui.economyRecipe==900002 and CP.db.ui.tab=="economy")
+assert(CP.db.ui.godCut==nil and CP.db.ui.godRecipe==nil)
+assert(CP.db.plans.engineering.economyPrevious==backup and CP.db.plans.engineering.godPrevious==nil)
+CP.db.ui.godCut=5;CP.db.ui.godRecipe=1
+CP:MigrateEconomyState()
+assert(CP.db.ui.economyCut==17 and CP.db.ui.economyRecipe==900002)
+assert(CP:UndoEconomyPlan("engineering"))
+assert(CP.db.plans.engineering.crafts[900001]==3)
+CP.db=beforeMigration
+print("PASS: renamed economy module preserves settings, selected view and previous plan")
+
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.12.1-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.12.1","0.12.1-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.12.1-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.12.1-alpha"))
+assert(CP:IsNewerVersion("0.12.2-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.12.2","0.12.2-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.12.2-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.12.2-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -822,10 +838,10 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.12.1-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.12.2-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
-assert(#sent==2 and sent[2][2]=="V|0.12.1-alpha")
+assert(#sent==2 and sent[2][2]=="V|0.12.2-alpha")
 CP:OpenReleaseLink()
 assert(CP.releaseLinkEdit.displayText==CP.releaseURL)
 CP.Say=priorSay;C_ChatInfo=nil
@@ -844,7 +860,7 @@ for _,locale in ipairs({"enUS","enGB","frFR"}) do
   assert(translated.Data.professions.cooking.name=="Cooking")
   for _,key in ipairs(translated.Data.order) do
     translated.db.view=key
-    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","god","audit","settings"}) do translated:OpenTab(tab) end
+    for _,tab in ipairs({"now","stages","mats","plan","trainers","camping","economy","audit","settings"}) do translated:OpenTab(tab) end
   end
   for _,page in ipairs({"fires","objects","buffs","shopping"}) do
     translated.db.ui.campingPage=page
