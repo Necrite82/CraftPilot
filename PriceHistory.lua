@@ -11,7 +11,7 @@ end
 function CP:PriceDetails(itemID)
   local api=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
   local ah=api and call(api.GetAuctionPriceByItemID,"CraftPilot",itemID)
-  if type(ah)~="number" or ah<=0 then ah=nil end
+  if type(ah)~="number" or ah~=ah or ah==math.huge or ah<=0 then ah=nil end
   local age=api and call(api.GetAuctionAgeByItemID,"CraftPilot",itemID)
   if type(age)~="number" or age~=age or age==math.huge or age<0 then age=nil end
   local vendor=self:CatalogVendorPrice(itemID)

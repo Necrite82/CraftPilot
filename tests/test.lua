@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -662,6 +662,14 @@ local alternative=comparison.rows[1]
 assert(alternative.id==900002 and alternative.buy==400 and alternative.advantage==3400 and alternative.reliable)
 assert(#alternative.materials==1 and alternative.materials[1].missing==4)
 assert(alternative.preserve[1].quantity==4 and alternative.preserve[1].net==3800)
+local liquid=CP:CostCalculation("economy","engineering",900002,1)
+assert(liquid.cash==400 and liquid.sale==3800 and liquid.balance==-3400 and liquid.economic==400)
+local marketAge=Auctionator.API.v1.GetAuctionAgeByItemID
+Auctionator.API.v1.GetAuctionAgeByItemID=function(_,id) return id==50001 and 10 or 0 end
+liquid=CP:CostCalculation("economy","engineering",900002,1)
+assert(liquid.cash==400 and liquid.sale==0 and liquid.saleBlocked)
+Auctionator.API.v1.GetAuctionAgeByItemID=marketAge
+
 assert(owned[50001]==4,"Comparison changed inventory")
 CP.db.plans.engineering={start=10,target=20,crafts={[900001]=2}}
 assert(CP:ChooseEconomyRecipe("engineering",900002))
@@ -951,11 +959,81 @@ assert(CP:QuestieNpcLocation(991)==nil)
 LibQuestieDB=nil
 print("PASS: optional QuestieDB contract/flavor checks, normalized valid points and safe fallback")
 
+-- Flat cost calculation distinguishes cash, owned value and conditional sale proceeds.
+local savedCostMode,savedCut=CP.db.mode,CP.db.ui.economyCut
+CP.db.ui.economyCut=5
+local savedStock,savedPrice=owned[55001],prices[55001]
+owned[55001]=2;prices[55001]=100
+local cost=CP:CalculateMaterialCosts({[55001]=5},200,false)
+assert(cost.buy==300 and cost.stockValue==190 and cost.cash==500 and cost.economic==690)
+assert(cost.cashComplete and cost.economicComplete)
+prices[55001]=nil
+cost=CP:CalculateMaterialCosts({[55001]=5},200,false)
+assert(not cost.cashComplete and not cost.economicComplete and cost.missingBuy==1 and cost.missingStock==1)
+prices[55001]=100
+local savedCostNative,savedCostProf,savedCostPlan=CP.db.recipes.engineering,CP.db.professions.engineering,CP.db.plans.engineering
+local costCatalog=CP:Catalog("engineering")
+local oldCostRecipe=costCatalog.recipes[99201]
+costCatalog.recipes[99201]={name="Cost recipe",item=55002,colors={1,20,30,40},mats={[55001]=1},get={}}
+local savedBookPrice=prices[55002];prices[55002]=200
+CP.db.recipes.engineering={}
+CP.db.professions.engineering={skill=10,cap=75}
+cost=CP:CostCalculation("recipe","engineering",99201,5)
+assert(cost.cash==500 and cost.fee==200,"Book fee must be charged once per recipe, not per craft")
+local priorBookStock=owned[55002]
+owned[55002]=1
+cost=CP:CostCalculation("recipe","engineering",99201,5)
+assert(cost.fee==0 and cost.cash==300 and cost.stockValue==380)
+owned[55002]=priorBookStock
+
+CP.db.recipes.engineering[99201]={name="Learned",learned=true,mats={{55001,1}},snapshotSkill=10,difficulty=0}
+cost=CP:CostCalculation("recipe","engineering",99201,5)
+assert(cost.fee==0 and cost.cash==300)
+CP.db.plans.engineering={start=10,target=20,crafts={[99201]=5}}
+cost=CP:CostCalculation("plan","engineering")
+assert(cost.cash==300 and cost.stockValue==190)
+CP.db.recipes.engineering[99202]={learned=true,mats={{55001,2}}}
+CP.db.plans.engineering.crafts={[99201]=2,[99202]=2}
+cost=CP:CostCalculation("plan","engineering")
+assert(cost.buy==400 and cost.materials[1].quantity==6,"Shared stock must be consumed once across plan steps")
+CP.db.plans.engineering.crafts={[99201]=5}
+
+CP.db.plans.engineering.autoMode=true
+CP.db.plans.engineering.autoRoute={steps={{id=99201}},materials={{id=55001,missing=3}},ownedMaterials={[55001]=2}}
+cost=CP:CostCalculation("plan","engineering")
+assert(cost.cash==300,"Auto-route stock must not be subtracted twice")
+CP.db.plans.engineering.autoRoute.ownedMaterials=nil
+cost=CP:CostCalculation("plan","engineering")
+assert(not cost.cashComplete and cost.unknownRecipes>0)
+CP:InitializeCostingState()
+assert(CP.db.plans.engineering.autoRoute==nil and CP.db.plans.engineering.crafts[99201]==5)
+CP:OpenCostCalculation("recipe","engineering",99201,5)
+assert(CP.costWindow:IsShown() and CP.costSnapshot.cash==300)
+prices[55001]=150;CP:RefreshCostWindow()
+assert(CP.costSnapshot.cash==450)
+CP.costWindow:Hide()
+CP.db.recipes.engineering[99201].mats=nil
+cost=CP:CostCalculation("recipe","engineering",99201,5)
+assert(not cost.cashComplete,"Missing current materials must not fall back to old quantities")
+costCatalog.recipes[99201]=oldCostRecipe
+CP.db.recipes.engineering,CP.db.professions.engineering,CP.db.plans.engineering=savedCostNative,savedCostProf,savedCostPlan
+owned[55001],prices[55001],prices[55002]=savedStock,savedPrice,savedBookPrice
+CP.db.mode=savedCostMode;CP.db.ui.economyCut=savedCut
+assert(type(midRange.ownedMaterials)=="table")
+local previousTab,previousPage,previousCamp=CP.db.ui.tab,CP.db.ui.campingPage,CP.db.ui.campingRecipe
+CP.db.ui.tab="camping";CP.db.ui.campingPage="fires";CP.db.ui.campingRecipe=CP.CAMP.fires[1].item
+CP:OpenCurrentCostCalculation()
+assert(CP.costContext.key=="cooking" and CP.costContext.id==CP.CAMP.fires[1].maker)
+CP.costWindow:Hide()
+CP.db.ui.tab,CP.db.ui.campingPage,CP.db.ui.campingRecipe=previousTab,previousPage,previousCamp
+
+print("PASS: cash versus economic costs, one-time book fees, missing prices, route stock and cost popup refresh")
+
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.13.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.13.0","0.13.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.13.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.13.0-alpha"))
+assert(CP:IsNewerVersion("0.14.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.14.0","0.14.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.14.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.14.0-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -973,7 +1051,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.13.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.14.0-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)

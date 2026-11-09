@@ -99,8 +99,9 @@ brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
 local title = text(header, "GameFontNormalLarge", 72, -12, 350, "CRAFTPILOT")
 local subtitle = text(header, "GameFontHighlightSmall", 72, -36, 450,
   L("WoW Forever  |  Zwölf Berufe  |  Skill 1–300  |  Ziehen zum Verschieben"))
-local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.13.0-alpha")
+local build = text(header, "GameFontDisableSmall", W-175, -40, 105, "v0.14.0-alpha")
 local economyButton=button(header,112,23,W-270,-10,L("Clever skillen"),function() CP:OpenTab("economy") end)
+local costingButton=button(header,150,23,W-440,-10,L("Kostenkalkulation"),function() CP:OpenCurrentCostCalculation() end)
 local close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -3, -8)
 local resizeGrip=CreateFrame("Button",nil,frame)
@@ -625,6 +626,7 @@ local function setVisualCards(entries)
     end
     b.titleLabel:SetText(entry.title or "")
     b.detailLabel:SetText(entry.detail or "")
+    b.titleLabel:SetFontObject(entry.emphasis and "GameFontNormalLarge" or "GameFontNormal")
     b.footLabel:SetText(entry.footer or "")
     b:Show()
   end
@@ -768,6 +770,8 @@ local function layout()
   stageProgress:SetWidth(inner)
   content:SetWidth(width-96)
   title:SetWidth(math.max(240,width-400))
+  costingButton:ClearAllPoints()
+  costingButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-272,-10)
   economyButton:ClearAllPoints()
   economyButton:SetPoint("TOPRIGHT",header,"TOPRIGHT",-150,-10)
   subtitle:SetWidth(math.max(240,width-300))
@@ -1037,11 +1041,11 @@ function CP:Render()
     else
       local route=self:AutoRouteShopping(key)
       if route then
-        local cards={}
+        local cards={self:CostSummaryCard("plan",key)}
         cards[#cards+1]={
           title=string.format(L("AUTO-ROUTE · %d -> %d · berechnet bis %d"),
             route.first,route.target,route.reached),
-          detail=#route.steps..L(" Fertigungsetappen · geschätzter Zukauf ")..gold(route.price),
+          detail=#route.steps..L(" Fertigungsetappen"),
           footer=route.blocked and (L("Bei ")..route.blocked..L(" fehlt ein geeignetes Trainerrezept."))
             or L("Vorschlag aus Client-Katalog; keine garantierte oder mathematisch globale Optimum-Route."),
           icon="Interface\\Icons\\INV_Misc_Note_01",
@@ -1110,7 +1114,7 @@ function CP:Render()
         setVisualCards(cards)
       else
       local plan=self:PlanShopping(key)
-      local cards={}
+      local cards={self:CostSummaryCard("plan",key)}
       local range=plan.last-plan.first
       local summary=string.format(L("Skill %d -> %d   ·   %d Herstellungen eingeplant"),
         plan.first,plan.last,plan.crafts)
@@ -1230,7 +1234,7 @@ function CP:Render()
       end
     end
   end
-  footer:SetText("CraftPilot 0.13.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
+  footer:SetText("CraftPilot 0.14.0 Alpha  |  "..L("Preis: ")..(self.db.mode=="cash" and L("Zukauf") or L("Materialwert")))
 end
 
 function CP:ToggleWindow()

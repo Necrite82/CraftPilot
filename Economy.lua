@@ -155,6 +155,7 @@ function CP:EconomyCards(key)
       icon=self:RecipeIcon(key,id),color=advantage and "green" or "blue",
       action=function() CP:ChooseEconomyRecipe(key,id);CP:Render() end}
     if self.db.ui.economyRecipe==id then
+      cards[#cards+1]=self:CostSummaryCard("economy",key,id,row.crafts)
       cards[#cards+1]={title=self:RecipeColorLabel(key,id),detail=self:RecipeRangeText(key,id),
         footer=L("Aktuelle Farbe aus dem Client; vollständige Grenzwerte separat gekennzeichnet."),color="blue"}
       cards[#cards+1]={title=row.crafts..L(" Herstellungen · Skillchance ")..math.floor(row.chance*100).."%",
