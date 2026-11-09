@@ -36,6 +36,12 @@ function CP:AllRecipeOptions(key,learned,offers)
   for id,recipe in pairs(recipes) do if not seen[id] then
     local native=(self.db.recipes[key] or {})[id]
     local at=recipe.learn or (recipe.colors and recipe.colors[1]) or 1
+    local earliest
+    for _,source in ipairs(recipe.get or {}) do
+      local threshold=source.kind=="trainer" and math.max(at,source.skill or source.classicSkill or at) or at
+      if not earliest or threshold<earliest then earliest=threshold end
+    end
+    at=earliest or at
     local mats={};for item,n in pairs(recipe.mats or {}) do
       if type(n)=="number" then mats[#mats+1]={item,n} end
     end
