@@ -52,12 +52,17 @@ function CP:CatalogSource(key,recipeID,skill)
   if (recipe.learn or 1)>skill then return nil end
   if self.db and self.db.ui.knownRecipesOnly then return nil end
   if key=="mining" and not self:OwnsProfession("mining") then return nil end
-  if recipe.spec or recipe.cooldown or recipe.rep or recipe.tools then return nil end
+  if recipe.spec or recipe.cooldown or recipe.rep or recipe.tools or recipe.unavailable or recipe.twin then return nil end
+  local level=type(UnitLevel)=="function" and UnitLevel("player") or 0
+  if (recipe.charLevel or recipe.reqLevel or 0)>level then return nil end
+  local side=type(UnitFactionGroup)=="function" and UnitFactionGroup("player")=="Horde" and "H" or "A"
   local knownTrainer
   for _,source in ipairs(recipe.get or {}) do
-    if source.kind=="start" then return "start",recipe end
-    if source.kind=="trainer" then
-      local trainAt=tonumber(source.skill or source.classicSkill) or recipe.learn or 1
+    local eligible=not source.event and not source.rep and not source.otherCost and (source.reqLevel or 0)<=level
+      and (not source.faction or source.faction=="AH" or source.faction=="B" or source.faction==side)
+    if eligible and source.kind=="start" then return "start",recipe end
+    if eligible and source.kind=="trainer" then
+      local trainAt=math.max(recipe.learn or 1,tonumber(source.skill or source.classicSkill) or recipe.learn or 1)
       if trainAt<=skill and source.event==nil then knownTrainer=true end
     end
   end

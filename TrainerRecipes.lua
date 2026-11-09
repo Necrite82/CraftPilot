@@ -1,7 +1,7 @@
 -- Unlearned trainer recipes are proposals, never treated as learned crafts.
 local _,CP=...
 local L=CP.L
-function CP:TrainerRecipeFee(key,id)
+function CP:TrainerRecipeFee(key,id,atSkill)
   local catalog=self:RecipeVendorCatalog(key)
   local recipe=catalog and catalog.recipes[id]
   local prof=self.db.professions[key]
@@ -12,7 +12,7 @@ function CP:TrainerRecipeFee(key,id)
   local best,uncertain,eligible
   for _,source in ipairs(recipe.get or {}) do
     local at=math.max(recipe.learn or 1,source.skill or source.classicSkill or recipe.learn or 1)
-    if source.kind=="trainer" and at<=prof.skill and not source.event and not source.otherCost and not source.rep
+    if source.kind=="trainer" and at<=(atSkill or prof.skill) and not source.event and not source.otherCost and not source.rep
       and (not source.faction or source.faction=="AH" or source.faction=="B" or source.faction==(faction=="Horde" and "H" or "A"))
       and (not source.reqLevel or source.reqLevel<=(type(UnitLevel)=="function" and UnitLevel("player") or 0)) then
       eligible=true

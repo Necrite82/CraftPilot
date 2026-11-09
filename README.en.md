@@ -4,9 +4,21 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.18.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.19.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.19: skill-range planning and recipe choices
+
+In **Shopping plan**, choose a range such as **50–70** and click **Create plan**. The range, creation and **Send to Auctionator** controls stay above the scrolling list. **Shopping** shows shortages, **Crafting** lists recipe steps and intermediates, and **Details & costs** contains the calculation and stock priority. The independent **Personal list** remains directly accessible.
+
+Use **Change** to replace a recipe step. CraftPilot recalculates the remaining route and purchases, marks your choice and compares its cost with the automatic route when prices are complete. Intermediate recipes can also be changed, or their output explicitly bought. Reset individual choices with **Use automatic recommendation**, or reset all choices under Details. Choices that no longer qualify are skipped with a notice.
+
+**Skill now** suggests approximate craft counts to the next suitable unlock or color boundary. Edit the selected recipe quantity directly or in the cost popup; **Use suggestion** resets it. Shared-material and intermediate-output hints illustrate follow-up demand for up to ten further skill points without adding purchases or reserving stock automatically.
+
+The comparison accounts for available stock, whole-craft rounding and one-time recipe learning fees. Local lookahead improves recommendations but does not guarantee a global cost optimum. Training ranks, travel, fluctuating prices and incomplete recipe data can change the result. Older saved routes are preserved with a recalculation notice.
+
+Action buttons share a flat style. Compact checkboxes replace boolean switches; numeric settings retain sliders. [Release details and validation](docs/RELEASE_0.19.0-alpha.md).
 
 ## Supported professions
 
@@ -31,7 +43,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.18.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.18.0-alpha/CraftPilot-0.18.0-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.19.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.19.0-alpha/CraftPilot-0.19.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -107,7 +119,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.18.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.19.0-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 

@@ -128,7 +128,7 @@ function CP:ReevaluatePlan(owner)
       local current=(self.db.professions[owner] or {}).skill or plan.start
       if current>=plan.target then plan.autoMode=false;plan.autoRoute=nil;plan.crafts={};plan.completed=true
       else
-        plan.start=math.max(1,current)
+        plan.start=math.max(plan.start or 1,1,current)
         local ok,reason=self:BuildRouteForCurrentPlan(owner)
         if not ok then self:Say(reason or L("Plan konnte nicht neu bewertet werden."));return false end
         plan.completedCrafts=0

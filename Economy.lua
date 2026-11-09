@@ -106,11 +106,11 @@ function CP:ApplyEconomyPlan(key,id)
   if not plan then return false end
   local previous={crafts=plan.crafts,start=plan.start,target=plan.target,autoMode=plan.autoMode,autoRoute=plan.autoRoute}
   plan.crafts={}
-  if not self:AddPlanCraft(key,id,chosen.crafts) then plan.crafts=previous.crafts;return false end
+  if not self:AddPlanCraft(key,id,self:RecipeQuantityOverride(key,id) or chosen.crafts) then plan.crafts=previous.crafts;return false end
   plan.economyPrevious=previous
   plan.autoRoute=nil
   plan.start=(self.db.professions[key] or {}).skill or plan.start
-  plan.target=math.min(300,plan.start+math.ceil(chosen.points))
+  plan.target=math.min(300,plan.start+math.ceil((self:RecipeQuantityOverride(key,id) or chosen.crafts)*chosen.chance))
   self:InvalidateReservations();self:StampPlan(key)
   return true
 end

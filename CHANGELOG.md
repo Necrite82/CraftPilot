@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.19.0-alpha
+
+Vereinfachter Einkaufsplan mit fest sichtbaren Aktionen, austauschbaren Rezeptschritten und Zwischenprodukten für einen frei gewählten Skillbereich. Änderbare Herstellungsmengen, Vorschläge bis zum nächsten sinnvollen Schritt und Folgebedarfshinweise. Einheitliche flache Buttons und kompakte An/Aus-Häkchen. [Details](docs/RELEASE_0.19.0-alpha.md).
+
 ## 0.18.0-alpha
 
 Strukturierte Kostenfelder und Materialtabellen, originale Tooltips mit CraftPilot-Zusatzdaten, Fehler melden direkt neben der Version sowie eine unabhängige manuelle Einkaufsliste mit Rezept-Fehlmengenübernahme und Auctionator-Export. [Details](docs/RELEASE_0.18.0-alpha.md).

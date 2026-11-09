@@ -20,11 +20,11 @@ function CP:AddCostDeficits(context)
 end
 function CP:RecipeShoppingButton(b,key,entry,active)
   if not rawget(b,"shoppingButton") then
-    local add=CreateFrame("Button",nil,b,"UIPanelButtonTemplate");add:SetSize(112,22);add:SetPoint("TOPRIGHT",b,"TOPRIGHT",-8,-6)
+    local add=CreateFrame("Button",nil,b,"BackdropTemplate");CP:StyleActionButton(add);add:SetSize(112,22);add:SetPoint("TOPRIGHT",b,"TOPRIGHT",-8,-6)
     add:SetText(L("+ Einkaufsliste"));b.shoppingButton=add
   end
   b.shoppingButton:SetShown(active and not entry.referenceOnly)
-  b.shoppingButton:SetScript("OnClick",function() CP:AddCostDeficits({kind="recipe",key=key,id=entry.id,quantity=1}) end)
+  b.shoppingButton:SetScript("OnClick",function() CP:AddCostDeficits({kind="recipe",key=key,id=entry.id,quantity=CP:RequestedRecipeQuantity(key,entry.id)}) end)
   if active then b.nameLabel:SetWidth((b:GetWidth() or 650)-182) end
 end
 function CP:ManualShoppingCard()
@@ -87,7 +87,7 @@ function CP:OpenPersonalShopping()
     self:DisplayLabel(f,"GameFontNormalSmall",495,86,90,L("Kaufmenge"))
     f.item=CreateFrame("EditBox",nil,f,"InputBoxTemplate");f.item:SetSize(450,26);f.item:SetPoint("TOPLEFT",f,"TOPLEFT",26,-107);f.item:SetAutoFocus(false)
     f.quantity=CreateFrame("EditBox",nil,f,"InputBoxTemplate");f.quantity:SetSize(85,26);f.quantity:SetPoint("TOPLEFT",f,"TOPLEFT",500,-107);f.quantity:SetAutoFocus(false);f.quantity:SetNumeric(true);f.quantity:SetText("1")
-    local save=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");save:SetSize(170,26);save:SetPoint("TOPLEFT",f,"TOPLEFT",607,-107);save:SetText(L("Hinzufügen / Setzen"))
+    local save=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(save);save:SetSize(170,26);save:SetPoint("TOPLEFT",f,"TOPLEFT",607,-107);save:SetText(L("Hinzufügen / Setzen"))
     save:SetScript("OnClick",function()
       local text=f.item:GetText() or "";local id=tonumber(text) or tonumber(text:match("item:(%d+)"))
       if not id then local fn=(_G.C_Item and C_Item.GetItemInfo) or _G.GetItemInfo;if type(fn)=="function" then local ok,name,link=pcall(fn,text);if ok and type(link)=="string" then id=tonumber(link:match("item:(%d+)")) end end end
@@ -99,7 +99,7 @@ function CP:OpenPersonalShopping()
     local scroll=CreateFrame("ScrollFrame",nil,f,"UIPanelScrollFrameTemplate");scroll:SetPoint("TOPLEFT",f,"TOPLEFT",22,-155);scroll:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-45,92)
     f.list=CreateFrame("Frame",nil,scroll);f.list:SetSize(700,100);scroll:SetScrollChild(f.list)
     f.empty=self:DisplayLabel(f,"GameFontHighlight",22,205,730,L("Noch keine Positionen · am Rezept + Einkaufsliste wählen oder oben einen Gegenstand eingeben."))
-    local export=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");export:SetSize(260,28);export:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,20);export:SetText(L("An Auctionator übergeben"));export:SetScript("OnClick",function() CP:ExportPersonalShopping() end)
+    local export=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(export);export:SetSize(260,28);export:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,20);export:SetText(L("An Auctionator übergeben"));export:SetScript("OnClick",function() CP:ExportPersonalShopping() end)
     self:DisplayLabel(f,"GameFontDisableSmall",22,0,750,"")
     local hint=self:DisplayLabel(f,"GameFontDisableSmall",22,0,750,L("Rezept-Zugänge addieren aktuelle Fehlmengen. Kaufmengen bleiben bis zur manuellen Änderung erhalten."));hint:ClearAllPoints();hint:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,63)
     local close=CreateFrame("Button",nil,f,"UIPanelCloseButton");close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() f:Hide() end)

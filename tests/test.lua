@@ -121,7 +121,7 @@ for _,path in ipairs({
   "ThirdParty/CraftLadder/Leatherworking.lua",
   "ThirdParty/CraftLadder/Tailoring.lua",
   "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","Presentation.lua","ManualShopping.lua"}) do
+  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","Presentation.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","ManualShopping.lua","CraftSuggestions.lua","PlanUX.lua"}) do
   local chunk=assert(loadfile(path))
   chunk("CraftPilot",CP)
 end
@@ -629,20 +629,15 @@ CP.db.recipes.cooking[sample.maker].mats=nil
 for _,row in ipairs(CP:CampingRecipes("cooking")) do if row.id==sample.maker then assert(row.mats==nil) end end
 CP.db.recipes.cooking[sample.maker]=prior
 
--- Real slider callbacks exercise both directions, including inverted minimap visibility.
+-- Compact checkboxes exercise both directions, including inverted minimap visibility.
 CP:OpenTab("settings")
 for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB"}) do
-  local control
-  for _,candidate in ipairs(createdFrames) do
-    local spec=rawget(candidate,"craftSpec")
-    if spec and spec.key==key then control=candidate end
-  end
-  assert(control,"Missing on/off slider: "..key)
-  local before=control.craftSpec.value
-  control:GetScript("OnValueChanged")(control,1-before)
-  assert(control.craftSpec.value==1-before,"Switch did not update")
-  control:GetScript("OnValueChanged")(control,before)
-  assert(control.craftSpec.value==before,"Switch did not restore")
+ local control
+ for _,candidate in ipairs(createdFrames) do local spec=rawget(candidate,"craftCheckSpec");if spec and spec.key==key then control=candidate end end
+ assert(control,"Missing checkbox: "..key)
+ local before=control.craftCheckSpec.checked
+ control:GetScript("OnClick")(control);assert(control.craftCheckSpec.checked~=before)
+ control:GetScript("OnClick")(control);assert(control.craftCheckSpec.checked==before)
 end
 
 -- Economic comparison: valuable owned silver can lose to a cheap purchased substitute.
@@ -1040,12 +1035,13 @@ assert(loadfile("tests/market.lua"))(CP)
 assert(loadfile("tests/shopping.lua"))(CP)
 assert(loadfile("tests/trainer_recipes.lua"))(CP)
 assert(loadfile("tests/presentation.lua"))(CP,createdFrames)
+assert(loadfile("tests/plan_ux.lua"))(CP,createdFrames)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
-assert(CP:IsNewerVersion("0.18.0-alpha","0.11.9-alpha"))
-assert(CP:IsNewerVersion("0.18.0","0.18.0-alpha"))
-assert(not CP:IsNewerVersion("0.9.0-alpha","0.18.0-alpha"))
-assert(not CP:IsNewerVersion("|Hbad|h","0.18.0-alpha"))
+assert(CP:IsNewerVersion("0.19.0-alpha","0.11.9-alpha"))
+assert(CP:IsNewerVersion("0.19.0","0.19.0-alpha"))
+assert(not CP:IsNewerVersion("0.9.0-alpha","0.19.0-alpha"))
+assert(not CP:IsNewerVersion("|Hbad|h","0.19.0-alpha"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
@@ -1063,7 +1059,7 @@ CP:InitializeVersionChecks()
 assert(CP.versionChecksReady)
 assert(CP:SendVersion("GUILD",true))
 assert(not CP:SendVersion("GUILD",true) and not CP:SendVersion("SAY",true))
-assert(#sent==1 and sent[1][2]=="Q|0.18.0-alpha")
+assert(#sent==1 and sent[1][2]=="Q|0.19.0-alpha")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 CP:ReceiveVersion("CraftPilotVer","Q|0.11.1-alpha","GUILD")
 assert(#sent==2 and sent[2][2]=="V|"..CP.version)
