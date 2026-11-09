@@ -1,4 +1,5 @@
 -- Pure Lua smoke tests for CraftPilot (no WoW client required).
+local unpackValues=unpack or table.unpack
 function GetLocale() return "deDE" end
 local methods = {}
 local createdTextures={}
@@ -21,7 +22,7 @@ methods.__index = function(self,key)
   if key=="SetShown" then return function(t,shown) t.visible=shown end end
   if key=="SetPoint" then return function(t,...) t.point={...} end end
   if key=="GetPoint" then return function(t)
-    local point=rawget(t,"point");if point then return table.unpack(point) end
+    local point=rawget(t,"point");if point then return unpackValues(point) end
   end end
   if key=="ClearAllPoints" then return function(t) t.point=nil end end
   if key=="SetScript" then return function(t,event,fn)
@@ -111,20 +112,11 @@ C_TradeSkillUI={
   end,
 }
 local CP={}
-for _,path in ipairs({
-  "Locale.lua","Locales/enUS.lua","Data.lua",
-  "ThirdParty/CraftLadder/Camp.lua","ThirdParty/CraftLadder/CampingRecipes.lua",
-  "ThirdParty/CraftLadder/Alchemy.lua",
-  "ThirdParty/CraftLadder/Blacksmithing.lua",
-  "ThirdParty/CraftLadder/Enchanting.lua",
-  "ThirdParty/CraftLadder/Engineering.lua",
-  "ThirdParty/CraftLadder/Leatherworking.lua",
-  "ThirdParty/CraftLadder/Tailoring.lua",
-  "ThirdParty/CraftLadder/MiningSmelting.lua",
-  "ThirdParty/CraftLadder/VendorRecipes.lua","ThirdParty/CraftLadder/SecondarySkillRanges.lua","SkillInfo.lua","SkillPolicy.lua","Core.lua","Catalog.lua","PriceHistory.lua","Route.lua","Presentation.lua","UI.lua","Settings.lua","Camping.lua","Economy.lua","Updates.lua","RecipeActions.lua","QuestieBridge.lua","Costing.lua","Planning.lua","Market.lua","Shopping.lua","Diagnostics.lua","TrainerRecipes.lua","ManualShopping.lua","CraftSuggestions.lua","PlanUX.lua","VendorBrowser.lua","ForwardPlanning.lua"}) do
-  local chunk=assert(loadfile(path))
-  chunk("CraftPilot",CP)
+-- Load the same file order as the game client, including the full UI module.
+for line in io.lines("CraftPilot.toc") do
+  if line:match("%.lua$") then assert(loadfile((line:gsub("\\","/"))))("CraftPilot",CP) end
 end
+assert(type(CP.Render)=="function" and type(CP.OpenTab)=="function" and type(CP.ToggleWindow)=="function","TOC must load every window entry point before initialization")
 CP:Initialize()
 assert(registeredSkinName=="CraftPilot" and CP.ellesmereSkin)
 assert(CP:CatalogCount("tailoring")>300)
@@ -370,7 +362,7 @@ GetProfessionInfo=function(index)
     [5]={"Cooking",0,80,150,1,0,185},
     [6]={"First Aid",0,100,150,1,0,129},
   }
-  return table.unpack(rows[index])
+  return unpackValues(rows[index])
 end
 CP:RefreshProfessionSkills()
 for _,key in ipairs({"skinning","fishing","cooking","firstaid"}) do

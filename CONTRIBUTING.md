@@ -24,6 +24,8 @@ Neue Funktionen am besten als Issue mit einem kurzen Anwendungsfall vorschlagen:
 
 Änderungen bitte möglichst klein und nachvollziehbar halten, bestehende Funktionen nicht unbeabsichtigt verändern und die getestete Forever-Version nennen. Neue Rezept- und NPC-Daten sollten nachvollziehbare Quellen haben. Ein Test im echten Spielclient ist besonders hilfreich.
 
+Vor jeder Veröffentlichung müssen Syntaxprüfung und vollständige Tests sowohl unter Lua 5.1 als auch unter Lua 5.4 bestehen. Die ältere Version prüft insbesondere die vom Client benötigten Grenzen für lokale Variablen und erfasste Funktionswerte.
+
 Vor größeren Änderungen empfiehlt sich ein kurzes Issue, damit keine doppelte Arbeit entsteht.
 
 ---
@@ -33,6 +35,8 @@ Vor größeren Änderungen empfiehlt sich ein kurzes Issue, damit keine doppelte
 CraftPilot welcomes bug reports, feature ideas and contributions.
 
 For bug reports, include the WoW Forever and CraftPilot versions, affected profession and skill range, expected versus actual behavior, reproduction steps, and any relevant Lua error. For trainer or recipe corrections, include the NPC, faction and a verifiable source.
+
+Before release, syntax checks and the full suite must pass under both Lua 5.1 and Lua 5.4. The older interpreter checks client-relevant limits on locals and captured values.
 
 Keep pull requests focused, document the tested client version, and avoid unrelated changes. Please open an issue before starting larger features.
 
