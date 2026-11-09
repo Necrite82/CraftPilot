@@ -884,6 +884,12 @@ assert(not CP:OpenLearnedRecipe("engineering",99101))
 InCombatLockdown=function() return true end
 assert(not CP:OpenLearnedRecipe("engineering",99100) and opened==1)
 InCombatLockdown=nil
+local fallbackOpens=0
+local savedGeneralOpen=CP.OpenOwnedProfession
+C_TradeSkillUI.OpenRecipe=nil
+CP.OpenOwnedProfession=function(_,key) assert(key=="engineering");fallbackOpens=fallbackOpens+1;return true end
+assert(CP:OpenLearnedRecipe("engineering",99100) and fallbackOpens==1)
+CP.OpenOwnedProfession=savedGeneralOpen
 CP.db.ui.selectedVendorKey="engineering";CP.db.ui.selectedVendorRecipe=99101;CP.db.ui.vendorOnly=true
 local savedBase,savedIDs,savedInfo=C_TradeSkillUI.GetBaseProfessionInfo,C_TradeSkillUI.GetAllRecipeIDs,C_TradeSkillUI.GetRecipeInfo
 C_TradeSkillUI.GetBaseProfessionInfo=function() return {professionID=202,professionName="Engineering",skillLevel=10,maxSkillLevel=75} end
