@@ -6,27 +6,27 @@ Erste Beta auf CurseForge (Projekt 1812811). Die Nummerierung beginnt neu; der F
 
 ## 0.29.0-alpha
 
-QuestieDB ist jetzt feste Voraussetzung (`## Dependencies: QuestieDB`, CurseForge installiert es mit). Lehrer-Positionen und Sammelgebiete werden zur Laufzeit aus QuestieDB gelesen statt mitgeliefert; im Paket stehen nur noch IDs, Ränge und Sammel-Skills. [Details](docs/RELEASE_0.29.0-alpha.md).
+QuestieDB ist jetzt feste Voraussetzung (`## Dependencies: QuestieDB`, CurseForge installiert es mit). Lehrer-Positionen und Sammelgebiete werden zur Laufzeit aus QuestieDB gelesen statt mitgeliefert; im Paket stehen nur noch IDs, Ränge und Sammel-Skills. [Details](docs/archive/RELEASE_0.29.0-alpha.md).
 
 ## 0.28.2-alpha
 
-Übersichtlicher Tooltip „Günstigster Weg“ (je Abschnitt eine Zeile, Kosten rechts, Lernen eingerückt, Gesamt abgesetzt, Hinweise grau) und „Als Nächstes lernen“ im Voraus in Tooltip und Begleitfenster. [Details](docs/RELEASE_0.28.2-alpha.md).
+Übersichtlicher Tooltip „Günstigster Weg“ (je Abschnitt eine Zeile, Kosten rechts, Lernen eingerückt, Gesamt abgesetzt, Hinweise grau) und „Als Nächstes lernen“ im Voraus in Tooltip und Begleitfenster. [Details](docs/archive/RELEASE_0.28.2-alpha.md).
 
 ## 0.28.1-alpha
 
-Korrekturen aus dem Spieltest: Herstellen-Knopf zählt das Material in den Taschen, „vorrätig · erst aus Bank/von Twinks holen“ statt „alles vorrätig“, keine Markierungspunkte mehr auf CraftPilots eigenen Materialzeilen, keine Kästchen statt Pfeilen, übersprungene Farben ausgeblendet, „Vorrat reicht“ statt „zusätzlich einplanen 0“. [Details](docs/RELEASE_0.28.1-alpha.md).
+Korrekturen aus dem Spieltest: Herstellen-Knopf zählt das Material in den Taschen, „vorrätig · erst aus Bank/von Twinks holen“ statt „alles vorrätig“, keine Markierungspunkte mehr auf CraftPilots eigenen Materialzeilen, keine Kästchen statt Pfeilen, übersprungene Farben ausgeblendet, „Vorrat reicht“ statt „zusätzlich einplanen 0“. [Details](docs/archive/RELEASE_0.28.1-alpha.md).
 
 ## 0.28.0-alpha
 
-Behebt den Lua-Fehler „secret number value“ der Taschenmarkierung. Neu: „Herstellen: N×“ im Begleitfenster, Einkaufsrunde am Auktionshaus mit Preisgrenze und automatischem Abzählen, erster Start mit Willkommen und eine komplett überarbeitete Hilfe („?“ in der Kopfzeile, `/cp hilfe`). [Details](docs/RELEASE_0.28.0-alpha.md).
+Behebt den Lua-Fehler „secret number value“ der Taschenmarkierung. Neu: „Herstellen: N×“ im Begleitfenster, Einkaufsrunde am Auktionshaus mit Preisgrenze und automatischem Abzählen, erster Start mit Willkommen und eine komplett überarbeitete Hilfe („?“ in der Kopfzeile, `/cp hilfe`). [Details](docs/archive/RELEASE_0.28.0-alpha.md).
 
 ## 0.27.0-alpha
 
-Reservierte Gegenstände werden in Taschen und Bank markiert (Gold: für später aufheben, Blau: Plan braucht es), unabhängig vom Taschen-Addon. Verkaufst du trotzdem etwas Reserviertes, meldet CraftPilot das sofort und bietet den Rückkauf an; am Auktionshaus warnt es vor dem Einstellen. [Details](docs/RELEASE_0.27.0-alpha.md).
+Reservierte Gegenstände werden in Taschen und Bank markiert (Gold: für später aufheben, Blau: Plan braucht es), unabhängig vom Taschen-Addon. Verkaufst du trotzdem etwas Reserviertes, meldet CraftPilot das sofort und bietet den Rückkauf an; am Auktionshaus warnt es vor dem Einstellen. [Details](docs/archive/RELEASE_0.27.0-alpha.md).
 
 ## 0.26.0-alpha
 
-Aufheben-Hinweise für Zwischenprodukte späterer Schritte (Plan, Details, nach dem Herstellen, Tooltip; „schon vorhanden“ statt doppelt herstellen), Preisgrenze je Material, Händler-Helfer mit Kaufen-Knopf, Hinweise in Gegenstands-Tooltips, Seite „Verwerten“ für übrig gebliebene Herstellungen und Budget-Modus. [Details](docs/RELEASE_0.26.0-alpha.md).
+Aufheben-Hinweise für Zwischenprodukte späterer Schritte (Plan, Details, nach dem Herstellen, Tooltip; „schon vorhanden“ statt doppelt herstellen), Preisgrenze je Material, Händler-Helfer mit Kaufen-Knopf, Hinweise in Gegenstands-Tooltips, Seite „Verwerten“ für übrig gebliebene Herstellungen und Budget-Modus. [Details](docs/archive/RELEASE_0.26.0-alpha.md).
 
 ## 0.25.0-alpha
 
@@ -37,65 +37,65 @@ Einstellungen auf 9 sichtbare Einträge verschlankt, dazu ein wählbarer Skillwe
 - Reiter „Twinks“ mit Cooldowns und Twinks als Hersteller, Bank- und Posthilfe
 - Sammelgebiete, Verkaufserlös, Sitzungsbilanz und Pläne zum Teilen
 
-[Details](docs/RELEASE_0.25.0-alpha.md).
+[Details](docs/archive/RELEASE_0.25.0-alpha.md).
 
 ## 0.24.0-alpha
 
-Behebt ADDON_ACTION_BLOCKED bei OpenTradeSkill (gesicherte Zauber-Buttons im Berufsmenü). Empfehlung nach dem günstigsten Weg bis zur Ausbildungsgrenze: AH-Preise je Punkt mit Farbchance, Lernkosten einmalig und nur bei Ersparnis, Vorräte ohne Verzerrung. Begleitfenster verschiebbar, minimierbar und schließbar. [Details](docs/RELEASE_0.24.0-alpha.md).
+Behebt ADDON_ACTION_BLOCKED bei OpenTradeSkill (gesicherte Zauber-Buttons im Berufsmenü). Empfehlung nach dem günstigsten Weg bis zur Ausbildungsgrenze: AH-Preise je Punkt mit Farbchance, Lernkosten einmalig und nur bei Ersparnis, Vorräte ohne Verzerrung. Begleitfenster verschiebbar, minimierbar und schließbar. [Details](docs/archive/RELEASE_0.24.0-alpha.md).
 
 ## 0.23.0-alpha
 
-Begleitfenster am Berufsfenster mit Empfehlung, „noch N× bis Farbe“ und Hinweisen bei Farbwechsel oder Ausbildungsgrenze. Twinks: Taschen und Bank aller Charaktere accountweit; Bestände auf demselben Realm und derselben Fraktion zählen beim Planen mit. [Details](docs/RELEASE_0.23.0-alpha.md).
+Begleitfenster am Berufsfenster mit Empfehlung, „noch N× bis Farbe“ und Hinweisen bei Farbwechsel oder Ausbildungsgrenze. Twinks: Taschen und Bank aller Charaktere accountweit; Bestände auf demselben Realm und derselben Fraktion zählen beim Planen mit. [Details](docs/archive/RELEASE_0.23.0-alpha.md).
 
 ## 0.22.0-alpha
 
-Empfehlung oben in „Jetzt“ mit „Im AH suchen“ (Auctionator-Suche bzw. Einkaufsliste), Kosten-Details als Zeilen, Lehrerrezepte mit Kosten je Punkt inkl. Lernen, „vorrätig“ statt 0, nächster Rezeptwechsel im Detail. [Details](docs/RELEASE_0.22.0-alpha.md).
+Empfehlung oben in „Jetzt“ mit „Im AH suchen“ (Auctionator-Suche bzw. Einkaufsliste), Kosten-Details als Zeilen, Lehrerrezepte mit Kosten je Punkt inkl. Lernen, „vorrätig“ statt 0, nächster Rezeptwechsel im Detail. [Details](docs/archive/RELEASE_0.22.0-alpha.md).
 
 ## 0.21.1-alpha
 
-Fenster liegt über Einheitenfenstern und Aktionsleisten; Reiter, Umschalter und Hauptaktionen behalten auch mit EllesmereUI das Design aus dem Mockup; runde Skillfarbpunkte, flache Lehrerzeilen, Pfeile als Texturen. [Details](docs/RELEASE_0.21.1-alpha.md).
+Fenster liegt über Einheitenfenstern und Aktionsleisten; Reiter, Umschalter und Hauptaktionen behalten auch mit EllesmereUI das Design aus dem Mockup; runde Skillfarbpunkte, flache Lehrerzeilen, Pfeile als Texturen. [Details](docs/archive/RELEASE_0.21.1-alpha.md).
 
 ## 0.21.0-alpha
 
-Neue, aufgeräumte Oberfläche: eine Kopfzeile mit Berufsmenü und Skillbalken, vier Reiter, Rezeptliste mit Detailbereich, eine gemeinsame Einkaufsliste und gruppierte Einstellungen. Lehrer für alle zwölf Berufe aus QuestieDB und CMaNGOS. [Details](docs/RELEASE_0.21.0-alpha.md).
+Neue, aufgeräumte Oberfläche: eine Kopfzeile mit Berufsmenü und Skillbalken, vier Reiter, Rezeptliste mit Detailbereich, eine gemeinsame Einkaufsliste und gruppierte Einstellungen. Lehrer für alle zwölf Berufe aus QuestieDB und CMaNGOS. [Details](docs/archive/RELEASE_0.21.0-alpha.md).
 
 Rezeptdaten auf Craft Ladder 1.11.0 gehoben: Live-Build 1.60.1.70938 statt der Beta-Builds aus dem Oktober. 33 neue Rezepte (u. a. Acolyte's-, Crusader's- und Guard's-Kettenteile, Brawler's- und Totemic-Lederteile, Goblin-Mörser, Stiefelverzauberung – Tempo), aktualisierte Taschenrezepte der Schneiderei, Grober Schleifstein bis Skill 90 und geänderte Bezugsquellen (Händler, Quest, Drop) bei 393 Rezepten. Händlerrezept-Verzeichnis jetzt mit 748 statt 698 Einträgen. Neuer automatischer Abgleich (`tools/sync_craft_ladder.py`, Workflow `data-sync.yml`), der neue Craft-Ladder-Releases als Pull Request vorschlägt.
 
 ## 0.20.1-alpha
 
-Behebt den Lua-5.1-Ladefehler der Oberfläche und den daraus folgenden Fehler beim Minimap-Klick. Vollständige Syntax- und Funktionstests laufen vor Pull-Request-Übernahme und Veröffentlichung nun unter Lua 5.1 und 5.4. [Details](docs/RELEASE_0.20.1-alpha.md).
+Behebt den Lua-5.1-Ladefehler der Oberfläche und den daraus folgenden Fehler beim Minimap-Klick. Vollständige Syntax- und Funktionstests laufen vor Pull-Request-Übernahme und Veröffentlichung nun unter Lua 5.1 und 5.4. [Details](docs/archive/RELEASE_0.20.1-alpha.md).
 
 ## 0.20.0-alpha
 
-Gelb und Grün jeweils erlauben und pro Rezept auf weitere Skillpunkte ab Farbwechsel begrenzen. Vorausschauender Vergleich früh hergestellter Zwischenprodukte über den gewählten Skillbereich, mit Kostenvergleich, Folgebedarf und Mengenhinweisen. Abbrechbare Berechnung in kleinen Abschnitten und erneute Prüfung vor dem Export. [Details](docs/RELEASE_0.20.0-alpha.md).
+Gelb und Grün jeweils erlauben und pro Rezept auf weitere Skillpunkte ab Farbwechsel begrenzen. Vorausschauender Vergleich früh hergestellter Zwischenprodukte über den gewählten Skillbereich, mit Kostenvergleich, Folgebedarf und Mengenhinweisen. Abbrechbare Berechnung in kleinen Abschnitten und erneute Prüfung vor dem Export. [Details](docs/archive/RELEASE_0.20.0-alpha.md).
 
 ## 0.19.1-alpha
 
-Direkte Händlerrezept-Ansicht mit allen 698 hinterlegten Händlerrezepten, einschließlich zukünftiger, erlernter und bedingt verfügbarer Angebote. Ausgegraute Voraussetzungen, Händlerstandorte, Wegpunkte, Suche und Sortierung. Der berechnete Einkaufsvorschlag steht im Vordergrund; die manuelle Einkaufsliste ist unten separat erreichbar. [Details](docs/RELEASE_0.19.1-alpha.md).
+Direkte Händlerrezept-Ansicht mit allen 698 hinterlegten Händlerrezepten, einschließlich zukünftiger, erlernter und bedingt verfügbarer Angebote. Ausgegraute Voraussetzungen, Händlerstandorte, Wegpunkte, Suche und Sortierung. Der berechnete Einkaufsvorschlag steht im Vordergrund; die manuelle Einkaufsliste ist unten separat erreichbar. [Details](docs/archive/RELEASE_0.19.1-alpha.md).
 
 ## 0.19.0-alpha
 
-Vereinfachter Einkaufsplan mit fest sichtbaren Aktionen, austauschbaren Rezeptschritten und Zwischenprodukten für einen frei gewählten Skillbereich. Änderbare Herstellungsmengen, Vorschläge bis zum nächsten sinnvollen Schritt und Folgebedarfshinweise. Einheitliche flache Buttons und kompakte An/Aus-Häkchen. [Details](docs/RELEASE_0.19.0-alpha.md).
+Vereinfachter Einkaufsplan mit fest sichtbaren Aktionen, austauschbaren Rezeptschritten und Zwischenprodukten für einen frei gewählten Skillbereich. Änderbare Herstellungsmengen, Vorschläge bis zum nächsten sinnvollen Schritt und Folgebedarfshinweise. Einheitliche flache Buttons und kompakte An/Aus-Häkchen. [Details](docs/archive/RELEASE_0.19.0-alpha.md).
 
 ## 0.18.0-alpha
 
-Strukturierte Kostenfelder und Materialtabellen, originale Tooltips mit CraftPilot-Zusatzdaten, Fehler melden direkt neben der Version sowie eine unabhängige manuelle Einkaufsliste mit Rezept-Fehlmengenübernahme und Auctionator-Export. [Details](docs/RELEASE_0.18.0-alpha.md).
+Strukturierte Kostenfelder und Materialtabellen, originale Tooltips mit CraftPilot-Zusatzdaten, Fehler melden direkt neben der Version sowie eine unabhängige manuelle Einkaufsliste mit Rezept-Fehlmengenübernahme und Auctionator-Export. [Details](docs/archive/RELEASE_0.18.0-alpha.md).
 
 ## 0.17.0-alpha
 
-Nicht erlernte Lehrerrezepte inklusive einmaliger Lernkosten und Materialkosten vergleichen; passende Lehrer direkt als Wegpunkt. Umschaltbare Ansichten sinnvoll/nicht gelernt/alle, mit ausgegrauten zukünftigen Katalogrezepten. [Details](docs/RELEASE_0.17.0-alpha.md).
+Nicht erlernte Lehrerrezepte inklusive einmaliger Lernkosten und Materialkosten vergleichen; passende Lehrer direkt als Wegpunkt. Umschaltbare Ansichten sinnvoll/nicht gelernt/alle, mit ausgegrauten zukünftigen Katalogrezepten. [Details](docs/archive/RELEASE_0.17.0-alpha.md).
 
 ## 0.16.0-alpha
 
-Gemeinsamer Release mit QuestieDB-/Erste-Hilfe-Korrekturen, AH-/Netto-/Händler-Stückpreisen, Behalten-/Verkaufshinweisen, Taschen-/Bankangaben direkt am Rezept und Auctionator-Einkaufslisten für manuelle Pläne sowie Skillbereich-Auto-Routen. Geplante Zwischenprodukte werden verrechnet. [Details](docs/RELEASE_0.16.0-alpha.md).
+Gemeinsamer Release mit QuestieDB-/Erste-Hilfe-Korrekturen, AH-/Netto-/Händler-Stückpreisen, Behalten-/Verkaufshinweisen, Taschen-/Bankangaben direkt am Rezept und Auctionator-Einkaufslisten für manuelle Pläne sowie Skillbereich-Auto-Routen. Geplante Zwischenprodukte werden verrechnet. [Details](docs/archive/RELEASE_0.16.0-alpha.md).
 
 ## 0.15.1-alpha
 
-Korrektur der Erkennung gepackter QuestieDB-Forever-Versionen und eigene Berufserkennung über die aktuelle Berufs-API, insbesondere Erste Hilfe. Getrennte Statusmeldungen für fehlende API, falschen Datenstand und fehlende Paketkennung. [Details](docs/RELEASE_0.15.1-alpha.md).
+Korrektur der Erkennung gepackter QuestieDB-Forever-Versionen und eigene Berufserkennung über die aktuelle Berufs-API, insbesondere Erste Hilfe. Getrennte Statusmeldungen für fehlende API, falschen Datenstand und fehlende Paketkennung. [Details](docs/archive/RELEASE_0.15.1-alpha.md).
 
 ## 0.15.0-alpha
 
-Gemeinsame Vorratsreservierungen für Berufs- und Campingpläne, Prioritäten, Neubewertung bei Änderungen und erfasster Herstellungsfortschritt. Kaufrezepte vergleichen Rezept- und Materialkosten mit erlernten Alternativen. Lokale Fehlerberichte mit Vorschau und vorbereitetem GitHub-Issue-Link. [Details](docs/RELEASE_0.15.0-alpha.md).
+Gemeinsame Vorratsreservierungen für Berufs- und Campingpläne, Prioritäten, Neubewertung bei Änderungen und erfasster Herstellungsfortschritt. Kaufrezepte vergleichen Rezept- und Materialkosten mit erlernten Alternativen. Lokale Fehlerberichte mit Vorschau und vorbereitetem GitHub-Issue-Link. [Details](docs/archive/RELEASE_0.15.0-alpha.md).
 
 ## 0.8.0-alpha — 2026-11-08
 

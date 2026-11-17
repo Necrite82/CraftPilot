@@ -1,11 +1,9 @@
-# CraftPilot 0.8.0-alpha – Installationspaket / Installation
+# CraftPilot – Installationspaket / Install package
 
-[CraftPilot 0.8.0-alpha herunterladen / Download](CraftPilot-0.8.0-alpha.zip)
+[CraftPilot 0.1.0-beta herunterladen / Download](CraftPilot-0.1.0-beta.zip)
 
-Dieses Paket enthält den installierbaren Ordner `CraftPilot/`, inklusive aller Lua-Dateien, der zugeschriebenen GPL-3.0-Rezeptdatenbank, den Original-Credits, Lizenz und README. Den enthaltenen Ordner ins AddOns-Verzeichnis von WoW Forever entpacken, Spiel starten und `/cp` eingeben.
+Den Ordner `CraftPilot/` aus dem Zip nach `World of Warcraft\_forever_\Interface\AddOns` entpacken und zusätzlich **QuestieDB** (Forever-Fassung) installieren. Einfacher geht es über die CurseForge-App, die QuestieDB automatisch mitinstalliert.
 
-The archive contains the install-ready `CraftPilot/` folder, Lua modules, attributed GPL-3.0 recipe data, original credits, license and README. Extract the included folder to the WoW Forever AddOns directory and run `/cp`.
+Extract the `CraftPilot/` folder to `World of Warcraft\_forever_\Interface\AddOns` and also install **QuestieDB** (Forever version), or use the CurseForge app, which installs QuestieDB automatically.
 
-**0.8.0-alpha:** Auto-Route (heuristic), recursive make-or-buy bill of materials, Auctionator scan age. Older client snapshot 1.60.1.704xx; availability and actual recipes must be checked in-game.
-
-**Hinweis:** Kein im Forever-Liveclient bestätigtes Release. Die automatisierten Tests können Ingame-Verhalten nicht vollständig abdecken.
+Ältere Versionen stehen in der Git-Historie. / Older versions are in the Git history.
