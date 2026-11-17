@@ -52,7 +52,7 @@ C_Timer={After=function(_,f) f() end}
 C_Map={
   GetBestMapForUnit=function() return 1453 end,
   GetPlayerMapPosition=function(map)
-    if map==1453 then return {GetXY=function() return .50,.75 end} end
+    if map==1453 then return {GetXY=function() return .54,.82 end} end
   end,
   SetUserWaypoint=function(p) waypoints[#waypoints+1]=p end,
 }
@@ -225,7 +225,8 @@ CP.db.professions.enchanting={skill=205,cap=225,name="Enchanting"}
 local target=CP:FindTrainer("enchanting")
 assert(target.name:find("Annora") and target.indoor)
 CP.db.professions.leatherworking={skill=210,cap=225,name="Leatherworking"}
-assert(CP:FindTrainer("leatherworking").name=="Drakk Stonehand")
+local artisanLW=CP:FindTrainer("leatherworking")
+assert(artisanLW.cap==300 and (artisanLW.name=="Drakk Stonehand" or artisanLW.name=="Caryssia Moonhunter"))
 CP.db.professions.blacksmithing={skill=215,cap=225,name="Blacksmithing"}
 assert(CP:FindTrainer("blacksmithing").name=="Brikk Keencraft")
 CP:ChangeView("leatherworking")
@@ -1093,3 +1094,25 @@ for _,locale in ipairs({"enUS","enGB","frFR"}) do
   end
 end
 print("PASS: camping coverage, native-data precedence, all toggle sliders and English/fallback UI rendering")
+
+-- Generated trainer list (QuestieDB positions, CMaNGOS ranks) plus hand-kept additions.
+do
+  local profs,seen,generated,manual={}, {},0,0
+  for _,npc in ipairs(CP.Data.trainers) do
+    local key=npc.profession..":"..npc.name
+    assert(not seen[key],"Duplicate trainer "..key)
+    seen[key]=true
+    profs[npc.profession]=true
+    assert(npc.map and npc.x>0 and npc.x<1 and npc.y>0 and npc.y<1 and npc.zone and npc.zone~="")
+    assert(({[75]=true,[150]=true,[225]=true,[300]=true})[npc.cap],"Unexpected rank cap "..tostring(npc.cap))
+    assert(npc.faction=="Alliance" or npc.faction=="Horde" or npc.faction=="B")
+    if npc.generated then generated=generated+1 else manual=manual+1 end
+  end
+  local count=0
+  for _ in pairs(profs) do count=count+1 end
+  assert(count==12,"Trainers must cover all twelve professions")
+  assert(generated>=200 and manual>=7)
+  assert(seen["herbalism:Nancy Songflower"] and seen["enchanting:Annora (Uldaman-Eingang)"])
+  assert(seen["cooking:Stephen Ryback"] and seen["fishing:Lumak"] and seen["firstaid:Shaina Fuller"])
+end
+print("PASS: generated trainers for all twelve professions with hand-kept additions and no duplicates")

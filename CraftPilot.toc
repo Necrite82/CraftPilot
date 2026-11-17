@@ -9,6 +9,7 @@
 
 Locale.lua
 Locales\enUS.lua
+ThirdParty\Trainers\Trainers.lua
 Data.lua
 ThirdParty\CraftLadder\Camp.lua
 ThirdParty\CraftLadder\CampingRecipes.lua

@@ -1,6 +1,6 @@
 name: Craft Ladder data sync
 
-# Weekly check for a new Craft Ladder release. Craft Ladder rebuilds its data from the live
+# Twice-weekly check for new Craft Ladder, QuestieDB and CMaNGOS data. Craft Ladder rebuilds its data from the live
 # Forever client tables (wago.tools), QuestieDB, AllTheThings and CMaNGOS, so following its
 # releases keeps CraftPilot's recipes, vendors and colours current. A change becomes a pull
 # request with a summary; nothing is merged automatically.
@@ -67,8 +67,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
-          git add -A ThirdParty/CraftLadder
-          git commit -m "Daten: Craft Ladder $tag übernehmen"
+          git add -A ThirdParty/CraftLadder ThirdParty/Trainers
+          git commit -m "Daten: Craft Ladder $tag und Lehrerliste aktualisieren"
           git push --force -u origin "$branch"
           {
             cat "$RUNNER_TEMP/report.md"

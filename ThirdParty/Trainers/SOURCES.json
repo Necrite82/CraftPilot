@@ -1,0 +1,21 @@
+{
+  "questiedb": {
+    "source": "https://github.com/Questie/QuestieDB",
+    "tag": "v1.1.2",
+    "commit": "e1652ce62113c152da682baf2d6fb85f1396bcfb",
+    "files": {
+      "data/Forever/foreverNpcDB.lua": {
+        "sha256": "a8c4169690726323dac3c6441f74f7a4d9cafcc08ec42231d72ff28c9471f0ee"
+      },
+      "support/Forever/Zones/areaIdToUiMapId.lua": {
+        "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
+      }
+    }
+  },
+  "classicdb": {
+    "source": "https://github.com/cmangos/classic-db",
+    "commit": "e4825cf48176edff313d78de66b0beb14371c8eb",
+    "path": "Full_DB/ClassicDB_1_12_1_z2815.sql.gz",
+    "sha256": "4f92db520868ab4e566726f68b5b2e380ae781209beaf22237b4f7f04600d0c0"
+  }
+}
