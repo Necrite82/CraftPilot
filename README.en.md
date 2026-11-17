@@ -4,9 +4,13 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.20.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.21.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.21: a simpler interface and current data
+
+The window is rebuilt around **one header row** (profession menu, skill bar, AH price status, gear for settings) and **four tabs**: Now, Plan & shopping, Trainers & vendors, Camping. **Now** shows a compact recipe list on the left (sort by clicking the column headers) and the selected recipe on the right with quantity, materials, "Open profession" and "Add to shopping list". Stages are a clickable strip in the plan, and items you add yourself appear in the same shopping list. Recipe data now comes from live build 1.60.1.70938, and trainers cover all twelve professions. [Release details (German)](docs/RELEASE_0.21.0-alpha.md).
 
 ## 0.20.1: window startup fix
 
@@ -69,7 +73,7 @@ The original eight have a **1–300 milestone overview**. Currently learned craf
 
 ## Installation
 
-1. Download the **[CraftPilot-0.20.1-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.20.1-alpha/CraftPilot-0.20.1-alpha.zip)** (not GitHub's source-code archive).
+1. Download the **[CraftPilot-0.21.0-alpha installation ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.21.0-alpha/CraftPilot-0.21.0-alpha.zip)** (not GitHub's source-code archive).
 2. Rename the extracted directory to **CraftPilot** if needed. The \`CraftPilot.toc\` file must be directly inside that directory in the WoW Forever addons folder.
 3. Enable CraftPilot, type \`/cp\`, and open the relevant profession window once.
 4. Auctionator and TomTom are recommended but optional.
@@ -145,7 +149,7 @@ World of Warcraft is a trademark of Blizzard Entertainment. This is an independe
 
 Adds Skinning, Cooking, First Aid and Fishing. Learned professions appear first; other professions can be shown on request. Secondary profession slots are included. Recipes and materials for the new professions come from the player’s profession window, with no new third-party catalog or invented rank requirements, trainers or complete leveling guide. Jewelcrafting and Inscription are not among Blizzard’s twelve confirmed Forever professions.
 
-Install `dist/CraftPilot-0.20.1-alpha.zip` for these changes. Older archives are unchanged. Minimap and settings controls are included in this version.
+Install `dist/CraftPilot-0.21.0-alpha.zip` for the current version. Older archives are unchanged. Minimap and settings controls are included in this version.
 
 ## Controls in 0.10
 

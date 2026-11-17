@@ -75,5 +75,7 @@ CP.unlockCache=nil;CP.marketUseCache=nil;CP.costContext=oldContext;CP.routeChoos
 CP:OpenTab("plan");assert(CP:PlanPageCards(CP.db.view,"shopping"))
 local create,export
 for _,b in ipairs(frames) do local t=rawget(b,"displayText");if t=="Plan erstellen" and b:IsShown() then create=b end;if t=="An Auctionator" and b:IsShown() then export=b end end
-assert(create and export and create.point[5]==-250 and export.point[5]==-250,"Primary plan actions must remain above the scroll area")
+local frameHeight=CP.frame.height or 676
+-- 0.21: "Plan erstellen" sits above the scroll area, "An Auctionator" in the fixed bar below it.
+assert(create and export and create.point[5]>-200 and export.point[5]<=-(frameHeight-90),"Primary plan actions must stay outside the scroll area")
 print("PASS: editable route constraints, intermediate buy preference, learning-fee lookahead, batch quantities/follow-up stock and pinned actions")

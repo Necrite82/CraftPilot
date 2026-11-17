@@ -328,10 +328,11 @@ CP.db.includeBank=true
 CP:PrintPlanShopping("alchemy")
 CP:OpenTab("plan")
 assert(CP.db.ui.tab=="plan")
+-- 0.21: stages live in the plan tab, materials in the recipe detail of "now".
 CP:OpenTab("stages")
-assert(CP.db.ui.tab=="stages")
+assert(CP.db.ui.tab=="plan")
 CP:OpenTab("mats")
-assert(CP.db.ui.tab=="mats")
+assert(CP.db.ui.tab=="now")
 CP:OpenTab("help")
 assert(CP.db.ui.tab=="settings")
 CP:ClearPlanCraft("alchemy",2964)
@@ -454,11 +455,15 @@ clickSetting("Minimap-Button")
 assert(not mini:IsShown() and CP.db.ui.hideMinimap)
 local settingsEntry
 for _,b in ipairs(createdFrames) do
-  if b.displayText=="Einstellungen" and b:GetScript("OnClick") then settingsEntry=b end
+  if rawget(b,"craftNav")=="settings" and b:GetScript("OnClick") then settingsEntry=b end
 end
 assert(settingsEntry)
+CP:OpenTab("now")
 settingsEntry:GetScript("OnClick")(settingsEntry)
 assert(CP.db.ui.tab=="settings")
+settingsEntry:GetScript("OnClick")(settingsEntry)
+assert(CP.db.ui.tab=="now","The gear toggles back to the last main tab")
+settingsEntry:GetScript("OnClick")(settingsEntry)
 clickSetting("Minimap-Button")
 assert(mini:IsShown())
 assert(CP:FormatMoney(12345):find("UI%-GoldIcon") and CP:FormatMoney(12345):find("23"))
@@ -559,7 +564,7 @@ assert(state=="unknown")
 CP.db.recipes.statusTest=savedRecipes
 local settingsCount=0
 for _,control in ipairs(createdFrames) do
-  if rawget(control,"displayText")=="Einstellungen" then settingsCount=settingsCount+1 end
+  if rawget(control,"craftNav")=="settings" then settingsCount=settingsCount+1 end
 end
 assert(settingsCount==1,"Duplicate settings navigation")
 print("PASS: price freshness states and single settings entry")
@@ -623,6 +628,7 @@ for _,row in ipairs(CP:CampingRecipes("cooking")) do if row.id==sample.maker the
 CP.db.recipes.cooking[sample.maker]=prior
 
 -- Compact checkboxes exercise both directions, including inverted minimap visibility.
+CP.db.ui.settingsAdvanced=true
 CP:OpenTab("settings")
 for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB","allowYellow","allowGreen","planAhead"}) do
  local control
@@ -777,15 +783,16 @@ CP.db.recipes.engineering[990001].mats={{50001,1}}
 local priorCapture=CP.db.lastCapture
 CP.db.lastCapture={key="engineering",skill=10}
 CP.db.view="engineering";CP:OpenTab("now")
-local rangeSeen=false
+local rangeRow
 for _,control in ipairs(createdFrames) do
  local recipe=rawget(control,"craftRecipe")
- if recipe and recipe.id==990001 then
-  assert(control.rangeLabel.displayText and control.height>=164)
-  rangeSeen=true
- end
+ if recipe and recipe.id==990001 and control:IsShown() then rangeRow=control end
 end
-assert(rangeSeen)
+assert(rangeRow,"Recipe must appear as a compact list row")
+rangeRow:GetScript("OnClick")(rangeRow)
+assert(CP.recipeDetail.entry and CP.recipeDetail.entry.id==990001,"A row click shows the recipe in the detail pane")
+local rangeText=CP.recipeDetail.rangeLabel.displayText
+assert(rangeText and rangeText:find("1-9",1,true) and rangeText:find("ab 30",1,true))
 CP.db.lastCapture=priorCapture
 assert(#CP:ProfessionAuditCards()==13)
 CP:OpenTab("audit")

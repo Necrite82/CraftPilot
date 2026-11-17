@@ -3,10 +3,24 @@ local _,CP=...
 local L=CP.L
 local bg={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1}
 function CP:StyleActionButton(b)
-  b:SetBackdrop(bg);b:SetBackdropColor(.075,.115,.15,1);b:SetBackdropBorderColor(.28,.4,.5,1)
+  b:SetBackdrop(bg);b:SetBackdropColor(.114,.133,.165,1);b:SetBackdropBorderColor(.20,.23,.28,1)
   local label=b:CreateFontString(nil,"OVERLAY","GameFontNormalSmall");label:SetAllPoints(b);label:SetJustifyH("CENTER");label:SetWordWrap(false);b:SetFontString(label);b:SetNormalFontObject("GameFontNormalSmall");b:SetHighlightFontObject("GameFontHighlightSmall");b:SetDisabledFontObject("GameFontDisableSmall")
   b:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
   local h=b:GetHighlightTexture();if h then h:SetVertexColor(.35,.55,.75,.16) end
+end
+local primaryFont
+function CP:StylePrimaryButton(b)
+  b:SetBackdropColor(.88,.69,.31,1);b:SetBackdropBorderColor(.88,.69,.31,1)
+  -- A dedicated font object keeps the dark label when the button is enabled again.
+  if not primaryFont and type(CreateFont)=="function" then
+    primaryFont=CreateFont("CraftPilotPrimaryButtonFont")
+    if primaryFont and GameFontHighlightSmall then primaryFont:CopyFontObject(GameFontHighlightSmall) end
+    if primaryFont then primaryFont:SetTextColor(.11,.08,.02) end
+  end
+  if primaryFont then b:SetNormalFontObject(primaryFont);b:SetHighlightFontObject(primaryFont) end
+  local label=b:GetFontString();if label and type(label.SetTextColor)=="function" then label:SetTextColor(.11,.08,.02) end
+  local h=b:GetHighlightTexture();if h then h:SetVertexColor(1,1,1,.18) end
+  b.craftPrimary=true
 end
 function CP:RenderCheckbox(b,spec,width)
   if not rawget(b,"settingCheck") then
@@ -22,7 +36,7 @@ function CP:RenderCheckbox(b,spec,width)
 end
 function CP:CreateFlatAction(parent,width,height,action)
   local b=CreateFrame("Button",nil,parent,"BackdropTemplate")
-  b:SetSize(width,height);b:SetBackdrop(bg);b:SetBackdropColor(.045,.07,.095,.98);b:SetBackdropBorderColor(.18,.25,.32,1)
+  b:SetSize(width,height);b:SetBackdrop(bg);b:SetBackdropColor(.098,.114,.137,1);b:SetBackdropBorderColor(.17,.196,.227,1)
   b:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
   local highlight=b:GetHighlightTexture();if highlight then highlight:SetVertexColor(.3,.45,.6,.12) end
   b:SetScript("OnClick",action);return b
@@ -42,7 +56,7 @@ function CP:MetricStrip(parent,values,x,y,width)
   for i=1,3 do
     local p=parent.metricPanels[i]
     if not p then
-      p=CreateFrame("Frame",nil,parent,"BackdropTemplate");p:SetBackdrop(bg);p:SetBackdropColor(.055,.085,.11,.95);p:SetBackdropBorderColor(.16,.22,.28,1)
+      p=CreateFrame("Frame",nil,parent,"BackdropTemplate");p:SetBackdrop(bg);p:SetBackdropColor(.122,.141,.172,1);p:SetBackdropBorderColor(.122,.141,.172,1)
       p.label=self:DisplayLabel(p,"GameFontDisableSmall",10,7,w-20,"")
       p.value=self:DisplayLabel(p,"GameFontNormal",10,24,w-20,"")
       parent.metricPanels[i]=p

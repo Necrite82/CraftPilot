@@ -45,7 +45,8 @@ assert(#CP:VendorRecipeBrowseOptions("engineering","%[does not exist")==0,"Searc
 CP.db.professions.engineering=nil;assert(#CP:VendorRecipeBrowseOptions("engineering")==5)
 CP.db.professions.engineering={skill=300,cap=300};assert(#CP:VendorRecipeBrowseOptions("engineering")==5)
 CP.db.professions.engineering={skill=10,cap=75}
-CP.db.ui.vendorBrowser=true;CP.db.ui.vendorQuery="Future Scope";CP:OpenTab("now")
+-- 0.21: the merchant directory lives under "Lehrer & Händler".
+CP.db.ui.vendorBrowser=true;CP.db.ui.vendorQuery="Future Scope";CP:OpenTab("trainers")
 local card,manual,proposal
 for _,f in ipairs(frames) do local r=rawget(f,"craftRecipe");if r and r.id==99201 and f:IsShown() then card=f end end
 assert(card and card.alpha==.5 and card.merchantLocation.displayText:find("Fixture merchant",1,true))
@@ -58,10 +59,11 @@ CP.SetWaypoint=oldWaypoint
 CP.db.ui.vendorBrowser=false;CP.db.ui.vendorQuery=nil;CP.db.ui.allRecipes=false
 CP:OpenTab("plan")
 for _,f in ipairs(frames) do
- if rawget(f,"displayText")=="Manuelle Einkaufsliste" and f:IsShown() and f.point and f.point[1]=="BOTTOMRIGHT" then manual=f end
- if rawget(f,"displayText")=="Einkaufsvorschlag" and f:IsShown() then proposal=f end
+ if rawget(f,"displayText")=="Eigene Liste bearbeiten" and f:IsShown() and f.point then manual=f end
+ if rawget(f,"displayText")=="Einkaufen" and f:IsShown() and f.selectionMarker:IsShown() then proposal=f end
 end
-assert(manual and proposal and proposal.point[5]==-286,"Manual list is a secondary footer action; the automatic proposal is the primary plan page")
+local frameHeight=CP.frame.height or 676
+assert(manual and proposal and manual.point[5]<=-(frameHeight-90),"Manual list is a secondary footer action; the automatic proposal is the primary plan page")
 for _,page in ipairs({"shopping","crafts","details"}) do for _,c in ipairs(CP:PlanPageCards("engineering",page)) do assert(not (c.title or ""):find("Manuelle Einkaufsliste",1,true)) end end
 CP:LayoutRecipeCard(card,"engineering",{id=99201,chance=0,referenceOnly=true},650)
 assert(card.rangeLabel:IsShown() and card.stockSummary:IsShown() and not card.merchantWaypoint:IsShown(),"Returning from browsing restores normal-card fields")
