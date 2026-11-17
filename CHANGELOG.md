@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.22.0-alpha
+
+Empfehlung oben in „Jetzt“ mit „Im AH suchen“ (Auctionator-Suche bzw. Einkaufsliste), Kosten-Details als Zeilen, Lehrerrezepte mit Kosten je Punkt inkl. Lernen, „vorrätig“ statt 0, nächster Rezeptwechsel im Detail. [Details](docs/RELEASE_0.22.0-alpha.md).
+
 ## 0.21.1-alpha
 
 Fenster liegt über Einheitenfenstern und Aktionsleisten; Reiter, Umschalter und Hauptaktionen behalten auch mit EllesmereUI das Design aus dem Mockup; runde Skillfarbpunkte, flache Lehrerzeilen, Pfeile als Texturen. [Details](docs/RELEASE_0.21.1-alpha.md).
