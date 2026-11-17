@@ -4,9 +4,13 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.26.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.27.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+
+## Neu in 0.27: Markierung in Taschen und Bank
+
+Gegenstände, die dein Plan braucht oder für später aufheben soll, bekommen in jeder Taschenansicht einen farbigen Punkt – mit Standardtaschen, EllesmereUI und den üblichen Taschen-Addons. Verkauft trotzdem? CraftPilot meldet es sofort und bietet „Zurückkaufen“ an; am Auktionshaus warnt es vor dem Einstellen. [Release-Details](docs/RELEASE_0.27.0-alpha.md).
 
 ## Neu in 0.26: Aufheben, Preisgrenzen, Händler, Tooltips
 

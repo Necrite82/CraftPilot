@@ -166,9 +166,9 @@ function CP:ToggleSetting(key)
     self.db.ui.showVendorRecipes=on;self.db.ui.knownRecipesOnly=not on
   elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
     self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true})[key] then
     -- Companion and twinks default to on (nil): the first click turns them off.
-    if key=="companion" or key=="includeAlts" or key=="tooltips" then self.db.ui[key]=self.db.ui[key]==false
+    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" then self.db.ui[key]=self.db.ui[key]==false
     else self.db.ui[key]=not self.db.ui[key] end
   else return end
   self.pendingSettingsReset=nil
@@ -176,6 +176,7 @@ function CP:ToggleSetting(key)
   if key=="showAllProfessions" and not self.db.ui.showAllProfessions then self:PreferOwnedProfession() end
   self:UpdateMinimapButton()
   if key=="companion" and self.UpdateCompanion then self:UpdateCompanion() end
+  if key=="itemMarks" and self.UpdateItemMarks then self:UpdateItemMarks(true) end
   -- A different route policy must not leave an old automatic proposal visible.
   if ({preferReliableSkill=true,knownRecipesOnly=true,bank=true,mode=true,includeAlts=true,learnRecipes=true,countSales=true,showVendorRecipes=true})[key] then
     resetRoutes(self)
@@ -230,6 +231,7 @@ function CP:SettingsCards()
     check("companion",L("Begleitfenster am Berufsfenster"),L("Empfehlung, verbleibende Herstellungen, Sitzungsbilanz und Cooldowns direkt neben dem Berufsfenster."),ui.companion~=false,"general"),
     check("autoOpen",L("Berufsfenster beim Wechsel öffnen"),L("Ein Klick im Berufsmenü öffnet auch das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),ui.autoOpen==true,"general"),
     check("tooltips",L("Hinweise in Gegenstands-Tooltips"),L("Bedarf deines Plans, „nicht verkaufen“, Twink-Bestände und Preisgrenze direkt am Gegenstand."),ui.tooltips~=false,"general"),
+    check("itemMarks",L("Markierung in Taschen und Bank"),L("Gold: für einen späteren Schritt aufheben · Blau: dein Plan braucht es. Funktioniert mit den üblichen Taschen-Addons."),ui.itemMarks~=false,"general"),
     check("hideMinimap",L("Minimap-Button"),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),not ui.hideMinimap,"general"),
     -- Route
     choice(L("Skillweg"),pathNames[path],pathDetails[path].."\n"..L("Gilt für Empfehlung, Begleitfenster und Plan erstellen."),
