@@ -42,7 +42,7 @@ function CP:Recommendation(key)
     and string.format(L("Empfehlung: %d× %s bis Skill %d"),count,best.name,target)
     or (L("Empfehlung: ")..best.name)
   if learn then
-    title=L("Erst lernen: ")..best.name..(learn.fee>0 and (" ("..self:FormatCostMoney(learn.fee)..")") or "")
+    title=(learn.source=="ah" and L("Erst im AH kaufen: ") or L("Erst lernen: "))..best.name..(learn.fee>0 and (" ("..self:FormatCostMoney(learn.fee)..")") or "")
       .." · "..string.format(L("dann ca. %d× bis Skill %d"),count,target)
   end
   local detail
@@ -68,8 +68,10 @@ function CP:Recommendation(key)
       end
     end
   end
+  local gate=self.RankGate and self:RankGate(key)
+  if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
   return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,
-    missing=#missing,materials=missing,path=path,learn=learn}
+    missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 
 -- Trainer offers compare costs per recipe; compute them once per render.
@@ -103,11 +105,17 @@ end
 
 -- Search the missing materials of the recommendation. At an open auction house Auctionator searches
 -- them at once; elsewhere they become an Auctionator shopping list to open there later.
+function CP:AuctionHouseOpen() return auctionHouseOpen() end
 function CP:SearchRecommendation()
   local rec=self.currentRecommendation
   if not rec or #rec.materials==0 then self:Say(L("Keine fehlenden Materialien."));return false end
+  return self:SearchItems(rec.materials,L("Empfehlung"),L("Auctionator sucht die fehlenden Materialien."))
+end
+
+-- Search items ({id, quantity}) at an open auction house, or keep them as an Auctionator shopping list.
+function CP:SearchItems(items,listTitle,searching)
   local names,seen={},{}
-  for _,mat in ipairs(rec.materials) do
+  for _,mat in ipairs(items) do
     local name=self:ItemName(mat.id)
     if name=="Item #"..mat.id or seen[name] then
       if self.MarketItemData then self:MarketItemData(mat.id) end
@@ -119,25 +127,25 @@ function CP:SearchRecommendation()
   end
   local api=_G.Auctionator and Auctionator.API and Auctionator.API.v1
   if not api then
-    local list={};for _,n in ipairs(names) do list[#list+1]=n.quantity.."× "..n.name end
+    local list={};for _,n in ipairs(names) do list[#list+1]=(n.quantity or 1).."× "..n.name end
     self:Say(L("Auctionator fehlt · Einkauf: ")..table.concat(list,", "))
     return false
   end
   if auctionHouseOpen() and type(api.MultiSearchExact)=="function" then
     local terms={};for _,n in ipairs(names) do terms[#terms+1]=n.name end
     local ok=pcall(api.MultiSearchExact,"CraftPilot",terms)
-    if ok then self:Say(L("Auctionator sucht die fehlenden Materialien."));return true end
+    if ok then self:Say(searching or L("Auctionator sucht die fehlenden Materialien."));return true end
   end
   if type(api.CreateShoppingList)=="function" and type(api.ConvertToSearchString)=="function" then
     local terms={}
     for _,n in ipairs(names) do
-      local ok,term=pcall(api.ConvertToSearchString,"CraftPilot",{searchString=n.name,isExact=true,quantity=n.quantity})
+      local ok,term=pcall(api.ConvertToSearchString,"CraftPilot",{searchString=n.name,isExact=true,quantity=n.quantity or 1})
       if not ok or type(term)~="string" then self:Say(L("Auctionator-Liste konnte nicht erstellt werden."));return false end
       terms[#terms+1]=term
     end
-    local ok,result=pcall(api.CreateShoppingList,"CraftPilot","CraftPilot - "..L("Empfehlung"),terms)
+    local ok,result=pcall(api.CreateShoppingList,"CraftPilot","CraftPilot - "..listTitle,terms)
     if ok and result~=false then
-      self:Say(L("Einkaufsliste „CraftPilot - Empfehlung“ in Auctionator angelegt · am Auktionshaus öffnen."))
+      self:Say(string.format(L("Einkaufsliste „CraftPilot - %s“ in Auctionator angelegt · am Auktionshaus öffnen."),listTitle))
       return true
     end
   end

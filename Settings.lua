@@ -26,6 +26,7 @@ function CP:InitializeControls()
   if type(ui.hideMinimap)~="boolean" then ui.hideMinimap=false end
   if type(ui.knownRecipesOnly)~="boolean" then ui.knownRecipesOnly=false end
   if type(ui.showSourceDetails)~="boolean" then ui.showSourceDetails=false end
+  self:MigrateSettings()
   self:RefreshProfessionSkills()
   if not ui.showAllProfessions then self:PreferOwnedProfession() end
   self:UpdateMinimapButton()
@@ -107,24 +108,77 @@ function CP:UpdateMinimapButton()
   self.minimapButton:SetShown(not self.db.ui.hideMinimap)
 end
 
+-- 0.25: three combined choices replace the separate color, bank, twink and recipe switches. The old
+-- keys stay the internal state (the route planners read them); these setters keep them consistent.
+CP.SkillPaths={"cheapest","reliable","orangeYellow"}
+CP.StockScopes={"bags","bank","alts"}
+function CP:SkillPath()
+  local ui=self.db.ui
+  if ui.allowGreen==false then return "orangeYellow" end
+  return ui.preferReliableSkill and "reliable" or "cheapest"
+end
+function CP:StockScope()
+  if not self.db.includeBank then return "bags" end
+  return self.db.ui.includeAlts==false and "bank" or "alts"
+end
+function CP:LearnRecipesEnabled()
+  local ui=self.db.ui
+  return ui.showVendorRecipes~=false and not ui.knownRecipesOnly
+end
+local function resetRoutes(self)
+  self:CancelRouteBuild()
+  for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
+  self.pathCache=nil
+end
+function CP:SetSkillPath(mode)
+  local ui=self.db.ui
+  if mode=="orangeYellow" then ui.allowYellow=true;ui.allowGreen=false;ui.preferReliableSkill=true
+  elseif mode=="reliable" then ui.allowYellow=true;ui.allowGreen=true;ui.preferReliableSkill=true
+  else mode="cheapest";ui.allowYellow=true;ui.allowGreen=true;ui.preferReliableSkill=false end
+  ui.skillPath=mode
+  resetRoutes(self);self:SkillPolicyChanged()
+end
+function CP:SetStockScope(scope)
+  self.db.includeBank=scope~="bags"
+  self.db.ui.includeAlts=scope=="alts"
+  resetRoutes(self);self:Refresh(false)
+end
+function CP:MigrateSettings()
+  local ui=self.db.ui
+  if ui.settingsVersion==2 then return end
+  -- Keep what the player chose before: green off → orange/yellow only; "prefer reliable" → safe colors.
+  ui.skillPath=self:SkillPath()
+  if ui.allowYellow==false then ui.allowYellow=true end
+  if type(ui.countSales)~="boolean" then ui.countSales=false end
+  ui.settingsVersion=2
+end
+local function cycle(list,current)
+  for i,v in ipairs(list) do if v==current then return list[i%#list+1] end end
+  return list[1]
+end
+
 function CP:ToggleSetting(key)
   if not self.db then return end
   if key=="bank" then self.db.includeBank=not self.db.includeBank
   elseif key=="mode" then self.db.mode=self.db.mode=="cash" and "value" or "cash"
+  elseif key=="learnRecipes" then
+    local on=not self:LearnRecipesEnabled()
+    self.db.ui.showVendorRecipes=on;self.db.ui.knownRecipesOnly=not on
   elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
     self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true})[key] then
-    self.db.ui[key]=not self.db.ui[key]
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true})[key] then
+    -- Companion and twinks default to on (nil): the first click turns them off.
+    if key=="companion" or key=="includeAlts" then self.db.ui[key]=self.db.ui[key]==false
+    else self.db.ui[key]=not self.db.ui[key] end
   else return end
   self.pendingSettingsReset=nil
-  if key=="showVendorRecipes" and not self.db.ui.showVendorRecipes then self.db.ui.vendorOnly=nil end
+  if (key=="showVendorRecipes" or key=="learnRecipes") and not self.db.ui.showVendorRecipes then self.db.ui.vendorOnly=nil end
   if key=="showAllProfessions" and not self.db.ui.showAllProfessions then self:PreferOwnedProfession() end
   self:UpdateMinimapButton()
-  -- A different route policy must not leave an old automatic proposal visible.
   if key=="companion" and self.UpdateCompanion then self:UpdateCompanion() end
-  if key=="preferReliableSkill" or key=="knownRecipesOnly" or key=="bank" or key=="mode" or key=="includeAlts" then
-    self:CancelRouteBuild()
-    for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
+  -- A different route policy must not leave an old automatic proposal visible.
+  if ({preferReliableSkill=true,knownRecipesOnly=true,bank=true,mode=true,includeAlts=true,learnRecipes=true,countSales=true,showVendorRecipes=true})[key] then
+    resetRoutes(self)
   end
   self:Refresh(false)
 end
@@ -142,6 +196,7 @@ function CP:ConfirmWindowReset()
   self:ResetWindowPosition()
   self.db.ui.minimapAngle=225
   self.db.ui.hideMinimap=false
+  self.db.ui.companionPos=nil
   self:UpdateMinimapButton()
   self:Render()
   return true
@@ -149,118 +204,56 @@ end
 
 function CP:SettingsCards()
   local ui=self.db.ui
-  local toggleKeys={}
-  local function toggle(key)
-    local action=function() CP:ToggleSetting(key) end
-    toggleKeys[action]=key
-    return action
+  local function check(key,title,detail,checked,group,icon)
+    return {title=title,detail=detail,footer="",icon=icon or ICON,color="blue",group=group,action=function() CP:ToggleSetting(key) end,
+      checkbox={key=key,checked=checked,apply=function(value) if value~=checked then CP:ToggleSetting(key) end end}}
   end
-  local function enabled(key)
-    if key=="bank" then return self.db.includeBank end
-    if key=="hideMinimap" then return not ui.hideMinimap end
-    if key=="includeAlts" or key=="companion" then return ui[key]~=false end
-    return ui[key]==true
-  end
-  local function state(value) return value and L("AN") or L("AUS") end
-  local function card(title,detail,action,icon,footer)
-    local row={title=title,detail=detail,footer=footer or L("Anklicken zum Ändern"),action=action,icon=icon or ICON,color="blue"}
-    local key=toggleKeys[action]
-    if key and key~="mode" then
-      row.checkbox={key=key,checked=enabled(key),apply=function(value)
-        if value~=enabled(key) then CP:ToggleSetting(key) end
-      end}
-      row.title=title:gsub(": "..state(enabled(key)).."$","")
-      row.footer=""
-
-    end
-    return row
+  local function choice(title,value,detail,action,group,icon)
+    return {title=title..": "..value,detail=detail,footer=L("Anklicken zum Wechseln"),action=action,icon=icon or ICON,color="blue",group=group}
   end
   local function slider(label,value,min,max,step,unit,apply)
-    return {title=label..value..unit,footer=L("Regler ziehen: ")..min..L(" bis ")..max..unit,
+    return {title=label..value..unit,footer=L("Regler ziehen: ")..min..L(" bis ")..max..unit,group="advanced",
       icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
   end
+  local pathNames={cheapest=L("Günstigster Weg"),reliable=L("Sichere Farben bevorzugen"),orangeYellow=L("Nur Orange und Gelb")}
+  local pathDetails={
+    cheapest=L("Rein nach AH-Preisen: Grün wird genommen, wenn es pro Skillpunkt billiger ist."),
+    reliable=L("Orange und Gelb vor Grün, solange Grün nicht deutlich (über 25 %) billiger ist."),
+    orangeYellow=L("Grüne Rezepte werden nie vorgeschlagen; weniger Herstellungen, oft teurer."),
+  }
+  local stockNames={bags=L("nur Taschen"),bank=L("Taschen und Bank"),alts=L("Taschen, Bank und Twinks")}
+  local path,scope=self:SkillPath(),self:StockScope()
   local rows={
-    slider(L("Clever skillen: AH-Abzug "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value)
-      ui.economyCut=value;CP:Render()
-    end),
-    card(L("Gelbe Rezepte verwenden: ")..state(ui.allowYellow~=false),L("Gilt für automatische Vorschläge und Routen; der Händlerkatalog bleibt vollständig."),toggle("allowYellow")),
-    slider(L("Gelb: weitere Skillpunkte "),ui.yellowPoints or 0,0,75,1,"",function(value) ui.yellowPoints=value;CP:SkillPolicyChanged() end),
-    card(L("Grüne Rezepte verwenden: ")..state(ui.allowGreen~=false),L("Die erwartete zusätzliche Herstellungsmenge wird über die Skillchance eingerechnet."),toggle("allowGreen")),
-    slider(L("Grün: weitere Skillpunkte "),ui.greenPoints or 0,0,75,1,"",function(value) ui.greenPoints=value;CP:SkillPolicyChanged() end),
-    card(L("Punktgrenzen pro Rezept"),L("Ab dem Wechsel auf Gelb oder Grün. 0 = ganze Farbphase. Fehlt eine passende Farbgrenze, zählt die erste eingelesene Beobachtung."),nil,ICON,L("Geänderte Einstellungen: bestehende Routen im Einkaufsplan neu bewerten.")),
-    card(L("Vorausschauend planen: ")..state(ui.planAhead~=false),L("Vergleicht früh hergestellte Zwischenprodukte mit ihrem Bedarf in späteren Schritten der gewählten Route."),toggle("planAhead")),
-    card(L("Sprache: ")..(CP.locale=="deDE" and "Deutsch" or "English"),L("Automatisch nach Clientsprache; andere Sprachen verwenden Englisch."),nil),
-    card(CP:VersionStatus(),L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),function() CP:OpenReleaseLink() end,ICON,L("Anklicken: Release-Link kopieren")),
-    card(self:QuestieStatus(),L("Zusätzlich installiertes Datenaddon lokal für Händlernamen und Standorte nutzen."),toggle("useQuestieDB")),
-    card(L("Minimap-Button: ")..state(not ui.hideMinimap),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),toggle("hideMinimap")),
-    slider(L("Minimap-Position: "),math.floor(ui.minimapAngle),0,359,1,L(" Grad"),function(value)
-      ui.minimapAngle=value;CP:PositionMinimapButton()
-    end),
-    slider(L("Fensterbreite: "),ui.width,750,1100,10," px",function(value)
-      ui.width=value;CP.frame:SetWidth(value)
-    end),
-    slider(L("Fensterhöhe: "),ui.height,570,930,10," px",function(value)
-      ui.height=value;CP.frame:SetHeight(value)
-    end),
-    card(L("Berufsfenster automatisch öffnen: ")..state(ui.autoOpen),L("Beim Wechsel über das Berufsmenü öffnet sich das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),toggle("autoOpen")),
-    card(L("Berufsauswahl: ")..(ui.showAllProfessions and L("alle Berufe") or L("eigene zuerst")),L("Weitere Berufe bleiben über die Umschaltung erreichbar."),toggle("showAllProfessions")),
-    card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
-    card(L("Twinks einplanen: ")..state(ui.includeAlts~=false),(self.AltStatus and self:AltStatus() or "")..L(" Gleiches Realm und gleiche Fraktion, per Post erreichbar."),toggle("includeAlts"),"Interface\\Icons\\INV_Letter_15"),
-    card(L("Begleitfenster am Berufsfenster: ")..state(ui.companion~=false),L("Empfehlung, verbleibende Herstellungen und Hinweise direkt neben dem Berufsfenster."),toggle("companion")),
-    card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
-    card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im Clever skillen vergleichbar."),toggle("preferReliableSkill")),
-    card(L("Kaufrezepte anzeigen: ")..state(ui.showVendorRecipes),L("Passende kaufbare Rezepte direkt in Jetzt skillen anzeigen."),toggle("showVendorRecipes")),
-    card(L("Vorratsreservierungen"),L("Gemeinsame Bestände aller Berufs- und Campingpläne; Priorität ändern."),function() CP:OpenTab("reservations") end),
-    card(L("Berufsdaten prüfen"),L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),function() CP:OpenTab("audit") end),
-    card(L("Auto-Route: ")..(ui.knownRecipesOnly and L("nur erlernte Rezepte") or L("Katalogvorschläge zulassen")),L("Katalogvorschläge können noch zu lernende Rezepte enthalten; nur erlernt schränkt sie ein."),toggle("knownRecipesOnly")),
-    card(L("Quelldetails: ")..state(ui.showSourceDetails),L("Zusätzlichen Datenstand im Einkaufsplan anzeigen; Unsicherheiten bleiben immer sichtbar."),toggle("showSourceDetails")),
-    card(L("Design: ")..ui.skin,L("Automatisch mit EllesmereUI, Dunkel oder Klassisch."),function()
+    -- General
+    choice(L("Vorräte"),stockNames[scope],self:BankStatus().."\n"..(self.AltStatus and self:AltStatus() or ""),
+      function() CP:SetStockScope(cycle(CP.StockScopes,CP:StockScope())) end,"general","Interface\\Icons\\INV_Misc_Bag_08"),
+    check("companion",L("Begleitfenster am Berufsfenster"),L("Empfehlung, verbleibende Herstellungen, Sitzungsbilanz und Cooldowns direkt neben dem Berufsfenster."),ui.companion~=false,"general"),
+    check("autoOpen",L("Berufsfenster beim Wechsel öffnen"),L("Ein Klick im Berufsmenü öffnet auch das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),ui.autoOpen==true,"general"),
+    check("hideMinimap",L("Minimap-Button"),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),not ui.hideMinimap,"general"),
+    -- Route
+    choice(L("Skillweg"),pathNames[path],pathDetails[path].."\n"..L("Gilt für Empfehlung, Begleitfenster und Plan erstellen."),
+      function() CP:SetSkillPath(cycle(CP.SkillPaths,CP:SkillPath())) end,"route","Interface\\Icons\\INV_Misc_Map_01"),
+    check("learnRecipes",L("Rezepte zum Lernen einbeziehen"),L("Lehrer-, Händler- und AH-Rezepte zählen mit, wenn sie den Weg trotz Lernkosten billiger machen."),self:LearnRecipesEnabled(),"route"),
+    check("countSales",L("Verkaufserlös gegenrechnen"),string.format(L("Was hergestellte Dinge im AH (abzüglich %d %%) oder beim Händler bringen, senkt die Kosten eines Rezepts."),tonumber(ui.economyCut) or 5),ui.countSales==true,"route","Interface\\Icons\\INV_Misc_Coin_01"),
+    -- Display
+    choice(L("Design"),({auto=L("Automatisch"),dark=L("Dunkel"),classic=L("Klassisch")})[ui.skin] or ui.skin,L("Automatisch übernimmt EllesmereUI, wenn es installiert ist."),function()
       ui.skin=ui.skin=="auto" and "dark" or (ui.skin=="dark" and "classic" or "auto")
       CP:ApplyTheme();CP:Render()
-    end),
-    card(L("Rezeptsortierung: ")..({cost=L("Preis"),chance=L("Skillchance"),missing=L("Fehlmenge"),name="Name"})[ui.recipeSort],L("Gilt für die Rezeptauswahl im Bereich Jetzt skillen."),function()
-      local nextSort={cost="chance",chance="missing",missing="name",name="cost"}
-      ui.recipeSort=nextSort[ui.recipeSort] or "cost";CP:Render()
-    end),
-    card(L("Berufsdaten aktualisieren"),L("Aktuelles eigenes Berufsfenster und Bestände erneut einlesen."),function() CP:Refresh(true) end),
-    card(L("Einkaufsplan öffnen"),L("Bereich und Mengen wählen; bekannte Rezepte hinzufügen oder Auto-Route prüfen."),function() CP:OpenTab("plan") end),
-    card(L("Geplante Einkaufsliste im Chat"),L("Materialien des aktuellen mehrstufigen Einkaufsplans ausgeben."),function() CP:PrintPlanShopping(CP.db.view) end),
-    card(L("Materialliste des gewählten Rezepts im Chat"),L("Fehlende Materialien für eine Herstellung des gewählten Rezepts ausgeben."),function() CP:ShowShopping() end),
-    card(self.pendingSettingsReset and L("Zurücksetzen bestätigen – erneut anklicken") or L("Fenster und Minimap-Position zurücksetzen"),
-      L("Stellt Position und Fenstergröße wieder her; Pläne und Rezeptdaten bleiben erhalten."),function() CP:ConfirmWindowReset() end),
-    card(L("Bedienung"),L("Beruf wählen → Rezepte prüfen → Einkaufsplan erstellen."),nil,ICON,
-      L("Alle Funktionen sind über Schaltflächen erreichbar. Slash-Befehle bleiben optional.")),
+    end,"display"),
+    {title=self.pendingSettingsReset and L("Zurücksetzen bestätigen – erneut anklicken") or L("Fenster und Minimap-Position zurücksetzen"),
+      detail=L("Stellt Position und Größe von Fenster, Begleitfenster und Minimap-Button wieder her; Pläne und Rezeptdaten bleiben."),
+      footer=L("Anklicken zum Ändern"),icon=ICON,color="blue",group="display",action=function() CP:ConfirmWindowReset() end},
+    -- Advanced
+    {title=L("Punktgrenzen pro Rezept"),detail=L("Ab dem Wechsel auf Gelb oder Grün. 0 = ganze Farbphase."),footer=L("Geänderte Einstellungen: bestehende Routen im Einkaufsplan neu bewerten."),icon=ICON,color="blue",group="advanced"},
+    slider(L("Gelb: weitere Skillpunkte "),ui.yellowPoints or 0,0,75,1,"",function(value) ui.yellowPoints=value;CP.pathCache=nil;CP:SkillPolicyChanged() end),
+    slider(L("Grün: weitere Skillpunkte "),ui.greenPoints or 0,0,75,1,"",function(value) ui.greenPoints=value;CP.pathCache=nil;CP:SkillPolicyChanged() end),
+    check("planAhead",L("Vorausschauend planen"),L("Vergleicht früh hergestellte Zwischenprodukte mit ihrem Bedarf in späteren Schritten."),ui.planAhead~=false,"advanced"),
+    slider(L("AH-Abzug beim Verkauf "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value) ui.economyCut=value;CP.pathCache=nil;CP:Render() end),
+    check("useQuestieDB",self:QuestieStatus(),L("Zusätzlich installiertes Datenaddon lokal für Händlernamen und Standorte nutzen."),ui.useQuestieDB==true,"advanced"),
+    {title=L("Vorratsreservierungen"),detail=L("Gemeinsame Bestände aller Berufs- und Campingpläne; Priorität ändern."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("reservations") end},
+    {title=L("Berufsdaten prüfen"),detail=L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("audit") end},
+    {title=CP:VersionStatus(),detail=L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),footer=L("Anklicken: Release-Link kopieren"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenReleaseLink() end},
   }
-  -- Visible groups in the settings view; everything else sits under "Erweitert".
-  local groups={
-    [L("Bankbestände berücksichtigen: ")]="general",
-    [L("Twinks einplanen: ")]="general",
-    [L("Begleitfenster am Berufsfenster: ")]="general",
-    [L("Berufsfenster automatisch öffnen: ")]="general",
-    [L("Minimap-Button: ")]="general",
-    [L("Berufsauswahl: ")]="general",
-    [L("Berufsdaten aktualisieren")]="general",
-    [L("Gelbe Rezepte verwenden: ")]="route",
-    [L("Grüne Rezepte verwenden: ")]="route",
-    [L("Orange/Gelb bevorzugen: ")]="route",
-    [L("Kaufrezepte anzeigen: ")]="route",
-    [L("Kostenvergleich: ")]="route",
-    [L("Design: ")]="display",
-    [L("Fensterbreite: ")]="display",
-    [L("Fensterhöhe: ")]="display",
-    [L("Minimap-Position: ")]="display",
-    [L("Sprache: ")]="display",
-    [L("Fenster und Minimap-Position zurücksetzen")]="display",
-    [L("Zurücksetzen bestätigen – erneut anklicken")]="display",
-  }
-  for _,row in ipairs(rows) do
-    local label=row.slider and row.slider.label or row.title
-    row.group="advanced"
-    for prefix,group in pairs(groups) do
-      prefix=prefix:gsub(":%s*$","")
-      if type(label)=="string" and label:sub(1,#prefix)==prefix then row.group=group end
-    end
-  end
   return rows
 end
 

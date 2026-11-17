@@ -65,6 +65,7 @@ function CP:CompanionFrame()
   f.detail=label(f,"GameFontHighlightSmall",226)
   f.progress=label(f,"GameFontNormalSmall",226)
   f.notice=label(f,"GameFontHighlightSmall",226)
+  f.extra=label(f,"GameFontDisableSmall",226)
   f.select=smallButton(f,112,L("Rezept wählen"),function()
     local r=CP.currentCompanionRecommendation;if r then CP:OpenLearnedRecipe(r.key,r.id) end
   end)
@@ -149,7 +150,7 @@ function CP:UpdateCompanion()
     node:ClearAllPoints();node:SetPoint("TOPLEFT",f,"TOPLEFT",12,-y);node:Show()
     local h=node:GetStringHeight();y=y+(type(h)=="number" and h>0 and h or 14)+(gap or 6)
   end
-  for _,node in ipairs({f.title,f.detail,f.progress,f.notice,f.select,f.search,f.open,f.trainer}) do node:Hide() end
+  for _,node in ipairs({f.title,f.detail,f.progress,f.notice,f.extra,f.select,f.search,f.open,f.trainer}) do node:Hide() end
   if collapsed then
     f:SetHeight(34)
     f:Show()
@@ -174,6 +175,19 @@ function CP:UpdateCompanion()
   if fresh then
     f.notice:SetText("|cffffd878"..notice.text.."|r");put(f.notice,8)
   end
+  -- Small status lines: rank or specialization due, learning tour stop, ready cooldowns, session balance.
+  local extra={}
+  local gate=self.RankGate and self:RankGate(key)
+  if gate and (record.skill or 0)>=(record.cap or 0)-10 and (record.cap or 0)<300 then extra[#extra+1]=gate.text end
+  local spec=self.SpecHint and self:SpecHint(key)
+  if spec then extra[#extra+1]=spec end
+  local tour=self.tour and self.tour.key==key and self.tour.stops[self.tour.index]
+  if tour then extra[#extra+1]=string.format(L("Lerntour: nächster Halt %s"),tour.name) end
+  local cd=self.ReadyCooldownText and self:ReadyCooldownText()
+  if cd then extra[#extra+1]=cd end
+  local session=self.SessionText and self:SessionText(key)
+  if session then extra[#extra+1]=session end
+  if #extra>0 then f.extra:SetText(table.concat(extra,"\n"));put(f.extra,8) end
   local atCap=record.cap and record.cap<300 and (record.skill or 0)>=record.cap
   local row={}
   if rec and not rec.learn then row[#row+1]=f.select end

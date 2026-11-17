@@ -4,9 +4,23 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.24.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.25.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+
+## Neu in 0.25: einstellbarer Skillweg, Lerntour, Twinks und mehr
+
+Schlanke Einstellungen mit wählbarem **Skillweg**: günstigster Weg, sichere Farben bevorzugen oder nur Orange und Gelb. Er gilt auch für „Plan erstellen“.
+
+Neu sind außerdem:
+- Kartensymbole mit dem Weg zu Lehrer oder Händler und eine **Lerntour** entlang des günstigsten Weges
+- Warnungen bei Level- und Rangsperren sowie die **Spezialisierungen** mit Questgebern
+- Preisalter mit gezieltem Auctionator-Scan
+- der Reiter **Twinks** mit Cooldowns, Beständen und Twinks, die Material billiger herstellen
+- Hilfen an Bank und Briefkasten, Sammelgebiete für Erze und Kräuter
+- Verkaufserlös, Sitzungsbilanz und Pläne zum Teilen
+
+[Release-Details](docs/RELEASE_0.25.0-alpha.md).
 
 ## Neu in 0.24: günstigster Weg nach AH-Preisen
 

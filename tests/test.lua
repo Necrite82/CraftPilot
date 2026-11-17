@@ -410,15 +410,21 @@ local function clickSetting(prefix)
   end
   error("Missing setting: "..prefix)
 end
-local bankBefore=CP.db.includeBank
-clickSetting("Bankbestände")
-assert(CP.db.includeBank~=bankBefore)
-local oldMode=CP.db.mode
-clickSetting("Kostenvergleich")
-assert(CP.db.mode~=oldMode)
-local oldSort=CP.db.ui.recipeSort
-clickSetting("Rezeptsortierung")
-assert(CP.db.ui.recipeSort~=oldSort)
+-- 0.25: "Vorräte" cycles bags → bank → bank and twinks; "Skillweg" cycles the three path modes.
+CP:SetStockScope("bank");assert(CP.db.includeBank and CP.db.ui.includeAlts==false)
+clickSetting("Vorräte");assert(CP:StockScope()=="alts" and CP.db.ui.includeAlts==true)
+clickSetting("Vorräte");assert(CP:StockScope()=="bags" and not CP.db.includeBank)
+clickSetting("Vorräte");assert(CP:StockScope()=="bank")
+CP:SetSkillPath("cheapest");assert(CP.db.ui.allowGreen and not CP.db.ui.preferReliableSkill)
+clickSetting("Skillweg");assert(CP:SkillPath()=="reliable" and CP.db.ui.preferReliableSkill)
+clickSetting("Skillweg");assert(CP:SkillPath()=="orangeYellow" and CP.db.ui.allowGreen==false)
+clickSetting("Skillweg");assert(CP:SkillPath()=="cheapest")
+CP:SetSkillPath("reliable")
+for _,row in ipairs(CP:SettingsCards()) do
+  for _,gone in ipairs({"Fensterbreite","Fensterhöhe","Minimap-Position","Rezeptsortierung","Kostenvergleich","Berufsauswahl","Sprache","Bedienung"}) do
+    assert(row.title:sub(1,#gone)~=gone,"Removed setting still listed: "..gone)
+  end
+end
 local recipeTable=CP.db.recipes
 local planTable=CP.db.plans
 CP.db.ui.position={point="CENTER",relPoint="CENTER",x=50,y=25}
@@ -432,12 +438,13 @@ assert(CP.db.recipes==recipeTable and CP.db.plans==planTable)
 CP.db.plans.tailoring={autoRoute={steps={}},autoMode=true,start=1,target=10,crafts={}}
 CP.db.recipes.tailoring[2963]=nil
 assert(CP:CatalogSource("tailoring",2963,1)~=nil)
-clickSetting("Auto-Route")
-assert(CP.db.ui.knownRecipesOnly and CP:CatalogSource("tailoring",2963,1)==nil)
+clickSetting("Rezepte zum Lernen")
+assert(CP.db.ui.knownRecipesOnly and not CP.db.ui.showVendorRecipes and CP:CatalogSource("tailoring",2963,1)==nil)
 assert(CP.db.plans.tailoring.autoRoute==nil and not CP.db.plans.tailoring.autoMode)
 CP.db.recipes.tailoring[2963]={learned=true,disabled=false}
 assert(CP:CatalogSource("tailoring",2963,1)=="known")
-clickSetting("Auto-Route")
+clickSetting("Rezepte zum Lernen")
+assert(CP:LearnRecipesEnabled())
 
 -- Independent settings access remains available with the minimap hidden.
 Minimap={GetWidth=function() return 140 end,GetHeight=function() return 140 end,
@@ -486,7 +493,7 @@ CP.db.recipes.cooking[123]={icon=456}
 assert(CP:RecipeIcon("cooking",123)==456)
 CP.db.view="engineering"
 CP.db.ui.showAllProfessions=true
-clickSetting("Berufsauswahl")
+CP:ToggleSetting("showAllProfessions")
 assert(CP:OwnsProfession(CP.db.view),"Switching to own professions should select an owned profession")
 -- Refreshing a recipe with ambiguous reagents must clear an older material list.
 observedID=185
@@ -523,18 +530,21 @@ for _,texture in ipairs(createdTextures) do
   if texture.parent.frameName=="CraftPilotBrandFrame" then logo=texture end
 end
 assert(logo and logo.alpha==1 and logo.texture:find("Media"))
+CP.db.ui.settingsAdvanced=true
 CP:OpenTab("settings")
 local sliders={}
 for _,control in ipairs(createdFrames) do
   local spec=rawget(control,"craftSpec")
   if spec and spec.label then sliders[spec.label]=control end
 end
-for label,value in pairs({["Fensterbreite: "]=1060,["Fensterhöhe: "]=800,["Minimap-Position: "]=270}) do
+-- Window size and minimap position have no sliders any more (resize grip, drag); the remaining ones work.
+assert(not sliders["Fensterbreite: "] and not sliders["Minimap-Position: "])
+for label,value in pairs({["Gelb: weitere Skillpunkte "]=4,["AH-Abzug beim Verkauf "]=7}) do
   local control=assert(sliders[label],"Missing slider: "..label)
   control:GetScript("OnValueChanged")(control,value)
 end
-assert(CP.db.ui.width==1060 and CP.db.ui.height==800 and CP.db.ui.minimapAngle==270)
-assert(CP.frame.width==1060 and CP.frame.height==800)
+assert(CP.db.ui.yellowPoints==4 and CP.db.ui.economyCut==7)
+CP.db.ui.yellowPoints=0;CP.db.ui.economyCut=5
 CP:Render()
 for _,control in ipairs(createdFrames) do
   local label=rawget(control,"displayText")
@@ -633,12 +643,12 @@ CP.db.recipes.cooking[sample.maker]=prior
 -- Compact checkboxes exercise both directions, including inverted minimap visibility.
 CP.db.ui.settingsAdvanced=true
 CP:OpenTab("settings")
-for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB","allowYellow","allowGreen","planAhead"}) do
+for _,key in ipairs({"hideMinimap","autoOpen","companion","learnRecipes","countSales","useQuestieDB","planAhead"}) do
  local control
  for _,candidate in ipairs(createdFrames) do local spec=rawget(candidate,"craftCheckSpec");if spec and spec.key==key then control=candidate end end
  assert(control,"Missing checkbox: "..key)
  local before=control.craftCheckSpec.checked
- control:GetScript("OnClick")(control);assert(control.craftCheckSpec.checked~=before)
+ control:GetScript("OnClick")(control);assert(control.craftCheckSpec.checked~=before,"toggle "..key)
  control:GetScript("OnClick")(control);assert(control.craftCheckSpec.checked==before)
 end
 
@@ -769,10 +779,14 @@ fakeCatalog.recipes={
  [990002]={learn=1,colors={1,40,50,60},mats={[50002]=1},get={{kind="trainer"}}},
 }
 owned[50001]=3
-CP.db.ui.preferReliableSkill=false
+-- 0.25: "Plan erstellen" follows the cheapest path. Green costs 30/0.35 = 86 per point, orange 100:
+-- the cheapest way takes green, "Sichere Farben bevorzugen" needs green over 25 % cheaper and keeps orange.
+prices[50001]=30
+CP.db.ui.preferReliableSkill=false;CP.pathCache=nil
 assert(CP:GenerateAutomaticRoute("engineering",10,11).steps[1].id==990001)
-CP.db.ui.preferReliableSkill=true
+CP.db.ui.preferReliableSkill=true;CP.pathCache=nil
 assert(CP:GenerateAutomaticRoute("engineering",10,11).steps[1].id==990002)
+prices[50001]=100;CP.pathCache=nil
 fakeCatalog.recipes=realCatalogRecipes
 owned[50001]=1
 
@@ -1035,6 +1049,7 @@ assert(loadfile("tests/market.lua"))(CP)
 assert(loadfile("tests/cheapest_path.lua"))(CP)
 assert(loadfile("tests/recommendation.lua"))(CP)
 assert(loadfile("tests/companion_alts.lua"))(CP)
+assert(loadfile("tests/features_025.lua"))(CP,createdFrames)
 assert(loadfile("tests/shopping.lua"))(CP)
 assert(loadfile("tests/trainer_recipes.lua"))(CP)
 assert(loadfile("tests/presentation.lua"))(CP,createdFrames)

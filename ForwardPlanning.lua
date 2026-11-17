@@ -33,8 +33,27 @@ local function withReference(self,route,key,first,last,preferences,materialPrefs
   end
   return route
 end
+-- The cheapest path (AH prices, color chances, learning fees, the chosen "Skillweg") as soft recipe choices
+-- per skill point, so "Plan erstellen" follows the same way as the recommendation and the companion.
+function CP:PathHints(key,first,last)
+  if not self.CheapestPath then return nil end
+  local ok,path=pcall(self.CheapestPath,self,key,first,last)
+  if not ok or not path or #path.segments==0 then return nil end
+  local hints={}
+  for _,s in ipairs(path.segments) do for k=s.first,s.last-1 do hints[k]=s.id end end
+  return hints,path
+end
 function CP:GenerateAutomaticRoute(key,first,last,preferences,materialPrefs,work)
   local context={candidates={},yield=work and work.yield}
+  local pathHints=self:PathHints(key,first,last)
+  if pathHints then
+    local route,err=self:GenerateLocalRoute(key,first,last,preferences,materialPrefs,pathHints,context)
+    if not route then return nil,err end
+    route.cheapestPath=true
+    for _,step in ipairs(route.steps) do step.forward=false end
+    route.forwardPlan={enabled=false,trials=0,saved=0,craftsSaved=0}
+    return withReference(self,route,key,first,last,preferences,materialPrefs,work)
+  end
   local base,err=self:GenerateLocalRoute(key,first,last,preferences,materialPrefs,nil,context)
   if not base then return nil,err end
   base.forwardPlan={enabled=self.db.ui.planAhead~=false,trials=0,saved=0,craftsSaved=0}

@@ -4,9 +4,23 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.24.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.25.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.25: choosable skill path, learning tour, alts and more
+
+Slim settings with a choosable **skill path**: cheapest, prefer reliable colors, or orange and yellow only. It also applies to "Create plan".
+
+Also new:
+- map buttons with the way to the trainer or vendor, and a **learning tour** along the cheapest path
+- warnings for level and rank requirements, and **specializations** with their quest givers
+- price age with a targeted Auctionator scan
+- an **Alts** tab with cooldowns, stock, and alts that craft materials cheaper
+- helpers at the bank and the mailbox, and gathering zones for ores and herbs
+- sale value, session balance and plans to share
+
+[Release details (German)](docs/RELEASE_0.25.0-alpha.md).
 
 ## New in 0.24: cheapest path by AH prices
 

@@ -10,9 +10,32 @@ function CP:PlanPageCards(key,page)
     if route and route.ignoredPreferences and route.ignoredPreferences>0 then cards[#cards+1]={title=L("Nicht passende Vorgaben übersprungen"),detail=L("Für inzwischen ungeeignete Rezepte wurde wieder eine gültige Alternative vorgeschlagen."),color="gold"} end
     if next(plan.preferences or {}) or next(plan.materialPreferences or {}) then cards[#cards+1]={title=L("Alle eigenen Vorgaben zurücksetzen"),detail=L("Wieder automatisch Rezepte und Zwischenprodukte vorschlagen."),action=function() plan.preferences=nil;plan.materialPreferences=nil;CP:RequestRouteBuild(key);CP:Render() end,color="gold"} end
     cards[#cards+1]={title=L("Priorität der Vorräte ändern"),detail=L("Bestände zwischen Berufs- und Campingplänen aufteilen."),action=function() CP:OpenTab("reservations") end,color="blue"}
+    -- Price age along the plan: one targeted scan instead of a full one.
+    local items={}
+    for _,m in ipairs(c.materials) do if (m.missing or 0)>0 then items[#items+1]=m.id end end
+    if #items>0 then
+      local p=self:PriceSummary(items)
+      local doubtful=p.stale+p.unknown+p.missing
+      cards[#cards+1]={title=doubtful>0 and string.format(L("Preise prüfen · %d von %d unsicher"),doubtful,p.items) or L("Preise aktuell"),
+        detail=doubtful>0 and string.format(L("%d älter als 3 Tage · %d ohne Datum · %d ohne Preis"),p.stale,p.unknown,p.missing) or L("Alle Zukäufe haben einen Scan der letzten 3 Tage."),
+        footer=L("Klick am Auktionshaus: Auctionator scannt genau diese Materialien"),color=doubtful>0 and "gold" or "green",
+        action=function()
+          if not CP:AuctionHouseOpen() then CP:Say(L("Am Auktionshaus scannt Auctionator genau diese Materialien neu."));return end
+          local list={};for _,id in ipairs(items) do list[#list+1]={id=id,quantity=1} end
+          CP:SearchItems(list,L("Preise"),L("Auctionator scannt die Materialien deines Plans."))
+        end}
+    end
+    cards[#cards+1]={sectionHeader=true,title=L("PLAN TEILEN")}
+    cards[#cards+1]={title=L("Plan als Text teilen"),detail=L("Rezepte und Mengen als kurzer Text, z. B. für Gildenmitglieder, die für dich sammeln."),footer=L("Klick: Text anzeigen"),color="blue",
+      action=function() CP:OpenShareWindow(key,"export") end}
+    cards[#cards+1]={title=L("Plan importieren"),detail=L("Text eines anderen CraftPilot einfügen; ersetzt deinen Plan für diesen Beruf."),footer=L("Klick: Text einfügen"),color="blue",
+      action=function() CP:OpenShareWindow(key,"import") end}
     return cards
   end
   local cards={}
+  -- Skill points beyond the current cap need the next rank; warn before anything is bought for them.
+  local gate=self.RankGateWarning and self:RankGateWarning(key,plan.target)
+  if gate then cards[#cards+1]={title=L("Achtung: nächster Rang noch nicht lernbar"),detail=gate.text.."\n"..string.format(L("Der Plan geht bis %d, deine Ausbildung endet bei %d."),plan.target,(self.db.professions[key] or {}).cap or 0),color="red"} end
   if self:PlanNeedsReview(key) then cards[#cards+1]=self:PlanReviewCard(key) end
   if route and route.plannerVersion~=3 then cards[#cards+1]={title=L("Gespeicherte Route aktualisieren"),detail=L("Oben Plan erstellen wählen, um Lernkosten und neue Routenvorgaben vollständig neu zu berechnen."),color="gold"} end
   if route and route.blocked then cards[#cards+1]={title=L("Route unvollständig"),detail=string.format(L("Berechnet bis %d statt %d · Rezeptdaten oder Bereich prüfen."),route.reached,route.target).."\n"..L("Auch die erlaubten Skillfarben und Punktgrenzen in den Einstellungen prüfen."),color="gold"} end
@@ -44,6 +67,11 @@ function CP:PlanPageCards(key,page)
   if #rows==0 then cards[#cards+1]={title=L("Alles für diesen Plan vorhanden"),detail=L("Keine zusätzlichen Materialkäufe erkannt. Unbekannte Angaben unter Details beachten."),color="green"}
   else cards[#cards+1]={materialTable=rows} end
   if not c.cashComplete then cards[#cards+1]={title=L("Kalkulation unvollständig"),detail=L("Fehlende Preise oder Rezeptangaben unter Details prüfen."),color="gold"} end
+  if self.FarmCards then
+    local priced={}
+    for _,m in ipairs(rows) do local p=self:PriceDetails(m.id).price;priced[#priced+1]={id=m.id,missing=m.missing,cost=p and p*m.missing} end
+    for _,card in ipairs(self:FarmCards(priced)) do cards[#cards+1]=card end
+  end
   return cards
 end
 function CP:DrawProductionTable(parent,rows,key,width)
