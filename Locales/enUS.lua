@@ -1220,4 +1220,14 @@ CP.English = {
   ["Lohnt sich bis "]="Worth it up to ",
   ["Hinweise in Gegenstands-Tooltips"]="Hints in item tooltips",
   ["Bedarf deines Plans, „nicht verkaufen“, Twink-Bestände und Preisgrenze direkt am Gegenstand."]="Your plan's need, \"do not sell\", alt stock and price limit right on the item.",
+  -- 0.27
+  [" · gebraucht für %s ab Skill %d"]=" · needed for %s from skill %d",
+  [" · für deinen Plan"]=" · for your plan",
+  ["Achtung: %d× %s verkauft"]="Note: %d× %s sold",
+  ["Zurückkaufen"]="Buy back",
+  ["Nicht mehr im Rückkauf des Händlers."]="No longer in the vendor's buyback.",
+  ["für deinen Plan"]="for your plan",
+  ["Nicht einstellen: %s wird %s gebraucht."]="Do not list: %s is needed %s.",
+  ["Markierung in Taschen und Bank"]="Marks in bags and bank",
+  ["Gold: für einen späteren Schritt aufheben · Blau: dein Plan braucht es. Funktioniert mit den üblichen Taschen-Addons."]="Gold: keep for a later step · blue: your plan needs it. Works with the common bag addons.",
 }

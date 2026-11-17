@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.27.0-alpha
+
+Reservierte Gegenstände werden in Taschen und Bank markiert (Gold: für später aufheben, Blau: Plan braucht es), unabhängig vom Taschen-Addon. Verkaufst du trotzdem etwas Reserviertes, meldet CraftPilot das sofort und bietet den Rückkauf an; am Auktionshaus warnt es vor dem Einstellen. [Details](docs/RELEASE_0.27.0-alpha.md).
+
 ## 0.26.0-alpha
 
 Aufheben-Hinweise für Zwischenprodukte späterer Schritte (Plan, Details, nach dem Herstellen, Tooltip; „schon vorhanden“ statt doppelt herstellen), Preisgrenze je Material, Händler-Helfer mit Kaufen-Knopf, Hinweise in Gegenstands-Tooltips, Seite „Verwerten“ für übrig gebliebene Herstellungen und Budget-Modus. [Details](docs/RELEASE_0.26.0-alpha.md).

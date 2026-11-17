@@ -4,9 +4,13 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.26.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.27.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.27: marks in bags and bank
+
+Items your plan needs or should keep for later get a colored dot in any bag view – default bags, EllesmereUI and the common bag addons. Sold anyway? CraftPilot reports it at once and offers "Buy back"; at the auction house it warns before listing. [Release details (German)](docs/RELEASE_0.27.0-alpha.md).
 
 ## New in 0.26: keep, price limits, vendor helper, tooltips
 
