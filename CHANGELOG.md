@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.25.0-alpha
+
+Einstellungen auf 9 sichtbare Einträge verschlankt, dazu ein wählbarer Skillweg (günstigster Weg, sichere Farben bevorzugen, nur Orange und Gelb). Er gilt auch für „Plan erstellen“. Neu:
+- Wege zu Lehrern und Händlern sowie eine Lerntour, Weltdrop-Rezepte aus dem AH
+- Rang- und Levelwarnungen, Spezialisierungen mit Questgebern
+- Preisalter mit gezieltem Scan
+- Reiter „Twinks“ mit Cooldowns und Twinks als Hersteller, Bank- und Posthilfe
+- Sammelgebiete, Verkaufserlös, Sitzungsbilanz und Pläne zum Teilen
+
+[Details](docs/RELEASE_0.25.0-alpha.md).
+
 ## 0.24.0-alpha
 
 Behebt ADDON_ACTION_BLOCKED bei OpenTradeSkill (gesicherte Zauber-Buttons im Berufsmenü). Empfehlung nach dem günstigsten Weg bis zur Ausbildungsgrenze: AH-Preise je Punkt mit Farbchance, Lernkosten einmalig und nur bei Ersparnis, Vorräte ohne Verzerrung. Begleitfenster verschiebbar, minimierbar und schließbar. [Details](docs/RELEASE_0.24.0-alpha.md).

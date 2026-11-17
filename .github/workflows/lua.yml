@@ -15,7 +15,7 @@ jobs:
       - name: Check Lua 5.1 and 5.4 syntax
         run: |
           for version in 5.1 5.4; do
-            for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua ThirdParty/Trainers/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+            for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua ThirdParty/Trainers/*.lua ThirdParty/Gathering/*.lua tests/*.lua; do "luac$version" -p "$file"; done
           done
       - name: Run Lua 5.1 and 5.4 regressions
         run: for version in 5.1 5.4; do "lua$version" tests/test.lua; done

@@ -85,9 +85,16 @@ function CP:SnapshotCharacterBags()
   entry.updated=now()
   entry.level=safe(UnitLevel,"player") or entry.level
   local profs={}
+  entry.learned=type(entry.learned)=="table" and entry.learned or {}
   for key in pairs(self.Data.professions) do
     local p=self.db and self.db.professions[key]
-    if p and self:OwnsProfession(key) then profs[key]={skill=p.skill,cap=p.cap} end
+    if p and self:OwnsProfession(key) then
+      profs[key]={skill=p.skill,cap=p.cap}
+      -- Learned recipe IDs, so other characters know what this one can make for them.
+      local learned={}
+      for id,r in pairs(self.db.recipes[key] or {}) do if r.learned then learned[id]=true end end
+      if next(learned) then entry.learned[key]=learned end
+    end
   end
   entry.professions=profs
 end
@@ -107,8 +114,9 @@ function CP:AltStock(itemID)
     if key~=self.characterKey then
       local bags=(c.bags or {})[itemID] or 0
       local bank=(c.bank or {})[itemID] or 0
-      if bags+bank>0 then
-        out[#out+1]={name=c.name or key,realm=c.realm,faction=c.faction,bags=bags,bank=bank,count=bags+bank,
+      local mail=(c.mail or {})[itemID] or 0
+      if bags+bank+mail>0 then
+        out[#out+1]={name=c.name or key,realm=c.realm,faction=c.faction,bags=bags,bank=bank,mail=mail,count=bags+bank+mail,
           reachable=me~=nil and c.realm==me.realm and c.faction==me.faction}
       end
     end
@@ -130,7 +138,7 @@ function CP:AltReachable(itemID)
     local me=self:CurrentCharacter()
     for key,c in pairs(self.account.characters) do
       if key~=self.characterKey and me and c.realm==me.realm and c.faction==me.faction then
-        for _,store in ipairs({c.bags or {},c.bank or {}}) do
+        for _,store in ipairs({c.bags or {},c.bank or {},c.mail or {}}) do
           for id,n in pairs(store) do index[id]=(index[id] or 0)+n end
         end
       end

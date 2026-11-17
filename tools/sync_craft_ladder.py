@@ -320,6 +320,50 @@ def check_trainers(args):
                    + trainer_inputs(sources, cache), check=True)
 
 
+# --- Gathering zones: QuestieDB (items, objects, zones) ----------------------------------------------------------------
+GATHERING = ROOT / 'ThirdParty' / 'Gathering'
+GATHERING_FILES = ['data/Forever/foreverItemDB.lua', 'data/Forever/foreverObjectDB.lua', 'support/Forever/Zones/areaIdToUiMapId.lua']
+
+
+def gathering_inputs(sources, cache):
+    q = sources['questiedb']
+    for path in GATHERING_FILES:
+        data = download(raw_url(QUESTIEDB, q['commit'], path))
+        if sha(data) != q['files'][path]['sha256']:
+            raise SystemExit('Checksum mismatch: QuestieDB ' + path)
+        target = cache / 'questiedb' / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    return ['--questiedb', str(cache / 'questiedb')]
+
+
+def check_gathering(args):
+    sources = json.loads((GATHERING / 'SOURCES.json').read_text())
+    subprocess.run([sys.executable, str(ROOT / 'tools' / 'import_gathering.py'), '--check']
+                   + gathering_inputs(sources, Path(args.cache) / 'gathering'), check=True)
+
+
+def update_gathering(args):
+    """Pin the newest QuestieDB release for the gathering zones. Returns a report or None."""
+    sources_path = GATHERING / 'SOURCES.json'
+    old = json.loads(sources_path.read_text())
+    tag, commit = newest_tag(QUESTIEDB)
+    if old['questiedb']['commit'] == commit and not args.force:
+        print(f'Gathering zones up to date: QuestieDB {tag}')
+        return None
+    old_text, old_data = sources_path.read_text(), (GATHERING / 'Gathering.lua').read_bytes()
+    new = {'questiedb': {'source': QUESTIEDB, 'tag': tag, 'commit': commit,
+                         'files': {p: {'sha256': sha(download(raw_url(QUESTIEDB, commit, p)))} for p in GATHERING_FILES}}}
+    sources_path.write_text(json.dumps(new, indent=2) + '\n')
+    subprocess.run([sys.executable, str(ROOT / 'tools' / 'import_gathering.py')]
+                   + gathering_inputs(new, Path(args.cache) / 'gathering'), check=True)
+    if (GATHERING / 'Gathering.lua').read_bytes() == old_data and not args.force:
+        sources_path.write_text(old_text)
+        print(f'Gathering zones unchanged by QuestieDB {tag}')
+        return None
+    return f'## Sammelgebiete: QuestieDB {old["questiedb"].get("tag")} → {tag}\n'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -337,14 +381,15 @@ def main():
         check(args)
         if not args.skip_trainers:
             check_trainers(args)
+            check_gathering(args)
         return
     changed = update(args)
-    trainer_report = None if args.skip_trainers else update_trainers(args)
-    if trainer_report:
-        changed = True
-        if args.report:
-            with open(args.report, 'a') as out:
-                out.write('\n' + trainer_report)
+    for report in ([] if args.skip_trainers else [update_trainers(args), update_gathering(args)]):
+        if report:
+            changed = True
+            if args.report:
+                with open(args.report, 'a') as out:
+                    out.write('\n' + report)
     if args.github_output:
         with open(args.github_output, 'a') as out:
             out.write(f'changed={"true" if changed else "false"}\n')

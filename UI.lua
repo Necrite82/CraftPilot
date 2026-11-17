@@ -308,6 +308,7 @@ U.tabs={
   {key="plan", label=L("Plan & Einkauf")},
   {key="trainers", label=L("Lehrer & Händler")},
   {key="camping", label=L("Camping")},
+  {key="twinks", label=L("Twinks")},
 }
 U.tabButtons={}
 U.tabLine=frame:CreateTexture(nil,"ARTWORK")
@@ -401,6 +402,13 @@ U.rec.pick=button(U.rec,110,28,0,0,L("Auswählen"),function()
   CP.db.ui.selectedVendorRecipe=nil;CP.db.ui.selectedVendorKey=nil
   CP.db.ui.selectedRecipes[r.key]=r.id;CP:Render()
 end)
+U.rec.prices=button(U.rec,120,28,0,0,L("Preise prüfen"),function()
+  local r=CP.currentRecommendation;if not (r and r.path) then return end
+  local items={};for _,id in ipairs(r.path.priceItems or {}) do items[#items+1]={id=id,quantity=1} end
+  if not CP:AuctionHouseOpen() then CP:Say(L("Am Auktionshaus scannt Auctionator genau diese Materialien neu."));return end
+  CP:SearchItems(items,L("Preise"),L("Auctionator scannt die Materialien deines Weges."))
+end)
+U.rec.prices:Hide()
 U.rec:Hide()
 
 U.detailPanel=panel(frame,"panel")
@@ -501,9 +509,9 @@ end
 -- Lehrer & Händler controls ------------------------------------------------------------------------------------
 U.trainer={}
 U.trainer.pages={}
-for i,page in ipairs({{key="trainers",label=L("Lehrer")},{key="merchants",label=L("Händlerrezepte")}}) do
+for i,page in ipairs({{key="trainers",label=L("Lehrer")},{key="merchants",label=L("Händlerrezepte")},{key="tour",label=L("Lerntour")},{key="spec",label=L("Spezialisierung")}}) do
   U.trainer.pages[i]=segment(frame,130,24,page.label,function()
-    CP.db.ui.vendorBrowser=page.key=="merchants";CP:Render()
+    CP.db.ui.vendorBrowser=page.key=="merchants";CP.db.ui.trainerPage=page.key;CP:Render()
   end)
   U.trainer.pages[i].pageKey=page.key
 end
@@ -520,7 +528,7 @@ U.merchant.clear=button(frame,70,26,0,0,L("Leeren"),function() CP.db.ui.vendorQu
 U.merchant.bySkill=button(frame,100,26,0,0,L("Nach Skill"),function() CP.db.ui.vendorSort="skill";CP:Render() end)
 U.merchant.byName=button(frame,100,26,0,0,L("Nach Name"),function() CP.db.ui.vendorSort="name";CP:Render() end)
 U.merchant.controls={U.merchant.searchLabel,U.merchant.search,U.merchant.clear,U.merchant.bySkill,U.merchant.byName}
-U.trainer.controls={U.trainer.info,U.trainer.recommend,U.trainer.nearest,U.trainer.pages[1],U.trainer.pages[2]}
+U.trainer.controls={U.trainer.info,U.trainer.recommend,U.trainer.nearest,U.trainer.pages[1],U.trainer.pages[2],U.trainer.pages[3],U.trainer.pages[4]}
 
 -- Camping controls --------------------------------------------------------------------------------------------
 U.camp={}
@@ -937,6 +945,26 @@ local function listRow(i)
   r.subLabel=text(r,"GameFontDisableSmall",24,-21,200,"");r.subLabel:SetWordWrap(false)
   r.chanceLabel=text(r,"GameFontHighlightSmall",0,-12,54,"");r.chanceLabel:SetJustifyH("RIGHT")
   r.costLabel=text(r,"GameFontHighlightSmall",0,-12,80,"");r.costLabel:SetJustifyH("RIGHT")
+  -- Unlearned trainer, vendor or AH recipe: one click to the way there.
+  r.go=CreateFrame("Button",nil,r)
+  r.go:SetSize(20,20)
+  r.go:SetNormalTexture("Interface\\Icons\\INV_Misc_Map_01")
+  r.go:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+  r.go:SetScript("OnClick",function() if r.craftRecipe and CP.db then CP:GoLearn(CP.db.view,r.craftRecipe.id) end end)
+  r.go:SetScript("OnEnter",function()
+    if not (r.craftRecipe and CP.db and GameTooltip) then return end
+    local target=CP:LearnTarget(CP.db.view,r.craftRecipe.id)
+    GameTooltip:SetOwner(r.go,"ANCHOR_RIGHT")
+    GameTooltip:SetText(CP:LearnTargetLabel(target) or L("Kein Lernort hinterlegt"))
+    if target then
+      local where=target.location and target.location.zone and (target.name..", "..target.location.zone) or target.name
+      GameTooltip:AddLine(where,1,1,1)
+      if target.cost then GameTooltip:AddLine(L("Kosten: ")..CP:FormatCostMoney(target.cost),.8,.8,.8) end
+      if target.learnAt then GameTooltip:AddLine(string.format(L("Lernbar ab Skill %d"),target.learnAt),.8,.8,.8) end
+    end
+    GameTooltip:Show()
+  end)
+  r.go:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
   r:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
   local h=r:GetHighlightTexture();if h then h:SetVertexColor(.35,.55,.75,.10) end
   r:SetScript("OnClick",function() if r.craftRecipe and CP.db then CP:ActivateRecipeRow(CP.db.view,r.craftRecipe) end end)
@@ -968,7 +996,9 @@ local function setRecipeList(key,entries,chosen)
     r:SetBackdropBorderColor(0,0,0,0)
     r.stripe:SetShown(on)
     dot(r.dot,SKILL_COLORS[colorOf(entry)]);r.dot:Show()
-    r.nameLabel:SetWidth(w-170);r.subLabel:SetWidth(w-170)
+    local learnable=(entry.vendorRecipe or entry.trainerRecipe) and not entry.referenceOnly
+    r.nameLabel:SetWidth(w-(learnable and 196 or 170));r.subLabel:SetWidth(w-(learnable and 196 or 170))
+    r.go:ClearAllPoints();r.go:SetPoint("TOPRIGHT",r,"TOPRIGHT",-150,-9);r.go:SetShown(learnable==true)
     r.nameLabel:SetText(entry.name)
     r.nameLabel:SetTextColor(entry.vendorRecipe and .78 or .93,entry.vendorRecipe and .76 or .92,entry.vendorRecipe and .72 or .88)
     local sub
@@ -1062,6 +1092,15 @@ local function renderDetail(key,entry)
       info:SetText(L("Noch nicht erlernt · Rezeptpreis ab ")..(entry.recipeCost and gold(entry.recipeCost) or L("unbekannt"))..L(" · Angebot prüfen"))
     end
     put(info,12);y=y+10
+    if not entry.referenceOnly then
+      local target=CP:LearnTarget(key,entry.id)
+      local go=detailButton("goLearn",inner,30,"",function() end,true)
+      go:SetText(CP:LearnTargetLabel(target) or L("Kein Lernort hinterlegt"))
+      local recipeID=entry.id
+      go:SetScript("OnClick",function() CP:GoLearn(key,recipeID) end)
+      setPrimaryEnabled(go,target~=nil)
+      go:SetWidth(inner);put(go,12,36)
+    end
     if entry.vendorRecipe and not entry.referenceOnly and entry.active then
       local comparison=CP:VendorSkillComparison(key,entry)
       local calc=detailButton("calc",inner,40,"",function() end)
@@ -1397,12 +1436,12 @@ layout()
 registerEllesmereUI()
 
 -- Navigation ----------------------------------------------------------------------------------------------------
-local MAIN={now=true,plan=true,trainers=true,camping=true}
+local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true}
 function CP:OpenTab(tab)
   if not self.db then return end
   local alias={help="settings",stages="plan",mats="now"}
   tab=alias[tab] or tab
-  local valid={now=true,plan=true,trainers=true,camping=true,economy=true,audit=true,reservations=true,settings=true}
+  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,economy=true,audit=true,reservations=true,settings=true}
   if not valid[tab] then return end
   if MAIN[tab] then self.db.ui.lastMainTab=tab end
   self.db.ui.tab=tab
@@ -1709,11 +1748,17 @@ end
 local function renderTrainers(self,key,prof,inner)
   local ui=self.db.ui
   local merchants=ui.vendorBrowser==true and not (prof.gathering and not prof.crafting)
+  local page=merchants and "merchants" or ((ui.trainerPage=="tour" or ui.trainerPage=="spec") and ui.trainerPage or "trainers")
   local y=106
   for i,b in ipairs(U.trainer.pages) do
-    place(b,18+(i-1)*130,y+1,130);b:Show();b.selectionMarker:SetShown((b.pageKey=="merchants")==merchants)
+    place(b,18+(i-1)*130,y+1,130);b:Show();b.selectionMarker:SetShown(b.pageKey==page)
   end
   segmentGroup("trainer",U.trainer.pages)
+  if page=="tour" or page=="spec" then
+    showContent(y+36)
+    setVisualCards(page=="tour" and self:LearnTourCards(key) or self:SpecCards(key))
+    return
+  end
   if merchants then
     y=y+36
     place(U.merchant.searchLabel,18,y+7);place(U.merchant.search,70,y+1,220);place(U.merchant.clear,300,y,70)
@@ -1730,12 +1775,14 @@ local function renderTrainers(self,key,prof,inner)
     return
   end
   local choices,rank,recommended,nearest=self:TrainerChoices(key)
+  -- Four page segments fill the first row; the trainer actions sit on the second next to the rank text.
+  y=y+36
   place(U.trainer.nearest,18+inner-150,y,150);U.trainer.nearest:Show();U.trainer.nearest:SetEnabled(nearest~=nil)
   place(U.trainer.recommend,18+inner-150-8-190,y,190);U.trainer.recommend:Show();setPrimaryEnabled(U.trainer.recommend,recommended~=nil)
-  y=y+36
-  place(U.trainer.info,18,y,inner);U.trainer.info:Show()
-  U.trainer.info:SetText(U.rankText or "")
-  y=y+24
+  place(U.trainer.info,18,y+6,inner-360);U.trainer.info:Show()
+  local gate=self.RankGate and self:RankGate(key)
+  U.trainer.info:SetText(gate and gate.text or (U.rankText or ""))
+  y=y+34
   showContent(y)
   local offers={}
   if not (prof.gathering and not prof.crafting) then
@@ -1793,10 +1840,11 @@ function CP:RenderRecommendation(key,inner)
   U.rec.search:ClearAllPoints();U.rec.search:SetPoint("RIGHT",U.rec,"RIGHT",-12,0)
   U.rec.pick:ClearAllPoints();U.rec.pick:SetPoint("RIGHT",U.rec.search,"LEFT",-8,0)
   if rec.learn then
-    U.rec.search:SetText(L("Wegpunkt zum Lernen"))
+    U.rec.search:SetText(rec.learn.source=="ah" and L("Rezept im AH suchen") or L("Wegpunkt zum Lernen"))
     U.rec.search:SetScript("OnClick",function()
       local r=CP.currentRecommendation;if not r or not r.learn then return end
       if r.learn.source=="vendor" and r.learn.vendor and r.learn.vendor.location then CP:SetWaypoint(r.learn.vendor.location)
+      elseif r.learn.source=="ah" then CP:GoLearn(r.key,r.id)
       else CP:TrainerWaypoint() end
     end)
   else
@@ -1807,6 +1855,17 @@ function CP:RenderRecommendation(key,inner)
   primary(U.rec.search)
   local chosen=self:SelectedOption(key)
   U.rec.pick:SetShown(not rec.learn and not (chosen and chosen.id==rec.id and not self.db.ui.selectedVendorRecipe))
+  -- Old or missing prices on the way: offer a targeted Auctionator scan of exactly those materials.
+  local p=rec.prices
+  local doubtful=p and (p.stale+p.missing+p.unknown)>0
+  U.rec.prices:ClearAllPoints()
+  U.rec.prices:SetPoint("RIGHT",U.rec.pick:IsShown() and U.rec.pick or U.rec.search,"LEFT",-8,0)
+  U.rec.prices:SetShown(doubtful==true)
+  if doubtful then
+    U.rec.prices:SetText(p.missing>0 and string.format(L("%d ohne Preis"),p.missing) or L("Preise alt"))
+    local tw=inner-54-150-30-(U.rec.pick:IsShown() and 118 or 0)-128
+    U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw)
+  end
   -- Hover: the whole cheapest path, step by step.
   U.rec:EnableMouse(true)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
@@ -1828,7 +1887,7 @@ function CP:Render()
   local tab=ui.tab or "now"
   if tab=="stages" then tab="plan" elseif tab=="mats" then tab="now" elseif tab=="help" then tab="settings" end
   ui.tab=tab
-  local context=key..":"..tab..":"..tostring(ui.campingPage)..":"..tostring(ui.campingAll)..":"..tostring(ui.vendorOnly)..":"..tostring(ui.allRecipes)..":"..tostring(ui.planPage)..":"..tostring(ui.vendorBrowser)..":"..tostring(ui.vendorQuery)..":"..tostring(ui.vendorSort)
+  local context=key..":"..tab..":"..tostring(ui.campingPage)..":"..tostring(ui.campingAll)..":"..tostring(ui.vendorOnly)..":"..tostring(ui.allRecipes)..":"..tostring(ui.planPage)..":"..tostring(ui.vendorBrowser)..":"..tostring(ui.vendorQuery)..":"..tostring(ui.vendorSort)..":"..tostring(ui.trainerPage)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end
@@ -1859,6 +1918,9 @@ function CP:Render()
     renderTrainers(self,key,prof,inner)
   elseif tab=="camping" then
     renderCamping(self,key,inner)
+  elseif tab=="twinks" then
+    showContent(106)
+    setVisualCards(self:TwinkCards(key))
   else
     renderNow(self,key,prof,record,inner)
   end

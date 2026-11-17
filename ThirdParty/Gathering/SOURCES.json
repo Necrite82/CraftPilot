@@ -1,0 +1,18 @@
+{
+  "questiedb": {
+    "source": "https://github.com/Questie/QuestieDB",
+    "tag": "v1.1.2",
+    "commit": "e1652ce62113c152da682baf2d6fb85f1396bcfb",
+    "files": {
+      "data/Forever/foreverItemDB.lua": {
+        "sha256": "987d037b6df94d5b0b1dc326a1670581e3abb952736a4ae055fd9f161328b71c"
+      },
+      "data/Forever/foreverObjectDB.lua": {
+        "sha256": "af4536c12c5b1da5fd32cb33be5c9c01d2436f97a5b9f60e2cdd238273b2cc09"
+      },
+      "support/Forever/Zones/areaIdToUiMapId.lua": {
+        "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
+      }
+    }
+  }
+}

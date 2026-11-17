@@ -3,7 +3,7 @@
 ## Notes: Profession planning, materials, AH prices and trainer waypoints for WoW Forever
 ## Author: CraftPilot contributors
 ## IconTexture: Interface\AddOns\CraftPilot\Media\CraftPilot
-## Version: 0.24.0-alpha
+## Version: 0.25.0-alpha
 ## OptionalDeps: Auctionator, TomTom, EllesmereUI, QuestieDB
 ## SavedVariablesPerCharacter: CraftPilotDB
 ## SavedVariables: CraftPilotAccountDB
@@ -11,6 +11,7 @@
 Locale.lua
 Locales\enUS.lua
 ThirdParty\Trainers\Trainers.lua
+ThirdParty\Gathering\Gathering.lua
 Data.lua
 ThirdParty\CraftLadder\Camp.lua
 ThirdParty\CraftLadder\CampingRecipes.lua
@@ -52,3 +53,6 @@ CheapestPath.lua
 Recommendation.lua
 Alts.lua
 Companion.lua
+Learning.lua
+Farming.lua
+Account.lua

@@ -719,7 +719,13 @@ function CP:Refresh(capture)
   if not self.db then return end
   self:InvalidateReservations()
   self:RefreshProfessionSkills()
-  if capture then self:CaptureProfession() end
+  if capture and self:CaptureProfession() then
+    self.pathCache=nil
+    local key=self.db.lastCapture and self.db.lastCapture.key
+    if key and self.SnapshotCooldowns then self:SnapshotCooldowns(key) end
+    if self.SnapshotCharacterBags then self:SnapshotCharacterBags() end
+    if self.CheckLearnTour then self:CheckLearnTour() end
+  end
   if self.Render then self:Render() end
   if self.UpdateCompanion then self:UpdateCompanion() end
   self:RefreshCostWindow()
