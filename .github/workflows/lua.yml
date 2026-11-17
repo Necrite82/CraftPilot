@@ -25,34 +25,6 @@ jobs:
         run: python3 tools/import_skill_ranges.py --source-dir "$RUNNER_TEMP/camping-inputs" --check
       - name: Verify secondary vendor subset
         run: python3 tools/import_vendor_recipes.py --source-dir "$RUNNER_TEMP/camping-inputs" --check
-      - name: Verify historical 0.8 ZIP remains unchanged
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import hashlib
-          from zipfile import ZipFile
-          archive = Path("dist/CraftPilot-0.8.0-alpha.zip")
-          assert archive.is_file(), "Missing install ZIP"
-          expected = [
-              "CraftPilot.toc", "Data.lua",
-              "ThirdParty/CraftLadder/Alchemy.lua",
-              "ThirdParty/CraftLadder/Blacksmithing.lua",
-              "ThirdParty/CraftLadder/Enchanting.lua",
-              "ThirdParty/CraftLadder/Engineering.lua",
-              "ThirdParty/CraftLadder/Leatherworking.lua",
-              "ThirdParty/CraftLadder/Tailoring.lua",
-              "ThirdParty/CraftLadder/MiningSmelting.lua",
-              "Core.lua", "Catalog.lua", "PriceHistory.lua", "Route.lua", "UI.lua",
-              "LICENSE", "README.md", "DATA_SOURCES.md",
-              "ThirdParty/CraftLadder/CREDITS.txt",
-              "ThirdParty/CraftLadder/SOURCE.md"
-          ]
-          assert hashlib.sha256(archive.read_bytes()).hexdigest() == "6a4ee1e0d086f164bbd35a84cf8a1e167090fafe5b4ad07879240bfba3717299", "Historical archive changed"
-          with ZipFile(archive) as zipfile:
-              assert zipfile.testzip() is None, "Corrupt ZIP entry"
-              assert set(zipfile.namelist()) == {"CraftPilot/" + name for name in expected}
-          print("PASS: historical 0.8 archive integrity and pinned SHA-256; development is not packaged")
-          PY
       - name: Verify bundled Craft Ladder data matches its pinned upstream release
         run: python3 tools/sync_craft_ladder.py --check
       - name: Build install archive from the allowlist

@@ -1,7 +1,8 @@
-name: Publish GitHub alpha
+name: Release
+# Push a tag such as v0.1.1-beta: tests, archive check, GitHub release and CurseForge upload.
 on:
   push:
-    tags: ['v0.9.0-alpha', 'v0.10.2-alpha', 'v0.11.0-alpha', 'v0.11.1-alpha', 'v0.12.0-alpha', 'v0.12.1-alpha', 'v0.12.2-alpha', 'v0.13.0-alpha', 'v0.14.0-alpha', 'v0.15.0-alpha', 'v0.15.1-alpha', 'v0.16.0-alpha', 'v0.17.0-alpha', 'v0.18.0-alpha', 'v0.19.0-alpha', 'v0.19.1-alpha', 'v0.20.0-alpha', 'v0.20.1-alpha', 'v0.21.0-alpha', 'v0.21.1-alpha', 'v0.22.0-alpha', 'v0.23.0-alpha', 'v0.24.0-alpha', 'v0.25.0-alpha', 'v0.26.0-alpha', 'v0.27.0-alpha', 'v0.28.0-alpha', 'v0.28.1-alpha', 'v0.28.2-alpha', 'v0.29.0-alpha', 'v0.1.0-beta']
+    tags: ['v*']
 permissions:
   contents: write
 jobs:
@@ -17,13 +18,23 @@ jobs:
       - name: Validate runtime
         run: |
           for version in 5.1 5.4; do
-            for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua ThirdParty/Trainers/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+            for file in *.lua Locales/*.lua ThirdParty/*/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+            "lua$version" tests/test.lua
           done
-          for version in 5.1 5.4; do "lua$version" tests/test.lua; done
       - name: Verify install archive
         run: python tools/build_release.py --check
-      - name: Publish prerelease
+      - name: Check version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          grep -q "## Version: $VERSION" CraftPilot.toc
+          test -f "dist/CraftPilot-$VERSION.zip" && test -f "docs/RELEASE_$VERSION.md"
+      - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" "dist/CraftPilot-${RELEASE_TAG#v}.zip" --verify-tag --prerelease --title "CraftPilot ${RELEASE_TAG#v}" --notes-file "docs/RELEASE_${RELEASE_TAG#v}.md"
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" "dist/CraftPilot-$VERSION.zip" --verify-tag --title "CraftPilot $VERSION" --notes-file "docs/RELEASE_$VERSION.md"
+      - name: Upload to CurseForge
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: python tools/upload_curseforge.py "$GITHUB_REF_NAME"
