@@ -1310,4 +1310,9 @@ CP.English = {
   ["Als Nächstes lernen: %s ab Skill %d"]="Learn next: %s from skill %d",
   ["Gesamt bis Skill %d"]="Total to skill %d",
   ["AH"]="AH",
+  -- 0.29
+  ["QuestieDB fehlt"]="QuestieDB missing",
+  ["CraftPilot braucht das Addon QuestieDB (Version für WoW Forever) für Lehrer, Händlerstandorte und Sammelgebiete. Über die CurseForge-App wird es automatisch mitinstalliert, sonst bitte von Hand installieren."]="CraftPilot needs the QuestieDB addon (WoW Forever version) for trainers, vendor locations and gathering zones. The CurseForge app installs it automatically; otherwise please install it by hand.",
+  ["QuestieDB: nicht installiert · wird für Lehrer und Sammelgebiete benötigt"]="QuestieDB: not installed · needed for trainers and gathering zones",
+  ["Liefert Lehrer, Händlerstandorte und Sammelgebiete. Wird über die CurseForge-App automatisch mitinstalliert."]="Provides trainers, vendor locations and gathering zones. Installed automatically by the CurseForge app.",
 }

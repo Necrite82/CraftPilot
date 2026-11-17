@@ -23,13 +23,17 @@ Craft Ladder führt insbesondere die **Blizzard-Clienttabellen über wago.tools,
 
 Der Workflow [data-sync.yml](.github/workflows/data-sync.yml) sucht montags und donnerstags nach einem neuen Craft-Ladder-Release. Gibt es einen, führt er Syntaxprüfung, Tests und ZIP-Bau aus und öffnet einen Pull Request mit einer Änderungsübersicht je Beruf. Übernommen wird nichts automatisch. Craft Ladder bündelt bereits Blizzard-Clienttabellen (wago.tools), QuestieDB, AllTheThings und CMaNGOS; deshalb folgt CraftPilot diesen Quellen über Craft Ladder statt sie einzeln zu importieren.
 
+## QuestieDB als Voraussetzung
+
+Seit 0.29 ist das Addon **QuestieDB** (Forever-Fassung) eine feste Voraussetzung (`## Dependencies: QuestieDB`); die CurseForge-App installiert es automatisch mit. Namen, Positionen, Fraktionen und Titel der Lehrer sowie die Standorte der Sammelvorkommen liest CraftPilot zur Laufzeit aus QuestieDB. CraftPilot selbst liefert davon nur IDs, Ränge und Sammel-Skills mit, keine QuestieDB-Daten.
+
 ## Lehrer
 
-Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): Positionen, Fraktion und Titel aus den Forever-Daten von **QuestieDB**, die gelehrten Ränge aus **CMaNGOS classic-db**. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
+Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): die gelehrten Ränge aus **CMaNGOS classic-db**; Positionen, Fraktion und Titel seit 0.29 zur Laufzeit aus dem **QuestieDB**-Addon. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
 
 ## Sammelgebiete
 
-Seit 0.25 zeigt CraftPilot für Erze, Steine und Kräuter die Gebiete mit den meisten Vorkommen ([ThirdParty/Gathering](ThirdParty/Gathering/SOURCE.md)): Knotenpositionen und Beute aus den Forever-Daten von **QuestieDB**, gespeichert nur als Zahl der Vorkommen je Gebiet. `tools/import_gathering.py` erzeugt die Datei reproduzierbar; der Abgleich-Workflow aktualisiert sie mit.
+Seit 0.25 zeigt CraftPilot für Erze, Steine und Kräuter die Gebiete mit den meisten Vorkommen ([ThirdParty/Gathering](ThirdParty/Gathering/SOURCE.md)). Seit 0.29 kommen die Standorte zur Laufzeit aus dem QuestieDB-Addon; mitgeliefert werden nur die IDs der Vorkommen und ihr Sammel-Skill. `tools/import_gathering.py` erzeugt die Datei reproduzierbar; der Abgleich-Workflow aktualisiert sie mit.
 
 ## Spezialisierungen
 

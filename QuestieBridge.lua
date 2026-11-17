@@ -1,4 +1,6 @@
--- Optional read-only consumer of the installed QuestieDB public API.
+-- Read-only consumer of the QuestieDB addon's public API. QuestieDB is a required dependency since 0.29:
+-- trainer names, positions and factions and the gathering nodes are read from it at runtime instead of
+-- being bundled with CraftPilot.
 local _,CP=...
 local L=CP.L
 local function call(fn,...)
@@ -7,7 +9,6 @@ local function call(fn,...)
   if ok then return value end
 end
 function CP:QuestieProvider()
-  if self.db and self.db.ui.useQuestieDB==false then return nil,"disabled" end
   local lib=_G.LibQuestieDB
   if type(lib)~="table" then return nil,"absent" end
   if call(lib.RequireContract,1)~=true then return nil,"incompatible" end
@@ -29,7 +30,7 @@ function CP:QuestieStatus()
   local lib,mode,flavor=self:QuestieProvider()
   if lib then return "QuestieDB: "..(mode=="source" and L("aktiv · Entwicklungsmodus") or L("aktiv · Forever")) end
   if mode=="disabled" then return L("QuestieDB: ausgeschaltet") end
-  if mode=="absent" then return L("QuestieDB: nicht installiert (optional)") end
+  if mode=="absent" then return L("QuestieDB: nicht installiert · wird für Lehrer und Sammelgebiete benötigt") end
   if mode=="incompatible" then return L("QuestieDB: öffentliche API fehlt oder ist inkompatibel") end
   if mode=="flavor" then return L("QuestieDB: falscher Datenstand · ")..tostring(flavor) end
   return L("QuestieDB: installiert, Forever-Paketkennung fehlt")
@@ -56,6 +57,75 @@ local function readMaps(lib)
   if next(maps) then cachedLib,cachedMaps=lib,maps end
   return maps
 end
+-- All usable positions of an NPC (UiMap coordinates 0-1), sorted by map and position.
+function CP:QuestieNpcPoints(id)
+  local lib=self:QuestieProvider()
+  if not lib then return {},nil end
+  local name=call(lib.Npc.Get,id,"name")
+  if type(name)~="string" or name=="" then name=nil end
+  local spawns=call(lib.Npc.Get,id,"spawns")
+  local maps=readMaps(lib)
+  local points={}
+  if type(spawns)~="table" or not maps then return points,name end
+  for area,locations in pairs(spawns) do
+    local map=maps[area]
+    if map and type(locations)=="table" then
+      for _,point in ipairs(locations) do
+        local x,y=type(point)=="table" and point[1],type(point)=="table" and point[2]
+        if type(x)=="number" and type(y)=="number" and x>=0 and x<=100 and y>=0 and y<=100 and (point[3]==nil or point[3]==0) then
+          points[#points+1]={map=map,x=x/100,y=y/100}
+        end
+      end
+    end
+  end
+  table.sort(points,function(a,b)
+    if a.map~=b.map then return a.map<b.map end
+    if a.x~=b.x then return a.x<b.x end
+    return a.y<b.y
+  end)
+  return points,name
+end
+
+-- A trainer record for CraftPilot's trainer list: name, faction, title and one stable position.
+local FACTIONS={A="Alliance",H="Horde",AH="B",HA="B"}
+function CP:QuestieNpcRecord(id)
+  local lib=self:QuestieProvider()
+  if not lib then return nil end
+  local points,name=self:QuestieNpcPoints(id)
+  if not name or #points==0 then return nil end
+  local faction=call(lib.Npc.Get,id,"friendlyToFaction")
+  local title=call(lib.Npc.Get,id,"subName")
+  return {name=name,faction=FACTIONS[faction] or "B",title=type(title)=="string" and title or "",point=points[1]}
+end
+
+-- Node counts per UiMap for a list of objects (gathering nodes), from QuestieDB spawns.
+function CP:QuestieObjectZones(objects)
+  local lib=self:QuestieProvider()
+  if not lib or type(lib.Object)~="table" or type(lib.Object.Get)~="function" then return nil end
+  local maps=readMaps(lib)
+  if not maps then return nil end
+  local zones={}
+  for obj,skill in pairs(objects) do
+    local spawns=call(lib.Object.Get,obj,"spawns")
+    for area,locations in pairs(type(spawns)=="table" and spawns or {}) do
+      local map=maps[area]
+      if map and type(locations)=="table" and #locations>0 then
+        local z=zones[map] or {map=map,nodes=0,skill=skill}
+        z.nodes=z.nodes+#locations;z.skill=math.min(z.skill,skill)
+        zones[map]=z
+      end
+    end
+  end
+  return zones
+end
+
+function CP:QuestieItemObjects(item)
+  local lib=self:QuestieProvider()
+  if not lib or type(lib.Item)~="table" or type(lib.Item.Get)~="function" then return {} end
+  local drops=call(lib.Item.Get,item,"objectDrops")
+  return type(drops)=="table" and drops or {}
+end
+
 function CP:QuestieNpcLocation(id,fallback)
   local lib=self:QuestieProvider()
   if not lib then return nil,nil end

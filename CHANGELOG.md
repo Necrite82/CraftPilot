@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.29.0-alpha
+
+QuestieDB ist jetzt feste Voraussetzung (`## Dependencies: QuestieDB`, CurseForge installiert es mit). Lehrer-Positionen und Sammelgebiete werden zur Laufzeit aus QuestieDB gelesen statt mitgeliefert; im Paket stehen nur noch IDs, Ränge und Sammel-Skills. [Details](docs/RELEASE_0.29.0-alpha.md).
+
 ## 0.28.2-alpha
 
 Übersichtlicher Tooltip „Günstigster Weg“ (je Abschnitt eine Zeile, Kosten rechts, Lernen eingerückt, Gesamt abgesetzt, Hinweise grau) und „Als Nächstes lernen“ im Voraus in Tooltip und Begleitfenster. [Details](docs/RELEASE_0.28.2-alpha.md).

@@ -1,5 +1,5 @@
--- Gather instead of buy: for ores, stones and herbs, the zones with the most nodes (QuestieDB, see
--- ThirdParty/Gathering) and who on the account can gather them. Zone names come from the client.
+-- Gather instead of buy: for ores, stones and herbs, the zones with the most nodes (read from the QuestieDB
+-- addon; node IDs and skills in ThirdParty/Gathering) and who on the account can gather them.
 local _,CP=...
 local L=CP.L
 
@@ -11,12 +11,28 @@ function CP:ZoneName(map)
   return L("Karte ")..tostring(map)
 end
 
+-- Where an ore, stone or herb can be gathered: the item's nodes (bundled IDs and skills) with their spawns
+-- from the QuestieDB addon, the four zones with the most nodes first. Cached per item.
 function CP:GatherInfo(item)
-  local row=self.GatheringData and self.GatheringData[item]
-  if not row then return nil end
-  local zones={}
-  for _,z in ipairs(row[4] or {}) do zones[#zones+1]={map=z[1],nodes=z[2],skill=z[3]} end
-  return {prof=row[1],skill=row[2],name=row[3],zones=zones}
+  local prof=self.GatheringItems and self.GatheringItems[item]
+  if not prof then return nil end
+  self.gatherCache=self.gatherCache or {}
+  local cached=self.gatherCache[item]
+  if cached~=nil then return cached or nil end
+  local nodes,low={},nil
+  for _,obj in ipairs(self:QuestieItemObjects(item)) do
+    local node=self.GatheringNodes and self.GatheringNodes[obj]
+    if node then nodes[obj]=node[2];low=math.min(low or node[2],node[2]) end
+  end
+  local zones=low and self:QuestieObjectZones(nodes)
+  local list={}
+  for _,z in pairs(zones or {}) do list[#list+1]=z end
+  table.sort(list,function(a,b) if a.nodes~=b.nodes then return a.nodes>b.nodes end return a.map<b.map end)
+  for i=#list,5,-1 do list[i]=nil end
+  local info=#list>0 and {prof=prof,skill=low,zones=list} or false
+  -- Do not remember a miss while QuestieDB is not readable yet.
+  if info or self:QuestieProvider() then self.gatherCache[item]=info end
+  return info or nil
 end
 
 -- Who can gather at least the given skill: this character first, then twinks on the same realm and faction.
