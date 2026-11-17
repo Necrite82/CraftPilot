@@ -45,8 +45,8 @@ function CP:HelpCards()
   cards[#cards+1]=card(L("Camping"),L("Lagerfeuer, Buffs und Objekte der Camping-Berufe mit gemeinsamem Einkauf."),function() CP:OpenTab("camping") end)
   cards[#cards+1]=card(L("Twinks"),L("Cooldowns aller Charaktere, was Twinks für deinen Plan haben, was sie günstiger herstellen können, und alle Charaktere mit Berufen. Dafür jeden Twink einmal einloggen, Berufsfenster und Bank öffnen."),
     function() CP:OpenTab("twinks") end)
-  cards[#cards+1]=card(L("Nach 300"),L("Was dein Beruf nach dem Skillen einbringt: Gewinn je Herstellung mit gekauften und mit eigenen Materialien, dazu die Rezepte für Merchant's Favor."),
-    function() CP:OpenTab("after300") end)
+  cards[#cards+1]=card(L("Endgame"),L("Was dein Beruf nach dem Skillen bringt: Gewinn je Herstellung, Merchant's-Favor-Rezepte, deine Rezept-Wunschliste mit Bossen und Händlern, der Raid-Vorrat und der AH-Alarm."),
+    function() CP:OpenTab("endgame") end)
 
   cards[#cards+1]=header(L("AM BERUFSFENSTER"))
   cards[#cards+1]=card(L("Begleitfenster"),L("Neben dem Berufsfenster: Empfehlung, „noch N× bis zur nächsten Farbe“, Herstellen-Knopf, Aufheben-Hinweise, bereite Cooldowns und die Sitzungsbilanz. Verschieben an der Kopfzeile, Minus minimiert, X schließt bis zum nächsten Öffnen."))

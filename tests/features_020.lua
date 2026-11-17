@@ -1,4 +1,4 @@
--- 0.2: "Nach 300" (profit per recipe, Favor recipes), Merchant's Favor in gold, fastest path, more warnings
+-- 0.2: Endgame tab (profit per recipe, Favor recipes), Merchant's Favor in gold, fastest path, more warnings
 -- for reserved items, client zone names and English command aliases.
 local CP,createdFrames=...
 
@@ -20,8 +20,8 @@ local rows=CP:ProfitList("engineering")
 local found=false
 for _,row in ipairs(rows) do if row.id==990100 then found=true end end
 assert(found,"Learned recipe with complete prices is listed")
-local cards=CP:After300Cards("engineering")
-assert(cards[1].title:find("Nach 300",1,true))
+local cards=CP:EndgameCards("engineering")
+assert(cards[1].title:find("Endgame",1,true))
 local card
 for _,c in ipairs(cards) do if c.title and c.title:find("Testbombe",1,true) then card=c end end
 assert(card and card.metrics and #card.metrics==3 and card.tooltipItem==990009,"Profit card with three figures")
@@ -30,7 +30,7 @@ assert(card.color=="green")
 P[990009]=200
 local bad=CP:RecipeProfit("engineering",990100)
 assert(bad.profitBuy<0 and bad.profitOwn<0)
-cards=CP:After300Cards("engineering")
+cards=CP:EndgameCards("engineering")
 for _,c in ipairs(cards) do if c.title and c.title:find("Testbombe",1,true) then card=c end end
 assert(card.footer:find("Materialien direkt verkaufen",1,true) and card.color=="red")
 -- Missing price: not listed with a number.
@@ -44,7 +44,7 @@ Auctionator.API.v1=savedApi;CP.db.ui.economyCut=savedCut
 
 -- The tab exists and renders.
 CP:OpenTab("after300")
-assert(CP.db.ui.tab=="after300","Tab after300")
+assert(CP.db.ui.tab=="endgame","Old tab name leads to Endgame")
 CP:OpenTab("now")
 print("PASS: 0.2 profit per craft, opportunity value of own materials and the Nach-300 tab")
 
@@ -63,10 +63,10 @@ assert(favorVendor.favorEstimate and favorVendor.cost==150000,"Favor converted a
 assert(CP:VendorOfferPrice(favorVendor):find("≈",1,true))
 local favorList=CP:FavorRecipes("cooking")
 assert(#favorList>0 and favorList[1].favor,"Favor recipes of the profession are listed")
-local favorCards=CP:After300Cards("cooking")
+local favorCards=CP:EndgameCards("cooking")
 local favorHeader=false
 for _,c in ipairs(favorCards) do if c.sectionHeader and c.title:find("Merchant's Favor",1,true) then favorHeader=true end end
-assert(favorHeader,"Favor section on Nach 300")
+assert(favorHeader,"Favor section on Endgame")
 CP.db.ui.favorRate=savedRate or 0
 print("PASS: 0.2 Merchant's Favor recipes, optional conversion into gold")
 

@@ -170,9 +170,9 @@ function CP:ToggleSetting(key)
     self.db.ui.showVendorRecipes=on;self.db.ui.knownRecipesOnly=not on
   elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
     self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true,ahAlarm=true})[key] then
     -- Companion and twinks default to on (nil): the first click turns them off.
-    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" then self.db.ui[key]=self.db.ui[key]==false
+    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" or key=="ahAlarm" then self.db.ui[key]=self.db.ui[key]==false
     else self.db.ui[key]=not self.db.ui[key] end
   else return end
   self.pendingSettingsReset=nil
@@ -237,6 +237,7 @@ function CP:SettingsCards()
     check("autoOpen",L("Berufsfenster beim Wechsel öffnen"),L("Ein Klick im Berufsmenü öffnet auch das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),ui.autoOpen==true,"general"),
     check("tooltips",L("Hinweise in Gegenstands-Tooltips"),L("Bedarf deines Plans, „nicht verkaufen“, Twink-Bestände und Preisgrenze direkt am Gegenstand."),ui.tooltips~=false,"general"),
     check("itemMarks",L("Markierung in Taschen und Bank"),L("Gold: für einen späteren Schritt aufheben · Blau: dein Plan braucht es. Funktioniert mit den üblichen Taschen-Addons."),ui.itemMarks~=false,"general"),
+    check("ahAlarm",L("AH-Alarm"),L("Nach einem Auctionator-Scan: Wunschrezepte im AH und Raid-Vorrat, der im AH deutlich günstiger ist als Herstellen. Jeder Fund einmal am Tag."),ui.ahAlarm~=false,"general","Interface\\Icons\\INV_Misc_Bell_01"),
     check("hideMinimap",L("Minimap-Button"),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),not ui.hideMinimap,"general"),
     -- Route
     choice(L("Skillweg"),pathNames[path],pathDetails[path].."\n"..L("Gilt für Empfehlung, Begleitfenster und Plan erstellen."),

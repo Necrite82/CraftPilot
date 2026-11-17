@@ -34,6 +34,12 @@ function CP:ReservedItems()
       items[e.item]={kind="keep",need=e.need,use=e.uses[1]}
     end
   end
+  -- 0.2.1: the raid stock and what it takes to craft it.
+  if self.db and self.RaidStockRequirements then
+    for id,n in pairs(self:RaidStockRequirements()) do
+      if n>0 and not items[id] then items[id]={kind="plan",need=n,raid=true} end
+    end
+  end
   self.reservedCache={at=clock(),items=items}
   return items
 end
@@ -169,7 +175,7 @@ function CP:CheckSoldReserved()
   self.merchantCounts=now
   if #sold==0 then return end
   local s=sold[1]
-  local use=s.r.use and string.format(L(" · gebraucht für %s ab Skill %d"),s.r.use.name,s.r.use.at) or L(" · für deinen Plan")
+  local use=s.r.raid and (" · "..L("für deinen Raid-Vorrat")) or s.r.use and string.format(L(" · gebraucht für %s ab Skill %d"),s.r.use.name,s.r.use.at) or L(" · für deinen Plan")
   local text=string.format(L("Achtung: %d× %s verkauft"),s.count,self:ItemName(s.id))..use
   if self.CompanionNotice then self:CompanionNotice(text) else self:Say(text) end
   self:ShowBuybackHelper(s.id,text)
@@ -225,7 +231,7 @@ function CP:CheckAuctionPick(bag,slot)
   local item=self:ButtonItem({bagID=bag,slotID=slot})
   local r=item and self:ReservedItems()[item]
   if not r then return end
-  local use=r.use and string.format(L("für %s ab Skill %d"),r.use.name,r.use.at) or L("für deinen Plan")
+  local use=r.raid and L("für deinen Raid-Vorrat") or r.use and string.format(L("für %s ab Skill %d"),r.use.name,r.use.at) or L("für deinen Plan")
   local text=string.format(L("Nicht einstellen: %s wird %s gebraucht."),self:ItemName(item),use)
   if _G.UIErrorsFrame and type(UIErrorsFrame.AddMessage)=="function" then UIErrorsFrame:AddMessage(text,1,.3,.3) end
   self:Say(text)

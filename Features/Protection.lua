@@ -17,6 +17,7 @@ local function plain(v) if v~=nil and not secret(v) then return v end end
 local function reservedText(self,item)
   local r=self.ReservedItems and self:ReservedItems()[item]
   if not r then return nil end
+  if r.raid then return L("für deinen Raid-Vorrat") end
   return r.use and string.format(L("für %s ab Skill %d"),r.use.name,r.use.at) or L("für deinen Plan")
 end
 

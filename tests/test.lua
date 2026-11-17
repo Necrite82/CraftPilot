@@ -1083,6 +1083,7 @@ assert(loadfile("tests/plan_ux.lua"))(CP,createdFrames)
 assert(loadfile("tests/vendor_browser.lua"))(CP,createdFrames)
 assert(loadfile("tests/foresight.lua"))(CP,createdFrames)
 assert(loadfile("tests/features_020.lua"))(CP,createdFrames)
+assert(loadfile("tests/features_021.lua"))(CP)
 
 -- Version gossip is bounded, sanitized and does not confuse lexical version ordering.
 assert(CP:IsNewerVersion("0.19.1-alpha","0.11.9-alpha"))

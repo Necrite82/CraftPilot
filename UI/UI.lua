@@ -318,7 +318,7 @@ U.tabs={
   {key="trainers", label=L("Lehrer & Händler")},
   {key="camping", label=L("Camping")},
   {key="twinks", label=L("Twinks")},
-  {key="after300", label=L("Nach 300")},
+  {key="endgame", label=L("Endgame")},
 }
 U.tabButtons={}
 U.tabLine=frame:CreateTexture(nil,"ARTWORK")
@@ -1469,12 +1469,12 @@ layout()
 registerEllesmereUI()
 
 -- Navigation ----------------------------------------------------------------------------------------------------
-local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true,after300=true}
+local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true,endgame=true}
 function CP:OpenTab(tab)
   if not self.db then return end
-  local alias={stages="plan",mats="now"}
+  local alias={stages="plan",mats="now",after300="endgame"}
   tab=alias[tab] or tab
-  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,after300=true,economy=true,audit=true,reservations=true,settings=true,help=true}
+  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,endgame=true,economy=true,audit=true,reservations=true,settings=true,help=true}
   if not valid[tab] then return end
   if MAIN[tab] then self.db.ui.lastMainTab=tab end
   self.db.ui.tab=tab
@@ -1960,9 +1960,9 @@ function CP:Render()
   elseif tab=="twinks" then
     showContent(106)
     setVisualCards(self:TwinkCards(key))
-  elseif tab=="after300" then
+  elseif tab=="endgame" then
     showContent(106)
-    setVisualCards(self:After300Cards(key))
+    setVisualCards(self:EndgameCards(key))
   else
     renderNow(self,key,prof,record,inner)
   end

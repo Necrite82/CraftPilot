@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 0.2.0-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 0.2.1-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
 
@@ -45,9 +45,12 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
 - Spezialisierungen (Schmied, Ingenieur, Lederer) mit Schritten und Questgeber
 
-**Nach 300**
+**Endgame**
 - Gewinn je Herstellung für deine erlernten Rezepte: mit gekauften und mit eigenen Materialien (eigene und gefarmte Materialien zählen mit ihrem Verkaufswert)
 - Rezepte für **Merchant's Favor** mit Gewinn je Herstellung; auf Wunsch rechnet CraftPilot Favor in Gold um und bezieht Favor-Rezepte in den günstigsten Weg ein
+- **Rezept-Wunschliste** mit Quellen (Lehrer, Händler, Favor, Quest, Bosse aus QuestieDB); Bosse zeigen dein Wunschrezept im Tooltip
+- **Raid-Vorrat**: Tränke, Fläschchen und Essen mit Zielmenge, Herstellen oder AH-Kauf im Vergleich, Reservierung und Einkaufsliste für Auctionator
+- **AH-Alarm** nach dem Scan: Wunschrezepte im AH und günstiger Raid-Vorrat
 
 **Twinks**
 - Bestände in Taschen, Bank und Post aller Charaktere, Cooldowns, Twinks als günstigere Hersteller
@@ -63,7 +66,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-0.2.0-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.0-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-0.2.1-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.1-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilot\CraftPilot.toc` muss direkt im Ordner `CraftPilot` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 

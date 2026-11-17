@@ -8,7 +8,11 @@ function CP:InvalidateReservations() self.reservationCache=nil end
 function CP:PlanRequirements(owner)
   local required,recipes={},{}
   local unknown=0
-  if owner=="camping" then
+  if owner=="raid" then
+    -- 0.2.1: raid stock (Features/RaidStock.lua) – finished consumables you own plus materials to craft the rest.
+    if self.RaidStockRequirements then for id,n in pairs(self:RaidStockRequirements()) do add(required,id,n) end end
+    return required,unknown,recipes
+  elseif owner=="camping" then
     for _,row in ipairs(self:CampingRecipes()) do
       local n=type(self.db.campingPlan)=="table" and self.db.campingPlan[row.object.item]
       if type(n)=="number" and n>0 then
@@ -45,10 +49,11 @@ end
 function CP:ReservationOrder()
   local order,seen={},{}
   for _,key in ipairs(type(self.db.reservationOrder)=="table" and self.db.reservationOrder or {}) do
-    if (key=="camping" or self.Data.professions[key]) and not seen[key] then order[#order+1]=key;seen[key]=true end
+    if (key=="camping" or key=="raid" or self.Data.professions[key]) and not seen[key] then order[#order+1]=key;seen[key]=true end
   end
   for _,key in ipairs(self.Data.order) do if not seen[key] then order[#order+1]=key end end
   if not seen.camping then order[#order+1]="camping" end
+  if not seen.raid then order[#order+1]="raid" end
   return order
 end
 function CP:ReservationLedger()
@@ -84,7 +89,7 @@ function CP:PlanFingerprint(owner)
   local parts={"unknown="..unknown,"bank="..tostring(self.db.includeBank),"cut="..tostring(self.db.ui.economyCut),
     "policy="..self:SkillPolicyToken(),"mode="..tostring(self.db.mode),"known="..tostring(self.db.ui.knownRecipesOnly),"reliable="..tostring(self.db.ui.preferReliableSkill)}
   local watched={};for id in pairs(required) do watched[id]=true end
-  if owner~="camping" then
+  if owner~="camping" and owner~="raid" then
     local prof=self.db.professions[owner] or {}
     parts[#parts+1]="skill="..tostring(prof.skill)..":"..tostring(prof.cap)
     local plan=self.db.plans[owner] or {}
@@ -127,7 +132,7 @@ function CP:PlanNeedsReview(owner)
   return previous~=self:PlanFingerprint(owner)
 end
 function CP:ReevaluatePlan(owner,background)
-  if owner~="camping" then
+  if owner~="camping" and owner~="raid" then
     local plan=self:PlanFor(owner)
     if plan and plan.autoMode then
       local current=(self.db.professions[owner] or {}).skill or plan.start
@@ -147,7 +152,7 @@ function CP:ReevaluatePlan(owner,background)
 end
 function CP:PlanReviewCard(owner)
   local changed=self:PlanNeedsReview(owner)
-  local plan=owner~="camping" and self.db.plans[owner]
+  local plan=owner~="camping" and owner~="raid" and self.db.plans[owner]
   local progress=plan and plan.completedCrafts or 0
   return {title=changed and L("Plan geändert · neu bewerten") or L("Planbewertung aktuell"),
     detail=progress>0 and (L("Herstellungen seit letzter Bewertung: ")..progress) or L("Preise, Bestände, Reservierungen und Skill werden berücksichtigt."),
@@ -161,7 +166,7 @@ function CP:ReservationCards()
   for _,owner in ipairs(self:ReservationOrder()) do
     local key=owner
     local count=0;for _,n in pairs(ledger.owners[owner]) do count=count+n end
-    if count>0 then cards[#cards+1]={title=owner=="camping" and L("Camping-Einkauf · alle Berufe") or self.Data.professions[owner].name,
+    if count>0 then cards[#cards+1]={title=owner=="camping" and L("Camping-Einkauf · alle Berufe") or (owner=="raid" and L("Raid-Vorrat")) or self.Data.professions[owner].name,
       detail=L("Geplante Materialeinheiten: ")..count,footer=L("Anklicken: diesen Plan priorisieren"),color="blue",
       action=function() CP:PrioritizePlan(key);CP:Render() end} end
   end

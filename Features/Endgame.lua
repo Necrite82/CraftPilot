@@ -1,4 +1,4 @@
--- 0.2: "Nach 300" – what a profession earns once the skilling is done. Profit per recipe from the saved
+-- 0.2: "Endgame" (0.2.0: "Nach 300") – what a profession earns once the skilling is done. Profit per recipe from the saved
 -- auction prices, Merchant's Favor recipes and what they are worth. Read-only: nothing is bought or sold.
 --
 -- Own or farmed materials are never free here: they are valued at what selling them would bring (AH minus
@@ -98,14 +98,16 @@ function CP:FavorRecipes(key)
   return out
 end
 
-function CP:After300Cards(key)
+function CP:EndgameCards(key)
   local prof=self.Data.professions[key]
   local cut=tonumber(self.db.ui.economyCut) or 5
-  local cards={{title=L("Nach 300 · Gold mit deinem Beruf"),
+  local cards={{title=L("Endgame · Gold, Rezepte und Raid-Vorrat"),
     detail=string.format(L("Gewinn je Herstellung nach deinen gespeicherten AH-Preisen, abzüglich %d %% AH-Abzug. Eigene oder gefarmte Materialien zählen mit dem, was ihr Verkauf bringen würde."),cut),
     footer=L("Gespeicherte Scans, keine Live-Angebote · CraftPilot kauft und verkauft nichts."),color="gold",icon=self.Data.professionIcons[key]}}
   if not prof or (prof.gathering and not prof.crafting) then
     cards[#cards+1]={title=L("Sammelberuf"),detail=L("Für Sammelberufe gibt es keine Rezepte zum Herstellen. Den Wert deiner Funde zeigt der Gegenstands-Tooltip."),color="blue"}
+    for _,card in ipairs(self.AlarmCards and self:AlarmCards() or {}) do cards[#cards+1]=card end
+    for _,card in ipairs(self.RaidStockCards and self:RaidStockCards(key) or {}) do cards[#cards+1]=card end
     return cards
   end
   local hasPrices=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
@@ -138,6 +140,10 @@ function CP:After300Cards(key)
     cards[#cards+1]={title=string.format(L("%d weitere Rezepte ohne vollständige Preise"),incomplete),
       detail=L("Für Material oder Ergebnis fehlt ein AH- oder Händlerpreis. Nach dem nächsten Scan erscheinen sie hier."),color="blue"}
   end
+  -- 0.2.1: AH alarm, raid stock and recipe wishlist
+  for _,card in ipairs(self.AlarmCards and self:AlarmCards() or {}) do cards[#cards+1]=card end
+  for _,card in ipairs(self.RaidStockCards and self:RaidStockCards(key) or {}) do cards[#cards+1]=card end
+  for _,card in ipairs(self.WishlistCards and self:WishlistCards(key) or {}) do cards[#cards+1]=card end
   -- Merchant's Favor
   local favor=self:FavorRecipes(key)
   if #favor>0 then

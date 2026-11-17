@@ -41,6 +41,20 @@ function CP:QuestieItemVendors(item)
   local vendors=call(lib.Item.Get,item,"vendors")
   return type(vendors)=="table" and vendors or {}
 end
+-- NPCs that drop an item (0.2.1, recipe sources): {id, name}; the zone comes from QuestieNpcZone.
+function CP:QuestieItemDrops(item)
+  local lib=self:QuestieProvider()
+  if not lib or not lib.Item or type(lib.Item.Get)~="function" or type(item)~="number" then return {} end
+  local npcs=call(lib.Item.Get,item,"npcDrops")
+  local out={}
+  for _,id in ipairs(type(npcs)=="table" and npcs or {}) do
+    if type(id)=="number" and id>0 then
+      local name=call(lib.Npc.Get,id,"name")
+      out[#out+1]={id=id,name=type(name)=="string" and name or ("NPC #"..id),zone=self:QuestieNpcZone(id)}
+    end
+  end
+  return out
+end
 local cachedLib,cachedMaps
 local function readMaps(lib)
   if cachedLib==lib and cachedMaps then return cachedMaps end
@@ -162,4 +176,16 @@ function CP:QuestieNpcLocation(id,fallback)
     return a.y<b.y
   end)
   return points[1],name
+end
+
+-- Zone name of an NPC (instance or world) from its QuestieDB zoneID, via the client map name when known.
+function CP:QuestieNpcZone(id)
+  local lib=self:QuestieProvider()
+  if not lib then return nil end
+  local area=call(lib.Npc.Get,id,"zoneID")
+  if type(area)~="number" or area<=0 then return nil end
+  local maps=readMaps(lib)
+  local map=maps and maps[area]
+  local info=map and C_Map and call(C_Map.GetMapInfo,map)
+  return type(info)=="table" and type(info.name)=="string" and info.name or nil
 end

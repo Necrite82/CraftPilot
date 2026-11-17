@@ -15,7 +15,7 @@ by your own auction house prices, with shopping, trainers, alts and crafting in 
 
 ---
 
-**Status:** 0.2.0-beta · WoW Forever 1.60.x (Interface 16001) · English and German
+**Status:** 0.2.1-beta · WoW Forever 1.60.x (Interface 16001) · English and German
 
 > **Beta:** CraftPilot is new. Please report bugs in-game via "Report bug" or as a [GitHub issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -45,9 +45,12 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 - One click to every trainer and vendor, a learning tour along the cheapest path
 - Specializations (blacksmith, engineer, leatherworker) with steps and quest givers
 
-**After 300**
+**Endgame**
 - Profit per craft for your learned recipes: with bought and with own materials (own and farmed materials count at their sale value)
 - Recipes for **Merchant's Favor** with profit per craft; optionally CraftPilot converts Favor into gold and includes Favor recipes in the cheapest path
+- **Recipe wishlist** with sources (trainer, vendor, Favor, quest, bosses from QuestieDB); bosses show your wished recipe in their tooltip
+- **Raid stock**: potions, flasks and food with a target amount, crafting versus buying, reservation and an Auctionator shopping list
+- **AH alarm** after a scan: wished recipes on the AH and cheap raid stock
 
 **Alts**
 - Stock in bags, bank and mail of every character, cooldowns, alts as cheaper crafters
@@ -63,7 +66,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **CurseForge app (recommended):** search for CraftPilot and install it. **QuestieDB** is installed automatically.
 
 **Manually:**
-1. Download [CraftPilot-0.2.0-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.0-beta.zip) (not the GitHub source archive).
+1. Download [CraftPilot-0.2.1-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.1-beta.zip) (not the GitHub source archive).
 2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilot\CraftPilot.toc` must sit directly in the `CraftPilot` folder.
 3. Also install **QuestieDB** (Forever version).
 

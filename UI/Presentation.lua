@@ -227,7 +227,7 @@ function CP:LayoutVisualCard(b,entry,width)
   b.detailLabel:ClearAllPoints();b.detailLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-y);b.detailLabel:SetWidth(width-70)
   y=y+height(b.detailLabel,16)+10
   if entry.metrics then
-    -- 0.2: a card with its own three figures (e.g. profit on "Nach 300"); the item tooltip stays on hover.
+    -- 0.2: a card with its own three figures (e.g. profit on the Endgame tab); the item tooltip stays on hover.
     self:MetricStrip(b,entry.metrics,55,y,width-70)
     y=y+58
     if entry.tooltipItem then b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,entry.tooltipItem) end) end

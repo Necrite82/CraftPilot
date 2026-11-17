@@ -1,8 +1,11 @@
 # Changelog
 
-## 0.2.0-beta
+## 0.2.1-beta
 
-- Neuer Reiter **Nach 300**: Gewinn je Herstellung für erlernte Rezepte, mit gekauften und mit eigenen Materialien; eigene und gefarmte Materialien zählen mit ihrem Verkaufswert
+- Neuer Reiter **Endgame**: Gewinn je Herstellung für erlernte Rezepte, mit gekauften und mit eigenen Materialien; eigene und gefarmte Materialien zählen mit ihrem Verkaufswert
+- **Rezept-Wunschliste** mit Quellen (Lehrer, Händler, Favor, Quest, Bosse aus QuestieDB), Hinweis im Tooltip des Rezepts und der Bosse, die es droppen
+- **Raid-Vorrat**: Verbrauchsgüter mit Zielmenge, Herstellen (auch Twinks) oder AH-Kauf im Vergleich, gemeinsame Reservierung, Einkaufsliste für Auctionator
+- **AH-Alarm** nach einem Auctionator-Scan: Wunschrezepte im AH und Raid-Vorrat, der im AH deutlich günstiger ist (abschaltbar)
 - **Merchant's Favor**: Favor-Rezepte des Berufs mit Gewinn je Herstellung; optional Umrechnung „Silber je Favor“ (Einstellungen > Erweitert), dann zählen Favor-Rezepte im günstigsten Weg mit
 - Skillweg **Schnellster Weg**: so wenige Herstellungen wie möglich
 - Mehr Schutz für reservierte Gegenstände: Warnung beim Zerstören, Entzaubern und beim Verschicken an Charaktere, die nicht deine sind
