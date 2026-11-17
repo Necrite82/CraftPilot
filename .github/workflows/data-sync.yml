@@ -49,7 +49,7 @@ jobs:
           {
             set -e
             for version in 5.1 5.4; do
-              for file in *.lua Locales/*.lua ThirdParty/CraftLadder/*.lua ThirdParty/Trainers/*.lua ThirdParty/Gathering/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+              for file in Core/*.lua Planning/*.lua Features/*.lua UI/*.lua Locales/*.lua ThirdParty/CraftLadder/*.lua ThirdParty/Trainers/*.lua ThirdParty/Gathering/*.lua tests/*.lua; do "luac$version" -p "$file"; done
               "lua$version" tests/test.lua
             done
             python3 tools/sync_craft_ladder.py --check

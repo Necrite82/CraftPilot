@@ -18,7 +18,7 @@ jobs:
       - name: Validate runtime
         run: |
           for version in 5.1 5.4; do
-            for file in *.lua Locales/*.lua ThirdParty/*/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+            for file in Core/*.lua Planning/*.lua Features/*.lua UI/*.lua Locales/*.lua ThirdParty/*/*.lua tests/*.lua; do "luac$version" -p "$file"; done
             "lua$version" tests/test.lua
           done
       - name: Verify install archive
