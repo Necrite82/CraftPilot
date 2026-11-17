@@ -51,6 +51,21 @@ CP.db.ui.ahAlarm=nil
 Auctionator.API.v1=savedApi
 CP:ToggleWish(key,id);assert(not CP:IsWished(key,id))
 CP.QuestieItemDrops=savedDrops;CP.Say,CP.CompanionNotice=savedSay,savedNotice
+-- Favor recipes: tooltip, waypoint to the vendor on click, wishlist on right-click.
+local favorCard
+for _,c in ipairs(CP:EndgameCards("cooking")) do if c.recipeID==1249963 then favorCard=c end end
+assert(favorCard and favorCard.tooltipItem==249885 and favorCard.showMarket==false,"Favor card opens the recipe tooltip")
+assert(type(favorCard.action)=="function" and type(favorCard.rightAction)=="function")
+local go=CP:RecipeGoTo("cooking",1249963)
+assert(go,"Favor vendor has a place");if go then
+  local savedWay=CP.SetWaypoint;local target
+  CP.SetWaypoint=function(_,loc) target=loc end
+  favorCard.action();assert(target and target.map==go.location.map and target.x==go.location.x,"Click sets a waypoint to the Favor vendor")
+  CP.SetWaypoint=savedWay
+  assert(favorCard.footer:find("Wegpunkt zu",1,true))
+end
+favorCard.rightAction();assert(CP:IsWished("cooking",1249963),"Right-click puts it on the wishlist")
+CP:ToggleWish("cooking",1249963)
 print("PASS: 0.2.1 recipe wishlist with boss sources, tooltips and AH alarm")
 
 -- Raid stock ----------------------------------------------------------------------------------------------------------

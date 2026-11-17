@@ -163,8 +163,13 @@ function CP:EndgameCards(key)
         if rate>0 then foot=foot.." · "..string.format(L("bezahlt nach %d Herstellungen"),math.ceil(f.favor*rate/f.profit)) end
       elseif f.profit then foot=L("Gewinn je Herstellung: ")..money(self,f.profit).." · "..L("lohnt sich zum Verkaufen nicht")
       else foot=L("Gewinn unbekannt · Preise fehlen") end
-      cards[#cards+1]={title=f.name,detail=detail,footer=foot,color=(f.profit and f.profit>0) and "green" or "blue",
-        icon=self.RecipeIcon and self:RecipeIcon(key,f.id)}
+      local catalog=self:RecipeVendorCatalog(key)
+      local recipe=catalog and catalog.recipes[f.id]
+      local left,right=self.RecipeCardActions(self,key,f.id)
+      cards[#cards+1]={title=(self:IsWished(key,f.id) and (CP.WISH_MARK or "") or "")..f.name,detail=detail,
+        footer=foot.."\n"..self:RecipeClickHint(key,f.id,self:IsWished(key,f.id)),color=(f.profit and f.profit>0) and "green" or "blue",
+        icon=self.RecipeIcon and self:RecipeIcon(key,f.id),tooltipItem=recipe and recipe.item,recipeKey=key,recipeID=f.id,showMarket=false,
+        action=left,rightAction=right}
     end
   end
   return cards

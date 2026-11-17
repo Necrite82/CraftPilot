@@ -1392,4 +1392,8 @@ CP.English = {
   ["für deinen Raid-Vorrat"]="for your raid stock",
   ["herstellen "]="craft ",
   ["und %d weitere Gegner"]="and %d more enemies",
+  ["Für dieses Rezept ist kein Ort hinterlegt."]="No place is known for this recipe.",
+  ["Klick: Wegpunkt zu %s"]="Click: waypoint to %s",
+  ["Rechtsklick: auf die Wunschliste"]="Right-click: add to the wishlist",
+  ["Rechtsklick: von der Wunschliste"]="Right-click: remove from the wishlist",
 }

@@ -814,8 +814,11 @@ local function setVisualCards(entries)
           b.craftDot:SetPoint("BOTTOMLEFT",b,"BOTTOMLEFT",22,8)
         end
       end
-      b:SetScript("OnClick",function()
-        if type(b.craftAction)=="function" then b.craftAction() end
+      -- 0.2.1: right-click runs a card's second action (e.g. wishlist on/off), left-click the first.
+      if type(b.RegisterForClicks)=="function" then b:RegisterForClicks("LeftButtonUp","RightButtonUp") end
+      b:SetScript("OnClick",function(_,button)
+        if button=="RightButton" and type(b.craftRightAction)=="function" then b.craftRightAction()
+        elseif type(b.craftAction)=="function" then b.craftAction() end
       end)
       U.cards[i]=b
       if CP.ellesmereSkin and type(CP.ellesmereSkin.Panel)=="function" then
@@ -824,6 +827,7 @@ local function setVisualCards(entries)
     end
     if rawget(b,"settingCheck") then b.settingCheck:Hide() end
     b.craftAction=entry.action
+    b.craftRightAction=entry.rightAction
     b.tooltipItem=entry.tooltipItem
     b.tooltipSpell=entry.tooltipSpell
     if entry.sectionHeader then

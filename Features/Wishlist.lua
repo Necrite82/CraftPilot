@@ -62,6 +62,43 @@ function CP:RecipeSources(key,id)
   end
   return out
 end
+-- Where to go for a recipe: a vendor with a known place (your faction first), else a boss with a known place.
+-- Returns {location, label} or nil. Drop chances are not in any data CraftPilot has.
+function CP:RecipeGoTo(key,id)
+  local best
+  for _,v in ipairs(self:RecipeVendors(key,id,true)) do
+    if v.location and (not best or (best.restricted and not v.restricted)) then best=v end
+  end
+  if best then return {location=best.location,label=best.name,kind="vendor"} end
+  local catalog=self:RecipeVendorCatalog(key)
+  local recipe=catalog and catalog.recipes[id]
+  for _,d in ipairs(recipe and recipe.item and self:QuestieItemDrops(recipe.item) or {}) do
+    local record=self.QuestieNpcRecord and self:QuestieNpcRecord(d.id)
+    if record and record.point then
+      local p=record.point
+      return {location={name=d.name,zone=p.zone or d.zone or "",map=p.map,x=p.x,y=p.y,indoor=true},label=d.name,kind="drop"}
+    end
+  end
+  return nil
+end
+function CP:GoToRecipe(key,id)
+  local go=self:RecipeGoTo(key,id)
+  if not go then self:Say(L("Für dieses Rezept ist kein Ort hinterlegt."));return false end
+  self:SetWaypoint(go.location)
+  return true
+end
+function CP:RecipeClickHint(key,id,wished)
+  local go=self:RecipeGoTo(key,id)
+  local left=go and string.format(L("Klick: Wegpunkt zu %s"),go.label) or nil
+  local right=wished and L("Rechtsklick: von der Wunschliste") or L("Rechtsklick: auf die Wunschliste")
+  return left and (left.." · "..right) or (wished and L("Anklicken: von der Wunschliste nehmen") or L("Anklicken: auf die Wunschliste"))
+end
+local function recipeCardActions(self,key,id)
+  local toggle=function() CP:ToggleWish(key,id);CP:Render() end
+  if self:RecipeGoTo(key,id) then return function() CP:GoToRecipe(key,id) end,toggle end
+  return toggle,toggle
+end
+CP.RecipeCardActions=recipeCardActions
 function CP:RecipeSourceText(key,id)
   local parts={}
   for _,s in ipairs(self:RecipeSources(key,id)) do parts[#parts+1]=s.text end
@@ -104,19 +141,20 @@ function CP:WishlistCards(key)
     local learned=native and native.learned
     cards[#cards+1]={title=STAR..self:RecipeName(key,id,recipe and recipe.name),
       detail=learned and L("Erlernt · kann von der Wunschliste") or self:RecipeSourceText(key,id),
-      footer=L("Anklicken: von der Wunschliste nehmen")..(recipe and recipe.learn and (" · "..L("ab Skill ")..recipe.learn) or ""),
+      footer=(learned and L("Anklicken: von der Wunschliste nehmen") or self:RecipeClickHint(key,id,true))..(recipe and recipe.learn and (" · "..L("ab Skill ")..recipe.learn) or ""),
       color=learned and "green" or "gold",icon=self.RecipeIcon and self:RecipeIcon(key,id),
       tooltipItem=recipe and recipe.item,recipeKey=key,recipeID=id,showMarket=false,
-      action=function() CP:ToggleWish(key,id);CP:Render() end}
+      action=learned and function() CP:ToggleWish(key,id);CP:Render() end or (recipeCardActions(self,key,id)),
+      rightAction=select(2,recipeCardActions(self,key,id))}
   end
   local suggestions=self:WishSuggestions(key,5)
   if #suggestions>0 then
     cards[#cards+1]={sectionHeader=true,title=L("Vorschläge · noch nicht erlernt")}
     for _,s in ipairs(suggestions) do
       cards[#cards+1]={title=self:RecipeName(key,s.id),detail=self:RecipeSourceText(key,s.id),
-        footer=(s.profit and (L("Gewinn je Herstellung: ")..(s.profit<0 and "-" or "+")..self:FormatCostMoney(math.abs(s.profit))).." · " or "")..L("Anklicken: auf die Wunschliste"),
+        footer=(s.profit and (L("Gewinn je Herstellung: ")..(s.profit<0 and "-" or "+")..self:FormatCostMoney(math.abs(s.profit))).." · " or "")..self:RecipeClickHint(key,s.id,false),
         color="blue",icon=self.RecipeIcon and self:RecipeIcon(key,s.id),recipeKey=key,recipeID=s.id,showMarket=false,
-        action=function() CP:ToggleWish(key,s.id);CP:Render() end}
+        action=(recipeCardActions(self,key,s.id)),rightAction=select(2,recipeCardActions(self,key,s.id))}
     end
   end
   return cards
