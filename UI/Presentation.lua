@@ -226,7 +226,12 @@ function CP:LayoutVisualCard(b,entry,width)
   local y=math.max(30,10+height(b.titleLabel,16))
   b.detailLabel:ClearAllPoints();b.detailLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-y);b.detailLabel:SetWidth(width-70)
   y=y+height(b.detailLabel,16)+10
-  if entry.recipeID or entry.tooltipItem then
+  if entry.metrics then
+    -- 0.2: a card with its own three figures (e.g. profit on "Nach 300"); the item tooltip stays on hover.
+    self:MetricStrip(b,entry.metrics,55,y,width-70)
+    y=y+58
+    if entry.tooltipItem then b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,entry.tooltipItem) end) end
+  elseif entry.recipeID or entry.tooltipItem then
     local item=entry.tooltipItem or self:RecipeMarketOutput(entry.recipeKey or self.db.view,entry.recipeID)
     local m=item and self:ItemMarket(item)
     self:MetricStrip(b,{{label=L("AH / Stück"),value=self:DisplayMoney(m and m.auction)},

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0-beta
+
+- Neuer Reiter **Nach 300**: Gewinn je Herstellung für erlernte Rezepte, mit gekauften und mit eigenen Materialien; eigene und gefarmte Materialien zählen mit ihrem Verkaufswert
+- **Merchant's Favor**: Favor-Rezepte des Berufs mit Gewinn je Herstellung; optional Umrechnung „Silber je Favor“ (Einstellungen > Erweitert), dann zählen Favor-Rezepte im günstigsten Weg mit
+- Skillweg **Schnellster Weg**: so wenige Herstellungen wie möglich
+- Mehr Schutz für reservierte Gegenstände: Warnung beim Zerstören, Entzaubern und beim Verschicken an Charaktere, die nicht deine sind
+- Lehrerorte zeigen den Kartennamen aus dem Spielclient
+- Englische Befehle `/cp stages` und `/cp shop`
+- Intern: Ordnerstruktur `Core/`, `Planning/`, `Features/`, `UI/`
+
 ## 0.1.0-beta
 
 Erste Beta auf CurseForge. Die Versionsnummern beginnen hier neu.

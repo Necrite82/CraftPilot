@@ -821,6 +821,7 @@ local function schedule(capture)
     run()
   end
 end
+CP.SlashCommand=command
 events:SetScript("OnEvent",function(_,event,...)
   if event=="PLAYER_LOGIN" then
     CP:Initialize()

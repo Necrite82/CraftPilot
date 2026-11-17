@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 0.1.0-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 0.2.0-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
 
@@ -30,7 +30,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 ## Funktionen
 
 **Skillen**
-- Günstigster Weg nach AH-Preisen, wählbar: *günstigster Weg*, *sichere Farben bevorzugen* oder *nur Orange und Gelb*
+- Günstigster Weg nach AH-Preisen, wählbar: *günstigster Weg*, *sichere Farben bevorzugen*, *nur Orange und Gelb* oder *schnellster Weg*
 - Begleitfenster am Berufsfenster: Empfehlung, „noch N× bis zur nächsten Farbe“, **Herstellen-Knopf**, Sitzungsbilanz
 - Klare Hinweise, was du für spätere Schritte **aufheben** musst, und „schon vorhanden“ statt doppelt herstellen
 - Vorschau auf den nächsten Lernschritt, Warnungen bei Rang- und Levelsperren
@@ -45,13 +45,17 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
 - Spezialisierungen (Schmied, Ingenieur, Lederer) mit Schritten und Questgeber
 
+**Nach 300**
+- Gewinn je Herstellung für deine erlernten Rezepte: mit gekauften und mit eigenen Materialien (eigene und gefarmte Materialien zählen mit ihrem Verkaufswert)
+- Rezepte für **Merchant's Favor** mit Gewinn je Herstellung; auf Wunsch rechnet CraftPilot Favor in Gold um und bezieht Favor-Rezepte in den günstigsten Weg ein
+
 **Twinks**
 - Bestände in Taschen, Bank und Post aller Charaktere, Cooldowns, Twinks als günstigere Hersteller
 - Am Briefkasten: was deine Twinks brauchen, mit vorbereitetem Brief
 
 **Sicherheit**
 - Markierung reservierter Gegenstände in jeder Taschenansicht (Standardtaschen, EllesmereUI, Baganator, Bagnon, AdiBags …)
-- Warnung und „Zurückkaufen“, wenn du doch etwas Reserviertes verkaufst; Warnung am Auktionshaus
+- Warnung und „Zurückkaufen“, wenn du doch etwas Reserviertes verkaufst; Warnung am Auktionshaus, beim Zerstören, Entzaubern und beim Verschicken an fremde Charaktere
 - Hinweise in Gegenstands-Tooltips
 
 ## Installation
@@ -59,7 +63,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-0.1.0-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.1.0-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-0.2.0-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.0-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilot\CraftPilot.toc` muss direkt im Ordner `CraftPilot` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 

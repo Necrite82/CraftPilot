@@ -318,6 +318,7 @@ U.tabs={
   {key="trainers", label=L("Lehrer & Händler")},
   {key="camping", label=L("Camping")},
   {key="twinks", label=L("Twinks")},
+  {key="after300", label=L("Nach 300")},
 }
 U.tabButtons={}
 U.tabLine=frame:CreateTexture(nil,"ARTWORK")
@@ -782,8 +783,8 @@ local function setVisualCards(entries)
   local baseHeight=settingsView and 92 or 73
   local offset=0
   for i,entry in ipairs(entries) do
-    local market=entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
-      or (entry.tooltipItem and CP:ItemMarketText(entry.tooltipItem))
+    local market=not entry.metrics and (entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
+      or (entry.tooltipItem and CP:ItemMarketText(entry.tooltipItem))) or nil
     local cardHeight=market and 122 or baseHeight
     local b=U.cards[i]
     if not b then
@@ -1429,9 +1430,20 @@ local function layout()
   U.skillText:ClearAllPoints();U.skillText:SetPoint("RIGHT",U.priceChip,"LEFT",-10,0)
   U.skillBar:ClearAllPoints();U.skillBar:SetPoint("LEFT",U.profButton,"RIGHT",14,0);U.skillBar:SetPoint("RIGHT",U.skillText,"LEFT",-8,0)
   U.skillHover:ClearAllPoints();U.skillHover:SetPoint("TOPLEFT",U.skillBar,"TOPLEFT",0,10);U.skillHover:SetPoint("BOTTOMRIGHT",U.skillText,"BOTTOMRIGHT",0,-10)
-  local tabW=math.min(170,(inner-120)/#U.tabButtons)
+  -- 0.2: six tabs. Each gets its text width plus padding, scaled down together when the window is narrow.
+  local avail=inner-120
+  local widths,total={},0
   for i,b in ipairs(U.tabButtons) do
-    b:ClearAllPoints();b:SetSize(tabW,38);b:SetPoint("TOPLEFT",frame,"TOPLEFT",14+(i-1)*tabW,-56)
+    local measured=b.label and type(b.label.GetStringWidth)=="function" and b.label:GetStringWidth()
+    widths[i]=(type(measured)=="number" and measured>0) and (measured+28) or (avail/#U.tabButtons)
+    total=total+widths[i]
+  end
+  local scale=total>avail and avail/total or 1
+  local x=14
+  for i,b in ipairs(U.tabButtons) do
+    local tabW=math.min(170,widths[i]*scale)
+    b:ClearAllPoints();b:SetSize(tabW,38);b:SetPoint("TOPLEFT",frame,"TOPLEFT",x,-56)
+    x=x+tabW
   end
   U.tabLine:ClearAllPoints();U.tabLine:SetPoint("TOPLEFT",frame,"TOPLEFT",1,-94);U.tabLine:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-1,-94)
   U.back:ClearAllPoints();U.back:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-62)
@@ -1457,12 +1469,12 @@ layout()
 registerEllesmereUI()
 
 -- Navigation ----------------------------------------------------------------------------------------------------
-local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true}
+local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true,after300=true}
 function CP:OpenTab(tab)
   if not self.db then return end
   local alias={stages="plan",mats="now"}
   tab=alias[tab] or tab
-  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,economy=true,audit=true,reservations=true,settings=true,help=true}
+  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,after300=true,economy=true,audit=true,reservations=true,settings=true,help=true}
   if not valid[tab] then return end
   if MAIN[tab] then self.db.ui.lastMainTab=tab end
   self.db.ui.tab=tab
@@ -1948,6 +1960,9 @@ function CP:Render()
   elseif tab=="twinks" then
     showContent(106)
     setVisualCards(self:TwinkCards(key))
+  elseif tab=="after300" then
+    showContent(106)
+    setVisualCards(self:After300Cards(key))
   else
     renderNow(self,key,prof,record,inner)
   end

@@ -45,19 +45,21 @@ function CP:HelpCards()
   cards[#cards+1]=card(L("Camping"),L("Lagerfeuer, Buffs und Objekte der Camping-Berufe mit gemeinsamem Einkauf."),function() CP:OpenTab("camping") end)
   cards[#cards+1]=card(L("Twinks"),L("Cooldowns aller Charaktere, was Twinks für deinen Plan haben, was sie günstiger herstellen können, und alle Charaktere mit Berufen. Dafür jeden Twink einmal einloggen, Berufsfenster und Bank öffnen."),
     function() CP:OpenTab("twinks") end)
+  cards[#cards+1]=card(L("Nach 300"),L("Was dein Beruf nach dem Skillen einbringt: Gewinn je Herstellung mit gekauften und mit eigenen Materialien, dazu die Rezepte für Merchant's Favor."),
+    function() CP:OpenTab("after300") end)
 
   cards[#cards+1]=header(L("AM BERUFSFENSTER"))
   cards[#cards+1]=card(L("Begleitfenster"),L("Neben dem Berufsfenster: Empfehlung, „noch N× bis zur nächsten Farbe“, Herstellen-Knopf, Aufheben-Hinweise, bereite Cooldowns und die Sitzungsbilanz. Verschieben an der Kopfzeile, Minus minimiert, X schließt bis zum nächsten Öffnen."))
   cards[#cards+1]=card(L("Herstellen"),L("„Herstellen: N×“ stellt die empfohlene Menge her, „1×“ genau eine. Fehlt Material, steht das am Knopf. Hergestelltes, das ein späterer Schritt braucht, wird sofort als „Behalten“ gemeldet."))
 
   cards[#cards+1]=header(L("UNTERWEGS"))
-  cards[#cards+1]=card(L("Auktionshaus"),L("Beim Öffnen bietet CraftPilot eine Einkaufsrunde an: Posten für Posten mit Preisgrenze, Gekauftes wird abgezählt. Reservierte Gegenstände lösen beim Einstellen eine Warnung aus."))
+  cards[#cards+1]=card(L("Auktionshaus"),L("Beim Öffnen bietet CraftPilot eine Einkaufsrunde an: Posten für Posten mit Preisgrenze, Gekauftes wird abgezählt. Reservierte Gegenstände lösen beim Einstellen eine Warnung aus, ebenso beim Zerstören, Entzaubern oder Verschicken an fremde Charaktere."))
   cards[#cards+1]=card(L("Händler"),L("Ein kleines Fenster zeigt, was dein Plan braucht und dieser Händler verkauft; „Kaufen“ kauft genau die fehlende Menge. Verkaufst du etwas Reserviertes, bietet CraftPilot „Zurückkaufen“ an."))
   cards[#cards+1]=card(L("Bank und Briefkasten"),L("An der Bank: was du für den Plan mitnehmen solltest. Am Briefkasten: was deine Twinks brauchen, mit „Brief vorbereiten“."))
   cards[#cards+1]=card(L("Taschen, Bank und Tooltips"),L("Goldener Punkt: für einen späteren Schritt aufheben. Blauer Punkt: dein Plan braucht es. Funktioniert mit den üblichen Taschen-Addons. Im Tooltip stehen Bedarf, Twink-Bestände und die Preisgrenze."))
 
   cards[#cards+1]=header(L("GUT ZU WISSEN"))
-  cards[#cards+1]=card(L("Skillweg"),L("Günstigster Weg: rein nach AH-Preisen je Skillpunkt. Sichere Farben bevorzugen: Grün nur, wenn es über 25 % billiger ist. Nur Orange und Gelb: nie Grün. Einstellbar unter Einstellungen."),
+  cards[#cards+1]=card(L("Skillweg"),L("Günstigster Weg: rein nach AH-Preisen je Skillpunkt. Sichere Farben bevorzugen: Grün nur, wenn es über 25 % billiger ist. Nur Orange und Gelb: nie Grün. Schnellster Weg: so wenige Herstellungen wie möglich. Einstellbar unter Einstellungen."),
     function() CP:OpenTab("settings") end)
   cards[#cards+1]=card(L("Farben und Chancen"),L("Orange gibt immer einen Punkt, Gelb meist (ca. 70 %), Grün selten (ca. 35 %), Grau nie. CraftPilot rechnet mit diesen Chancen; einzelne Ergebnisse können abweichen."))
   cards[#cards+1]=card(L("Preise sind Schätzungen"),L("Grundlage ist dein letzter Auctionator-Scan. Fehlende oder alte Preise werden genannt, nicht geraten. Rezeptdaten stammen aus Craft Ladder, Lehrer und Sammelgebiete aus QuestieDB und CMaNGOS."))
