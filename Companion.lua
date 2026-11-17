@@ -182,6 +182,13 @@ function CP:UpdateCompanion()
   local extra={}
   local gate=self.RankGate and self:RankGate(key)
   if gate and (record.skill or 0)>=(record.cap or 0)-10 and (record.cap or 0)<300 then extra[#extra+1]=gate.text end
+  -- Ahead of time: the next recipe to learn on the path, so the trip to the trainer can be planned.
+  local nextLearn=rec and not rec.learn and rec.path and self:NextLearnStep(rec.path)
+  if nextLearn then
+    local where=({trainer=L("Lehrer"),vendor=L("Händler"),ah=L("AH")})[nextLearn.source] or ""
+    extra[#extra+1]="|cff8cc8ff"..string.format(L("Als Nächstes lernen: %s ab Skill %d"),nextLearn.name,nextLearn.first)
+      ..(where~="" and (" ("..where..((nextLearn.fee or 0)>0 and (", "..self:FormatCostMoney(nextLearn.fee)) or "")..")") or "").."|r"
+  end
   local spec=self.SpecHint and self:SpecHint(key)
   if spec then extra[#extra+1]=spec end
   local tour=self.tour and self.tour.key==key and self.tour.stops[self.tour.index]

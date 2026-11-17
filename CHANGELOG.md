@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.28.2-alpha
+
+Übersichtlicher Tooltip „Günstigster Weg“ (je Abschnitt eine Zeile, Kosten rechts, Lernen eingerückt, Gesamt abgesetzt, Hinweise grau) und „Als Nächstes lernen“ im Voraus in Tooltip und Begleitfenster. [Details](docs/RELEASE_0.28.2-alpha.md).
+
 ## 0.28.1-alpha
 
 Korrekturen aus dem Spieltest: Herstellen-Knopf zählt das Material in den Taschen, „vorrätig · erst aus Bank/von Twinks holen“ statt „alles vorrätig“, keine Markierungspunkte mehr auf CraftPilots eigenen Materialzeilen, keine Kästchen statt Pfeilen, übersprungene Farben ausgeblendet, „Vorrat reicht“ statt „zusätzlich einplanen 0“. [Details](docs/RELEASE_0.28.1-alpha.md).
