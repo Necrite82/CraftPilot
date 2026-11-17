@@ -1,6 +1,6 @@
 # CraftPilot 0.1.0-beta – erste Beta auf CurseForge
 
-Mit der Veröffentlichung auf CurseForge beginnt die Nummerierung neu. Diese erste Beta entspricht dem Stand **0.29.0-alpha** und bündelt alles aus den Alpha-Versionen bis 0.29.0. Einzelheiten stehen im [Änderungsverlauf](../CHANGELOG.md).
+Mit der Veröffentlichung auf CurseForge beginnt die Nummerierung neu.
 
 **Was CraftPilot kann:**
 - Günstigster Skillweg nach AH-Preisen, mit wählbarem Skillweg
@@ -18,4 +18,4 @@ Mit der Veröffentlichung auf CurseForge beginnt die Nummerierung neu. Diese ers
 
 **Technisch:**
 - Die TOC enthält jetzt die CurseForge-Projekt-ID 1812811.
-- Beim Versionsvergleich mit Gruppe und Gilde zählt eine Beta als neuer als jede der alten 0.x-Alphas.
+- Beim Versionsvergleich mit Gruppe und Gilde zählt die Beta als neuer als frühere Testversionen.
