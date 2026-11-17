@@ -26,7 +26,7 @@ Die Vorausschau prüft höchstens 24 Alternativrouten in bis zu zwei Durchläufe
 
 ## Neu in 0.19.1: Händlerrezepte vollständig durchsehen
 
-Unter **Jetzt skillen → Händlerrezepte** stehen alle **698 im gebündelten Datenstand hinterlegten Händlerrezepte** der acht Herstellungsberufe einschließlich Kochen und Erster Hilfe. Skill, Charakterlevel, Ausbildungsgrenze, Werkzeug, Ruf, Spezialisierung, Abklingzeit oder bereits erlernte Rezepte entfernen keine Einträge aus dieser Ansicht. Noch nicht passende Voraussetzungen werden ausgegraut angezeigt. Einschränkungen von Händlern (z. B. Fraktion, Ereignis oder zusätzliche Währung) bleiben mit Hinweis sichtbar. Der Schalter für Kaufrezept-Vorschläge beeinflusst nur die aktuellen Skillvorschläge, nicht dieses Verzeichnis.
+Unter **Jetzt skillen → Händlerrezepte** stehen alle **748 im gebündelten Datenstand hinterlegten Händlerrezepte** der acht Herstellungsberufe einschließlich Kochen und Erster Hilfe. Skill, Charakterlevel, Ausbildungsgrenze, Werkzeug, Ruf, Spezialisierung, Abklingzeit oder bereits erlernte Rezepte entfernen keine Einträge aus dieser Ansicht. Noch nicht passende Voraussetzungen werden ausgegraut angezeigt. Einschränkungen von Händlern (z. B. Fraktion, Ereignis oder zusätzliche Währung) bleiben mit Hinweis sichtbar. Der Schalter für Kaufrezept-Vorschläge beeinflusst nur die aktuellen Skillvorschläge, nicht dieses Verzeichnis.
 
 Rezeptkarten zeigen Händler, Standort, Koordinaten, hinterlegten Preis und Voraussetzungen. **Wegpunkt** führt direkt zur ersten passenden hinterlegten Position; ein Rezeptklick zeigt weitere Händlerangebote. Nach Rezept, Händler, Gebiet oder Rezept-/Gegenstands-ID suchen und nach Skill oder Name sortieren. Das Zielfernrohr **Accurate Scope** bei **Mazk Snipeshot** (Rezeptgegenstand 13310, Berufsskill 180) ist auch unterhalb dieses Skills sichtbar.
 
@@ -63,7 +63,7 @@ Die Aktionsbuttons verwenden einen einheitlichen flachen Stil. An/Aus-Optionen h
 
 Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterlegt. Für die sechs Herstellungsberufe werden **aktuell erlernte, aus dem Spiel auslesbare Rezepte** nach geschätzten zusätzlichen Materialkosten pro Skillpunkt verglichen. Bergbau und Kräuterkunde zeigen geeignete Sammelstufen und Gebiete. Berufs-Skillwerte können auch ohne offenes Rezeptfenster über die Charakter-Berufsübersicht ausgelesen werden.
 
-**Wichtige Abgrenzung:** Ein umfangreicher GPL-3.0-Rezeptkatalog für die sechs Herstellungsberufe ist jetzt integriert. Er stammt aus einer **älteren Forever-Clientversion** (Oktober 2026, 1.60.1.70425–70450); nicht jede Rezeptquelle oder Trainerstufe ist im aktuellen Live-Spiel bestätigt. Automatische Routen sind **Schätzungen** und ausdrücklich nicht nachweislich global kostenoptimal. Bergbau behält eine Sammlungsübersicht, ergänzt um Schmelzrezepte für Herstellungsketten; Kräuterkunde ist eine Sammelroute.
+**Wichtige Abgrenzung:** Ein umfangreicher GPL-3.0-Rezeptkatalog für die sechs Herstellungsberufe ist jetzt integriert. Er stammt aus dem **Live-Client-Build 1.60.1.70938** (Craft Ladder 1.11.0, November 2026) und wird über einen automatischen Abgleich aktuell gehalten; serverseitige Hotfixes können dennoch fehlen, und nicht jede Rezeptquelle oder Trainerstufe ist im Spiel bestätigt. Automatische Routen sind **Schätzungen** und ausdrücklich nicht nachweislich global kostenoptimal. Bergbau behält eine Sammlungsübersicht, ergänzt um Schmelzrezepte für Herstellungsketten; Kräuterkunde ist eine Sammelroute.
 
 ## Funktionen
 

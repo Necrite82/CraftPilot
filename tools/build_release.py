@@ -9,6 +9,7 @@ FILES = ['CraftPilot.toc', 'Locale.lua', 'Locales/enUS.lua', 'Camping.lua', 'Eco
          'README.md', 'DATA_SOURCES.md', 'docs/CAMPING_SOURCES.md', 'docs/PROFESSION_STATUS.md',
          'ThirdParty/CraftLadder/Camp.lua', 'ThirdParty/CraftLadder/CampingRecipes.lua',
          'ThirdParty/CraftLadder/CAMP_SOURCES.json',
+         'ThirdParty/CraftLadder/UPSTREAM.json',
          'ThirdParty/CraftLadder/CREDITS.txt', 'ThirdParty/CraftLadder/SOURCE.md']
 FILES += ['ThirdParty/CraftLadder/' + name + '.lua' for name in
           ['Alchemy', 'Blacksmithing', 'Enchanting', 'Engineering',
@@ -21,11 +22,13 @@ def source_bytes(name):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--out', type=Path, default=ROOT / 'dist', help='folder for the archive (default: dist)')
     args = parser.parse_args()
     version = next(line.split(':', 1)[1].strip() for line in
                    (ROOT / 'CraftPilot.toc').read_text().splitlines()
                    if line.startswith('## Version:'))
-    archive = ROOT / 'dist' / f'CraftPilot-{version}.zip'
+    args.out.mkdir(parents=True, exist_ok=True)
+    archive = args.out / f'CraftPilot-{version}.zip'
     if not args.check:
         with ZipFile(archive, 'w', compression=ZIP_DEFLATED) as output:
             for name in FILES:

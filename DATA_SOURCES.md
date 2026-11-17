@@ -1,12 +1,12 @@
 # Datenherkunft / Data sources
 
-**Stand:** 2026-11-08 · WoW Forever · CraftPilot 0.8.0-alpha
+**Stand:** 2026-11-17 · WoW Forever Live-Build 1.60.1.70938 · Craft Ladder 1.11.0
 
 ## Lizenzierter Herstellungs-Rezeptkatalog
 
 CraftPilot integriert einen Schnappschuss aus dem **GPL-3.0-Projekt [Craft Ladder](https://github.com/saintmodx/craft-ladder)**: vollständige `Data/*.lua`-Dateien für Alchemy, Blacksmithing, Enchanting, Engineering, Leatherworking und Tailoring sowie einen ausdrücklich gekennzeichneten Schmelzrezept-Auszug aus Mining.
 
-Verwendete Quellrevision: `b9c61346ad4cf63245f35cadb1e0a88467fb6e75`.
+Verwendete Quellrevision: `fd801d7af49465bbe8d24d0cba558f77f4f6a595` (Craft Ladder `v1.11.0`). Alle Eingaben samt SHA-256 stehen in [UPSTREAM.json](ThirdParty/CraftLadder/UPSTREAM.json).
 
 - Originaldateien und deren Kopfkommentare: [ThirdParty/CraftLadder](ThirdParty/CraftLadder)
 - Originale mehrstufige Urheber- und Lizenzhinweise: [CREDITS.txt](ThirdParty/CraftLadder/CREDITS.txt)
@@ -15,7 +15,13 @@ Verwendete Quellrevision: `b9c61346ad4cf63245f35cadb1e0a88467fb6e75`.
 
 Craft Ladder führt insbesondere die **Blizzard-Clienttabellen über wago.tools, CMaNGOS classic-db, QuestieDB und AllTheThings** als Datenursprünge auf. Die ursprüngliche MIT-Notiz für AllTheThings ist vollständig in `CREDITS.txt` enthalten. Es werden weder fremde Guide-Texte noch Grafiken aus Websites übernommen. Fremde Daten, Spieldateien, Namen und Marken behalten ihre jeweiligen Rechte; die GPL allein erteilt keine Rechte an Blizzard-Marken oder beliebigen fremden Datenbanken.
 
-**Zeitliche Grenze:** Die eingebundenen Herstellungsdaten stammen aus **1.60.1.70425 und 1.60.1.70450** vom Oktober 2026. Diese Versionen sind älter als neuere Forever-Builds. Der Datenkatalog enthält Einträge, deren Trainerangebot, Beuterezept, Lernstufe oder tatsächliche Serverfreigabe noch nicht bestätigt ist. Er ist für die Planung ein Referenzdatensatz, **kein garantierter, aktueller Live-Rezeptbestand**.
+**Zeitliche Grenze:** Die eingebundenen Herstellungsdaten stammen aus dem **Live-Client-Build 1.60.1.70938** (erzeugt 13.–15. November 2026). Bezugsquellen von Rezepten wurden upstream aus AllTheThings und QuestieDB 1.1.1 neu aufgebaut. Serverseitige Hotfixes nach diesem Build können fehlen; bis CraftPilot 0.20.1 stammten die Daten aus den Beta-Builds 1.60.1.70425/70450 vom Oktober. Der Datenkatalog enthält Einträge, deren Trainerangebot, Beuterezept, Lernstufe oder tatsächliche Serverfreigabe noch nicht bestätigt ist. Er ist für die Planung ein Referenzdatensatz, **kein garantierter, aktueller Live-Rezeptbestand**.
+
+## Automatischer Abgleich
+
+`tools/sync_craft_ladder.py` übernimmt einen Craft-Ladder-Release vollständig und reproduzierbar: die sechs Herstellungskataloge, `Camp.lua` und `CREDITS.txt` unverändert, den Schmelz-Auszug aus `Mining.lua` sowie die Teilmengen für Camping, Kochen und Erste Hilfe über die bestehenden Importer. Jede Eingabe wird mit Commit und SHA-256 in `UPSTREAM.json` festgehalten; `--check` prüft in der CI, dass die gebündelten Dateien exakt daraus entstehen.
+
+Der Workflow [data-sync.yml](.github/workflows/data-sync.yml) sucht montags und donnerstags nach einem neuen Craft-Ladder-Release. Gibt es einen, führt er Syntaxprüfung, Tests und ZIP-Bau aus und öffnet einen Pull Request mit einer Änderungsübersicht je Beruf. Übernommen wird nichts automatisch. Craft Ladder bündelt bereits Blizzard-Clienttabellen (wago.tools), QuestieDB, AllTheThings und CMaNGOS; deshalb folgt CraftPilot diesen Quellen über Craft Ladder statt sie einzeln zu importieren.
 
 ## Daten aus dem Spiel
 

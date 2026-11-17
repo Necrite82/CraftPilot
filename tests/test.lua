@@ -900,7 +900,7 @@ local secondaryVendors=0
 for _,catalog in pairs(CP.VendorRecipeCatalogs) do
  for _,record in pairs(catalog.recipes) do assert(record.item and record.colors and record.mats);secondaryVendors=secondaryVendors+1 end
 end
-assert(secondaryVendors==71)
+assert(secondaryVendors==76)
 C_TradeSkillUI.OpenRecipe=originalOpenRecipe
 originalCatalog.recipes,originalCatalog.npcs=oldRecipeTable,oldNpcTable
 CP.db.professions.engineering,CP.db.recipes.engineering=oldProfession,oldNative

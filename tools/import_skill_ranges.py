@@ -17,7 +17,7 @@ def main():
     lines = ['-- Skill-range subset derived from Craft Ladder, GPL-3.0.',
              '-- Original copyright and notices retained in CREDITS.txt and SOURCE.md.',
              '-- Modified: spell IDs and four color thresholds only; no other recipe or gathering data.',
-             '-- Build 1.60.1.70425, generated 2026-10-16; pinned inputs in CAMP_SOURCES.json.',
+             f"-- Build {lock['build']}, generated {lock['generatedOn']}; pinned inputs in CAMP_SOURCES.json.",
              'local _,CP=...', 'CP.SecondarySkillRanges={']
     count = 0
     for name in ['Cooking', 'FirstAid']:

@@ -1,6 +1,6 @@
 # Berufsabgleich am 8. November 2026
 
-Alle zwölf unterstützten Berufe wurden auf vorhandene Herstellungs-Farbgrenzen geprüft. Der verfügbare Referenzstand stammt weiterhin aus den Builds 1.60.1.70425 und 1.60.1.70450 vom Oktober. Der Vergleich mit der neuesten verfügbaren Datenfassung ergab für die sieben schon enthaltenen Rezeptkataloge keine geänderten Farbreihen. Dies ist keine Bestätigung aller Rezepte auf aktuellen Live-Servern.
+Alle zwölf unterstützten Berufe wurden auf vorhandene Herstellungs-Farbgrenzen geprüft. Seit dem Abgleich mit Craft Ladder 1.11.0 stammt der Referenzstand aus dem Live-Build 1.60.1.70938. Gegenüber den Beta-Builds 1.60.1.70425/70450 haben sich bei 25 Rezepten die Farbgrenzen und bei 12 die Lernstufen geändert, u. a. Grober Schleifstein (grau ab 90) und Gerbgestell (Lernstufe 125). Dies ist keine Bestätigung aller Rezepte auf aktuellen Live-Servern.
 
 | Beruf | Rezept-Farbreihen | Widersprüchliche Folgen | Stand der Anzeige |
 |---|---:|---:|---|
