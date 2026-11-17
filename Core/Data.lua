@@ -164,10 +164,6 @@ D.stages = {
 -- lacks (Forever-only NPCs, indoor pins); an entry with the same profession and name is
 -- replaced by the generated one. Each destination is a point of interest, not a guarantee of
 -- server-side trainer stock. Coordinates are normalized in the helper; zone IDs are UiMapIDs.
-local function T(prof, name, zone, map, x, y, side, cap, indoor)
-  return {profession=prof, name=name, zone=zone, map=map,
-    x=x/100, y=y/100, faction=side, cap=cap, indoor=indoor}
-end
 local function mapName(map,fallback)
   local info
   if C_Map and type(C_Map.GetMapInfo)=="function" then
@@ -175,6 +171,10 @@ local function mapName(map,fallback)
     if ok then info=value end
   end
   return type(info)=="table" and type(info.name)=="string" and info.name~="" and info.name or fallback
+end
+local function T(prof, name, zone, map, x, y, side, cap, indoor)
+  return {profession=prof, name=name, zone=mapName(map,zone), map=map,
+    x=x/100, y=y/100, faction=side, cap=cap, indoor=indoor}
 end
 local manualTrainers = {
   -- Herbalism: starter NPCs teach Apprentice; major-city trainers up to 300.

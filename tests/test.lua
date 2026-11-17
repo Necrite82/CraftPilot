@@ -432,7 +432,7 @@ local function clickSetting(prefix)
   end
   error("Missing setting: "..prefix)
 end
--- 0.25: "Vorräte" cycles bags → bank → bank and twinks; "Skillweg" cycles the three path modes.
+-- 0.25: "Vorräte" cycles bags → bank → bank and twinks; "Skillweg" cycles the four path modes (0.2: fastest).
 CP:SetStockScope("bank");assert(CP.db.includeBank and CP.db.ui.includeAlts==false)
 clickSetting("Vorräte");assert(CP:StockScope()=="alts" and CP.db.ui.includeAlts==true)
 clickSetting("Vorräte");assert(CP:StockScope()=="bags" and not CP.db.includeBank)
@@ -440,7 +440,8 @@ clickSetting("Vorräte");assert(CP:StockScope()=="bank")
 CP:SetSkillPath("cheapest");assert(CP.db.ui.allowGreen and not CP.db.ui.preferReliableSkill)
 clickSetting("Skillweg");assert(CP:SkillPath()=="reliable" and CP.db.ui.preferReliableSkill)
 clickSetting("Skillweg");assert(CP:SkillPath()=="orangeYellow" and CP.db.ui.allowGreen==false)
-clickSetting("Skillweg");assert(CP:SkillPath()=="cheapest")
+clickSetting("Skillweg");assert(CP:SkillPath()=="fastest" and CP.db.ui.fastestSkill and CP.db.ui.allowGreen)
+clickSetting("Skillweg");assert(CP:SkillPath()=="cheapest" and not CP.db.ui.fastestSkill)
 CP:SetSkillPath("reliable")
 for _,row in ipairs(CP:SettingsCards()) do
   for _,gone in ipairs({"Fensterbreite","Fensterhöhe","Minimap-Position","Rezeptsortierung","Kostenvergleich","Berufsauswahl","Sprache","Bedienung"}) do

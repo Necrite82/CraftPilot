@@ -764,11 +764,11 @@ local function command(input)
   elseif text=="naechster" or text=="nächster" then CP:TrainerWaypoint("nearest")
   elseif text=="lehrer" or text=="lehrerlist" then
     if CP.OpenTab then CP:OpenTab("trainers") end
-  elseif text=="etappen" then
+  elseif text=="etappen" or text=="stages" then
     if CP.OpenTab then CP:OpenTab("stages") end
   elseif text=="plan" or text=="einkaufsliste" then
     if CP.OpenTab then CP:OpenTab("plan") end
-  elseif text=="einkauf" then
+  elseif text=="einkauf" or text=="shop" then
     CP:PrintPlanShopping(CP.db.view)
   elseif text=="autoplan" then
     local ok,result=CP:BuildRouteForCurrentPlan(CP.db.view)

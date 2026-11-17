@@ -131,12 +131,14 @@ function CP:CheapestPath(key,from,to)
   if target<=skill then return nil end
   local ui=self.db.ui
   local token=table.concat({key,skill,target,tostring(self.SkillPolicyToken and self:SkillPolicyToken()),tostring(ui.knownRecipesOnly),
-    tostring(ui.preferReliableSkill),tostring(ui.countSales),tostring(ui.economyCut),tostring(ui.includeAlts)},":")
+    tostring(ui.preferReliableSkill),tostring(ui.countSales),tostring(ui.economyCut),tostring(ui.includeAlts),
+    tostring(ui.fastestSkill),tostring(ui.favorRate)},":")
   self.pathCaches=self.pathCaches or {}
   local cache=self.pathCaches[token]
   if self.pathCache==nil then self.pathCaches={} ;cache=nil end
   if cache and now()-cache.at<CACHE_SECONDS then return cache.path end
   local reliable=ui.preferReliableSkill==true
+  local fastest=ui.fastestSkill==true
 
   local catalog=self:RecipeVendorCatalog(key)
   local recipes={}
@@ -173,6 +175,9 @@ function CP:CheapestPath(key,from,to)
             perPoint[k]=net/chance;chances[k]=chance
             -- "Sichere Farben bevorzugen": green has to be over 25 % cheaper per point to win.
             rank[k]=(reliable and chance<.5) and perPoint[k]*1.25 or perPoint[k]
+            -- "Schnellster Weg": fewer crafts first; a lower chance only wins when it is many times cheaper
+            -- (orange 1×, yellow ~0.7 → ~8×, green ~0.35 → ~540×).
+            if fastest then rank[k]=perPoint[k]*(1/chance)^6 end
           end
         end
         if next(perPoint) then

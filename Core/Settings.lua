@@ -22,6 +22,7 @@ function CP:InitializeControls()
   end
   if type(ui.economyCut)~="number" or ui.economyCut~=ui.economyCut then ui.economyCut=5 end
   ui.economyCut=math.max(0,math.min(30,ui.economyCut))
+  if type(ui.favorRate)~="number" or ui.favorRate~=ui.favorRate or ui.favorRate<0 then ui.favorRate=0 end
   if type(ui.minimapAngle)~="number" or ui.minimapAngle~=ui.minimapAngle then ui.minimapAngle=225 end
   if type(ui.hideMinimap)~="boolean" then ui.hideMinimap=false end
   if type(ui.knownRecipesOnly)~="boolean" then ui.knownRecipesOnly=false end
@@ -110,10 +111,11 @@ end
 
 -- 0.25: three combined choices replace the separate color, bank, twink and recipe switches. The old
 -- keys stay the internal state (the route planners read them); these setters keep them consistent.
-CP.SkillPaths={"cheapest","reliable","orangeYellow"}
+CP.SkillPaths={"cheapest","reliable","orangeYellow","fastest"}
 CP.StockScopes={"bags","bank","alts"}
 function CP:SkillPath()
   local ui=self.db.ui
+  if ui.fastestSkill then return "fastest" end
   if ui.allowGreen==false then return "orangeYellow" end
   return ui.preferReliableSkill and "reliable" or "cheapest"
 end
@@ -132,8 +134,10 @@ local function resetRoutes(self)
 end
 function CP:SetSkillPath(mode)
   local ui=self.db.ui
+  ui.fastestSkill=false
   if mode=="orangeYellow" then ui.allowYellow=true;ui.allowGreen=false;ui.preferReliableSkill=true
   elseif mode=="reliable" then ui.allowYellow=true;ui.allowGreen=true;ui.preferReliableSkill=true
+  elseif mode=="fastest" then ui.allowYellow=true;ui.allowGreen=true;ui.preferReliableSkill=false;ui.fastestSkill=true
   else mode="cheapest";ui.allowYellow=true;ui.allowGreen=true;ui.preferReliableSkill=false end
   ui.skillPath=mode
   resetRoutes(self);self:SkillPolicyChanged()
@@ -216,11 +220,12 @@ function CP:SettingsCards()
     return {title=label..value..unit,footer=L("Regler ziehen: ")..min..L(" bis ")..max..unit,group="advanced",
       icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
   end
-  local pathNames={cheapest=L("Günstigster Weg"),reliable=L("Sichere Farben bevorzugen"),orangeYellow=L("Nur Orange und Gelb")}
+  local pathNames={cheapest=L("Günstigster Weg"),reliable=L("Sichere Farben bevorzugen"),orangeYellow=L("Nur Orange und Gelb"),fastest=L("Schnellster Weg")}
   local pathDetails={
     cheapest=L("Rein nach AH-Preisen: Grün wird genommen, wenn es pro Skillpunkt billiger ist."),
     reliable=L("Orange und Gelb vor Grün, solange Grün nicht deutlich (über 25 %) billiger ist."),
     orangeYellow=L("Grüne Rezepte werden nie vorgeschlagen; weniger Herstellungen, oft teurer."),
+    fastest=L("So wenige Herstellungen wie möglich: Gelb oder Grün nur, wenn es ein Vielfaches billiger ist."),
   }
   local stockNames={bags=L("nur Taschen"),bank=L("Taschen und Bank"),alts=L("Taschen, Bank und Twinks")}
   local path,scope=self:SkillPath(),self:StockScope()
@@ -252,6 +257,8 @@ function CP:SettingsCards()
     slider(L("Grün: weitere Skillpunkte "),ui.greenPoints or 0,0,75,1,"",function(value) ui.greenPoints=value;CP.pathCache=nil;CP:SkillPolicyChanged() end),
     check("planAhead",L("Vorausschauend planen"),L("Vergleicht früh hergestellte Zwischenprodukte mit ihrem Bedarf in späteren Schritten."),ui.planAhead~=false,"advanced"),
     slider(L("AH-Abzug beim Verkauf "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value) ui.economyCut=value;CP.pathCache=nil;CP:Render() end),
+    {title=L("Merchant's Favor in Gold umrechnen"),detail=L("Was dich 1 Favor beim Füllen der Waylaid Crates kostet. Dann zählen Favor-Rezepte im günstigsten Weg mit. 0 = nicht umrechnen."),footer="",icon=ICON,color="blue",group="advanced"},
+    slider(L("Silber je Favor "),math.floor((tonumber(ui.favorRate) or 0)/100),0,200,1,"s",function(value) ui.favorRate=value*100;CP.pathCache=nil;CP:SkillPolicyChanged() end),
     {title=self:QuestieStatus(),detail=L("Liefert Lehrer, Händlerstandorte und Sammelgebiete. Wird über die CurseForge-App automatisch mitinstalliert."),footer="",icon=ICON,color=self:QuestieProvider() and "green" or "red",group="advanced"},
     {title=L("Vorratsreservierungen"),detail=L("Gemeinsame Bestände aller Berufs- und Campingpläne; Priorität ändern."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("reservations") end},
     {title=L("Berufsdaten prüfen"),detail=L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("audit") end},

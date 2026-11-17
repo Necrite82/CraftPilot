@@ -9,6 +9,12 @@ end
 function CP:RecipeVendorCatalog(key)
   return self:Catalog(key) or (self.VendorRecipeCatalogs and self.VendorRecipeCatalogs[key])
 end
+-- Merchant's Favor converted at the player's own rate (Settings > Advanced); nil when no rate is set.
+function CP:FavorInGold(favor)
+  local rate=self.db and tonumber(self.db.ui.favorRate)
+  if type(favor)~="number" or favor<=0 or not rate or rate<=0 then return nil end
+  return math.floor(favor*rate+.5)
+end
 function CP:RecipeVendors(key,id,browse)
   local catalog=self:RecipeVendorCatalog(key)
   local recipe=catalog and catalog.recipes[id]
@@ -31,8 +37,10 @@ function CP:RecipeVendors(key,id,browse)
       local extra,localizedName=self:QuestieNpcLocation(source.npc,location)
       if extra then location=extra end
       if location and localizedName then location.name=localizedName end
+      local cost=not source.otherCost and type(source.cost)=="number" and source.cost>=0 and source.cost or nil
+      local favorGold=not cost and self:FavorInGold(source.favor)
       vendors[#vendors+1]={id=source.npc,name=localizedName or (npc and npc.name) or source.npcName or ("NPC #"..source.npc),
-        location=location,cost=not source.otherCost and type(source.cost)=="number" and source.cost>=0 and source.cost or nil,
+        location=location,cost=cost or favorGold,favorEstimate=favorGold~=nil,
         source=source,faction=source.faction or (npc and npc.faction),restricted=not eligible}
     end
   end
