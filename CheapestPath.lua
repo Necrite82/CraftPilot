@@ -267,8 +267,31 @@ function CP:CheapestPath(key,from,to)
   local priceItems={}
   for item in pairs(used) do priceItems[#priceItems+1]=item end
   table.sort(priceItems)
+  -- Price limits: how much more a material may cost before the next best recipe wins at some point.
+  -- perPoint = (cost - sale) / chance, so one copper more per item adds quantity / chance per point.
+  local priceLimits={}
+  for k=skill,reached-1 do
+    local c=pick[k]
+    local alt,altC
+    for _,o in ipairs(allowed) do
+      local v=o.rank[k]
+      if o~=c and v and (not alt or v<alt) then alt,altC=v,o end
+    end
+    if alt then
+      local gap=math.max(0,alt-c.rank[k])
+      local factor=(reliable and c.chances[k]<.5) and 1.25 or 1
+      for item,q in pairs(materials(self,key,c.id,recipes[c.id])) do
+        local p=memo[item]
+        if type(p)=="number" and type(q)=="number" and q>0 then
+          local limit=p+gap*c.chances[k]/(q*factor)
+          local current=priceLimits[item]
+          if not current or limit<current.price then priceLimits[item]={price=limit,alt=altC.name,recipe=c.name,at=k} end
+        end
+      end
+    end
+  end
   local path={key=key,from=skill,target=target,reached=reached,segments=segments,total=total+fees,fees=fees,
-    unpriced=unpriced,perPointNow=perPointNow,priceItems=priceItems,altCrafts=altCrafts}
+    unpriced=unpriced,perPointNow=perPointNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits}
   self.pathCache=true
   self.pathCaches[token]={at=now(),path=path}
   return path

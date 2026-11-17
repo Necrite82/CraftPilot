@@ -1,6 +1,7 @@
 local _,CP=...
 local L=CP.L
 function CP:PlanPageCards(key,page)
+  if page=="leftovers" then return self:LeftoverCards(key) end
   local plan=self:PlanFor(key);local route=self:AutoRouteShopping(key)
   if self:RouteBuildPending(key) then return {{title=L("Route wird berechnet"),detail=L("Skillfarben, Folgebedarf und Einkauf werden verglichen. Das Spiel bleibt bedienbar."),footer=L("Anklicken: Berechnung abbrechen"),color="blue",action=function() CP:CancelRouteBuild(key);CP:Render() end}} end
   local c=self:CostCalculation("plan",key)
@@ -25,6 +26,7 @@ function CP:PlanPageCards(key,page)
           CP:SearchItems(list,L("Preise"),L("Auctionator scannt die Materialien deines Plans."))
         end}
     end
+    for _,card in ipairs(self:BudgetCards(key)) do cards[#cards+1]=card end
     cards[#cards+1]={sectionHeader=true,title=L("PLAN TEILEN")}
     cards[#cards+1]={title=L("Plan als Text teilen"),detail=L("Rezepte und Mengen als kurzer Text, z. B. für Gildenmitglieder, die für dich sammeln."),footer=L("Klick: Text anzeigen"),color="blue",
       action=function() CP:OpenShareWindow(key,"export") end}
@@ -59,7 +61,9 @@ function CP:PlanPageCards(key,page)
         detail=reference and reference.complete and c.cashComplete and not self:PlanNeedsReview(key) and (L("Mehr-/Minderkosten zum automatischen Vorschlag: ")..self:FormatCostMoney(c.cash-reference.cash)) or L("Preisvergleich unvollständig · Details prüfen"),
         footer=L("Empfehlung bleibt eine Schätzung, kein garantiertes globales Optimum."),color="gold"}
     end
-    cards[#cards+1]={productionRows=rows,recipeKey=key};return cards
+    cards[#cards+1]={productionRows=rows,recipeKey=key}
+    for _,card in ipairs(self:KeepCards(key)) do cards[#cards+1]=card end
+    return cards
   end
   if not route and not next(plan.crafts) then return {{title=L("1. Bereich wählen → 2. Plan erstellen → 3. Einkaufen"),
     detail=L("Die Route und alle fehlenden Zutaten werden für den gewählten Skillbereich berechnet."),footer=L("Unter Herstellen kannst du die Rezeptschritte anschließend austauschen."),color="blue"}} end
@@ -71,6 +75,8 @@ function CP:PlanPageCards(key,page)
     local priced={}
     for _,m in ipairs(rows) do local p=self:PriceDetails(m.id).price;priced[#priced+1]={id=m.id,missing=m.missing,cost=p and p*m.missing} end
     for _,card in ipairs(self:FarmCards(priced)) do cards[#cards+1]=card end
+    local ids={};for _,m in ipairs(rows) do ids[#ids+1]=m.id end
+    for _,card in ipairs(self:PriceLimitCards(key,ids)) do cards[#cards+1]=card end
   end
   return cards
 end

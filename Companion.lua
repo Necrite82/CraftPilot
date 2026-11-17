@@ -183,6 +183,11 @@ function CP:UpdateCompanion()
   if spec then extra[#extra+1]=spec end
   local tour=self.tour and self.tour.key==key and self.tour.stops[self.tour.index]
   if tour then extra[#extra+1]=string.format(L("Lerntour: nächster Halt %s"),tour.name) end
+  if rec and self.KeepEntry then
+    local output=self:RecipeMarketOutput(key,rec.id)
+    local keep=output and self:KeepEntry(key,output)
+    if keep then extra[#extra+1]="|cffffd200"..self:KeepText(keep).."|r" end
+  end
   local cd=self.ReadyCooldownText and self:ReadyCooldownText()
   if cd then extra[#extra+1]=cd end
   local session=self.SessionText and self:SessionText(key)

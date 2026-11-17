@@ -4,9 +4,13 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.25.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.26.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.26: keep, price limits, vendor helper, tooltips
+
+Clear hints on what to **keep** for later steps – and "already there" instead of crafting twice. Plus price limits per material, a vendor helper that buys exactly the missing amount, plan hints in every item tooltip, a "Use up" page for leftover crafts and a budget mode. [Release details (German)](docs/RELEASE_0.26.0-alpha.md).
 
 ## New in 0.25: choosable skill path, learning tour, alts and more
 
