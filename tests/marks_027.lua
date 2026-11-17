@@ -27,7 +27,7 @@ assert(reserved[2840].kind=="plan" and reserved[70010].kind=="keep" and reserved
 -- Marks: buttons found by scanning frames; reserved ones get a dot, others none.
 local function itemButton(bag,slot)
   return {GetBagID=function() return bag end,GetID=function() return slot end,IsObjectType=function(_,t) return t=="Button" end,
-    GetSize=function() return 37,37 end,IsVisible=function() return true end,GetFrameLevel=function() return 3 end}
+    IsVisible=function() return true end,GetFrameLevel=function() return 3 end}
 end
 local frames={itemButton(0,1),itemButton(0,2),itemButton(0,5),{IsObjectType=function() return false end}}
 EnumerateFrames=function(f)
@@ -35,12 +35,19 @@ EnumerateFrames=function(f)
   for i,x in ipairs(frames) do if x==f then return frames[i+1] end end
 end
 CP:UpdateItemMarks(true)
-assert(rawget(frames[1],"craftPilotMark") and frames[1].craftPilotMark:IsShown(),"Plan item marked")
-assert(frames[2].craftPilotMark:IsShown(),"Kept item marked")
-assert(rawget(frames[3],"craftPilotMark")==nil,"Empty slot unmarked")
+assert(CP.itemMarks[frames[1]] and CP.itemMarks[frames[1]]:IsShown(),"Plan item marked")
+assert(CP.itemMarks[frames[2]]:IsShown(),"Kept item marked")
+assert(CP.itemMarks[frames[3]]==nil,"Empty slot unmarked")
 CP.db.ui.itemMarks=false;CP:UpdateItemMarks(true)
-assert(not frames[1].craftPilotMark:IsShown(),"Marks can be switched off")
+assert(not CP.itemMarks[frames[1]]:IsShown(),"Marks can be switched off")
 CP.db.ui.itemMarks=nil
+-- Secret values (newer clients) are never compared: such a button is skipped without an error.
+issecretvalue=function(v) return v=="SECRET" end
+local secretButton={GetBagID=function() return "SECRET" end,GetID=function() return "SECRET" end,IsObjectType=function() return true end}
+assert(CP:ButtonItem(secretButton)==nil)
+frames={secretButton,{IsObjectType=function() error("foreign frame") end}}
+CP:UpdateItemMarks(true)
+issecretvalue=nil
 EnumerateFrames=nil
 
 -- Rescue: a reserved item sold at a vendor; the buyback button buys it back.

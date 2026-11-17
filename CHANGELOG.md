@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.28.0-alpha
+
+Behebt den Lua-Fehler „secret number value“ der Taschenmarkierung. Neu: „Herstellen: N×“ im Begleitfenster, Einkaufsrunde am Auktionshaus mit Preisgrenze und automatischem Abzählen, erster Start mit Willkommen und eine komplett überarbeitete Hilfe („?“ in der Kopfzeile, `/cp hilfe`). [Details](docs/RELEASE_0.28.0-alpha.md).
+
 ## 0.27.0-alpha
 
 Reservierte Gegenstände werden in Taschen und Bank markiert (Gold: für später aufheben, Blau: Plan braucht es), unabhängig vom Taschen-Addon. Verkaufst du trotzdem etwas Reserviertes, meldet CraftPilot das sofort und bietet den Rückkauf an; am Auktionshaus warnt es vor dem Einstellen. [Details](docs/RELEASE_0.27.0-alpha.md).

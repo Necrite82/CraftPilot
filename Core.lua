@@ -791,7 +791,7 @@ local function command(input)
   elseif text=="sort cost" or text=="sort chance" or text=="sort missing" or text=="sort name" then
     CP.db.ui.recipeSort=text:sub(6);CP:Refresh(false)
   else
-    CP:Say(L("Hilfe im Addon: /cp hilfe. Direkt: /cp lehrer | etappen | trainer | naechster | liste | resetpos | skin auto|dark|classic."))
+    CP:Say(L("Hilfe im Addon: /cp hilfe. Direkt: /cp plan | lehrer | trainer | naechster | refresh | resetpos | skin auto|dark|classic."))
   end
 end
 

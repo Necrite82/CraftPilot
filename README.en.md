@@ -4,9 +4,13 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.27.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.28.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## New in 0.28: crafting, shopping round, help
+
+In the companion, "Craft: N×" crafts the recommendation directly. At the auction house a shopping round walks you through the purchase item by item, with the price limit and automatic counting. New users start with a welcome card; the help ("?" at the top right, `/cp help`) describes all current features. [Release details (German)](docs/RELEASE_0.28.0-alpha.md).
 
 ## New in 0.27: marks in bags and bank
 

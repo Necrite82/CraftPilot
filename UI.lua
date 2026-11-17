@@ -283,6 +283,9 @@ tooltip(U.priceChip,L("Auktionshauspreise"),function() return {U.priceDetail or 
 U.gear=button(header,30,30,0,0,"|TInterface\\Icons\\INV_Misc_Gear_01:16:16|t",function() CP:ToggleSettings() end)
 U.gear.craftNav="settings"
 tooltip(U.gear,L("Einstellungen"))
+U.help=button(header,30,30,0,0,"?",function() if CP.db.ui.tab=="help" then CP:OpenTab(CP.db.ui.lastMainTab or "now") else CP:OpenTab("help") end end)
+U.help.craftNav="help"
+tooltip(U.help,L("Hilfe"))
 U.close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 U.close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -12)
 
@@ -1412,7 +1415,8 @@ local function layout()
   U.profMenu:ClearAllPoints();U.profMenu:SetPoint("TOPLEFT",U.profButton,"BOTTOMLEFT",0,-4)
   U.close:ClearAllPoints();U.close:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-6,-12)
   U.gear:ClearAllPoints();U.gear:SetPoint("RIGHT",header,"RIGHT",-44,0)
-  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("RIGHT",U.gear,"LEFT",-10,0)
+  U.help:ClearAllPoints();U.help:SetPoint("RIGHT",U.gear,"LEFT",-6,0)
+  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("RIGHT",U.help,"LEFT",-10,0)
   U.skillText:ClearAllPoints();U.skillText:SetPoint("RIGHT",U.priceChip,"LEFT",-10,0)
   U.skillBar:ClearAllPoints();U.skillBar:SetPoint("LEFT",U.profButton,"RIGHT",14,0);U.skillBar:SetPoint("RIGHT",U.skillText,"LEFT",-8,0)
   U.skillHover:ClearAllPoints();U.skillHover:SetPoint("TOPLEFT",U.skillBar,"TOPLEFT",0,10);U.skillHover:SetPoint("BOTTOMRIGHT",U.skillText,"BOTTOMRIGHT",0,-10)
@@ -1447,9 +1451,9 @@ registerEllesmereUI()
 local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true}
 function CP:OpenTab(tab)
   if not self.db then return end
-  local alias={help="settings",stages="plan",mats="now"}
+  local alias={stages="plan",mats="now"}
   tab=alias[tab] or tab
-  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,economy=true,audit=true,reservations=true,settings=true}
+  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,economy=true,audit=true,reservations=true,settings=true,help=true}
   if not valid[tab] then return end
   if MAIN[tab] then self.db.ui.lastMainTab=tab end
   self.db.ui.tab=tab
@@ -1561,6 +1565,7 @@ local function renderHeader(self,key,prof,record)
     U.priceChip:SetBackdropBorderColor(0,0,0,0)
   end
   U.gear.selectionMarker:SetShown(self.db.ui.tab=="settings")
+  U.help.selectionMarker:SetShown(self.db.ui.tab=="help");U.help:Show()
   U.profButton:Show();U.gear:Show();U.priceChip:Show()
 end
 
@@ -1893,7 +1898,7 @@ function CP:Render()
   local prof=D.professions[key]
   local record=self.db.professions[key]
   local tab=ui.tab or "now"
-  if tab=="stages" then tab="plan" elseif tab=="mats" then tab="now" elseif tab=="help" then tab="settings" end
+  if tab=="stages" then tab="plan" elseif tab=="mats" then tab="now" end
   ui.tab=tab
   local context=key..":"..tab..":"..tostring(ui.campingPage)..":"..tostring(ui.campingAll)..":"..tostring(ui.vendorOnly)..":"..tostring(ui.allRecipes)..":"..tostring(ui.planPage)..":"..tostring(ui.vendorBrowser)..":"..tostring(ui.vendorQuery)..":"..tostring(ui.vendorSort)..":"..tostring(ui.trainerPage)
   resetContentScroll=context~=lastContentContext
@@ -1912,6 +1917,11 @@ function CP:Render()
     place(U.settingsDone,18+inner-90,64,90);U.settingsDone:Show()
     showContent(106)
     setVisualCards(settingsList(self))
+  elseif tab=="help" then
+    U.back:Show()
+    U.section:ClearAllPoints();U.section:SetPoint("TOPLEFT",frame,"TOPLEFT",19,-106);U.section:SetText(L("Hilfe · so funktioniert CraftPilot"));U.section:Show()
+    showContent(132)
+    setVisualCards(self:HelpCards())
   elseif tab=="economy" or tab=="audit" or tab=="reservations" then
     U.back:Show()
     local titles={economy=L("Clever skillen · verkaufen, behalten oder anders skillen"),audit=L("Berufsdaten · Farbgrenzen und Clientabgleich"),reservations=L("Gemeinsame Vorratsreservierung")}
@@ -1938,6 +1948,8 @@ end
 
 function CP:ToggleWindow()
   if frame:IsShown() then frame:Hide();return end
+  -- First start: the help with the three first steps; "Los geht's" marks it as seen.
+  if self.db and self.db.ui.firstRunDone==nil then self.db.ui.firstRunDone=false;self.db.ui.tab="help" end
   self:Refresh(true)
   frame:Show()
 end

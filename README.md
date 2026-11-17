@@ -4,9 +4,13 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.27.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.28.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+
+## Neu in 0.28: Herstellen, Einkaufsrunde, Hilfe
+
+Im Begleitfenster stellt „Herstellen: N×“ die Empfehlung direkt her. Am Auktionshaus führt eine Einkaufsrunde Posten für Posten durch den Einkauf, mit Preisgrenze und automatischem Abzählen. Neue Nutzer starten mit einer Willkommenskarte; die Hilfe („?“ oben rechts, `/cp hilfe`) beschreibt alle aktuellen Funktionen. [Release-Details](docs/RELEASE_0.28.0-alpha.md).
 
 ## Neu in 0.27: Markierung in Taschen und Bank
 

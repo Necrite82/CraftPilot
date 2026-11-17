@@ -14,6 +14,9 @@ local function safe(fn,...)
   if ok then return a,b,c,d end
 end
 local function clock() return type(GetTime)=="function" and GetTime() or 0 end
+-- Newer clients hand some values to addons as "secret": comparing them raises an error. Never touch those.
+local function secret(v) return type(issecretvalue)=="function" and issecretvalue(v)==true end
+local function plain(v) if v~=nil and not secret(v) then return v end end
 local DOT="Interface\\CharacterFrame\\TempPortraitAlphaMask"
 local COLORS={keep={.98,.76,.22},plan={.40,.68,1}}
 
@@ -37,7 +40,10 @@ end
 
 local function call(b,name)
   local fn=b[name]
-  if type(fn)=="function" then return safe(fn,b) end
+  if type(fn)=="function" then
+    local a,c=safe(fn,b)
+    return plain(a),plain(c)
+  end
 end
 -- The item a button shows, from whatever the bag addon exposes; nil for anything else.
 function CP:ButtonItem(b)
@@ -46,29 +52,30 @@ function CP:ButtonItem(b)
   if type(rawget(b,"GetSlotAndBagID") or b.GetSlotAndBagID)=="function" then slot,bag=call(b,"GetSlotAndBagID") end
   if bag==nil and type(b.GetBagID)=="function" then bag=call(b,"GetBagID");slot=call(b,"GetID") end
   if bag==nil then
-    bag=rawget(b,"bagID") or rawget(b,"bag") or rawget(b,"bagId")
-    slot=rawget(b,"slotID") or rawget(b,"slot") or rawget(b,"slotId")
+    bag=plain(rawget(b,"bagID") or rawget(b,"bag") or rawget(b,"bagId"))
+    slot=plain(rawget(b,"slotID") or rawget(b,"slot") or rawget(b,"slotId"))
   end
   if type(bag)=="number" and type(slot)=="number" and slot>0 then
     local id
     if C_Container and type(C_Container.GetContainerItemID)=="function" then id=safe(C_Container.GetContainerItemID,bag,slot)
     elseif type(GetContainerItemID)=="function" then id=safe(GetContainerItemID,bag,slot) end
+    id=plain(id)
     if type(id)=="number" then return id end
   end
-  local id=rawget(b,"itemID") or rawget(b,"itemId")
+  local id=plain(rawget(b,"itemID") or rawget(b,"itemId"))
   if type(id)~="number" and type(b.GetItemID)=="function" then id=call(b,"GetItemID") end
   if type(id)=="number" then return id end
-  local link=rawget(b,"itemLink") or rawget(b,"link")
+  local link=plain(rawget(b,"itemLink") or rawget(b,"link"))
   if type(link)~="string" and type(b.GetItemLink)=="function" then link=call(b,"GetItemLink") end
   if type(link)=="string" then return tonumber(link:match("item:(%d+)")) end
   return nil
 end
 
+-- Only what an item button offers is read: no sizes or positions of foreign frames (those can be secret).
 local function looksLikeItemButton(f)
-  if type(f)~="table" or type(f.IsObjectType)~="function" then return false end
-  if not safe(f.IsObjectType,f,"Button") and not safe(f.IsObjectType,f,"ItemButton") then return false end
-  local w,h=safe(f.GetSize,f)
-  if type(w)~="number" or w<20 or w>64 or type(h)~="number" or math.abs(w-h)>4 then return false end
+  if type(f)~="table" then return false end
+  local ok,isButton=pcall(function() return f:IsObjectType("Button") end)
+  if not ok or isButton~=true then return false end
   return type(f.GetBagID)=="function" or type(f.GetSlotAndBagID)=="function" or rawget(f,"bagID")~=nil or rawget(f,"bag")~=nil
     or type(f.GetItemID)=="function" or rawget(f,"itemID")~=nil or rawget(f,"itemLink")~=nil
 end
@@ -90,8 +97,11 @@ function CP:FindItemButtons(force)
   return buttons
 end
 
+-- Marks live in CraftPilot's own table, never as a field on another addon's or Blizzard's button.
+local marks=setmetatable({},{__mode="k"})
+CP.itemMarks=marks
 local function mark(b,kind)
-  local m=rawget(b,"craftPilotMark")
+  local m=marks[b]
   if not kind then if m then m:Hide() end;return end
   if not m then
     local holder=CreateFrame("Frame",nil,b)
@@ -101,7 +111,7 @@ local function mark(b,kind)
     m:SetSize(10,10);m:SetPoint("TOPLEFT",holder,"TOPLEFT",2,-2)
     m:SetTexture(DOT)
     m.holder=holder
-    b.craftPilotMark=m
+    marks[b]=m
   end
   local c=COLORS[kind]
   m:SetVertexColor(c[1],c[2],c[3],1)
@@ -116,7 +126,9 @@ function CP:UpdateItemMarks(force)
   if type(InCombatLockdown)=="function" and InCombatLockdown() then return end
   local reserved=self:ReservedItems()
   for b in pairs(self:FindItemButtons(force)) do
-    if type(b.IsVisible)~="function" or b:IsVisible() then
+    local visible=true
+    if type(b.IsVisible)=="function" then visible=plain(safe(b.IsVisible,b)) end
+    if visible then
       local item=self:ButtonItem(b)
       local r=item and reserved[item]
       mark(b,r and r.kind or nil)
