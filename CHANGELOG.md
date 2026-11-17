@@ -1,6 +1,8 @@
 # Changelog
 
-## Unveröffentlicht
+## 0.21.0-alpha
+
+Neue, aufgeräumte Oberfläche: eine Kopfzeile mit Berufsmenü und Skillbalken, vier Reiter, Rezeptliste mit Detailbereich, eine gemeinsame Einkaufsliste und gruppierte Einstellungen. Lehrer für alle zwölf Berufe aus QuestieDB und CMaNGOS. [Details](docs/RELEASE_0.21.0-alpha.md).
 
 Rezeptdaten auf Craft Ladder 1.11.0 gehoben: Live-Build 1.60.1.70938 statt der Beta-Builds aus dem Oktober. 33 neue Rezepte (u. a. Acolyte's-, Crusader's- und Guard's-Kettenteile, Brawler's- und Totemic-Lederteile, Goblin-Mörser, Stiefelverzauberung – Tempo), aktualisierte Taschenrezepte der Schneiderei, Grober Schleifstein bis Skill 90 und geänderte Bezugsquellen (Händler, Quest, Drop) bei 393 Rezepten. Händlerrezept-Verzeichnis jetzt mit 748 statt 698 Einträgen. Neuer automatischer Abgleich (`tools/sync_craft_ladder.py`, Workflow `data-sync.yml`), der neue Craft-Ladder-Releases als Pull Request vorschlägt.
 

@@ -10,6 +10,7 @@ FILES = ['CraftPilot.toc', 'Locale.lua', 'Locales/enUS.lua', 'Camping.lua', 'Eco
          'ThirdParty/CraftLadder/Camp.lua', 'ThirdParty/CraftLadder/CampingRecipes.lua',
          'ThirdParty/CraftLadder/CAMP_SOURCES.json',
          'ThirdParty/CraftLadder/UPSTREAM.json',
+         'ThirdParty/Trainers/Trainers.lua', 'ThirdParty/Trainers/SOURCES.json', 'ThirdParty/Trainers/SOURCE.md',
          'ThirdParty/CraftLadder/CREDITS.txt', 'ThirdParty/CraftLadder/SOURCE.md']
 FILES += ['ThirdParty/CraftLadder/' + name + '.lua' for name in
           ['Alchemy', 'Blacksmithing', 'Enchanting', 'Engineering',

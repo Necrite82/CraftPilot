@@ -52,7 +52,7 @@ C_Timer={After=function(_,f) f() end}
 C_Map={
   GetBestMapForUnit=function() return 1453 end,
   GetPlayerMapPosition=function(map)
-    if map==1453 then return {GetXY=function() return .50,.75 end} end
+    if map==1453 then return {GetXY=function() return .54,.82 end} end
   end,
   SetUserWaypoint=function(p) waypoints[#waypoints+1]=p end,
 }
@@ -225,7 +225,8 @@ CP.db.professions.enchanting={skill=205,cap=225,name="Enchanting"}
 local target=CP:FindTrainer("enchanting")
 assert(target.name:find("Annora") and target.indoor)
 CP.db.professions.leatherworking={skill=210,cap=225,name="Leatherworking"}
-assert(CP:FindTrainer("leatherworking").name=="Drakk Stonehand")
+local artisanLW=CP:FindTrainer("leatherworking")
+assert(artisanLW.cap==300 and (artisanLW.name=="Drakk Stonehand" or artisanLW.name=="Caryssia Moonhunter"))
 CP.db.professions.blacksmithing={skill=215,cap=225,name="Blacksmithing"}
 assert(CP:FindTrainer("blacksmithing").name=="Brikk Keencraft")
 CP:ChangeView("leatherworking")
@@ -327,10 +328,11 @@ CP.db.includeBank=true
 CP:PrintPlanShopping("alchemy")
 CP:OpenTab("plan")
 assert(CP.db.ui.tab=="plan")
+-- 0.21: stages live in the plan tab, materials in the recipe detail of "now".
 CP:OpenTab("stages")
-assert(CP.db.ui.tab=="stages")
+assert(CP.db.ui.tab=="plan")
 CP:OpenTab("mats")
-assert(CP.db.ui.tab=="mats")
+assert(CP.db.ui.tab=="now")
 CP:OpenTab("help")
 assert(CP.db.ui.tab=="settings")
 CP:ClearPlanCraft("alchemy",2964)
@@ -453,11 +455,15 @@ clickSetting("Minimap-Button")
 assert(not mini:IsShown() and CP.db.ui.hideMinimap)
 local settingsEntry
 for _,b in ipairs(createdFrames) do
-  if b.displayText=="Einstellungen" and b:GetScript("OnClick") then settingsEntry=b end
+  if rawget(b,"craftNav")=="settings" and b:GetScript("OnClick") then settingsEntry=b end
 end
 assert(settingsEntry)
+CP:OpenTab("now")
 settingsEntry:GetScript("OnClick")(settingsEntry)
 assert(CP.db.ui.tab=="settings")
+settingsEntry:GetScript("OnClick")(settingsEntry)
+assert(CP.db.ui.tab=="now","The gear toggles back to the last main tab")
+settingsEntry:GetScript("OnClick")(settingsEntry)
 clickSetting("Minimap-Button")
 assert(mini:IsShown())
 assert(CP:FormatMoney(12345):find("UI%-GoldIcon") and CP:FormatMoney(12345):find("23"))
@@ -558,7 +564,7 @@ assert(state=="unknown")
 CP.db.recipes.statusTest=savedRecipes
 local settingsCount=0
 for _,control in ipairs(createdFrames) do
-  if rawget(control,"displayText")=="Einstellungen" then settingsCount=settingsCount+1 end
+  if rawget(control,"craftNav")=="settings" then settingsCount=settingsCount+1 end
 end
 assert(settingsCount==1,"Duplicate settings navigation")
 print("PASS: price freshness states and single settings entry")
@@ -622,6 +628,7 @@ for _,row in ipairs(CP:CampingRecipes("cooking")) do if row.id==sample.maker the
 CP.db.recipes.cooking[sample.maker]=prior
 
 -- Compact checkboxes exercise both directions, including inverted minimap visibility.
+CP.db.ui.settingsAdvanced=true
 CP:OpenTab("settings")
 for _,key in ipairs({"hideMinimap","autoOpen","showAllProfessions","bank","knownRecipesOnly","showSourceDetails","preferReliableSkill","showVendorRecipes","useQuestieDB","allowYellow","allowGreen","planAhead"}) do
  local control
@@ -776,15 +783,16 @@ CP.db.recipes.engineering[990001].mats={{50001,1}}
 local priorCapture=CP.db.lastCapture
 CP.db.lastCapture={key="engineering",skill=10}
 CP.db.view="engineering";CP:OpenTab("now")
-local rangeSeen=false
+local rangeRow
 for _,control in ipairs(createdFrames) do
  local recipe=rawget(control,"craftRecipe")
- if recipe and recipe.id==990001 then
-  assert(control.rangeLabel.displayText and control.height>=164)
-  rangeSeen=true
- end
+ if recipe and recipe.id==990001 and control:IsShown() then rangeRow=control end
 end
-assert(rangeSeen)
+assert(rangeRow,"Recipe must appear as a compact list row")
+rangeRow:GetScript("OnClick")(rangeRow)
+assert(CP.recipeDetail.entry and CP.recipeDetail.entry.id==990001,"A row click shows the recipe in the detail pane")
+local rangeText=CP.recipeDetail.rangeLabel.displayText
+assert(rangeText and rangeText:find("1-9",1,true) and rangeText:find("ab 30",1,true))
 CP.db.lastCapture=priorCapture
 assert(#CP:ProfessionAuditCards()==13)
 CP:OpenTab("audit")
@@ -1093,3 +1101,25 @@ for _,locale in ipairs({"enUS","enGB","frFR"}) do
   end
 end
 print("PASS: camping coverage, native-data precedence, all toggle sliders and English/fallback UI rendering")
+
+-- Generated trainer list (QuestieDB positions, CMaNGOS ranks) plus hand-kept additions.
+do
+  local profs,seen,generated,manual={}, {},0,0
+  for _,npc in ipairs(CP.Data.trainers) do
+    local key=npc.profession..":"..npc.name
+    assert(not seen[key],"Duplicate trainer "..key)
+    seen[key]=true
+    profs[npc.profession]=true
+    assert(npc.map and npc.x>0 and npc.x<1 and npc.y>0 and npc.y<1 and npc.zone and npc.zone~="")
+    assert(({[75]=true,[150]=true,[225]=true,[300]=true})[npc.cap],"Unexpected rank cap "..tostring(npc.cap))
+    assert(npc.faction=="Alliance" or npc.faction=="Horde" or npc.faction=="B")
+    if npc.generated then generated=generated+1 else manual=manual+1 end
+  end
+  local count=0
+  for _ in pairs(profs) do count=count+1 end
+  assert(count==12,"Trainers must cover all twelve professions")
+  assert(generated>=200 and manual>=7)
+  assert(seen["herbalism:Nancy Songflower"] and seen["enchanting:Annora (Uldaman-Eingang)"])
+  assert(seen["cooking:Stephen Ryback"] and seen["fishing:Lumak"] and seen["firstaid:Shaina Fuller"])
+end
+print("PASS: generated trainers for all twelve professions with hand-kept additions and no duplicates")

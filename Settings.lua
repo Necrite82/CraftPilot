@@ -177,7 +177,7 @@ function CP:SettingsCards()
     return {title=label..value..unit,footer=L("Regler ziehen: ")..min..L(" bis ")..max..unit,
       icon=ICON,color="blue",slider={label=label,value=value,min=min,max=max,step=step,unit=unit,apply=apply}}
   end
-  return {
+  local rows={
     slider(L("Clever skillen: AH-Abzug "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value)
       ui.economyCut=value;CP:Render()
     end),
@@ -227,6 +227,35 @@ function CP:SettingsCards()
     card(L("Bedienung"),L("Beruf wählen → Rezepte prüfen → Einkaufsplan erstellen."),nil,ICON,
       L("Alle Funktionen sind über Schaltflächen erreichbar. Slash-Befehle bleiben optional.")),
   }
+  -- Visible groups in the settings view; everything else sits under "Erweitert".
+  local groups={
+    [L("Bankbestände berücksichtigen: ")]="general",
+    [L("Berufsfenster automatisch öffnen: ")]="general",
+    [L("Minimap-Button: ")]="general",
+    [L("Berufsauswahl: ")]="general",
+    [L("Berufsdaten aktualisieren")]="general",
+    [L("Gelbe Rezepte verwenden: ")]="route",
+    [L("Grüne Rezepte verwenden: ")]="route",
+    [L("Orange/Gelb bevorzugen: ")]="route",
+    [L("Kaufrezepte anzeigen: ")]="route",
+    [L("Kostenvergleich: ")]="route",
+    [L("Design: ")]="display",
+    [L("Fensterbreite: ")]="display",
+    [L("Fensterhöhe: ")]="display",
+    [L("Minimap-Position: ")]="display",
+    [L("Sprache: ")]="display",
+    [L("Fenster und Minimap-Position zurücksetzen")]="display",
+    [L("Zurücksetzen bestätigen – erneut anklicken")]="display",
+  }
+  for _,row in ipairs(rows) do
+    local label=row.slider and row.slider.label or row.title
+    row.group="advanced"
+    for prefix,group in pairs(groups) do
+      prefix=prefix:gsub(":%s*$","")
+      if type(label)=="string" and label:sub(1,#prefix)==prefix then row.group=group end
+    end
+  end
+  return rows
 end
 
 function CP:RecipeIcon(key,id)

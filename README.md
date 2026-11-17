@@ -4,9 +4,13 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.20.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.21.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+
+## Neu in 0.21: aufgeräumte Oberfläche und aktuelle Daten
+
+Die Oberfläche ist grundlegend vereinfacht: **eine Kopfzeile** mit Berufsmenü, Skillbalken, AH-Preisstand und Zahnrad für die Einstellungen; **vier Reiter** – Jetzt, Plan & Einkauf, Lehrer & Händler, Camping. Unter **Jetzt** steht links die kompakte Rezeptliste (Sortierung per Klick auf die Spaltenköpfe), rechts das gewählte Rezept mit Menge, Materialien, „Berufsfenster öffnen“ und „Auf Einkaufsliste“. Etappen sind eine anklickbare Leiste im Plan, selbst hinzugefügte Materialien stehen in derselben Einkaufsliste. Die Rezeptdaten stammen jetzt aus dem Live-Build 1.60.1.70938, die Lehrerliste deckt alle zwölf Berufe ab. [Release-Details](docs/RELEASE_0.21.0-alpha.md).
 
 ## 0.20.1: Fensterstart korrigiert
 
@@ -76,9 +80,9 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 | Auktionshauspreise | Letzte gespeicherte Einzelpreise aus Auctionator auswerten |
 | Kostenmodus | Zusätzliche Ausgaben minimieren oder den Marktwert eigener Materialien berücksichtigen |
 | Skill-Etappen | Kürzere, nach Material- und Ausbildungswechseln strukturierte Abschnitte von 1 bis 300 für die bisherigen acht Berufe |
-| Wegpunkte | Liste aller hinterlegten Lehrer der eigenen Fraktion; einzeln per Klick auswählbar, mit Rang-Empfehlung und Same-Map-Abstand |
+| Wegpunkte | Lehrer aller zwölf Berufe der eigenen Fraktion; einzeln per Klick auswählbar, mit Rang-Empfehlung und Same-Map-Abstand |
 | Einkaufsliste | Fehlende Materialien für **die nächste empfohlene Herstellung** |
-| Oberfläche | Verschiebbares Fenster, gespeicherte Position und fünf Registerkarten |
+| Oberfläche | Verschiebbares Fenster mit gespeicherter Position, Berufsmenü und vier Reitern |
 | Themes | Automatischer Stil mit Blizzard-Templates und optional EllesmereUI-Hooks; Dunkel/Klassisch auswählbar |
 | Hilfe | Integrierte Befehlsübersicht über `/cp hilfe` |
 
@@ -86,7 +90,7 @@ Für die bisherigen acht Berufe ist eine **1–300-Etappenübersicht** hinterleg
 
 ## Installation
 
-1. Das **[CraftPilot-0.20.1-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.20.1-alpha/CraftPilot-0.20.1-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. Das **[CraftPilot-0.21.0-alpha Installations-ZIP](https://github.com/Necrite82/CraftPilot/releases/download/v0.21.0-alpha/CraftPilot-0.21.0-alpha.zip)** herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Den entpackten Ordner gegebenenfalls in **CraftPilot** umbenennen. Im WoW-Forever-Addonverzeichnis muss die Datei \`CraftPilot/CraftPilot.toc\` unmittelbar im Addon-Ordner liegen.
 3. WoW Forever starten und das Addon aktivieren.
 4. Im Chat \`/cp\` eingeben und den gewünschten Beruf auswählen.
@@ -112,7 +116,7 @@ Die Skillfarben sind nur am aktuell eingelesenen Skillstand zuverlässig. Für K
 | `/cp trainer` | Empfohlenen Lehrer markieren |
 | `/cp lehrer` | Liste hinterlegter Lehrer und direkte Auswahl öffnen |
 | `/cp naechster` | Nächsten Lehrer auf derselben Karte markieren |
-| `/cp etappen` | Skill-Etappen öffnen |
+| `/cp etappen` | Plan & Einkauf mit Etappenleiste öffnen |
 | `/cp hilfe` | Ingame-Hilfe öffnen |
 | `/cp resetpos` | Fensterposition zurücksetzen |
 | `/cp skin auto` / `dark` / `classic` | Darstellungsmodus ändern |
@@ -213,7 +217,7 @@ Eigene Berufe stehen zuerst; über „Alle Berufe anzeigen“ werden weitere ein
 
 Quelle: [Blizzards Berufsübersicht vom 21. Oktober 2026](https://worldofwarcraft.blizzard.com/en-us/news/24301516/gather-around-the-campfire-in-world-of-warcraft-forever).
 
-Das aktuelle Installationspaket ist `dist/CraftPilot-0.20.1-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
+Das aktuelle Installationspaket ist `dist/CraftPilot-0.21.0-alpha.zip`. Die älteren Archive bleiben unverändert. Camping ergänzt den gezielt gefilterten Referenzbestand; siehe [Camping-Daten und Abgleich](docs/CAMPING_SOURCES.md).
 
 ## Bedienung und Darstellung in 0.10
 

@@ -159,14 +159,24 @@ D.stages = {
   },
 }
 
--- Verified public NPC travel references. Each destination is a point of interest,
--- not a guarantee of server-side trainer stock or an indoor NPC position.
--- Coordinates are normalized in the helper; all zone IDs are UiMapIDs.
+-- Trainers. The generated list (ThirdParty/Trainers/Trainers.lua: QuestieDB Forever positions,
+-- CMaNGOS ranks) is the base. The hand-kept list below only adds trainers the generated data
+-- lacks (Forever-only NPCs, indoor pins); an entry with the same profession and name is
+-- replaced by the generated one. Each destination is a point of interest, not a guarantee of
+-- server-side trainer stock. Coordinates are normalized in the helper; zone IDs are UiMapIDs.
 local function T(prof, name, zone, map, x, y, side, cap, indoor)
   return {profession=prof, name=name, zone=zone, map=map,
     x=x/100, y=y/100, faction=side, cap=cap, indoor=indoor}
 end
-D.trainers = {
+local function mapName(map,fallback)
+  local info
+  if C_Map and type(C_Map.GetMapInfo)=="function" then
+    local ok,value=pcall(C_Map.GetMapInfo,map)
+    if ok then info=value end
+  end
+  return type(info)=="table" and type(info.name)=="string" and info.name~="" and info.name or fallback
+end
+local manualTrainers = {
   -- Herbalism: starter NPCs teach Apprentice; major-city trainers up to 300.
   T("herbalism","Nancy Songflower",L("Wald von Elwynn"),1429,52.42,43.83,"Alliance",75),
   T("herbalism","Emrys Flintbeard","Dun Morogh",1426,28.84,66.63,"Alliance",75),
@@ -250,3 +260,16 @@ D.trainers = {
   T("leatherworking","Una",L("Donnerfels"),1456,41.4,42.6,"Horde",225),
   T("leatherworking","Hahrana Ironhide","Feralas",1444,74.4,43.0,"Horde",300),
 }
+
+D.trainers = {}
+local generatedKeys = {}
+for _,row in ipairs(CP.GeneratedTrainers or {}) do
+  local prof,npc,name,zone,map,x,y,side,cap,title=row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10]
+  local entry=T(prof,name,mapName(map,zone),map,x,y,side,cap)
+  entry.npcID,entry.title,entry.generated=npc,title,true
+  D.trainers[#D.trainers+1]=entry
+  generatedKeys[prof..":"..name]=true
+end
+for _,entry in ipairs(manualTrainers) do
+  if not generatedKeys[entry.profession..":"..entry.name] then D.trainers[#D.trainers+1]=entry end
+end

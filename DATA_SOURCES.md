@@ -23,6 +23,10 @@ Craft Ladder führt insbesondere die **Blizzard-Clienttabellen über wago.tools,
 
 Der Workflow [data-sync.yml](.github/workflows/data-sync.yml) sucht montags und donnerstags nach einem neuen Craft-Ladder-Release. Gibt es einen, führt er Syntaxprüfung, Tests und ZIP-Bau aus und öffnet einen Pull Request mit einer Änderungsübersicht je Beruf. Übernommen wird nichts automatisch. Craft Ladder bündelt bereits Blizzard-Clienttabellen (wago.tools), QuestieDB, AllTheThings und CMaNGOS; deshalb folgt CraftPilot diesen Quellen über Craft Ladder statt sie einzeln zu importieren.
 
+## Lehrer
+
+Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): Positionen, Fraktion und Titel aus den Forever-Daten von **QuestieDB**, die gelehrten Ränge aus **CMaNGOS classic-db**. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
+
 ## Daten aus dem Spiel
 
 CraftPilot liest den aktuellen Skill, erlernte Rezepte, Reagenzien und Skillfarbe vorrangig aus den vom Forever-Client angebotenen APIs aus:
