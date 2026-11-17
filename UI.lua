@@ -340,6 +340,22 @@ U.listContent=CreateFrame("Frame",nil,U.listScroll)
 U.listContent:SetSize(300,200)
 U.listScroll:SetScrollChild(U.listContent)
 
+-- Recommendation banner above the list: the single next step, ready to act on.
+U.rec=panel(frame,"raised")
+U.rec.stripe=U.rec:CreateTexture(nil,"OVERLAY");U.rec.stripe:SetWidth(3)
+U.rec.stripe:SetPoint("TOPLEFT",U.rec,"TOPLEFT",0,0);U.rec.stripe:SetPoint("BOTTOMLEFT",U.rec,"BOTTOMLEFT",0,0)
+U.rec.stripe:SetColorTexture(.88,.69,.31,1)
+U.rec.icon=U.rec:CreateTexture(nil,"ARTWORK");U.rec.icon:SetSize(32,32);U.rec.icon:SetPoint("LEFT",U.rec,"LEFT",12,0)
+U.rec.title=text(U.rec,"GameFontNormal",54,-9,400,"");U.rec.title:SetWordWrap(false)
+U.rec.detail=text(U.rec,"GameFontHighlightSmall",54,-28,400,"");U.rec.detail:SetWordWrap(false)
+U.rec.search=primaryButton(U.rec,150,28,L("Im AH suchen"),function() CP:SearchRecommendation() end)
+U.rec.pick=button(U.rec,110,28,0,0,L("Auswählen"),function()
+  local r=CP.currentRecommendation;if not r then return end
+  CP.db.ui.selectedVendorRecipe=nil;CP.db.ui.selectedVendorKey=nil
+  CP.db.ui.selectedRecipes[r.key]=r.id;CP:Render()
+end)
+U.rec:Hide()
+
 U.detailPanel=panel(frame,"panel")
 U.detailScroll=CreateFrame("ScrollFrame","CraftPilotDetailScroll",U.detailPanel,"UIPanelScrollFrameTemplate")
 U.detailContent=CreateFrame("Frame",nil,U.detailScroll)
@@ -913,13 +929,14 @@ local function setRecipeList(key,entries,chosen)
     elseif entry.trainerRecipe then sub=L("Lehrerrezept · noch lernen")
     elseif entry.vendorRecipe then sub=L("Kaufrezept · ab ")..(entry.recipeCost and CP:CompactMoney(entry.recipeCost) or L("Preis unbekannt"))
     elseif colorOf(entry)=="grey" then sub=L("gibt keine Punkte mehr")
-    elseif (entry.missing or 0)>0 then sub=string.format(L("%d Teile fehlen"),entry.missing)
+    elseif (entry.missing or 0)==1 then sub=L("1 Teil fehlt")
+    elseif (entry.missing or 0)>1 then sub=string.format(L("%d Teile fehlen"),entry.missing)
     else sub=L("alles vorrätig") end
     r.subLabel:SetText(sub)
     r.chanceLabel:ClearAllPoints();r.chanceLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-92,-12)
-    r.chanceLabel:SetText((entry.chance or 0)>0 and string.format("~%.0f%%",entry.chance*100) or "—")
+    r.chanceLabel:SetText((entry.chance or 0)>0 and string.format("%.0f%%",entry.chance*100) or "—")
     r.costLabel:ClearAllPoints();r.costLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-8,-12)
-    r.costLabel:SetText(entry.referenceOnly and "—" or (entry.unknown and "?" or CP:CompactMoney(entry.cost)))
+    r.costLabel:SetText(CP:ListCostText(entry))
     r:SetAlpha(entry.dimmed and .55 or 1)
     r:Show()
   end
@@ -946,6 +963,7 @@ end
 local function hideDetail()
   for _,v in pairs(U.detail) do if type(v)=="table" and type(v.Hide)=="function" then v:Hide() end end
   for _,r in ipairs(U.detail.matRows or {}) do r:Hide() end
+  for _,r in ipairs(U.detail.costRows or {}) do r:Hide() end
   for _,h in ipairs(U.detail.matHeaders or {}) do h:Hide() end
   for _,r in ipairs(U.detail.vendorRows or {}) do r:Hide() end
   for _,p in ipairs(rawget(U.detailContent,"metricPanels") or {}) do p:Hide() end
@@ -1112,7 +1130,13 @@ local function renderDetail(key,entry)
     local none=detailLabel("noMats","GameFontDisableSmall");none:SetWidth(inner);none:SetText(L("Materialien unbekannt · Berufsfenster aktualisieren."))
     put(none,12)
   end
-  y=y+10
+  y=y+8
+  if advice.nextStep and advice.nextStep.id then
+    local nextLine=detailLabel("nextStep","GameFontDisableSmall");nextLine:SetWidth(inner)
+    nextLine:SetText(L("Danach: ")..CP:RecipeName(key,advice.nextStep.id)..L(" ab Skill ")..tostring(advice.nextStep.skill or "?"))
+    put(nextLine,12);y=y+8
+  end
+  y=y+2
 
   local openNative=detailButton("open",160,32,L("Berufsfenster öffnen"),function()
     local e=U.detail.entry;if e then CP:OpenLearnedRecipe(CP.db.view,e.id) end
@@ -1134,10 +1158,28 @@ local function renderDetail(key,entry)
   toggle:SetWidth(inner);put(toggle,12,28)
   if open then
     local data=CP:RecipeDisplayData(key,entry.id)
-    CP:MetricStrip(U.detailContent,{{label=L("Zukauf"),value=(data.cost.missingBuy==0 and data.cost.unknownRecipes==0) and CP:DisplayMoney(data.cost.buy) or L("unvollständig")},
-      {label=L("AH netto / Stück"),value=CP:DisplayMoney(data.market and not data.market.bound and data.market.net or nil),color={.55,.9,.7}},
-      {label=L("Händler / Stück"),value=CP:DisplayMoney(data.market and data.market.vendor)}},12,y,inner)
-    y=y+56
+    -- Label left, amount right: readable in the narrow detail pane (the three-box strip wrapped).
+    local costRows={
+      {string.format(L("Zukauf für %d×"),qty),(data.cost.missingBuy==0 and data.cost.unknownRecipes==0) and CP:DisplayMoney(data.cost.buy) or L("unvollständig"),{1,.84,.46}},
+      {L("AH netto / Stück"),CP:DisplayMoney(data.market and not data.market.bound and data.market.net or nil),{.55,.9,.7}},
+      {L("Händler / Stück"),CP:DisplayMoney(data.market and data.market.vendor),{.91,.90,.87}},
+    }
+    d.costRows=d.costRows or {}
+    for i,row in ipairs(costRows) do
+      local line=d.costRows[i]
+      if not line then
+        line=CreateFrame("Frame",nil,U.detailContent);line:SetHeight(22)
+        line.label=line:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");line.label:SetPoint("LEFT",line,"LEFT",0,0);line.label:SetJustifyH("LEFT")
+        line.value=line:CreateFontString(nil,"OVERLAY","GameFontHighlight");line.value:SetPoint("RIGHT",line,"RIGHT",0,0);line.value:SetJustifyH("RIGHT")
+        line.sep=line:CreateTexture(nil,"ARTWORK");line.sep:SetHeight(1);line.sep:SetPoint("BOTTOMLEFT",line,"BOTTOMLEFT",0,0);line.sep:SetPoint("BOTTOMRIGHT",line,"BOTTOMRIGHT",0,0)
+        line.sep:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
+        d.costRows[i]=line
+      end
+      line:SetWidth(inner);line.label:SetWidth(inner*.5);line.value:SetWidth(inner*.5)
+      line.label:SetText(row[1]);line.value:SetText(row[2]);line.value:SetTextColor(row[3][1],row[3][2],row[3][3])
+      put(line,12,24)
+    end
+    y=y+6
     local stock=detailLabel("stock","GameFontDisableSmall");stock:SetWidth(inner)
     stock:SetText(string.format(L("Vorrat genutzt: Tasche %d · Bank %s · Zukauf %d"),data.bag,not CP.db.includeBank and L("aus") or (data.bankUnknown and "?" or tostring(data.bank)),data.buy))
     put(stock,12);y=y+8
@@ -1354,7 +1396,7 @@ local function hideAll()
   for _,c in ipairs(U.camp) do c:Hide() end
   for _,b in ipairs(U.stageButtons) do b:Hide() end
   U.campFilter:Hide();U.settingsTitle:Hide();U.settingsDone:Hide();U.back:Hide()
-  U.listPanel:Hide();U.detailPanel:Hide();U.contentPanel:Hide();U.section:Hide()
+  U.listPanel:Hide();U.detailPanel:Hide();U.contentPanel:Hide();U.section:Hide();U.rec:Hide()
   for _,bg in pairs(U.segBg) do bg:Hide() end
 end
 
@@ -1418,7 +1460,7 @@ end
 local function recipeEntries(self,key,chosen,options,current)
   local ui=self.db.ui
   local offers=self:VendorRecipeOptions(key)
-  for _,entry in ipairs(self:TrainerRecipeOptions(key)) do offers[#offers+1]=entry end
+  for _,entry in ipairs(self:TrainerOffersCached(key)) do offers[#offers+1]=entry end
   if ui.allRecipes then return self:AllRecipeOptions(key,options,offers),"all" end
   if ui.vendorOnly then return offers,"unlearned" end
   local overview={}
@@ -1448,8 +1490,10 @@ local function renderNow(self,key,prof,record,inner)
   local h=type(frame.GetHeight)=="function" and frame:GetHeight() or H
   local leftW=math.floor((inner-12)*.53)
   local rightW=inner-12-leftW
-  U.listPanel:ClearAllPoints();U.listPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-106);U.listPanel:SetSize(leftW,h-106-44);U.listPanel:Show()
-  U.detailPanel:ClearAllPoints();U.detailPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",30+leftW,-106);U.detailPanel:SetSize(rightW,h-106-44);U.detailPanel:Show()
+  local top=106
+  if CP:RenderRecommendation(key,inner) then top=top+62 end
+  U.listPanel:ClearAllPoints();U.listPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-top);U.listPanel:SetSize(leftW,h-top-44);U.listPanel:Show()
+  U.detailPanel:ClearAllPoints();U.detailPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",30+leftW,-top);U.detailPanel:SetSize(rightW,h-top-44);U.detailPanel:Show()
   U.countText:ClearAllPoints();U.countText:SetPoint("TOPRIGHT",U.listPanel,"TOPRIGHT",-12,-15)
   U.filterMenu:ClearAllPoints();U.filterMenu:SetPoint("TOPLEFT",U.filterButton,"BOTTOMLEFT",0,-4)
   -- Header columns line up with the row labels: rows sit 4 px into the panel and are leftW-30 wide.
@@ -1623,7 +1667,7 @@ local function renderTrainers(self,key,prof,inner)
   local offers={}
   if not (prof.gathering and not prof.crafting) then
     for _,entry in ipairs(self:VendorRecipeOptions(key)) do offers[#offers+1]=entry end
-    for _,entry in ipairs(self:TrainerRecipeOptions(key)) do offers[#offers+1]=entry end
+    for _,entry in ipairs(self:TrainerOffersCached(key)) do offers[#offers+1]=entry end
   end
   setTrainerRows(choices,recommended,nearest,ui.selectedTrainers[key],offers,key)
 end
@@ -1663,8 +1707,29 @@ local function settingsList(self)
   return out
 end
 
+function CP:RenderRecommendation(key,inner)
+  local rec=self:Recommendation(key)
+  self.currentRecommendation=rec
+  if not rec then U.rec:Hide();return false end
+  U.rec:ClearAllPoints();U.rec:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-106);U.rec:SetSize(inner,54);U.rec:Show()
+  if type(U.rec.icon.SetTexture)=="function" then U.rec.icon:SetTexture(self:RecipeIcon(key,rec.id)) end
+  local w=inner-54-150-110-30
+  U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w)
+  U.rec.title:SetText(rec.title)
+  U.rec.detail:SetText(rec.detail)
+  U.rec.search:ClearAllPoints();U.rec.search:SetPoint("RIGHT",U.rec,"RIGHT",-12,0)
+  U.rec.pick:ClearAllPoints();U.rec.pick:SetPoint("RIGHT",U.rec.search,"LEFT",-8,0)
+  U.rec.search:SetText(rec.missing>0 and L("Im AH suchen") or L("Berufsfenster öffnen"))
+  U.rec.search:SetScript("OnClick",rec.missing>0 and function() CP:SearchRecommendation() end
+    or function() local r=CP.currentRecommendation;if r then CP:OpenLearnedRecipe(r.key,r.id) end end)
+  primary(U.rec.search)
+  local chosen=self:SelectedOption(key)
+  U.rec.pick:SetShown(not (chosen and chosen.id==rec.id and not self.db.ui.selectedVendorRecipe))
+  return true
+end
+
 function CP:Render()
-  self:InvalidateReservations();self.marketUseCache=nil;self.unlockCache=nil;self.routeAdvice=nil
+  self:InvalidateReservations();self.marketUseCache=nil;self.unlockCache=nil;self.routeAdvice=nil;self.trainerOfferCache=nil
   if not self.db then return end
   self:RestoreWindowPosition()
   self:ApplyTheme()
