@@ -1087,15 +1087,17 @@ assert(CP:IsNewerVersion("0.19.1-alpha","0.11.9-alpha"))
 assert(CP:IsNewerVersion("0.19.1","0.19.1-alpha"))
 assert(not CP:IsNewerVersion("0.9.0-alpha","0.19.1-alpha"))
 assert(not CP:IsNewerVersion("|Hbad|h","0.19.1-alpha"))
+assert(CP:IsNewerVersion("0.1.0-beta","0.29.0-alpha") and not CP:IsNewerVersion("0.29.0-alpha","0.1.0-beta"),"Any beta is newer than the old alphas")
+assert(CP:IsNewerVersion("0.1.0","0.1.0-beta") and CP:IsNewerVersion("0.2.0-beta","0.1.0-beta"))
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
-assert(not CP:ReceiveVersion("other","V|0.99.0-alpha","GUILD"))
-assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha","WHISPER"))
-assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha|evil","GUILD"))
-assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha","GUILD"))
-assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-alpha","GUILD"))
-assert(notices==1 and CP.db.latestSeenVersion=="0.99.0-alpha")
+assert(not CP:ReceiveVersion("other","V|0.99.0-beta","GUILD"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta","WHISPER"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta|evil","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta","GUILD"))
+assert(notices==1 and CP.db.latestSeenVersion=="0.99.0-beta")
 assert(CP:VersionStatus():find("0.99.0",1,true))
 local sent={}
 C_ChatInfo={RegisterAddonMessagePrefix=function(prefix) assert(prefix=="CraftPilotVer");return true end,

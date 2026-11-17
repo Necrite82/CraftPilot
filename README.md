@@ -4,9 +4,13 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.29.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.1.0-beta · Forever 1.60.x · Interface 16001 · **Beta**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+
+## 0.1.0-beta: erste Beta auf CurseForge
+
+CraftPilot ist jetzt auf CurseForge (Projekt 1812811) und lässt sich über die CurseForge-App installieren; QuestieDB wird automatisch mitinstalliert. Mit der Beta beginnt die Nummerierung neu, der Stand entspricht 0.29.0-alpha. [Release-Details](docs/RELEASE_0.1.0-beta.md).
 
 ## Neu in 0.29: QuestieDB als Voraussetzung
 

@@ -1,15 +1,18 @@
 -- Exchanges version numbers only; no external network access or remote code.
 local _,CP=...
 local L=CP.L
-CP.version="0.29.0-alpha"
+CP.version="0.1.0-beta"
 CP.releaseURL="https://github.com/Necrite82/CraftPilot/releases"
 local PREFIX="CraftPilotVer"
 local channels={GUILD=true,PARTY=true,RAID=true,INSTANCE_CHAT=true}
 local function parse(version)
   if type(version)~="string" or #version>24 then return end
   local a,b,c,suffix=version:match("^(%d+)%.(%d+)%.(%d+)(.*)$")
-  if not a or #a>3 or #b>3 or #c>3 or (suffix~="" and suffix~="-alpha") then return end
-  return {tonumber(a),tonumber(b),tonumber(c),suffix=="" and 1 or 0}
+  local stage=({["-alpha"]=0,["-beta"]=1,[""]=2})[suffix]
+  if not a or #a>3 or #b>3 or #c>3 or not stage then return end
+  -- The numbering restarted at 0.1.0-beta for CurseForge: the stage (alpha, beta, release) counts first,
+  -- so every beta is newer than any of the old 0.x alphas.
+  return {stage,tonumber(a),tonumber(b),tonumber(c)}
 end
 function CP:IsNewerVersion(candidate,current)
   local a,b=parse(candidate),parse(current)
