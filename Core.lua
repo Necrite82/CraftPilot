@@ -539,13 +539,9 @@ function CP:OpenOwnedProfession(key)
     self:Say(L("Berufsfenster kann im Kampf gesperrt sein."))
     return false
   end
-  local T=_G.C_TradeSkillUI
-  if T and type(T.OpenTradeSkill)=="function" then
-    -- Restricted hardware-event API: call directly from the click path, not pcall.
-    if T.OpenTradeSkill(D.professions[key].id)==true then return true end
-  end
-  -- Gathering without a crafting panel can still be selected in CraftPilot.
-  self:Say(L("Berufsfenster konnte nicht geöffnet werden. Skillplan bleibt nutzbar."))
+  -- C_TradeSkillUI.OpenTradeSkill is protected in WoW Forever (ADDON_ACTION_BLOCKED even from a
+  -- click). The profession menu opens the window through secure spell buttons instead.
+  self:Say(L("Berufsfenster über das Berufsmenü in CraftPilot oder das Zauberbuch öffnen."))
   return false
 end
 
@@ -716,7 +712,6 @@ function CP:ChangeView(key,openNative)
   if not D.professions[key] then return end
   self.db.view=key
   if self.db.ui.tab=="settings" or self.db.ui.tab=="help" then self.db.ui.tab="now" end
-  if openNative and self.db.ui.autoOpen then self:OpenOwnedProfession(key) end
   self:Refresh(false)
 end
 

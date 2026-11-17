@@ -11,13 +11,24 @@ function CP:Recommendation(key)
   if not prof or not record or (prof.gathering and not prof.crafting) then return nil end
   local captured=self.db.lastCapture
   if not (captured and captured.key==key and captured.skill==record.skill) then return nil end
-  local options=self:Options(key)
-  if #options==0 then return nil end
-  local best=options[1]
-  local step=self:ForwardRouteStep(key)
-  if step then for _,entry in ipairs(options) do if entry.id==step.id then best=entry;break end end end
-  local advice=self:CraftSuggestion(key,best.id)
-  local count=math.max(1,advice.count or 1)
+  -- First choice: the first step of the cheapest path to the training cap (AH prices, color chances,
+  -- fees once). Fallback without prices: the best learned option by the usual ranking.
+  local path=self.CheapestPath and self:CheapestPath(key)
+  local first=path and path.segments[1]
+  local best,count,target,learn
+  if first then
+    best={id=first.id,name=first.name}
+    count,target=first.crafts,first.last
+    if not first.learned then learn=first end
+  else
+    local options=self:Options(key)
+    if #options==0 then return nil end
+    best=options[1]
+    local step=self:ForwardRouteStep(key)
+    if step then for _,entry in ipairs(options) do if entry.id==step.id then best=entry;break end end end
+    local advice=self:CraftSuggestion(key,best.id)
+    count,target=math.max(1,advice.count or 1),advice.target
+  end
   local cost=self:CostCalculation("recipe",key,best.id,count)
   local missing,parts={},{}
   for _,mat in ipairs(cost.materials) do
@@ -27,9 +38,13 @@ function CP:Recommendation(key)
     end
   end
   if #missing>3 then parts[#parts+1]=string.format(L("+%d weitere"),#missing-3) end
-  local title=(advice.target or 0)>record.skill
-    and string.format(L("Empfehlung: %d× %s bis Skill %d"),count,best.name,advice.target)
+  local title=(target or 0)>record.skill
+    and string.format(L("Empfehlung: %d× %s bis Skill %d"),count,best.name,target)
     or (L("Empfehlung: ")..best.name)
+  if learn then
+    title=L("Erst lernen: ")..best.name..(learn.fee>0 and (" ("..self:FormatCostMoney(learn.fee)..")") or "")
+      .." · "..string.format(L("dann ca. %d× bis Skill %d"),count,target)
+  end
   local detail
   if #missing==0 then
     detail=L("Alles vorrätig · direkt herstellen")
@@ -42,15 +57,19 @@ function CP:Recommendation(key)
     if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
   end
   if #pickups>0 then detail=detail.."  ·  "..L("Von Twinks: ")..table.concat(pickups,", ") end
-  for _,offer in ipairs(self:TrainerOffersCached(key)) do
-    local saving=offer.comparison and offer.comparison.cashSaving
-    if saving and saving>0 then
-      detail=detail.."  ·  "..L("Tipp: ")..offer.name..L(" beim Lehrer ist günstiger")
-      break
+  if path and #path.segments>0 then
+    detail=detail.."  ·  "..string.format(L("Günstigster Weg bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total))
+  elseif not first then
+    for _,offer in ipairs(self:TrainerOffersCached(key)) do
+      local saving=offer.comparison and offer.comparison.cashSaving
+      if saving and saving>0 then
+        detail=detail.."  ·  "..L("Tipp: ")..offer.name..L(" beim Lehrer ist günstiger")
+        break
+      end
     end
   end
   return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,
-    missing=#missing,materials=missing}
+    missing=#missing,materials=missing,path=path,learn=learn}
 end
 
 -- Trainer offers compare costs per recipe; compute them once per render.

@@ -34,13 +34,33 @@ function CP:CompanionFrame()
   if type(f.SetFrameStrata)=="function" then f:SetFrameStrata("HIGH") end
   if type(f.SetClampedToScreen)=="function" then f:SetClampedToScreen(true) end
   f:EnableMouse(true)
+  -- Drag at the header; the position is remembered relative to the screen.
+  if type(f.SetMovable)=="function" then f:SetMovable(true) end
+  f:RegisterForDrag("LeftButton")
+  f:SetScript("OnDragStart",function() if type(f.StartMoving)=="function" then f:StartMoving() end end)
+  f:SetScript("OnDragStop",function()
+    if type(f.StopMovingOrSizing)=="function" then f:StopMovingOrSizing() end
+    local point,_,relPoint,x,y=f:GetPoint(1)
+    if type(point)=="string" and type(x)=="number" and type(y)=="number" then
+      CP.db.ui.companionPos={point=point,relPoint=relPoint or point,x=x,y=y}
+    end
+  end)
   f.stripe=f:CreateTexture(nil,"OVERLAY");f.stripe:SetWidth(3)
   f.stripe:SetPoint("TOPLEFT",f,"TOPLEFT",0,0);f.stripe:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",0,0)
   f.stripe:SetColorTexture(.88,.69,.31,1)
   f.logo=f:CreateTexture(nil,"ARTWORK");f.logo:SetSize(18,18);f.logo:SetPoint("TOPLEFT",f,"TOPLEFT",10,-8)
   f.logo:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
   f.header=label(f,"GameFontNormal",150);f.header:SetPoint("TOPLEFT",f,"TOPLEFT",32,-10);f.header:SetText("CraftPilot")
-  f.skill=label(f,"GameFontHighlightSmall",70);f.skill:SetJustifyH("RIGHT");f.skill:SetPoint("TOPRIGHT",f,"TOPRIGHT",-10,-11)
+  f.skill=label(f,"GameFontHighlightSmall",70);f.skill:SetJustifyH("RIGHT");f.skill:SetPoint("TOPRIGHT",f,"TOPRIGHT",-52,-11)
+  -- Minimize to the header row and close until the profession window opens again.
+  f.minimize=CreateFrame("Button",nil,f)
+  f.minimize:SetSize(16,16);f.minimize:SetPoint("TOPRIGHT",f,"TOPRIGHT",-28,-8)
+  f.minimize:SetNormalTexture("Interface\\Buttons\\UI-MinusButton-Up")
+  f.minimize:SetHighlightTexture("Interface\\Buttons\\UI-PlusButton-Hilight")
+  f.minimize:SetScript("OnClick",function() CP.db.ui.companionCollapsed=not CP.db.ui.companionCollapsed;CP:UpdateCompanion() end)
+  f.close=CreateFrame("Button",nil,f,"UIPanelCloseButton")
+  f.close:SetSize(22,22);f.close:SetPoint("TOPRIGHT",f,"TOPRIGHT",-3,-4)
+  f.close:SetScript("OnClick",function() CP.companionClosed=true;f:Hide() end)
   f.title=label(f,"GameFontHighlight",226)
   f.detail=label(f,"GameFontHighlightSmall",226)
   f.progress=label(f,"GameFontNormalSmall",226)
@@ -107,8 +127,18 @@ function CP:UpdateCompanion()
   local key=capture and capture.key
   local prof=key and self.Data.professions[key]
   if not prof or (prof.gathering and not prof.crafting) then if f then f:Hide() end;return end
+  if self.companionClosed then if f then f:Hide() end;return end
   f=self:CompanionFrame()
-  f:ClearAllPoints();f:SetPoint("TOPLEFT",host,"TOPRIGHT",4,0)
+  f:ClearAllPoints()
+  local pos=self.db.ui.companionPos
+  if type(pos)=="table" and type(pos.x)=="number" and type(pos.y)=="number" then
+    f:SetPoint(pos.point,UIParent,pos.relPoint,pos.x,pos.y)
+  else
+    -- Leave room for the profession tab icons along the window's right edge.
+    f:SetPoint("TOPLEFT",host,"TOPRIGHT",60,0)
+  end
+  local collapsed=self.db.ui.companionCollapsed==true
+  f.minimize:SetNormalTexture(collapsed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
   local record=self.db.professions[key] or {}
   local rec=self:Recommendation(key)
   self.currentCompanionRecommendation=rec
@@ -120,6 +150,11 @@ function CP:UpdateCompanion()
     local h=node:GetStringHeight();y=y+(type(h)=="number" and h>0 and h or 14)+(gap or 6)
   end
   for _,node in ipairs({f.title,f.detail,f.progress,f.notice,f.select,f.search,f.open,f.trainer}) do node:Hide() end
+  if collapsed then
+    f:SetHeight(34)
+    f:Show()
+    return
+  end
   if rec then
     f.title:SetText(rec.title);put(f.title,4)
     f.detail:SetText(rec.detail);put(f.detail,8)
@@ -141,9 +176,10 @@ function CP:UpdateCompanion()
   end
   local atCap=record.cap and record.cap<300 and (record.skill or 0)>=record.cap
   local row={}
-  if rec then row[#row+1]=f.select end
-  if rec and rec.missing>0 then row[#row+1]=f.search end
-  if atCap then row[#row+1]=f.trainer end
+  if rec and not rec.learn then row[#row+1]=f.select end
+  if rec and not rec.learn and rec.missing>0 then row[#row+1]=f.search end
+  if rec and rec.learn then row[#row+1]=f.trainer end
+  if atCap and not (rec and rec.learn) then row[#row+1]=f.trainer end
   row[#row+1]=f.open
   for i,b in ipairs(row) do
     local col=(i-1)%2
@@ -160,6 +196,7 @@ for _,event in ipairs({"TRADE_SKILL_SHOW","TRADE_SKILL_CLOSE","TRADE_SKILL_LIST_
 events:SetScript("OnEvent",function(_,event)
   if event=="TRADE_SKILL_CLOSE" then
     if CP.companion then CP.companion:Hide() end
+    CP.companionClosed=nil
     return
   end
   -- The game positions its window after the event; place the panel on the next frame.

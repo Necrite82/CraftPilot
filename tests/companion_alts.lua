@@ -60,11 +60,22 @@ CP.db.professions.engineering={skill=75,cap=75}
 CP.db.lastCapture={key="engineering",skill=75}
 CP:UpdateCompanion()
 assert(errors[#errors]:find("Ausbildungsgrenze 75",1,true),"Reaching the training cap raises a notice")
+-- Minimize, close and a remembered position.
+CP.db.ui.companionCollapsed=true;CP:UpdateCompanion()
+assert(panel:IsShown() and panel.height==34 and not panel.title:IsShown(),"Minimized to the header row")
+panel.minimize:GetScript("OnClick")();assert(not CP.db.ui.companionCollapsed and panel.title:IsShown())
+panel:SetPoint("TOPLEFT",UIParent,"TOPLEFT",300,-200);panel:GetScript("OnDragStop")()
+assert(CP.db.ui.companionPos and CP.db.ui.companionPos.x==300)
+CP:UpdateCompanion();assert(panel.point[2]==UIParent and panel.point[4]==300,"Saved position wins over docking")
+CP.db.ui.companionPos=nil
+panel.close:GetScript("OnClick")();assert(not panel:IsShown())
+CP:UpdateCompanion();assert(not panel:IsShown(),"Closed until the profession window opens again")
+CP.companionClosed=nil
 CP.db.ui.companion=false;CP:UpdateCompanion();assert(not panel:IsShown())
 CP.db.ui.companion=true;hostShown=false;CP:UpdateCompanion();assert(not panel:IsShown(),"Hidden without a profession window")
 
 CraftPilotAccountDB,UnitName,GetRealmName,UnitFactionGroup,C_Container=saved.account,saved.unitName,saved.realm,saved.faction,saved.container
 CP.db.ui.includeAlts,CP.db.professions.engineering,CP.db.recipes.engineering,CP.db.lastCapture=saved.includeAlts,saved.prof,saved.recipes,saved.capture
 TradeSkillFrame,CP.CostCalculation,CP.TrainerRecipeOptions,CP.ItemName,CP.db.ui.companion,UIErrorsFrame=saved.tradeFrame,saved.cost,saved.offers,saved.name,saved.companion,saved.errors
-CP.account=nil;CP.characterKey=nil;CP.trainerOfferCache=nil;CP.companionState=nil;CP.companionNotice=nil
+CP.account=nil;CP.characterKey=nil;CP.db.ui.companionCollapsed=nil;CP.db.ui.companionPos=nil;CP.trainerOfferCache=nil;CP.companionState=nil;CP.companionNotice=nil
 print("PASS: twink stock (mailable vs. information only, toggle, bag and bank scans) and companion panel with color and cap notices")

@@ -202,7 +202,7 @@ function CP:SettingsCards()
     slider(L("Fensterhöhe: "),ui.height,570,930,10," px",function(value)
       ui.height=value;CP.frame:SetHeight(value)
     end),
-    card(L("Berufsfenster automatisch öffnen: ")..state(ui.autoOpen),L("Beim Anklicken eines erlernten Berufs; im Kampf möglicherweise gesperrt."),toggle("autoOpen")),
+    card(L("Berufsfenster automatisch öffnen: ")..state(ui.autoOpen),L("Beim Wechsel über das Berufsmenü öffnet sich das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),toggle("autoOpen")),
     card(L("Berufsauswahl: ")..(ui.showAllProfessions and L("alle Berufe") or L("eigene zuerst")),L("Weitere Berufe bleiben über die Umschaltung erreichbar."),toggle("showAllProfessions")),
     card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
     card(L("Twinks einplanen: ")..state(ui.includeAlts~=false),(self.AltStatus and self:AltStatus() or "")..L(" Gleiches Realm und gleiche Fraktion, per Post erreichbar."),toggle("includeAlts"),"Interface\\Icons\\INV_Letter_15"),
