@@ -62,7 +62,12 @@ assert(go,"Favor vendor has a place");if go then
   CP.SetWaypoint=function(_,loc) target=loc end
   favorCard.action();assert(target and target.map==go.location.map and target.x==go.location.x,"Click sets a waypoint to the Favor vendor")
   CP.SetWaypoint=savedWay
-  assert(favorCard.footer:find("Wegpunkt zu",1,true))
+  -- 0.2.2: visible buttons: waypoint and wishlist
+  assert(favorCard.buttons and favorCard.buttons[1].label=="Wegpunkt" and favorCard.buttons[2].label=="Auf die Wunschliste")
+  CP.SetWaypoint=function(_,loc) target=loc end;target=nil
+  favorCard.buttons[1].action();assert(target and target.map==go.location.map,"Waypoint button")
+  CP.SetWaypoint=savedWay
+  assert(favorCard.detail:find(go.label,1,true),"Vendor named on the card")
 end
 favorCard.rightAction();assert(CP:IsWished("cooking",1249963),"Right-click puts it on the wishlist")
 CP:ToggleWish("cooking",1249963)
@@ -101,45 +106,52 @@ local missing,total=CP:RaidStockShopping()
 assert(missing[990201]==10 and missing[990202]==5 and missing[990301]==3,"Craft materials plus the items to buy")
 assert(total==10*100+5*50+3*300)
 local stockCards=CP:RaidStockCards("alchemy")
-local slider=false
-for _,c in ipairs(stockCards) do if c.slider then slider=true end end
-assert(slider,"One slider per stocked item")
--- The slider cards show the item tooltip on hover.
-CP.db.view="alchemy";CP:OpenTab("endgame")
+-- 0.2.2: plus/minus and a progress bar instead of a slider.
+local stepper=false
+for _,c in ipairs(stockCards) do if c.stepper then stepper=true;assert(c.progress~=nil and not c.slider) end end
+assert(stepper,"One stepper per stocked item")
+CP.db.view="alchemy";CP.db.ui.endgamePage="stock";CP:OpenTab("endgame")
 local savedTip=CP.ShowCraftTooltip
 local shownItem
 CP.ShowCraftTooltip=function(_,_,_,_,item) shownItem=item end
-local hovered=false
+local stepCard
 for _,b in ipairs(createdFrames) do
-  local slider=rawget(b,"settingSlider")
-  local enter=slider and b:IsShown() and slider:IsShown() and b:GetScript("OnEnter")
-  if enter then enter();hovered=true;break end
+  local minus=rawget(b,"stepMinus")
+  if minus and b:IsShown() and minus:IsShown() and b.stepSpec and b.stepSpec.value==3 then stepCard=b end
 end
-CP.ShowCraftTooltip=savedTip
-assert(hovered and (shownItem==990300 or shownItem==990301),"Raid stock card opens the item tooltip")
--- Cards without a slider (raid stock candidates, wishlist) open the tooltip too, without a price strip.
+assert(stepCard,"Rendered raid stock card with plus and minus")
+stepCard:GetScript("OnEnter")()
+assert(shownItem==990301,"Raid stock card opens the item tooltip")
+stepCard.stepPlus:GetScript("OnClick")(stepCard.stepPlus)
+assert(CP:RaidStock()[990301].count==4,"Plus raises the amount")
+CP:SetRaidStock(990301,"alchemy",990401,3)
+-- Candidate cards: tooltip and a visible button.
 local cardEntry
-for _,c in ipairs(stockCards) do if c.title=="Testtrank" then cardEntry=c end end
-if not cardEntry then
-  CP:SetRaidStock(990300,"alchemy",990400,0)
-  for _,c in ipairs(CP:RaidStockCards("alchemy")) do if c.title=="Testtrank" then cardEntry=c end end
-  CP:SetRaidStock(990300,"alchemy",990400,5)
-end
-assert(cardEntry and cardEntry.tooltipItem==990300 and cardEntry.showMarket==false,"Candidate card carries its item for the tooltip")
--- Rendered: the candidate card (no slider) opens the tooltip of its potion.
 CP:SetRaidStock(990300,"alchemy",990400,0)
+for _,c in ipairs(CP:RaidStockCards("alchemy")) do if c.title=="Testtrank" then cardEntry=c end end
+assert(cardEntry and cardEntry.tooltipItem==990300 and cardEntry.showMarket==false,"Candidate card carries its item for the tooltip")
+assert(cardEntry.buttons and cardEntry.buttons[1].label=="Auf den Raid-Vorrat")
 CP:OpenTab("endgame")
 local seen={}
 CP.ShowCraftTooltip=function(_,_,_,_,item) seen[item or 0]=true end
+local addButton
 for _,b in ipairs(createdFrames) do
-  local slider=rawget(b,"settingSlider")
-  local enter=b:IsShown() and not (slider and slider:IsShown()) and type(b.GetScript)=="function" and b:GetScript("OnEnter")
+  local enter=b:IsShown() and type(b.GetScript)=="function" and b:GetScript("OnEnter")
   if enter then pcall(enter) end
+  for _,cb in ipairs(rawget(b,"cardButtons") or {}) do if cb:IsShown() and cb.spec and cb.spec.label=="Auf den Raid-Vorrat" and b:IsShown() then addButton=cb end end
 end
 CP.ShowCraftTooltip=savedTip
 assert(seen[990300],"Candidate card opens the potion tooltip")
-CP:SetRaidStock(990300,"alchemy",990400,5)
-CP:OpenTab("now")
+assert(addButton,"Button drawn on the candidate card")
+addButton:GetScript("OnClick")(addButton)
+assert(CP:RaidStock()[990300] and CP:RaidStock()[990300].count==5,"Button puts it on the raid stock")
+-- Endgame sub-pages
+CP.db.ui.endgamePage="profit";CP:OpenTab("endgame")
+local pages={}
+for _,c in ipairs(CP:EndgameCards("alchemy","stock")) do if c.stepper then pages.stock=true end end
+for _,c in ipairs(CP:EndgameCards("alchemy","profit")) do if c.stepper then pages.wrong=true end end
+assert(pages.stock and not pages.wrong,"Each sub-page shows its own cards")
+CP.db.ui.endgamePage=nil
 CP:OpenTab("now")
 -- Export to Auctionator
 local created

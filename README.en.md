@@ -15,7 +15,7 @@ by your own auction house prices, with shopping, trainers, alts and crafting in 
 
 ---
 
-**Status:** 0.2.1-beta · WoW Forever 1.60.x (Interface 16001) · English and German
+**Status:** 0.2.2-beta · WoW Forever 1.60.x (Interface 16001) · English and German
 
 > **Beta:** CraftPilot is new. Please report bugs in-game via "Report bug" or as a [GitHub issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -66,7 +66,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **CurseForge app (recommended):** search for CraftPilot and install it. **QuestieDB** is installed automatically.
 
 **Manually:**
-1. Download [CraftPilot-0.2.1-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.1-beta.zip) (not the GitHub source archive).
+1. Download [CraftPilot-0.2.2-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.2-beta.zip) (not the GitHub source archive).
 2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilot\CraftPilot.toc` must sit directly in the `CraftPilot` folder.
 3. Also install **QuestieDB** (Forever version).
 
@@ -84,7 +84,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 3. Scan once at the auction house with Auctionator.
 4. Follow the recommendation at the top of "Now".
 
-Open the in-game help any time with "?" at the top right or `/cp help`.
+Open the in-game help any time with "Help" at the bottom of the sidebar or `/cp help`.
 
 ## Commands
 

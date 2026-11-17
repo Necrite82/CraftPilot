@@ -3,7 +3,7 @@
 ## Notes: Profession planning, materials, AH prices and trainer waypoints for WoW Forever
 ## Author: CraftPilot contributors
 ## IconTexture: Interface\AddOns\CraftPilot\Media\CraftPilot
-## Version: 0.2.1-beta
+## Version: 0.2.2-beta
 ## X-Curse-Project-ID: 1812811
 ## Dependencies: QuestieDB
 ## OptionalDeps: Auctionator, TomTom, EllesmereUI

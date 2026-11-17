@@ -1,8 +1,12 @@
 # Changelog
 
-## 0.2.1-beta
+## 0.2.2-beta
 
-- Neuer Reiter **Endgame**: Gewinn je Herstellung für erlernte Rezepte, mit gekauften und mit eigenen Materialien; eigene und gefarmte Materialien zählen mit ihrem Verkaufswert
+- Neue Oberfläche: Navigation in einer **Seitenleiste** links statt Reitern oben, mit Seitentitel und kurzer Erklärung je Seite; Einstellungen und Hilfe unten in der Seitenleiste
+- **Endgame** in vier Unterseiten: Gewinn, Raid-Vorrat, Wunschliste, Merchant's Favor
+- Raid-Vorrat mit **Plus/Minus** und Fortschrittsbalken statt Regler
+- Wunschliste, Vorschläge und Favor-Rezepte mit sichtbaren Knöpfen **Wegpunkt** und **Auf/Von der Wunschliste**; Favor-Karten nennen den Händler
+- Neue Seite **Endgame**: Gewinn je Herstellung für erlernte Rezepte, mit gekauften und mit eigenen Materialien; eigene und gefarmte Materialien zählen mit ihrem Verkaufswert
 - **Rezept-Wunschliste** mit Quellen (Lehrer, Händler, Favor, Quest, Bosse aus QuestieDB), Hinweis im Tooltip des Rezepts und der Bosse, die es droppen; Klick setzt einen Wegpunkt zum Händler oder Boss, Rechtsklick nimmt es auf die Wunschliste oder herunter
 - **Raid-Vorrat**: Verbrauchsgüter mit Zielmenge, Herstellen (auch Twinks) oder AH-Kauf im Vergleich, gemeinsame Reservierung, Einkaufsliste für Auctionator
 - **AH-Alarm** nach einem Auctionator-Scan: Wunschrezepte im AH und Raid-Vorrat, der im AH deutlich günstiger ist (abschaltbar)

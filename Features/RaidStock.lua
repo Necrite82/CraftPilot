@@ -137,7 +137,7 @@ function CP:RaidStockCards(key)
   local cards={{sectionHeader=true,title=L("Raid-Vorrat")}}
   local rows=self:RaidStockRows()
   if #rows==0 then
-    cards[#cards+1]={title=L("Noch kein Raid-Vorrat"),detail=L("Unten einen Trank, ein Fläschchen oder Essen anklicken. CraftPilot vergleicht dann Herstellen mit dem AH-Kauf und reserviert, was du schon hast."),color="blue"}
+    cards[#cards+1]={title=L("Noch kein Raid-Vorrat"),detail=L("Unten bei einem Trank, Fläschchen oder Essen „Auf den Raid-Vorrat“ wählen. CraftPilot vergleicht dann Herstellen mit dem AH-Kauf und reserviert, was du schon hast."),color="blue"}
   end
   for _,row in ipairs(rows) do
     local status
@@ -148,18 +148,20 @@ function CP:RaidStockCards(key)
       ..(row.craft and (" · "..L("herstellen ")..self:FormatCostMoney(row.craft)) or "")
     else status=string.format(L("%d fehlen · kein Preis und kein Hersteller bekannt"),row.missing) end
     local item,entry=row.item,{key=row.key,id=row.id}
-    cards[#cards+1]={title=self:ItemName(item)..": "..row.count,footer=string.format(L("%d von %d da · "),math.min(row.have,row.count),row.count)..status,
+    -- 0.2.2: plus and minus instead of a slider, and a bar for what is already there.
+    cards[#cards+1]={title=self:ItemName(item),detail=status,
+      footer=string.format(L("%d von %d da · "),math.min(row.have,row.count),row.count)..L("0 nimmt den Eintrag heraus"),
       color=row.how=="have" and "green" or "gold",tooltipItem=item,recipeKey=row.key,recipeID=row.id,showMarket=false,
-      slider={label=self:ItemName(item)..": ",value=row.count,min=0,max=40,step=1,unit="",apply=function(value)
-        CP:SetRaidStock(item,entry.key,entry.id,value)
-      end}}
+      icon=self.RecipeIcon and self:RecipeIcon(row.key,row.id),
+      progress=row.count>0 and math.min(1,row.have/row.count) or 0,
+      stepper={value=row.count,min=0,max=40,step=1,apply=function(value) CP:SetRaidStock(item,entry.key,entry.id,value);CP:Render() end}}
   end
   if #rows>0 then
     local _,total,unknown=self:RaidStockShopping()
     cards[#cards+1]={title=L("Raid-Vorrat an Auctionator"),
       detail=string.format(L("Fehlende Materialien und Tränke als Einkaufsliste · ca. %s"),self:FormatCostMoney(total))
         ..(unknown>0 and (" · "..string.format(L("%d ohne Preis"),unknown)) or ""),
-      footer=L("Regler auf 0 nimmt einen Eintrag vom Vorrat · Kauf bleibt manuell."),color="gold",
+      footer=L("Kauf bleibt manuell."),color="gold",
       action=function() CP:ExportToAuctionator("raid");CP:Render() end}
   end
   local candidates=self:RaidStockCandidates(key)
@@ -167,9 +169,10 @@ function CP:RaidStockCards(key)
     cards[#cards+1]={sectionHeader=true,title=L("Zum Raid-Vorrat hinzufügen")}
     for i=1,math.min(6,#candidates) do
       local c=candidates[i]
-      cards[#cards+1]={title=c.name,detail=string.format(L("Anklicken: %d Stück auf den Raid-Vorrat"),DEFAULT_COUNT),
+      local add=function() CP:SetRaidStock(c.item,c.key,c.id,DEFAULT_COUNT);CP:Render() end
+      cards[#cards+1]={title=c.name,detail=string.format(L("Fügt %d Stück zum Raid-Vorrat hinzu"),DEFAULT_COUNT),
         color="blue",icon=self.RecipeIcon and self:RecipeIcon(c.key,c.id),tooltipItem=c.item,recipeKey=c.key,recipeID=c.id,showMarket=false,
-        action=function() CP:SetRaidStock(c.item,c.key,c.id,DEFAULT_COUNT);CP:Render() end}
+        action=add,buttons={{label=L("Auf den Raid-Vorrat"),action=add}}}
     end
   end
   return cards

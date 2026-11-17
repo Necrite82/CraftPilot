@@ -287,10 +287,8 @@ U.priceText=text(U.priceChip,"GameFontHighlightSmall",20,-5,68,"")
 tooltip(U.priceChip,L("Auktionshauspreise"),function() return {U.priceDetail or "",U.bankDetail or ""} end)
 
 U.gear=button(header,30,30,0,0,"|TInterface\\Icons\\INV_Misc_Gear_01:16:16|t",function() CP:ToggleSettings() end)
-U.gear.craftNav="settings"
 tooltip(U.gear,L("Einstellungen"))
 U.help=button(header,30,30,0,0,"?",function() if CP.db.ui.tab=="help" then CP:OpenTab(CP.db.ui.lastMainTab or "now") else CP:OpenTab("help") end end)
-U.help.craftNav="help"
 tooltip(U.help,L("Hilfe"))
 U.close = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
 U.close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -6, -12)
@@ -320,26 +318,81 @@ U.tabs={
   {key="twinks", label=L("Twinks")},
   {key="endgame", label=L("Endgame")},
 }
+-- 0.2.2: navigation in a sidebar on the left of the window instead of tabs on top. The sidebar is a child of the
+-- window, attached to its left edge: it moves, hides and scales with it, and the window keeps its own layout.
+local SIDE=180
+U.tabIcons={now="Interface\\Icons\\INV_Misc_PocketWatch_01",plan="Interface\\Icons\\INV_Misc_Note_01",
+  trainers="Interface\\Icons\\INV_Misc_Map_01",camping="Interface\\Icons\\Spell_Fire_Fire",
+  twinks="Interface\\Icons\\INV_Misc_Head_Human_01",endgame="Interface\\Icons\\INV_Misc_Coin_02",
+  settings="Interface\\Icons\\INV_Misc_Gear_01",help="Interface\\Icons\\INV_Misc_QuestionMark"}
+local side=CreateFrame("Frame","CraftPilotSidebar",frame,"BackdropTemplate")
+U.side=side
+side:SetWidth(SIDE)
+side:SetPoint("TOPRIGHT",frame,"TOPLEFT",1,0)
+side:SetPoint("BOTTOMRIGHT",frame,"BOTTOMLEFT",1,0)
+side:SetBackdrop(flat)
+side:EnableMouse(true)
+if type(side.RegisterForDrag)=="function" then side:RegisterForDrag("LeftButton") end
+side:SetScript("OnDragStart",function() if type(frame.StartMoving)=="function" then frame:StartMoving() end end)
+side:SetScript("OnDragStop",function()
+  if type(frame.StopMovingOrSizing)=="function" then frame:StopMovingOrSizing() end
+  if CP.SaveWindowPosition then CP:SaveWindowPosition() end
+end)
+-- The window stays on screen together with its sidebar.
+if type(frame.SetClampRectInsets)=="function" then frame:SetClampRectInsets(-SIDE,0,0,0) end
+U.sideBrand=CreateFrame("Frame",nil,side);U.sideBrand:SetSize(30,30);U.sideBrand:SetPoint("TOPLEFT",side,"TOPLEFT",14,-14)
+local sideLogo=U.sideBrand:CreateTexture(nil,"ARTWORK");sideLogo:SetAllPoints(U.sideBrand)
+sideLogo:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
+U.sideTitle=text(side,"GameFontNormalLarge",52,-14,SIDE-60,"CraftPilot")
+U.sideSub=text(side,"GameFontDisableSmall",52,-33,SIDE-60,L("Berufsbegleiter"))
+local function navButton(key,caption,callback)
+  local b=CreateFrame("Button",nil,side)
+  b:SetSize(SIDE-16,34)
+  b.bg=b:CreateTexture(nil,"BACKGROUND");b.bg:SetAllPoints(b);b.bg:SetColorTexture(1,1,1,0)
+  b.hl=b:CreateTexture(nil,"HIGHLIGHT");b.hl:SetAllPoints(b);b.hl:SetColorTexture(1,1,1,.05)
+  b.iconBox=b:CreateTexture(nil,"BORDER");b.iconBox:SetSize(26,26);b.iconBox:SetPoint("LEFT",b,"LEFT",6,0);b.iconBox:SetColorTexture(.91,.68,.31,1)
+  b.icon=b:CreateTexture(nil,"ARTWORK");b.icon:SetSize(20,20);b.icon:SetPoint("CENTER",b.iconBox,"CENTER",0,0)
+  b.icon:SetTexture(U.tabIcons[key]);if type(b.icon.SetTexCoord)=="function" then b.icon:SetTexCoord(.08,.92,.08,.92) end
+  local label=b:CreateFontString(nil,"OVERLAY","GameFontNormal")
+  label:SetPoint("LEFT",b,"LEFT",40,0);label:SetPoint("RIGHT",b,"RIGHT",-30,0);label:SetJustifyH("LEFT")
+  if type(b.SetFontString)=="function" then b:SetFontString(label) end
+  b.label=label;b:SetText(caption)
+  b.badge=b:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");b.badge:SetPoint("RIGHT",b,"RIGHT",-8,0)
+  b.badge:SetTextColor(.94,.82,.54)
+  b.selectionMarker=b.iconBox
+  b:SetScript("OnClick",callback)
+  return b
+end
 U.tabButtons={}
+for i,t in ipairs(U.tabs) do
+  local b=navButton(t.key,t.label,function() CP:OpenTab(t.key) end)
+  b:SetPoint("TOPLEFT",side,"TOPLEFT",8,-58-(i-1)*36)
+  U.tabButtons[i]=b
+end
+U.sideSettings=navButton("settings",L("Einstellungen"),function() CP:ToggleSettings() end)
+U.sideSettings.craftNav="settings"
+U.sideSettings:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",8,78)
+U.sideHelp=navButton("help",L("Hilfe"),function() if CP.db.ui.tab=="help" then CP:OpenTab(CP.db.ui.lastMainTab or "now") else CP:OpenTab("help") end end)
+U.sideHelp.craftNav="help"
+U.sideHelp:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",8,42)
+U.sideLine=side:CreateTexture(nil,"ARTWORK");U.sideLine:SetHeight(1)
+U.sideLine:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",1,34);U.sideLine:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-1,34)
+U.sideLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
+U.sideFoot=text(side,"GameFontDisableSmall",14,0,SIDE-24,"")
+U.sideFoot:ClearAllPoints();U.sideFoot:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",14,12)
+-- Page title where the tabs used to be.
 U.tabLine=frame:CreateTexture(nil,"ARTWORK")
 U.tabLine:SetHeight(1)
 U.tabLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
-for i,t in ipairs(U.tabs) do
-  local b=CreateFrame("Button",nil,frame)
-  b:SetSize(150,38)
-  local label=b:CreateFontString(nil,"OVERLAY","GameFontNormal")
-  label:SetAllPoints(b);label:SetJustifyH("CENTER")
-  if type(b.SetFontString)=="function" then b:SetFontString(label) end
-  b.label=label
-  b:SetText(t.label)
-  b.underline=b:CreateTexture(nil,"OVERLAY")
-  b.underline:SetHeight(2)
-  b.underline:SetPoint("BOTTOMLEFT",b,"BOTTOMLEFT",10,0)
-  b.underline:SetPoint("BOTTOMRIGHT",b,"BOTTOMRIGHT",-10,0)
-  b.underline:SetColorTexture(.91,.68,.31,1)
-  b.selectionMarker=b.underline
-  b:SetScript("OnClick",function() CP:OpenTab(t.key) end)
-  U.tabButtons[i]=b
+U.pageTitle=text(frame,"GameFontNormalLarge",19,-60,W-200,"")
+U.pageSub=text(frame,"GameFontDisableSmall",19,-80,W-200,"")
+-- Endgame: four sub-pages as segment buttons.
+U.endgamePages={{key="profit",label=L("Gewinn")},{key="stock",label=L("Raid-Vorrat")},{key="wish",label=L("Wunschliste")},{key="favor",label=L("Merchant's Favor")}}
+U.endgameButtons={}
+for i,p in ipairs(U.endgamePages) do
+  local b=button(frame,128,26,0,0,p.label,function() CP.db.ui.endgamePage=p.key;CP:Render() end)
+  b:Hide()
+  U.endgameButtons[i]=b
 end
 U.back=button(frame,110,26,0,0,L("Zurück"),function() CP:OpenTab(CP.db.ui.lastMainTab or "now") end)
 U.section=text(frame,"GameFontNormal",18,-104,W-50,"")
@@ -776,6 +829,66 @@ local function setRecipeRows(key,options,chosen)
 end
 
 -- Cards for plan, camping, settings, economy and data views.
+-- 0.2.2: optional controls on a card: a stepper (minus, value, plus) at the top right, a progress bar and up to
+-- two buttons at the bottom right. Returns the extra height the card needs.
+function CP:CardControls(b,entry,cardWidth,height)
+  local extra=0
+  local st=entry.stepper
+  if st and not rawget(b,"stepMinus") then
+    b.stepMinus=button(b,26,24,0,0,"-",function() local s=b.stepSpec;if s then s.apply(math.max(s.min,s.value-(s.step or 1))) end end)
+    b.stepPlus=button(b,26,24,0,0,"+",function() local s=b.stepSpec;if s then s.apply(math.min(s.max,s.value+(s.step or 1))) end end)
+    b.stepValue=b:CreateFontString(nil,"OVERLAY","GameFontNormal");b.stepValue:SetWidth(30);b.stepValue:SetJustifyH("CENTER")
+  end
+  if rawget(b,"stepMinus") then
+    b.stepSpec=st
+    b.stepMinus:SetShown(st~=nil);b.stepPlus:SetShown(st~=nil);b.stepValue:SetShown(st~=nil)
+    if st then
+      b.stepPlus:ClearAllPoints();b.stepPlus:SetPoint("TOPRIGHT",b,"TOPRIGHT",-10,-8)
+      b.stepValue:ClearAllPoints();b.stepValue:SetPoint("RIGHT",b.stepPlus,"LEFT",-2,0)
+      b.stepMinus:ClearAllPoints();b.stepMinus:SetPoint("RIGHT",b.stepValue,"LEFT",-2,0)
+      b.stepValue:SetText(tostring(st.value))
+      if b.titleLabel and type(b.titleLabel.SetWidth)=="function" then b.titleLabel:SetWidth(math.max(80,cardWidth-170)) end
+    end
+  end
+  local p=entry.progress
+  if p and not rawget(b,"progBg") then
+    b.progBg=b:CreateTexture(nil,"ARTWORK");b.progBg:SetHeight(5);b.progBg:SetColorTexture(.15,.17,.2,1)
+    b.progFill=b:CreateTexture(nil,"OVERLAY");b.progFill:SetHeight(5)
+  end
+  if rawget(b,"progBg") then
+    b.progBg:SetShown(p~=nil);b.progFill:SetShown(p~=nil and p>0)
+    if p then
+      local w=math.max(40,cardWidth-80)
+      b.progBg:ClearAllPoints();b.progBg:SetPoint("TOPLEFT",b,"TOPLEFT",55,-(height-6));b.progBg:SetWidth(w)
+      b.progFill:ClearAllPoints();b.progFill:SetPoint("TOPLEFT",b.progBg,"TOPLEFT",0,0);b.progFill:SetWidth(math.max(1,w*math.min(1,p)))
+      if p>=1 then b.progFill:SetColorTexture(.37,.79,.54,1) else b.progFill:SetColorTexture(.88,.69,.31,1) end
+      extra=extra+10
+    end
+  end
+  local list=entry.buttons
+  b.cardButtons=rawget(b,"cardButtons") or {}
+  for i=1,2 do
+    local item=list and list[i]
+    local cb=b.cardButtons[i]
+    if item and not cb then
+      cb=button(b,150,24,0,0,"",function() local spec=b.cardButtons[i].spec;if spec and spec.action then spec.action() end end)
+      b.cardButtons[i]=cb
+    end
+    if cb then
+      cb.spec=item
+      cb:SetShown(item~=nil)
+      if item then
+        cb:SetText(item.label)
+        cb:ClearAllPoints()
+        if i==1 then cb:SetPoint("TOPRIGHT",b,"TOPRIGHT",-10,-(height+extra-4))
+        else cb:SetPoint("RIGHT",b.cardButtons[1],"LEFT",-6,0) end
+      end
+    end
+  end
+  if list and #list>0 then extra=extra+28 end
+  return extra
+end
+
 local function setVisualCards(entries)
   clearRows()
   local ui=CP.db and CP.db.ui
@@ -837,6 +950,7 @@ local function setVisualCards(entries)
       for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
       if rawget(b,"dataTable") then b.dataTable:Hide() end
       if b.settingSlider then b.settingSlider:Hide() end
+      CP:CardControls(b,{},0,0)
       b.titleLabel:Show();b.titleLabel:SetFontObject("GameFontDisableSmall")
       b.titleLabel:ClearAllPoints();b.titleLabel:SetPoint("BOTTOMLEFT",b,"BOTTOMLEFT",4,4)
       b.titleLabel:SetText(entry.title or "")
@@ -932,8 +1046,10 @@ local function setVisualCards(entries)
     if entry.checkbox then CP:RenderCheckbox(b,entry.checkbox,(b:GetWidth() or W-110)) end
     if not entry.slider then
       cardHeight=CP:LayoutVisualCard(b,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110))+5
+      cardHeight=cardHeight+CP:CardControls(b,entry,(type(b.GetWidth)=="function" and b:GetWidth() or W-110),cardHeight)
       b:SetHeight(cardHeight-5)
     else
+      CP:CardControls(b,{},0,0)
       for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
       if rawget(b,"dataTable") then b.dataTable:Hide() end
       b.titleLabel:Show();b.footLabel:Show()
@@ -1349,6 +1465,7 @@ local function registerEllesmereUI()
     CP.ellesmereSkin=S
     useSkin(S,"Shell",frame)
     useSkin(S,"Panel",header)
+    useSkin(S,"Panel",U.side)
     useSkin(S,"Panel",U.listPanel)
     useSkin(S,"Panel",U.detailPanel)
     useSkin(S,"CloseButton",U.close)
@@ -1380,6 +1497,7 @@ function CP:ApplyTheme()
   -- Leave Ellesmere surfaces alone in Auto; it manages its own theme.
   if not hasEUI then
     paint(frame,PALETTE.window,.98)
+    paint(U.side,{PALETTE.window[1]*.8,PALETTE.window[2]*.8,PALETTE.window[3]*.8},.98)
     if type(header.SetBackdrop)=="function" then header:SetBackdrop(nil) end
     paint(U.listPanel,PALETTE.panel)
     paint(U.detailPanel,PALETTE.panel)
@@ -1433,7 +1551,7 @@ local function layout()
   if type(h)~="number" then h=H end
   local inner=w-36
   U.title:ClearAllPoints();U.title:SetPoint("LEFT",header,"LEFT",50,0)
-  U.profButton:ClearAllPoints();U.profButton:SetPoint("LEFT",header,"LEFT",160,0)
+  U.profButton:ClearAllPoints();U.profButton:SetPoint("LEFT",header,"LEFT",14,0)
   U.profMenu:ClearAllPoints();U.profMenu:SetPoint("TOPLEFT",U.profButton,"BOTTOMLEFT",0,-4)
   U.close:ClearAllPoints();U.close:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-6,-12)
   U.gear:ClearAllPoints();U.gear:SetPoint("RIGHT",header,"RIGHT",-44,0)
@@ -1442,21 +1560,13 @@ local function layout()
   U.skillText:ClearAllPoints();U.skillText:SetPoint("RIGHT",U.priceChip,"LEFT",-10,0)
   U.skillBar:ClearAllPoints();U.skillBar:SetPoint("LEFT",U.profButton,"RIGHT",14,0);U.skillBar:SetPoint("RIGHT",U.skillText,"LEFT",-8,0)
   U.skillHover:ClearAllPoints();U.skillHover:SetPoint("TOPLEFT",U.skillBar,"TOPLEFT",0,10);U.skillHover:SetPoint("BOTTOMRIGHT",U.skillText,"BOTTOMRIGHT",0,-10)
-  -- 0.2: six tabs. Each gets its text width plus padding, scaled down together when the window is narrow.
-  local avail=inner-120
-  local widths,total={},0
-  for i,b in ipairs(U.tabButtons) do
-    local measured=b.label and type(b.label.GetStringWidth)=="function" and b.label:GetStringWidth()
-    widths[i]=(type(measured)=="number" and measured>0) and (measured+28) or (avail/#U.tabButtons)
-    total=total+widths[i]
-  end
-  local scale=total>avail and avail/total or 1
-  local x=14
-  for i,b in ipairs(U.tabButtons) do
-    local tabW=math.min(170,widths[i]*scale)
-    b:ClearAllPoints();b:SetSize(tabW,38);b:SetPoint("TOPLEFT",frame,"TOPLEFT",x,-56)
-    x=x+tabW
-  end
+  -- 0.2.2: the brand sits in the sidebar; the profession menu moves to the left edge of the header.
+  if U.title then U.title:Hide() end
+  if brandFrame then brandFrame:Hide() end
+  U.profButton:ClearAllPoints();U.profButton:SetPoint("LEFT",header,"LEFT",14,0)
+  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("RIGHT",header,"RIGHT",-44,0)
+  U.pageTitle:SetWidth(inner-140);U.pageSub:SetWidth(inner-140)
+  for i,b in ipairs(U.endgameButtons) do b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*134,-104) end
   U.tabLine:ClearAllPoints();U.tabLine:SetPoint("TOPLEFT",frame,"TOPLEFT",1,-94);U.tabLine:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-1,-94)
   U.back:ClearAllPoints();U.back:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-62)
   U.footerLine:ClearAllPoints();U.footerLine:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",1,32);U.footerLine:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-1,32)
@@ -1597,22 +1707,57 @@ local function renderHeader(self,key,prof,record)
     U.priceChip:SetBackdropColor(fresh and .10 or .16,fresh and .16 or .14,fresh and .13 or .09,1)
     U.priceChip:SetBackdropBorderColor(0,0,0,0)
   end
-  U.gear.selectionMarker:SetShown(self.db.ui.tab=="settings")
-  U.help.selectionMarker:SetShown(self.db.ui.tab=="help");U.help:Show()
-  U.profButton:Show();U.gear:Show();U.priceChip:Show()
+  -- 0.2.2: settings and help live in the sidebar.
+  U.gear:Hide();U.help:Hide()
+  U.profButton:Show();U.priceChip:Show()
 end
 
+-- 0.2.2: sidebar navigation, page title and subtitle.
+local PAGE_SUB={
+  now=L("Empfehlung und Rezepte für deinen nächsten Skillschritt"),
+  plan=L("Skillbereich planen, Einkaufsliste und Herstellungsschritte"),
+  trainers=L("Lehrer, Händlerrezepte, Lerntour und Spezialisierung"),
+  camping=L("Lagerfeuer, Buffs und Camp-Objekte aller Berufe"),
+  twinks=L("Bestände, Cooldowns und Hersteller deiner Charaktere"),
+  help=L("So funktioniert CraftPilot"),
+}
+local ENDGAME_SUB={
+  profit=L("Was deine erlernten Rezepte einbringen · eigene Materialien zählen mit ihrem Verkaufswert"),
+  stock=L("Tränke, Fläschchen und Essen für den Raid · reserviert und gegen Verkauf geschützt"),
+  wish=L("Rezepte, die dir fehlen, und woher sie kommen"),
+  favor=L("Rezepte für Merchant's Favor und wann sie sich bezahlt machen"),
+}
+local function navState(b,on)
+  if b.bg and type(b.bg.SetColorTexture)=="function" then
+    if on then b.bg:SetColorTexture(PALETTE.raised[1],PALETTE.raised[2],PALETTE.raised[3],1) else b.bg:SetColorTexture(1,1,1,0) end
+  end
+  b.iconBox:SetShown(on)
+  if b.label and type(b.label.SetTextColor)=="function" then
+    if on then b.label:SetTextColor(.95,.94,.91) else b.label:SetTextColor(.72,.74,.76) end
+  end
+end
 local function renderTabs(self,tab)
   local mainTab=MAIN[tab] and tab or nil
+  local alarms=self.AuctionAlarms and #self:AuctionAlarms() or 0
   for i,b in ipairs(U.tabButtons) do
-    local on=U.tabs[i].key==mainTab
-    b.underline:SetShown(on)
+    local key=U.tabs[i].key
+    navState(b,key==mainTab)
     b:SetText(U.tabs[i].label)
-    if b.label and type(b.label.SetTextColor)=="function" then
-      if on then b.label:SetTextColor(.95,.94,.91) else b.label:SetTextColor(.62,.66,.70) end
-    end
-    b:SetShown(tab~="settings")
+    b.badge:SetText(key=="endgame" and alarms>0 and tostring(alarms) or "")
+    b:Show()
   end
+  navState(U.sideSettings,tab=="settings")
+  navState(U.sideHelp,tab=="help")
+  U.side:Show()
+  for _,b in ipairs(U.endgameButtons) do b:Hide() end
+  local titles={now=L("Jetzt"),plan=L("Plan & Einkauf"),trainers=L("Lehrer & Händler"),camping=L("Camping"),twinks=L("Twinks"),
+    endgame=L("Endgame"),help=L("Hilfe"),economy=L("Clever skillen"),audit=L("Berufsdaten"),reservations=L("Vorratsreservierung")}
+  local sub=PAGE_SUB[tab]
+  if tab=="endgame" then sub=ENDGAME_SUB[self.db.ui.endgamePage or "profit"] or ENDGAME_SUB.profit end
+  U.pageTitle:SetText(titles[tab] or "");U.pageSub:SetText(sub or "")
+  U.pageTitle:SetShown(tab~="settings");U.pageSub:SetShown(tab~="settings")
+  local status=self.ProfessionPriceStatus and select(2,self:ProfessionPriceStatus(self.db.view))
+  U.sideFoot:SetText((status=="fresh" and L("AH aktuell") or L("AH prüfen")).."\nCraftPilot "..tostring(self.version or ""))
 end
 
 local function recipeEntries(self,key,chosen,options,current)
@@ -1973,8 +2118,13 @@ function CP:Render()
     showContent(106)
     setVisualCards(self:TwinkCards(key))
   elseif tab=="endgame" then
-    showContent(106)
-    setVisualCards(self:EndgameCards(key))
+    local page=ui.endgamePage or "profit"
+    for i,b in ipairs(U.endgameButtons) do
+      b:Show()
+      if b.selectionMarker then b.selectionMarker:SetShown(U.endgamePages[i].key==page) end
+    end
+    showContent(140)
+    setVisualCards(self:EndgameCards(key,page))
   else
     renderNow(self,key,prof,record,inner)
   end

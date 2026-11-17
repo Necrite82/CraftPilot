@@ -93,6 +93,14 @@ function CP:RecipeClickHint(key,id,wished)
   local right=wished and L("Rechtsklick: von der Wunschliste") or L("Rechtsklick: auf die Wunschliste")
   return left and (left.." · "..right) or (wished and L("Anklicken: von der Wunschliste nehmen") or L("Anklicken: auf die Wunschliste"))
 end
+-- 0.2.2: visible buttons on recipe cards (waypoint, wishlist) instead of relying on right-click.
+function CP:RecipeButtons(key,id)
+  local out={}
+  if self:RecipeGoTo(key,id) then out[#out+1]={label=L("Wegpunkt"),action=function() CP:GoToRecipe(key,id) end} end
+  local wished=self:IsWished(key,id)
+  out[#out+1]={label=wished and L("Von der Wunschliste") or L("Auf die Wunschliste"),action=function() CP:ToggleWish(key,id);CP:Render() end}
+  return out
+end
 local function recipeCardActions(self,key,id)
   local toggle=function() CP:ToggleWish(key,id);CP:Render() end
   if self:RecipeGoTo(key,id) then return function() CP:GoToRecipe(key,id) end,toggle end
@@ -133,7 +141,7 @@ function CP:WishlistCards(key)
   local ids={};for id in pairs(list) do ids[#ids+1]=id end;table.sort(ids)
   local catalog=self:RecipeVendorCatalog(key)
   if #ids==0 then
-    cards[#cards+1]={title=L("Noch keine Wünsche"),detail=L("Ein Vorschlag unten anklicken setzt das Rezept auf die Wunschliste. Bosse, die es droppen, zeigen es dann im Tooltip, und der AH-Alarm meldet es."),color="blue"}
+    cards[#cards+1]={title=L("Noch keine Wünsche"),detail=L("Bei einem Vorschlag unten „Auf die Wunschliste“ wählen. Bosse, die das Rezept droppen, zeigen es dann im Tooltip, und der AH-Alarm meldet es."),color="blue"}
   end
   for _,id in ipairs(ids) do
     local native=(self.db.recipes[key] or {})[id]
@@ -141,7 +149,8 @@ function CP:WishlistCards(key)
     local learned=native and native.learned
     cards[#cards+1]={title=STAR..self:RecipeName(key,id,recipe and recipe.name),
       detail=learned and L("Erlernt · kann von der Wunschliste") or self:RecipeSourceText(key,id),
-      footer=(learned and L("Anklicken: von der Wunschliste nehmen") or self:RecipeClickHint(key,id,true))..(recipe and recipe.learn and (" · "..L("ab Skill ")..recipe.learn) or ""),
+      footer=(learned and L("Erlernt") or (recipe and recipe.learn and (L("ab Skill ")..recipe.learn)) or ""),
+      buttons=self:RecipeButtons(key,id),
       color=learned and "green" or "gold",icon=self.RecipeIcon and self:RecipeIcon(key,id),
       tooltipItem=recipe and recipe.item,recipeKey=key,recipeID=id,showMarket=false,
       action=learned and function() CP:ToggleWish(key,id);CP:Render() end or (recipeCardActions(self,key,id)),
@@ -152,7 +161,8 @@ function CP:WishlistCards(key)
     cards[#cards+1]={sectionHeader=true,title=L("Vorschläge · noch nicht erlernt")}
     for _,s in ipairs(suggestions) do
       cards[#cards+1]={title=self:RecipeName(key,s.id),detail=self:RecipeSourceText(key,s.id),
-        footer=(s.profit and (L("Gewinn je Herstellung: ")..(s.profit<0 and "-" or "+")..self:FormatCostMoney(math.abs(s.profit))).." · " or "")..self:RecipeClickHint(key,s.id,false),
+        footer=(s.profit and (L("Gewinn je Herstellung: ")..(s.profit<0 and "-" or "+")..self:FormatCostMoney(math.abs(s.profit))) or ""),
+        buttons=self:RecipeButtons(key,s.id),
         color="blue",icon=self.RecipeIcon and self:RecipeIcon(key,s.id),recipeKey=key,recipeID=s.id,showMarket=false,
         action=(recipeCardActions(self,key,s.id)),rightAction=select(2,recipeCardActions(self,key,s.id))}
     end

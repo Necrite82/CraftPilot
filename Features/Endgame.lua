@@ -98,18 +98,42 @@ function CP:FavorRecipes(key)
   return out
 end
 
-function CP:EndgameCards(key)
+-- 0.2.2: the Endgame page is split into four sub-pages (profit, raid stock, wishlist, Merchant's Favor);
+-- without a page every section is returned (tests, older callers).
+function CP:EndgameCards(key,page)
   local prof=self.Data.professions[key]
   local cut=tonumber(self.db.ui.economyCut) or 5
-  local cards={{title=L("Endgame · Gold, Rezepte und Raid-Vorrat"),
-    detail=string.format(L("Gewinn je Herstellung nach deinen gespeicherten AH-Preisen, abzüglich %d %% AH-Abzug. Eigene oder gefarmte Materialien zählen mit dem, was ihr Verkauf bringen würde."),cut),
-    footer=L("Gespeicherte Scans, keine Live-Angebote · CraftPilot kauft und verkauft nichts."),color="gold",icon=self.Data.professionIcons[key]}}
-  if not prof or (prof.gathering and not prof.crafting) then
-    cards[#cards+1]={title=L("Sammelberuf"),detail=L("Für Sammelberufe gibt es keine Rezepte zum Herstellen. Den Wert deiner Funde zeigt der Gegenstands-Tooltip."),color="blue"}
-    for _,card in ipairs(self.AlarmCards and self:AlarmCards() or {}) do cards[#cards+1]=card end
-    for _,card in ipairs(self.RaidStockCards and self:RaidStockCards(key) or {}) do cards[#cards+1]=card end
-    return cards
+  local cards={}
+  local function append(list) for _,card in ipairs(list or {}) do cards[#cards+1]=card end end
+  local crafting=prof and not (prof.gathering and not prof.crafting)
+  if not page or page=="profit" then
+    cards[#cards+1]={title=L("Endgame · Gold, Rezepte und Raid-Vorrat"),
+      detail=string.format(L("Gewinn je Herstellung nach deinen gespeicherten AH-Preisen, abzüglich %d %% AH-Abzug. Eigene oder gefarmte Materialien zählen mit dem, was ihr Verkauf bringen würde."),cut),
+      footer=L("Gespeicherte Scans, keine Live-Angebote · CraftPilot kauft und verkauft nichts."),color="gold",icon=self.Data.professionIcons[key]}
+    append(self.AlarmCards and self:AlarmCards())
+    if not crafting then
+      cards[#cards+1]={title=L("Sammelberuf"),detail=L("Für Sammelberufe gibt es keine Rezepte zum Herstellen. Den Wert deiner Funde zeigt der Gegenstands-Tooltip."),color="blue"}
+    else
+      append(self:ProfitCards(key))
+    end
   end
+  if not page or page=="stock" then append(self.RaidStockCards and self:RaidStockCards(key)) end
+  if crafting and (not page or page=="wish") then append(self.WishlistCards and self:WishlistCards(key)) end
+  if not page or page=="favor" then
+    local favor=crafting and self:FavorCards(key) or {}
+    if #favor==0 and page=="favor" then
+      cards[#cards+1]={title=L("Keine Favor-Rezepte für diesen Beruf"),detail=L("Merchant's Favor gibt es für Rezepte einiger Berufe. Oben links einen anderen Beruf wählen."),color="blue"}
+    end
+    append(favor)
+  end
+  if page=="wish" and not crafting then
+    cards[#cards+1]={title=L("Sammelberuf"),detail=L("Für Sammelberufe gibt es keine Rezepte zum Herstellen. Den Wert deiner Funde zeigt der Gegenstands-Tooltip."),color="blue"}
+  end
+  return cards
+end
+
+function CP:ProfitCards(key)
+  local cards={}
   local hasPrices=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
   if not hasPrices then
     cards[#cards+1]={title=L("Keine AH-Preise"),detail=L("Auctionator installieren und einmal am Auktionshaus scannen. Ohne Preise kann CraftPilot keinen Gewinn ausrechnen."),color="red"}
@@ -120,7 +144,7 @@ function CP:EndgameCards(key)
     cards[#cards+1]={title=L("Noch keine vollständigen Preise"),
       detail=L("Berufsfenster einmal öffnen, damit CraftPilot deine Rezepte kennt, und am Auktionshaus scannen."),color="blue"}
   end
-  for i=1,math.min(8,#rows) do
+  for i=1,math.min(12,#rows) do
     local r=rows[i]
     local verdict
     if r.profitBuy<=0 and r.profitOwn<=0 then verdict=L("Lohnt sich nicht: Materialien direkt verkaufen bringt mehr.")
@@ -140,37 +164,38 @@ function CP:EndgameCards(key)
     cards[#cards+1]={title=string.format(L("%d weitere Rezepte ohne vollständige Preise"),incomplete),
       detail=L("Für Material oder Ergebnis fehlt ein AH- oder Händlerpreis. Nach dem nächsten Scan erscheinen sie hier."),color="blue"}
   end
-  -- 0.2.1: AH alarm, raid stock and recipe wishlist
-  for _,card in ipairs(self.AlarmCards and self:AlarmCards() or {}) do cards[#cards+1]=card end
-  for _,card in ipairs(self.RaidStockCards and self:RaidStockCards(key) or {}) do cards[#cards+1]=card end
-  for _,card in ipairs(self.WishlistCards and self:WishlistCards(key) or {}) do cards[#cards+1]=card end
-  -- Merchant's Favor
+  return cards
+end
+
+function CP:FavorCards(key)
+  local cards={}
   local favor=self:FavorRecipes(key)
-  if #favor>0 then
-    local rate=tonumber(self.db.ui.favorRate) or 0
-    cards[#cards+1]={sectionHeader=true,title=L("Merchant's Favor · Rezepte zum Kaufen")}
-    cards[#cards+1]={title=L("So rechnet CraftPilot Favor"),
-      detail=rate>0 and string.format(L("1 Favor = %s (deine Einstellung). Gewinn je Herstellung zeigt, nach wie vielen Herstellungen sich das Rezept bezahlt macht."),self:FormatCostMoney(rate))
-        or L("Ohne Umrechnung nur Favor-Preis und Gewinn je Herstellung. In den Einstellungen unter Erweitert kannst du Silber je Favor festlegen."),
-      color="blue",action=rate<=0 and function() CP:OpenTab("settings") end or nil}
-    for i=1,math.min(6,#favor) do
-      local f=favor[i]
-      local detail=string.format(L("Kostet %d Favor"),f.favor)..(f.level and (" · "..L("Favor-Stufe ")..f.level) or "")
-        ..(f.learn and (" · "..L("ab Skill ")..f.learn) or "")
-      local foot
-      if f.profit and f.profit>0 then
-        foot=L("Gewinn je Herstellung: ")..money(self,f.profit)
-        if rate>0 then foot=foot.." · "..string.format(L("bezahlt nach %d Herstellungen"),math.ceil(f.favor*rate/f.profit)) end
-      elseif f.profit then foot=L("Gewinn je Herstellung: ")..money(self,f.profit).." · "..L("lohnt sich zum Verkaufen nicht")
-      else foot=L("Gewinn unbekannt · Preise fehlen") end
-      local catalog=self:RecipeVendorCatalog(key)
-      local recipe=catalog and catalog.recipes[f.id]
-      local left,right=self.RecipeCardActions(self,key,f.id)
-      cards[#cards+1]={title=(self:IsWished(key,f.id) and (CP.WISH_MARK or "") or "")..f.name,detail=detail,
-        footer=foot.."\n"..self:RecipeClickHint(key,f.id,self:IsWished(key,f.id)),color=(f.profit and f.profit>0) and "green" or "blue",
-        icon=self.RecipeIcon and self:RecipeIcon(key,f.id),tooltipItem=recipe and recipe.item,recipeKey=key,recipeID=f.id,showMarket=false,
-        action=left,rightAction=right}
-    end
+  if #favor==0 then return cards end
+  local rate=tonumber(self.db.ui.favorRate) or 0
+  cards[#cards+1]={sectionHeader=true,title=L("Merchant's Favor · Rezepte zum Kaufen")}
+  cards[#cards+1]={title=L("So rechnet CraftPilot Favor"),
+    detail=rate>0 and string.format(L("1 Favor = %s (deine Einstellung). Gewinn je Herstellung zeigt, nach wie vielen Herstellungen sich das Rezept bezahlt macht."),self:FormatCostMoney(rate))
+      or L("Ohne Umrechnung nur Favor-Preis und Gewinn je Herstellung. In den Einstellungen unter Erweitert kannst du Silber je Favor festlegen."),
+    color="blue",action=rate<=0 and function() CP:OpenTab("settings") end or nil}
+  for i=1,math.min(10,#favor) do
+    local f=favor[i]
+    local detail=string.format(L("Kostet %d Favor"),f.favor)..(f.level and (" · "..L("Favor-Stufe ")..f.level) or "")
+      ..(f.learn and (" · "..L("ab Skill ")..f.learn) or "")
+    local go=self:RecipeGoTo(key,f.id)
+    if go then detail=detail.."\n"..go.label..(go.location.zone and go.location.zone~="" and (" · "..go.location.zone) or "") end
+    local foot
+    if f.profit and f.profit>0 then
+      foot=L("Gewinn je Herstellung: ")..money(self,f.profit)
+      if rate>0 then foot=foot.." · "..string.format(L("bezahlt nach %d Herstellungen"),math.ceil(f.favor*rate/f.profit)) end
+    elseif f.profit then foot=L("Gewinn je Herstellung: ")..money(self,f.profit).." · "..L("lohnt sich zum Verkaufen nicht")
+    else foot=L("Gewinn unbekannt · Preise fehlen") end
+    local catalog=self:RecipeVendorCatalog(key)
+    local recipe=catalog and catalog.recipes[f.id]
+    local left,right=self.RecipeCardActions(self,key,f.id)
+    cards[#cards+1]={title=(self:IsWished(key,f.id) and (CP.WISH_MARK or "") or "")..f.name,detail=detail,
+      footer=foot,color=(f.profit and f.profit>0) and "green" or "blue",
+      icon=self.RecipeIcon and self:RecipeIcon(key,f.id),tooltipItem=recipe and recipe.item,recipeKey=key,recipeID=f.id,showMarket=false,
+      action=left,rightAction=right,buttons=self:RecipeButtons(key,f.id)}
   end
   return cards
 end
