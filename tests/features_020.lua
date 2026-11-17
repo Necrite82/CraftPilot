@@ -24,7 +24,8 @@ local cards=CP:EndgameCards("engineering")
 assert(cards[1].title:find("Endgame",1,true))
 local card
 for _,c in ipairs(cards) do if c.title and c.title:find("Testbombe",1,true) then card=c end end
-assert(card and card.metrics and #card.metrics==3 and card.tooltipItem==990009,"Profit card with three figures")
+assert(card and card.bars and #card.bars==3 and card.grid and card.tooltipItem==990009,"Profit card with three value bars in the grid")
+assert(card.bars[1].frac>0 and card.bars[3].fromLeft)
 assert(card.color=="green")
 -- A result worth less than the materials: selling the materials is better.
 P[990009]=200

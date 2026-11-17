@@ -1,8 +1,11 @@
 # Changelog
 
-## 0.2.2-beta
+## 0.2.3-beta
 
-- Neue Oberfläche: Navigation in einer **Seitenleiste** links statt Reitern oben, mit Seitentitel und kurzer Erklärung je Seite; Einstellungen und Hilfe unten in der Seitenleiste
+- Neue Oberfläche: Navigation in einer **Seitenleiste** links statt Reitern oben, mit Logo, Berufswahl und Skillbalken oben sowie Einstellungen und Hilfe unten
+- **Abgerundete Ecken** für Fenster, Seitenleiste, Karten, Felder und Knöpfe
+- Kopf mit Seitentitel, kurzer Erklärung und Statusfeldern „AH aktuell“ und „N Gegenstände reserviert“ (Klick öffnet die Reservierung)
+- Gewinn-Karten nebeneinander im Raster mit **Wertebalken** (Mitte = 0) und dezent eingefärbtem Hintergrund
 - **Endgame** in vier Unterseiten: Gewinn, Raid-Vorrat, Wunschliste, Merchant's Favor
 - Raid-Vorrat mit **Plus/Minus** und Fortschrittsbalken statt Regler
 - Wunschliste, Vorschläge und Favor-Rezepte mit sichtbaren Knöpfen **Wegpunkt** und **Auf/Von der Wunschliste**; Favor-Karten nennen den Händler

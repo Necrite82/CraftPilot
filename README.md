@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 0.2.2-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 0.2.3-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
 
@@ -66,7 +66,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-0.2.2-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.2-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-0.2.3-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.3-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilot\CraftPilot.toc` muss direkt im Ordner `CraftPilot` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 

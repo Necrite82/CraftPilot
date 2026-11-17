@@ -36,7 +36,7 @@ end
 
 local function panel(parent, shade)
   local p = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-  p:SetBackdrop(flat)
+  CP:Round(p)
   local c = PALETTE[shade or "panel"]
   p:SetBackdropColor(c[1], c[2], c[3], 1)
   p:SetBackdropBorderColor(PALETTE.border[1], PALETTE.border[2], PALETTE.border[3], 1)
@@ -152,7 +152,7 @@ local frame = CreateFrame("Frame", "CraftPilotMainFrame", UIParent, "BackdropTem
 U.frame=frame
 frame:SetSize(W, H)
 frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-frame:SetBackdrop(flat)
+CP:Round(frame)
 frame:SetMovable(true)
 frame:EnableMouse(true)
 if type(frame.SetResizable)=="function" then frame:SetResizable(true) end
@@ -277,7 +277,7 @@ U.skillHover:EnableMouse(true)
 tooltip(U.skillHover,function() return U.skillTitle or "" end,function() return U.skillLines or {} end)
 
 U.priceChip=CreateFrame("Frame",nil,header,"BackdropTemplate")
-U.priceChip:SetBackdrop(flat)
+CP:Round(U.priceChip)
 U.priceChip:SetSize(92,22)
 U.priceChip:EnableMouse(true)
 U.priceDot=U.priceChip:CreateTexture(nil,"OVERLAY")
@@ -330,7 +330,7 @@ U.side=side
 side:SetWidth(SIDE)
 side:SetPoint("TOPRIGHT",frame,"TOPLEFT",1,0)
 side:SetPoint("BOTTOMRIGHT",frame,"BOTTOMLEFT",1,0)
-side:SetBackdrop(flat)
+CP:Round(side)
 side:EnableMouse(true)
 if type(side.RegisterForDrag)=="function" then side:RegisterForDrag("LeftButton") end
 side:SetScript("OnDragStart",function() if type(frame.StartMoving)=="function" then frame:StartMoving() end end)
@@ -366,7 +366,7 @@ end
 U.tabButtons={}
 for i,t in ipairs(U.tabs) do
   local b=navButton(t.key,t.label,function() CP:OpenTab(t.key) end)
-  b:SetPoint("TOPLEFT",side,"TOPLEFT",8,-58-(i-1)*36)
+  b:SetPoint("TOPLEFT",side,"TOPLEFT",8,-124-(i-1)*36)
   U.tabButtons[i]=b
 end
 U.sideSettings=navButton("settings",L("Einstellungen"),function() CP:ToggleSettings() end)
@@ -386,11 +386,17 @@ U.tabLine:SetHeight(1)
 U.tabLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 U.pageTitle=text(frame,"GameFontNormalLarge",19,-60,W-200,"")
 U.pageSub=text(frame,"GameFontDisableSmall",19,-80,W-200,"")
+-- 0.2.3: how many items are reserved for plans, keep-for-later and the raid stock; a click opens the list.
+U.reservedChip=CreateFrame("Button",nil,frame,"BackdropTemplate")
+CP:Round(U.reservedChip,true);U.reservedChip:SetSize(150,22)
+U.reservedText=text(U.reservedChip,"GameFontHighlightSmall",10,-5,132,"")
+U.reservedChip:SetScript("OnClick",function() CP:OpenTab("reservations") end)
+tooltip(U.reservedChip,L("Reservierte Gegenstände"),function() return {L("Markiert in Taschen und Bank, mit Warnung beim Verkaufen, Zerstören, Entzaubern und Verschicken."),L("Anklicken: Vorratsreservierung öffnen")} end)
 -- Endgame: four sub-pages as segment buttons.
 U.endgamePages={{key="profit",label=L("Gewinn")},{key="stock",label=L("Raid-Vorrat")},{key="wish",label=L("Wunschliste")},{key="favor",label=L("Merchant's Favor")}}
 U.endgameButtons={}
 for i,p in ipairs(U.endgamePages) do
-  local b=button(frame,128,26,0,0,p.label,function() CP.db.ui.endgamePage=p.key;CP:Render() end)
+  local b=segment(frame,128,26,p.label,function() CP.db.ui.endgamePage=p.key;CP:Render() end)
   b:Hide()
   U.endgameButtons[i]=b
 end
@@ -895,15 +901,18 @@ local function setVisualCards(entries)
   local settingsView=ui and (ui.tab=="settings" or ui.tab=="audit" or ui.tab=="reservations")
   local baseHeight=settingsView and 92 or 73
   local offset=0
+  -- 0.2.3: cards marked grid sit side by side, two or three per row depending on the width.
+  local gridCol,gridRow,gridCols=0,0,2
   for i,entry in ipairs(entries) do
-    local market=not entry.metrics and entry.showMarket~=false and (entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
+    if not entry.grid and gridCol>0 then offset=offset+gridRow+8;gridCol,gridRow=0,0 end
+    local market=not entry.metrics and not entry.bars and entry.showMarket~=false and (entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
       or (entry.tooltipItem and CP:ItemMarketText(entry.tooltipItem))) or nil
     local cardHeight=market and 122 or baseHeight
     local b=U.cards[i]
     if not b then
       b=CreateFrame("Button",nil,content,"BackdropTemplate")
       b:SetSize(W-110,cardHeight-5)
-      b:SetBackdrop(flat)
+      CP:Round(b)
       b.titleLabel=text(b,"GameFontNormal",55,-7,W-170,"")
       b.detailLabel=text(b,"GameFontHighlightSmall",55,-30,W-170,"")
       b.footLabel=text(b,"GameFontDisableSmall",55,-51,W-170,"")
@@ -1016,14 +1025,24 @@ local function setVisualCards(entries)
     b.footLabel:ClearAllPoints()
     b.footLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,market and -100 or (settingsView and -72 or -51))
     b:ClearAllPoints()
-    b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
-    b:SetSize((content:GetWidth() or W-95)-8,cardHeight-5)
+    local fullW=(content:GetWidth() or W-95)-8
+    if entry.grid then
+      gridCols=fullW>=900 and 3 or 2
+      local colW=math.floor((fullW-(gridCols-1)*8)/gridCols)
+      b:SetPoint("TOPLEFT",content,"TOPLEFT",5+gridCol*(colW+8),-offset)
+      b:SetSize(colW,cardHeight-5)
+    else
+      b:SetPoint("TOPLEFT",content,"TOPLEFT",5,-offset)
+      b:SetSize(fullW,cardHeight-5)
+    end
+    if entry.tint and type(b.SetBackdropColor)=="function" and not CP.ellesmereSkin then b:SetBackdropColor(entry.tint[1],entry.tint[2],entry.tint[3],1) end
     local r,g,bl=.32,.47,.69
     if entry.color=="green" then r,g,bl=.19,.75,.55 end
     if entry.color=="gold" then r,g,bl=.90,.69,.28 end
     if entry.color=="red" then r,g,bl=.93,.42,.36 end
     if b.craftStripe and type(b.craftStripe.SetColorTexture)=="function" then
       b.craftStripe:SetColorTexture(r,g,bl,1)
+      if entry.grid and type(b.craftStripe.Hide)=="function" then b.craftStripe:Hide() end
     end
     if b.craftIcon and type(b.craftIcon.SetTexture)=="function" then
       b.craftIcon:SetTexture(entry.icon or "Interface\\Icons\\INV_Misc_Note_01")
@@ -1062,10 +1081,16 @@ local function setVisualCards(entries)
         b.settingSlider:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
       end
     end
-    offset=offset+cardHeight+1
+    if entry.grid then
+      gridRow=math.max(gridRow,cardHeight);gridCol=gridCol+1
+      if gridCol>=gridCols then offset=offset+gridRow+8;gridCol,gridRow=0,0 end
+    else
+      offset=offset+cardHeight+1
+    end
     b:Show()
     end
   end
+  if gridCol>0 then offset=offset+gridRow+8 end
   finishContent(offset+15)
 end
 
@@ -1074,7 +1099,7 @@ local function listRow(i)
   local r=U.listRows[i]
   if r then return r end
   r=CreateFrame("Button",nil,U.listContent,"BackdropTemplate")
-  r:SetBackdrop(flat)
+  CP:Round(r,true)
   r:SetHeight(38)
   r.stripe=r:CreateTexture(nil,"OVERLAY");r.stripe:SetWidth(2)
   r.stripe:SetPoint("TOPLEFT",r,"TOPLEFT",0,0);r.stripe:SetPoint("BOTTOMLEFT",r,"BOTTOMLEFT",0,0)
@@ -1560,12 +1585,23 @@ local function layout()
   U.skillText:ClearAllPoints();U.skillText:SetPoint("RIGHT",U.priceChip,"LEFT",-10,0)
   U.skillBar:ClearAllPoints();U.skillBar:SetPoint("LEFT",U.profButton,"RIGHT",14,0);U.skillBar:SetPoint("RIGHT",U.skillText,"LEFT",-8,0)
   U.skillHover:ClearAllPoints();U.skillHover:SetPoint("TOPLEFT",U.skillBar,"TOPLEFT",0,10);U.skillHover:SetPoint("BOTTOMRIGHT",U.skillText,"BOTTOMRIGHT",0,-10)
-  -- 0.2.2: the brand sits in the sidebar; the profession menu moves to the left edge of the header.
+  -- 0.2.3: brand, profession and skill in the sidebar; page title and status fields in the header.
   if U.title then U.title:Hide() end
   if brandFrame then brandFrame:Hide() end
-  U.profButton:ClearAllPoints();U.profButton:SetPoint("LEFT",header,"LEFT",14,0)
-  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("RIGHT",header,"RIGHT",-44,0)
-  U.pageTitle:SetWidth(inner-140);U.pageSub:SetWidth(inner-140)
+  header:SetHeight(92)
+  U.profButton:ClearAllPoints();U.profButton:SetPoint("TOPLEFT",side,"TOPLEFT",8,-54);U.profButton:SetSize(SIDE-16,30)
+  U.profMenu:ClearAllPoints();U.profMenu:SetPoint("TOPLEFT",U.profButton,"TOPRIGHT",6,0)
+  if type(U.profMenu.SetFrameLevel)=="function" and type(side.GetFrameLevel)=="function" then
+    local level=side:GetFrameLevel();if type(level)=="number" then U.profMenu:SetFrameLevel(level+30) end
+  end
+  U.skillBar:ClearAllPoints();U.skillBar:SetPoint("TOPLEFT",side,"TOPLEFT",12,-92);U.skillBar:SetPoint("TOPRIGHT",side,"TOPRIGHT",-12,-92)
+  U.skillText:ClearAllPoints();U.skillText:SetPoint("TOPRIGHT",side,"TOPRIGHT",-12,-100);U.skillText:SetWidth(SIDE-24)
+  U.skillHover:ClearAllPoints();U.skillHover:SetPoint("TOPLEFT",U.skillBar,"TOPLEFT",0,6);U.skillHover:SetPoint("BOTTOMRIGHT",U.skillText,"BOTTOMRIGHT",0,-2)
+  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-48,-30)
+  U.reservedChip:ClearAllPoints();U.reservedChip:SetPoint("RIGHT",U.priceChip,"LEFT",-8,0)
+  U.pageTitle:ClearAllPoints();U.pageTitle:SetPoint("TOPLEFT",frame,"TOPLEFT",19,-26)
+  U.pageSub:ClearAllPoints();U.pageSub:SetPoint("TOPLEFT",frame,"TOPLEFT",19,-50)
+  U.pageTitle:SetWidth(inner-290);U.pageSub:SetWidth(inner-60)
   for i,b in ipairs(U.endgameButtons) do b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*134,-104) end
   U.tabLine:ClearAllPoints();U.tabLine:SetPoint("TOPLEFT",frame,"TOPLEFT",1,-94);U.tabLine:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-1,-94)
   U.back:ClearAllPoints();U.back:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-62)
@@ -1710,6 +1746,11 @@ local function renderHeader(self,key,prof,record)
   -- 0.2.2: settings and help live in the sidebar.
   U.gear:Hide();U.help:Hide()
   U.profButton:Show();U.priceChip:Show()
+  local reserved=0
+  for _ in pairs(self.ReservedItems and self:ReservedItems() or {}) do reserved=reserved+1 end
+  U.reservedText:SetText(string.format(L("%d Gegenstände reserviert"),reserved))
+  U.reservedChip:SetBackdropColor(PALETTE.raised[1],PALETTE.raised[2],PALETTE.raised[3],1)
+  U.reservedChip:SetShown(reserved>0)
 end
 
 -- 0.2.2: sidebar navigation, page title and subtitle.

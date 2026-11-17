@@ -144,6 +144,13 @@ function CP:ProfitCards(key)
     cards[#cards+1]={title=L("Noch keine vollständigen Preise"),
       detail=L("Berufsfenster einmal öffnen, damit CraftPilot deine Rezepte kennt, und am Auktionshaus scannen."),color="blue"}
   end
+  -- 0.2.3: cards in a grid with value bars; the scale is the largest amount on the page.
+  local scale,saleScale=1,1
+  for i=1,math.min(12,#rows) do
+    local r=rows[i]
+    scale=math.max(scale,math.abs(r.profitBuy),math.abs(r.profitOwn));saleScale=math.max(saleScale,r.sale)
+  end
+  local GOOD,BAD,NEUTRAL={.55,.9,.7},{.95,.5,.45},{.62,.66,.72}
   for i=1,math.min(12,#rows) do
     local r=rows[i]
     local verdict
@@ -153,11 +160,13 @@ function CP:ProfitCards(key)
     else verdict=L("Lohnt sich: mit gekauften und mit eigenen Materialien.") end
     if r.bound then verdict=verdict.." "..L("Ergebnis ist gebunden: nur Händlerpreis.") end
     if r.stale>0 then verdict=verdict.." "..L("Einige Preise sind alt · neu scannen.") end
-    cards[#cards+1]={title=money(self,r.profitBuy).."  ·  "..self:RecipeName(key,r.id),
-      metrics={{label=L("Kaufen & herstellen"),value=money(self,r.profitBuy),color=r.profitBuy>0 and {.55,.9,.7} or {.95,.5,.45}},
-        {label=L("Mit eigenen Materialien"),value=money(self,r.profitOwn),color=r.profitOwn>0 and {.55,.9,.7} or {.95,.5,.45}},
-        {label=r.made>1 and string.format(L("Verkauf (%d Stück)"),r.made) or L("Verkauf"),value=self:DisplayMoney(r.sale)}},
-      footer=verdict,color=r.profitBuy>0 and "green" or (r.profitOwn>0 and "gold" or "red"),
+    local color=r.profitBuy>0 and "green" or (r.profitOwn>0 and "gold" or "red")
+    local tint=({green={.09,.135,.11},gold={.135,.12,.085},red={.15,.095,.09}})[color]
+    cards[#cards+1]={title=self:RecipeName(key,r.id),grid=true,tint=tint,
+      bars={{label=L("Kaufen & herstellen"),value=money(self,r.profitBuy),frac=r.profitBuy/scale,color=r.profitBuy>0 and GOOD or BAD},
+        {label=L("Mit eigenen Materialien"),value=money(self,r.profitOwn),frac=r.profitOwn/scale,color=r.profitOwn>0 and GOOD or BAD},
+        {label=r.made>1 and string.format(L("Verkauf (%d Stück)"),r.made) or L("Verkauf"),value=self:DisplayMoney(r.sale),frac=r.sale/saleScale,fromLeft=true,color=NEUTRAL}},
+      footer=verdict,color=color,
       icon=self.RecipeIcon and self:RecipeIcon(key,r.id),tooltipItem=r.output,showMarket=false}
   end
   if incomplete>0 then

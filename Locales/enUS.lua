@@ -1418,4 +1418,8 @@ CP.English = {
   ["Vorratsreservierung"]="Stock reservation",
   ["Was deine erlernten Rezepte einbringen · eigene Materialien zählen mit ihrem Verkaufswert"]="What your learned recipes earn · own materials count at their sale value",
   ["Wunschliste"]="Wishlist",
+  ["%d Gegenstände reserviert"]="%d items reserved",
+  ["Anklicken: Vorratsreservierung öffnen"]="Click: open the stock reservation",
+  ["Markiert in Taschen und Bank, mit Warnung beim Verkaufen, Zerstören, Entzaubern und Verschicken."]="Marked in bags and bank, with a warning when selling, destroying, disenchanting or mailing.",
+  ["Reservierte Gegenstände"]="Reserved items",
 }

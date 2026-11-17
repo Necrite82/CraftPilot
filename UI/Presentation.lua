@@ -2,11 +2,35 @@
 local _,CP=...
 local L=CP.L
 local bg={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1}
+-- 0.2.3: rounded corners. Media/Round.tga is a backdrop edge whose corner pieces are filled quarter circles;
+-- fill and edge share one color, so a surface gets round corners without a visible outline. The square
+-- highlight texture of a button would poke out at the corners, so hovering brightens the color instead.
+local ROUND={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\AddOns\\CraftPilot\\Media\\Round",edgeSize=6,
+  insets={left=6,right=6,top=6,bottom=6}}
+CP.ROUND_BACKDROP=ROUND
+function CP:Round(f,hover)
+  if not f or type(f.SetBackdrop)~="function" then return f end
+  f:SetBackdrop(ROUND)
+  if not rawget(f,"craftRound") then
+    f.craftRound=true
+    local setColor=f.SetBackdropColor
+    local setBorder=f.SetBackdropBorderColor
+    f.SetBackdropColor=function(self,r,g,b,a)
+      self.craftBase={r,g,b,a or 1}
+      if self.craftHover then r,g,b=math.min(1,r+.06),math.min(1,g+.06),math.min(1,b+.07) end
+      setColor(self,r,g,b,a or 1);setBorder(self,r,g,b,a or 1)
+    end
+    f.SetBackdropBorderColor=function() end
+    if hover and type(f.HookScript)=="function" then
+      f:HookScript("OnEnter",function(self) self.craftHover=true;local c=self.craftBase;if c then self:SetBackdropColor(c[1],c[2],c[3],c[4]) end end)
+      f:HookScript("OnLeave",function(self) self.craftHover=nil;local c=self.craftBase;if c then self:SetBackdropColor(c[1],c[2],c[3],c[4]) end end)
+    end
+  end
+  return f
+end
 function CP:StyleActionButton(b)
-  b:SetBackdrop(bg);b:SetBackdropColor(.114,.133,.165,1);b:SetBackdropBorderColor(.20,.23,.28,1)
+  self:Round(b,true);b:SetBackdropColor(.114,.133,.165,1)
   local label=b:CreateFontString(nil,"OVERLAY","GameFontNormalSmall");label:SetAllPoints(b);label:SetJustifyH("CENTER");label:SetWordWrap(false);b:SetFontString(label);b:SetNormalFontObject("GameFontNormalSmall");b:SetHighlightFontObject("GameFontHighlightSmall");b:SetDisabledFontObject("GameFontDisableSmall")
-  b:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
-  local h=b:GetHighlightTexture();if h then h:SetVertexColor(.35,.55,.75,.16) end
 end
 local primaryFont
 function CP:StylePrimaryButton(b)
@@ -48,9 +72,7 @@ function CP:RenderCheckbox(b,spec,width)
 end
 function CP:CreateFlatAction(parent,width,height,action)
   local b=CreateFrame("Button",nil,parent,"BackdropTemplate")
-  b:SetSize(width,height);b:SetBackdrop(bg);b:SetBackdropColor(.098,.114,.137,1);b:SetBackdropBorderColor(.17,.196,.227,1)
-  b:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
-  local highlight=b:GetHighlightTexture();if highlight then highlight:SetVertexColor(.3,.45,.6,.12) end
+  b:SetSize(width,height);self:Round(b,true);b:SetBackdropColor(.098,.114,.137,1)
   b:SetScript("OnClick",action);return b
 end
 function CP:DisplayLabel(parent,font,x,y,w,value,align)
@@ -68,7 +90,7 @@ function CP:MetricStrip(parent,values,x,y,width)
   for i=1,3 do
     local p=parent.metricPanels[i]
     if not p then
-      p=CreateFrame("Frame",nil,parent,"BackdropTemplate");p:SetBackdrop(bg);p:SetBackdropColor(.122,.141,.172,1);p:SetBackdropBorderColor(.122,.141,.172,1)
+      p=CreateFrame("Frame",nil,parent,"BackdropTemplate");self:Round(p);p:SetBackdropColor(.122,.141,.172,1)
       p.label=self:DisplayLabel(p,"GameFontDisableSmall",10,7,w-20,"")
       p.value=self:DisplayLabel(p,"GameFontNormal",10,24,w-20,"")
       parent.metricPanels[i]=p
@@ -222,11 +244,52 @@ function CP:LayoutVisualCard(b,entry,width)
     return self:DrawMaterialTable(b.dataTable,entry.materialTable,width),true
   end
   for _,name in ipairs({"titleLabel","detailLabel","footLabel","craftIcon","craftStripe","craftDot"}) do if rawget(b,name) then b[name]:Show() end end
+  if entry.grid and rawget(b,"craftStripe") then b.craftStripe:Hide() end
+  for _,row in ipairs(rawget(b,"barRows") or {}) do for _,part in pairs(row) do part:Hide() end end
+  if rawget(b,"titleLabel") and type(b.titleLabel.SetWidth)=="function" then b.titleLabel:SetWidth(width-70) end
   b.marketLabel:Hide()
   local y=math.max(30,10+height(b.titleLabel,16))
   b.detailLabel:ClearAllPoints();b.detailLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-y);b.detailLabel:SetWidth(width-70)
   y=y+height(b.detailLabel,16)+10
-  if entry.metrics then
+  if entry.bars then
+    -- 0.2.3: value bars. A bar grows from the middle (zero) to the right for a gain and to the left for a
+    -- loss; fromLeft bars grow from the left edge (a plain amount such as the sale price).
+    for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
+    b.barRows=rawget(b,"barRows") or {}
+    local barW=width-70
+    for i,bar in ipairs(entry.bars) do
+      local row=b.barRows[i]
+      if not row then
+        row={label=self:DisplayLabel(b,"GameFontDisableSmall",0,0,barW,""),value=self:DisplayLabel(b,"GameFontHighlightSmall",0,0,barW,""),
+          track=b:CreateTexture(nil,"ARTWORK"),fill=b:CreateTexture(nil,"OVERLAY"),zero=b:CreateTexture(nil,"OVERLAY")}
+        row.value:SetJustifyH("RIGHT")
+        row.track:SetHeight(4);row.track:SetColorTexture(.15,.17,.2,1)
+        row.fill:SetHeight(4);row.zero:SetSize(1,8);row.zero:SetColorTexture(.30,.34,.40,1)
+        b.barRows[i]=row
+      end
+      row.label:ClearAllPoints();row.label:SetPoint("TOPLEFT",b,"TOPLEFT",55,-y);row.label:SetWidth(barW);row.label:SetText(bar.label or "")
+      row.value:ClearAllPoints();row.value:SetPoint("TOPLEFT",b,"TOPLEFT",55,-y);row.value:SetWidth(barW);row.value:SetText(bar.value or "")
+      local c=bar.color or {.86,.84,.80}
+      if type(row.value.SetTextColor)=="function" then row.value:SetTextColor(c[1],c[2],c[3]) end
+      row.track:ClearAllPoints();row.track:SetPoint("TOPLEFT",b,"TOPLEFT",55,-(y+16));row.track:SetWidth(barW)
+      local frac=math.max(-1,math.min(1,tonumber(bar.frac) or 0))
+      row.fill:ClearAllPoints()
+      if bar.fromLeft then
+        row.fill:SetPoint("TOPLEFT",row.track,"TOPLEFT",0,0);row.fill:SetWidth(math.max(1,barW*math.abs(frac)))
+        row.zero:Hide()
+      else
+        local half=barW/2
+        if frac>=0 then row.fill:SetPoint("TOPLEFT",row.track,"TOPLEFT",half,0) else row.fill:SetPoint("TOPRIGHT",row.track,"TOPLEFT",half,0) end
+        row.fill:SetWidth(math.max(1,half*math.abs(frac)))
+        row.zero:ClearAllPoints();row.zero:SetPoint("CENTER",row.track,"LEFT",half,0);row.zero:Show()
+      end
+      row.fill:SetColorTexture(c[1],c[2],c[3],1)
+      row.label:Show();row.value:Show();row.track:Show();row.fill:SetShown(frac~=0)
+      y=y+28
+    end
+    y=y+2
+    if entry.tooltipItem then b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,entry.tooltipItem) end) end
+  elseif entry.metrics then
     -- 0.2: a card with its own three figures (e.g. profit on the Endgame tab); the item tooltip stays on hover.
     self:MetricStrip(b,entry.metrics,55,y,width-70)
     y=y+58
