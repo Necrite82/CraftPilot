@@ -244,6 +244,18 @@ function CP:CraftableCount(rec)
   local T=C_TradeSkillUI
   local info=T and type(T.GetRecipeInfo)=="function" and T.GetRecipeInfo(rec.id)
   local available=type(info)=="table" and tonumber(info.numAvailable) or nil
+  -- Clients without numAvailable: count from the bags (bank and twinks cannot be used for crafting).
+  if available==nil then
+    local native=(self.db.recipes[rec.key] or {})[rec.id]
+    if native and type(native.mats)=="table" and #native.mats>0 then
+      local need={}
+      for _,mat in ipairs(native.mats) do need[mat[1]]=(need[mat[1]] or 0)+mat[2] end
+      for item,n in pairs(need) do
+        local can=math.floor(self:RawItemCount(item,false)/math.max(1,n))
+        if available==nil or can<available then available=can end
+      end
+    end
+  end
   local count=math.max(1,rec.count or 1)
   if available then count=math.min(count,math.max(available,0)) end
   return math.max(1,count),available

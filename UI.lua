@@ -1011,7 +1011,8 @@ local function setRecipeList(key,entries,chosen)
     elseif colorOf(entry)=="grey" then sub=L("gibt keine Punkte mehr")
     elseif (entry.missing or 0)==1 then sub=L("1 Teil fehlt")
     elseif (entry.missing or 0)>1 then sub=string.format(L("%d Teile fehlen"),entry.missing)
-    else sub=L("alles vorrätig") end
+    elseif entry.fromStorage then sub=L("vorrätig · erst aus Bank/von Twinks holen")
+    else sub=L("alles in der Tasche") end
     r.subLabel:SetText(sub)
     r.chanceLabel:ClearAllPoints();r.chanceLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-92,-12)
     r.chanceLabel:SetText((entry.chance or 0)>0 and string.format("%.0f%%",entry.chance*100) or "—")
@@ -1291,7 +1292,8 @@ local function renderDetail(key,entry)
     put(stock,12);y=y+8
     local notes={}
     for _,n in ipairs(CP:FollowupNeeds(key,entry.id,qty,advice)) do
-      notes[#notes+1]=string.format(L("%s: Folgeschritt braucht ca. %d · zusätzlich einplanen %d"),CP:ItemName(n.id),n.next,n.short)
+      notes[#notes+1]=n.short>0 and string.format(L("%s: Folgeschritt braucht ca. %d · zusätzlich einplanen %d"),CP:ItemName(n.id),n.next,n.short)
+        or string.format(L("%s: Folgeschritt braucht ca. %d · Vorrat reicht"),CP:ItemName(n.id),n.next)
     end
     if #notes>0 then
       local follow=detailLabel("follow","GameFontHighlightSmall");follow:SetWidth(inner);follow:SetText(table.concat(notes,"\n"))

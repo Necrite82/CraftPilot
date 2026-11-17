@@ -249,7 +249,7 @@ function CP:SpecHint(key)
   for _,s in ipairs(specs) do if s.known then return nil end end
   local first=specs[1]
   if not first or skill<(first.skill or 0)-25 then return nil end
-  return string.format(L("Spezialisierung ab Skill %d und Stufe %d möglich · Lehrer & Händler → Spezialisierung."),first.skill or 0,first.level or 0)
+  return string.format(L("Spezialisierung ab Skill %d und Stufe %d möglich: siehe Lehrer & Händler, Bereich Spezialisierung."),first.skill or 0,first.level or 0)
 end
 
 function CP:SpecCards(key)

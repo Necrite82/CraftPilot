@@ -46,8 +46,12 @@ function CP:Recommendation(key)
       .." · "..string.format(L("dann ca. %d× bis Skill %d"),count,target)
   end
   local detail
-  if #missing==0 then
-    detail=L("Alles vorrätig · direkt herstellen")
+  local inBags=true
+  for _,mat in ipairs(cost.materials) do if (mat.bag or 0)<(mat.quantity or 0) then inBags=false end end
+  if #missing==0 and not inBags then
+    detail=L("Vorrätig · erst aus Bank/von Twinks holen")
+  elseif #missing==0 then
+    detail=L("Alles in der Tasche · direkt herstellen")
   else
     detail=L("Fehlt: ")..table.concat(parts,", ").." · "
       ..(cost.cashComplete and (L("ca. ")..self:FormatCostMoney(cost.buy)) or L("Preis unvollständig"))

@@ -302,10 +302,13 @@ function CP:Options(profession)
       for _,mat in ipairs(recipe.mats) do
         aggregate[mat[1]]=(aggregate[mat[1]] or 0)+mat[2]
       end
+      local fromStorage=false
       for item,needed in pairs(aggregate) do
         local owned=self:AvailableForPlan(item,profession)
         local deficit=math.max(0,needed-owned)
         missing=missing+deficit
+        -- Owned but not in the bags: the bank or a twink has to supply it first.
+        if deficit==0 and self:RawItemCount(item,false)<needed then fromStorage=true end
         local pricedQty=self.db.mode=="value" and needed or deficit
         if pricedQty>0 then
           local price=self:Price(item)
@@ -314,7 +317,7 @@ function CP:Options(profession)
       end
       values[#values+1]={id=id, name=recipe.name, icon=recipe.icon, outputItemID=recipe.outputItemID, mats=recipe.mats,
         chance=chance, difficulty=recipe.difficulty, cost=cost/chance, missing=missing,
-        unknown=#unknown>0, unknownItems=unknown}
+        unknown=#unknown>0, unknownItems=unknown, fromStorage=fromStorage}
     end
   end
   table.sort(values,function(a,b)
