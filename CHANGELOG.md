@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.23.0-alpha
+
+Begleitfenster am Berufsfenster mit Empfehlung, „noch N× bis Farbe“ und Hinweisen bei Farbwechsel oder Ausbildungsgrenze. Twinks: Taschen und Bank aller Charaktere accountweit; Bestände auf demselben Realm und derselben Fraktion zählen beim Planen mit. [Details](docs/RELEASE_0.23.0-alpha.md).
+
 ## 0.22.0-alpha
 
 Empfehlung oben in „Jetzt“ mit „Im AH suchen“ (Auctionator-Suche bzw. Einkaufsliste), Kosten-Details als Zeilen, Lehrerrezepte mit Kosten je Punkt inkl. Lernen, „vorrätig“ statt 0, nächster Rezeptwechsel im Detail. [Details](docs/RELEASE_0.22.0-alpha.md).

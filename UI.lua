@@ -1114,7 +1114,7 @@ local function renderDetail(key,entry)
       d.matRows[i]=row
     end
     row.itemID=mat.id
-    local values={CP:ItemName(mat.id),mat.quantity,mat.bag+(mat.bankKnown and mat.bank or 0),mat.missing}
+    local values={CP:ItemName(mat.id),mat.quantity,mat.bag+(mat.bankKnown and mat.bank or 0)+CP:AltReachable(mat.id),mat.missing}
     x=0
     for j,c in ipairs(cols) do
       local cell=row.cells[j];cell:ClearAllPoints();cell:SetPoint("TOPLEFT",row,"TOPLEFT",x,-5);cell:SetWidth(inner*c[2]-6);cell:SetJustifyH(c[3]);cell:SetWordWrap(false)
@@ -1131,6 +1131,15 @@ local function renderDetail(key,entry)
     put(none,12)
   end
   y=y+8
+  local pickups={}
+  for _,mat in ipairs(cost.materials) do
+    if (mat.alts or 0)>0 then pickups[#pickups+1]=CP:AltPickupText(mat.id,mat.alts) end
+  end
+  if #pickups>0 then
+    local pickup=detailLabel("altPickup","GameFontHighlightSmall");pickup:SetWidth(inner)
+    pickup:SetText("|cff8fd6a6"..L("Von Twinks holen: ")..RESET..table.concat(pickups,", "))
+    put(pickup,12);y=y+8
+  end
   if advice.nextStep and advice.nextStep.id then
     local nextLine=detailLabel("nextStep","GameFontDisableSmall");nextLine:SetWidth(inner)
     nextLine:SetText(L("Danach: ")..CP:RecipeName(key,advice.nextStep.id)..L(" ab Skill ")..tostring(advice.nextStep.skill or "?"))

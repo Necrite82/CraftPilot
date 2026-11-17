@@ -113,7 +113,7 @@ function CP:ToggleSetting(key)
   elseif key=="mode" then self.db.mode=self.db.mode=="cash" and "value" or "cash"
   elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
     self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true})[key] then
     self.db.ui[key]=not self.db.ui[key]
   else return end
   self.pendingSettingsReset=nil
@@ -121,7 +121,8 @@ function CP:ToggleSetting(key)
   if key=="showAllProfessions" and not self.db.ui.showAllProfessions then self:PreferOwnedProfession() end
   self:UpdateMinimapButton()
   -- A different route policy must not leave an old automatic proposal visible.
-  if key=="preferReliableSkill" or key=="knownRecipesOnly" or key=="bank" or key=="mode" then
+  if key=="companion" and self.UpdateCompanion then self:UpdateCompanion() end
+  if key=="preferReliableSkill" or key=="knownRecipesOnly" or key=="bank" or key=="mode" or key=="includeAlts" then
     self:CancelRouteBuild()
     for _,plan in pairs(self.db.plans) do plan.autoRoute=nil;plan.autoMode=nil end
   end
@@ -157,6 +158,7 @@ function CP:SettingsCards()
   local function enabled(key)
     if key=="bank" then return self.db.includeBank end
     if key=="hideMinimap" then return not ui.hideMinimap end
+    if key=="includeAlts" or key=="companion" then return ui[key]~=false end
     return ui[key]==true
   end
   local function state(value) return value and L("AN") or L("AUS") end
@@ -203,6 +205,8 @@ function CP:SettingsCards()
     card(L("Berufsfenster automatisch öffnen: ")..state(ui.autoOpen),L("Beim Anklicken eines erlernten Berufs; im Kampf möglicherweise gesperrt."),toggle("autoOpen")),
     card(L("Berufsauswahl: ")..(ui.showAllProfessions and L("alle Berufe") or L("eigene zuerst")),L("Weitere Berufe bleiben über die Umschaltung erreichbar."),toggle("showAllProfessions")),
     card(L("Bankbestände berücksichtigen: ")..state(self.db.includeBank),self:BankStatus(),toggle("bank"),"Interface\\Icons\\INV_Misc_Bag_08"),
+    card(L("Twinks einplanen: ")..state(ui.includeAlts~=false),(self.AltStatus and self:AltStatus() or "")..L(" Gleiches Realm und gleiche Fraktion, per Post erreichbar."),toggle("includeAlts"),"Interface\\Icons\\INV_Letter_15"),
+    card(L("Begleitfenster am Berufsfenster: ")..state(ui.companion~=false),L("Empfehlung, verbleibende Herstellungen und Hinweise direkt neben dem Berufsfenster."),toggle("companion")),
     card(L("Kostenvergleich: ")..(self.db.mode=="cash" and L("fehlende Materialien") or L("gesamter Materialwert")),L("Zukauf bewertet Fehlmengen; Materialwert bewertet auch eigene Vorräte."),toggle("mode"),"Interface\\Icons\\INV_Misc_Coin_01"),
     card(L("Orange/Gelb bevorzugen: ")..state(ui.preferReliableSkill),L("Bei Standardsortierung und Auto-Route; Grün bleibt manuell und im Clever skillen vergleichbar."),toggle("preferReliableSkill")),
     card(L("Kaufrezepte anzeigen: ")..state(ui.showVendorRecipes),L("Passende kaufbare Rezepte direkt in Jetzt skillen anzeigen."),toggle("showVendorRecipes")),
@@ -230,6 +234,8 @@ function CP:SettingsCards()
   -- Visible groups in the settings view; everything else sits under "Erweitert".
   local groups={
     [L("Bankbestände berücksichtigen: ")]="general",
+    [L("Twinks einplanen: ")]="general",
+    [L("Begleitfenster am Berufsfenster: ")]="general",
     [L("Berufsfenster automatisch öffnen: ")]="general",
     [L("Minimap-Button: ")]="general",
     [L("Berufsauswahl: ")]="general",
