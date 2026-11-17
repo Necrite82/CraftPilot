@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.24.0-alpha
+
+Behebt ADDON_ACTION_BLOCKED bei OpenTradeSkill (gesicherte Zauber-Buttons im Berufsmenü). Empfehlung nach dem günstigsten Weg bis zur Ausbildungsgrenze: AH-Preise je Punkt mit Farbchance, Lernkosten einmalig und nur bei Ersparnis, Vorräte ohne Verzerrung. Begleitfenster verschiebbar, minimierbar und schließbar. [Details](docs/RELEASE_0.24.0-alpha.md).
+
 ## 0.23.0-alpha
 
 Begleitfenster am Berufsfenster mit Empfehlung, „noch N× bis Farbe“ und Hinweisen bei Farbwechsel oder Ausbildungsgrenze. Twinks: Taschen und Bank aller Charaktere accountweit; Bestände auf demselben Realm und derselben Fraktion zählen beim Planen mit. [Details](docs/RELEASE_0.23.0-alpha.md).

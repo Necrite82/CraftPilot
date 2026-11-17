@@ -292,7 +292,8 @@ assert(CP:OwnsProfession("mining"))
 assert(#CP:RecipesMaking(2840,"engineering",90)>0)
 GetProfessionInfo=realGetProfessionInfo
 
--- Hardware-event-bound opening: learned primary professions only.
+-- OpenTradeSkill is protected in WoW Forever: CraftPilot never calls it. Owned professions get a
+-- secure spell button over their menu entry instead (0.24).
 local opened={}
 C_TradeSkillUI.OpenTradeSkill=function(id)
   opened[#opened+1]=id
@@ -302,14 +303,26 @@ assert(CP:OwnsProfession("alchemy")==true)
 assert(CP:OwnsProfession("tailoring")==false)
 CP.db.ui.autoOpen=true
 CP:ChangeView("alchemy",true)
-assert(opened[#opened]==171)
-local openings=#opened
 CP:ChangeView("tailoring",true)
-assert(#opened==openings)
+assert(#opened==0,"The protected API must never be called")
+local spellNames={[2259]="Alchemie"}
+local savedSpell=C_Spell
+C_Spell={GetSpellName=function(id) return spellNames[id] end}
+CP:RenderProfessionMenu()
+local castButton
+for _,control in ipairs(createdFrames) do if rawget(control,"castSpell")=="Alchemie" and control:IsShown() then castButton=control end end
+assert(castButton and castButton.professionKey=="alchemy","Owned profession gets a secure spell button")
+castButton:GetScript("PostClick")(castButton,"LeftButton",false)
+assert(CP.db.view=="alchemy")
 CP.db.ui.autoOpen=false
-CP:ChangeView("alchemy",true)
-assert(#opened==openings)
+CP:RenderProfessionMenu()
+assert(not castButton:IsShown(),"Auto-open off: no spell button")
 CP.db.ui.autoOpen=true
+InCombatLockdown=function() return true end
+castButton:Hide();CP:RenderProfessionMenu()
+assert(not castButton:IsShown(),"No secure changes in combat")
+InCombatLockdown=nil
+C_Spell=savedSpell
 
 -- Range and explicit multi-craft material aggregation.
 assert(CP:SetPlanRange("alchemy",30,100))
@@ -374,7 +387,7 @@ for _,key in ipairs({"skinning","fishing","cooking","firstaid"}) do
   observedID=CP.Data.professions[key].id
   assert(CP:CaptureProfession())
   assert(#CP:Options(key)>0,"Native crafting recipes should work: "..key)
-  assert(CP:OpenOwnedProfession(key))
+  assert(not CP:OpenOwnedProfession(key),"No protected open; the menu uses secure spell buttons")
   for _,tab in ipairs({"now","stages","mats","plan","trainers","help"}) do
     CP:OpenTab(tab)
     CP:Render()
@@ -489,27 +502,17 @@ CP:CaptureProfession()
 assert(CP.db.recipes.cooking[2964].mats==nil)
 print("PASS: settings callbacks, reset confirmation, route policy, money icons and draggable minimap control")
 
--- The restricted API must be called without a pcall frame, before rendering.
+-- Switching profession renders CraftPilot only; the protected API stays untouched (0.24).
 local calls={}
 local oldRender=CP.Render
 local oldOpen=C_TradeSkillUI.OpenTradeSkill
 CP.Render=function() calls[#calls+1]="render" end
-C_TradeSkillUI.OpenTradeSkill=function(id)
-  for level=2,12 do
-    local info=debug.getinfo(level,"n")
-    if not info then break end
-    assert(info.name~="pcall","Restricted profession API wrapped in pcall")
-  end
-  calls[#calls+1]="open"
-  assert(id==185)
-  return true
-end
+C_TradeSkillUI.OpenTradeSkill=function() calls[#calls+1]="open";return true end
 CP.db.ui.autoOpen=true
 CP:ChangeView("cooking",true)
-assert(calls[1]=="open" and calls[2]=="render")
+assert(calls[1]=="render" and #calls==1,"No protected call when switching profession")
 InCombatLockdown=function() return true end
 assert(not CP:OpenOwnedProfession("cooking"))
-assert(#calls==2,"No protected open in combat")
 InCombatLockdown=nil
 CP.Render=oldRender
 C_TradeSkillUI.OpenTradeSkill=oldOpen
@@ -1029,6 +1032,7 @@ print("PASS: cash versus economic costs, one-time book fees, missing prices, rou
 
 assert(loadfile("tests/planning.lua"))(CP)
 assert(loadfile("tests/market.lua"))(CP)
+assert(loadfile("tests/cheapest_path.lua"))(CP)
 assert(loadfile("tests/recommendation.lua"))(CP)
 assert(loadfile("tests/companion_alts.lua"))(CP)
 assert(loadfile("tests/shopping.lua"))(CP)

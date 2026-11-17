@@ -203,11 +203,58 @@ U.profMenu.otherLabel=text(U.profMenu,"GameFontDisableSmall",10,-8,200,L("Weiter
 for i,key in ipairs(D.order) do
   local item=button(U.profMenu,214,26,8,-8,"",function()
     U.profMenu:Hide()
-    CP:ChangeView(key,true)
+    CP:ChangeView(key,false)
   end)
   item.professionKey=key
   U.profItems[i]=item
 end
+
+-- Opening the game's profession window is protected for addons. A secure spell button casts the
+-- profession spell like a click in the spellbook would. These buttons hang on UIParent (never on
+-- the CraftPilot window, which must stay closable in combat) and are hidden whenever combat starts.
+local PROFESSION_SPELLS={alchemy=2259,blacksmithing=2018,enchanting=7411,engineering=4036,leatherworking=2108,
+  tailoring=3908,cooking=2550,firstaid=3273,mining=2656}
+function CP:ProfessionSpellName(key)
+  local id=PROFESSION_SPELLS[key];if not id then return nil end
+  local name
+  if C_Spell and type(C_Spell.GetSpellName)=="function" then local ok,v=pcall(C_Spell.GetSpellName,id);if ok then name=v end end
+  if not name and type(GetSpellInfo)=="function" then local ok,v=pcall(GetSpellInfo,id);if ok then name=v end end
+  return type(name)=="string" and name~="" and name or nil
+end
+local function inCombat() return type(InCombatLockdown)=="function" and InCombatLockdown() end
+U.secure={}
+local function hideSecure()
+  if inCombat() then return end
+  for _,s in ipairs(U.secure) do s:Hide() end
+end
+U.hideSecure=hideSecure
+local function secureButton(i)
+  local s=U.secure[i]
+  if s then return s end
+  s=CreateFrame("Button","CraftPilotProfessionCast"..i,UIParent,"SecureActionButtonTemplate")
+  if type(s.SetFrameStrata)=="function" then s:SetFrameStrata("DIALOG") end
+  if type(s.SetFrameLevel)=="function" then s:SetFrameLevel(60) end
+  if type(s.RegisterForClicks)=="function" then s:RegisterForClicks("AnyUp","AnyDown") end
+  s:SetAttribute("type","spell")
+  s:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
+  local h=s:GetHighlightTexture();if h then h:SetVertexColor(.35,.55,.75,.16) end
+  s:SetScript("PostClick",function(self,_,down)
+    if down then return end
+    U.profMenu:Hide()
+    if self.professionKey then CP:ChangeView(self.professionKey,false) end
+  end)
+  s:Hide()
+  U.secure[i]=s
+  return s
+end
+U.profMenu:SetScript("OnHide",hideSecure)
+local combatWatcher=CreateFrame("Frame")
+pcall(combatWatcher.RegisterEvent,combatWatcher,"PLAYER_REGEN_DISABLED")
+combatWatcher:SetScript("OnEvent",function()
+  -- Still allowed while this event runs; afterwards secure frames are locked.
+  for _,s in ipairs(U.secure) do s:Hide() end
+  if U.profMenu then U.profMenu:Hide() end
+end)
 
 U.skillBar=CreateFrame("StatusBar",nil,header)
 U.skillBar:SetHeight(6)
@@ -1395,6 +1442,23 @@ function CP:RenderProfessionMenu()
   if #others>0 then y=y+22 end
   for _,k in ipairs(others) do add(k,false) end
   U.profMenu:SetHeight(y+8)
+  -- Owned crafting professions open the game window through a secure spell button on top.
+  if inCombat() then return end
+  for i,item in ipairs(U.profItems) do
+    local k=item.professionKey
+    local spell=self.db.ui.autoOpen~=false and self:OwnsProfession(k) and item:IsShown() and self:ProfessionSpellName(k)
+    local s=secureButton(i)
+    if spell then
+      s:SetAttribute("spell",spell)
+      s.castSpell=spell
+      s.professionKey=k
+      s:ClearAllPoints();s:SetPoint("TOPLEFT",item,"TOPLEFT",0,0);s:SetPoint("BOTTOMRIGHT",item,"BOTTOMRIGHT",0,0)
+      s:Show()
+    else
+      s.castSpell=nil
+      s:Hide()
+    end
+  end
 end
 
 -- Render ----------------------------------------------------------------------------------------------------------
@@ -1728,12 +1792,27 @@ function CP:RenderRecommendation(key,inner)
   U.rec.detail:SetText(rec.detail)
   U.rec.search:ClearAllPoints();U.rec.search:SetPoint("RIGHT",U.rec,"RIGHT",-12,0)
   U.rec.pick:ClearAllPoints();U.rec.pick:SetPoint("RIGHT",U.rec.search,"LEFT",-8,0)
-  U.rec.search:SetText(rec.missing>0 and L("Im AH suchen") or L("Berufsfenster öffnen"))
-  U.rec.search:SetScript("OnClick",rec.missing>0 and function() CP:SearchRecommendation() end
-    or function() local r=CP.currentRecommendation;if r then CP:OpenLearnedRecipe(r.key,r.id) end end)
+  if rec.learn then
+    U.rec.search:SetText(L("Wegpunkt zum Lernen"))
+    U.rec.search:SetScript("OnClick",function()
+      local r=CP.currentRecommendation;if not r or not r.learn then return end
+      if r.learn.source=="vendor" and r.learn.vendor and r.learn.vendor.location then CP:SetWaypoint(r.learn.vendor.location)
+      else CP:TrainerWaypoint() end
+    end)
+  else
+    U.rec.search:SetText(rec.missing>0 and L("Im AH suchen") or L("Berufsfenster öffnen"))
+    U.rec.search:SetScript("OnClick",rec.missing>0 and function() CP:SearchRecommendation() end
+      or function() local r=CP.currentRecommendation;if r then CP:OpenLearnedRecipe(r.key,r.id) end end)
+  end
   primary(U.rec.search)
   local chosen=self:SelectedOption(key)
-  U.rec.pick:SetShown(not (chosen and chosen.id==rec.id and not self.db.ui.selectedVendorRecipe))
+  U.rec.pick:SetShown(not rec.learn and not (chosen and chosen.id==rec.id and not self.db.ui.selectedVendorRecipe))
+  -- Hover: the whole cheapest path, step by step.
+  U.rec:EnableMouse(true)
+  tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
+    local r=CP.currentRecommendation
+    return r and r.path and CP:PathSummaryLines(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+  end)
   return true
 end
 
