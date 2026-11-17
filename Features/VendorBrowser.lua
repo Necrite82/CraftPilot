@@ -20,7 +20,7 @@ end
 function CP:VendorOfferPrice(vendor)
   local s=vendor.source or {}
   if s.otherCost then return L("Zusätzliche Währung erforderlich") end
-  if s.favor and vendor.favorEstimate then return L("Merchant's Favor: ")..s.favor.." (≈ "..self:FormatCostMoney(vendor.cost)..")" end
+  if s.favor and vendor.favorEstimate then return L("Merchant's Favor: ")..s.favor.." ("..L("ca. ")..self:FormatCostMoney(vendor.cost)..")" end
   if s.favor and not vendor.cost then return L("Merchant's Favor: ")..(type(s.favor)=="number" and s.favor or L("Preis unbekannt")) end
   return vendor.cost and self:FormatCostMoney(vendor.cost) or L("Preis fehlt")
 end

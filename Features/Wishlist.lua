@@ -11,6 +11,9 @@ local function safe(fn,...)
 end
 local function secret(v) return type(issecretvalue)=="function" and issecretvalue(v)==true end
 local function plain(v) if v~=nil and not secret(v) then return v end end
+-- The game font has no star or check glyph (they show as boxes): use the ready-check texture instead.
+local STAR="|TInterface\\RaidFrame\\ReadyCheck-Ready:12|t "
+CP.WISH_MARK=STAR
 local function today() return type(date)=="function" and date("%Y-%m-%d") or "?" end
 
 function CP:Wishlist(key)
@@ -99,10 +102,11 @@ function CP:WishlistCards(key)
     local native=(self.db.recipes[key] or {})[id]
     local recipe=catalog and catalog.recipes[id]
     local learned=native and native.learned
-    cards[#cards+1]={title="★ "..self:RecipeName(key,id,recipe and recipe.name),
+    cards[#cards+1]={title=STAR..self:RecipeName(key,id,recipe and recipe.name),
       detail=learned and L("Erlernt · kann von der Wunschliste") or self:RecipeSourceText(key,id),
       footer=L("Anklicken: von der Wunschliste nehmen")..(recipe and recipe.learn and (" · "..L("ab Skill ")..recipe.learn) or ""),
       color=learned and "green" or "gold",icon=self.RecipeIcon and self:RecipeIcon(key,id),
+      tooltipItem=recipe and recipe.item,recipeKey=key,recipeID=id,showMarket=false,
       action=function() CP:ToggleWish(key,id);CP:Render() end}
   end
   local suggestions=self:WishSuggestions(key,5)
@@ -111,7 +115,7 @@ function CP:WishlistCards(key)
     for _,s in ipairs(suggestions) do
       cards[#cards+1]={title=self:RecipeName(key,s.id),detail=self:RecipeSourceText(key,s.id),
         footer=(s.profit and (L("Gewinn je Herstellung: ")..(s.profit<0 and "-" or "+")..self:FormatCostMoney(math.abs(s.profit))).." · " or "")..L("Anklicken: auf die Wunschliste"),
-        color="blue",icon=self.RecipeIcon and self:RecipeIcon(key,s.id),
+        color="blue",icon=self.RecipeIcon and self:RecipeIcon(key,s.id),recipeKey=key,recipeID=s.id,showMarket=false,
         action=function() CP:ToggleWish(key,s.id);CP:Render() end}
     end
   end

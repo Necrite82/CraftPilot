@@ -142,9 +142,9 @@ function CP:RaidStockCards(key)
   for _,row in ipairs(rows) do
     local status
     if row.how=="have" then status=L("Vorrat reicht")
-    elseif row.how=="craft" then status=string.format(L("%d herstellen (%s) · ≈ %s je Stück"),row.missing,row.maker or L("du"),self:FormatCostMoney(row.craft))
+    elseif row.how=="craft" then status=string.format(L("%d herstellen (%s) · ca. %s je Stück"),row.missing,row.maker or L("du"),self:FormatCostMoney(row.craft))
       ..(row.ah and (" · "..L("AH ")..self:FormatCostMoney(row.ah)) or "")
-    elseif row.how=="buy" then status=string.format(L("%d im AH kaufen · ≈ %s je Stück"),row.missing,self:FormatCostMoney(row.ah))
+    elseif row.how=="buy" then status=string.format(L("%d im AH kaufen · ca. %s je Stück"),row.missing,self:FormatCostMoney(row.ah))
       ..(row.craft and (" · "..L("herstellen ")..self:FormatCostMoney(row.craft)) or "")
     else status=string.format(L("%d fehlen · kein Preis und kein Hersteller bekannt"),row.missing) end
     local item,entry=row.item,{key=row.key,id=row.id}
@@ -157,7 +157,7 @@ function CP:RaidStockCards(key)
   if #rows>0 then
     local _,total,unknown=self:RaidStockShopping()
     cards[#cards+1]={title=L("Raid-Vorrat an Auctionator"),
-      detail=string.format(L("Fehlende Materialien und Tränke als Einkaufsliste · ≈ %s"),self:FormatCostMoney(total))
+      detail=string.format(L("Fehlende Materialien und Tränke als Einkaufsliste · ca. %s"),self:FormatCostMoney(total))
         ..(unknown>0 and (" · "..string.format(L("%d ohne Preis"),unknown)) or ""),
       footer=L("Regler auf 0 nimmt einen Eintrag vom Vorrat · Kauf bleibt manuell."),color="gold",
       action=function() CP:ExportToAuctionator("raid");CP:Render() end}
@@ -168,7 +168,7 @@ function CP:RaidStockCards(key)
     for i=1,math.min(6,#candidates) do
       local c=candidates[i]
       cards[#cards+1]={title=c.name,detail=string.format(L("Anklicken: %d Stück auf den Raid-Vorrat"),DEFAULT_COUNT),
-        color="blue",icon=self.RecipeIcon and self:RecipeIcon(c.key,c.id),
+        color="blue",icon=self.RecipeIcon and self:RecipeIcon(c.key,c.id),tooltipItem=c.item,recipeKey=c.key,recipeID=c.id,showMarket=false,
         action=function() CP:SetRaidStock(c.item,c.key,c.id,DEFAULT_COUNT);CP:Render() end}
     end
   end

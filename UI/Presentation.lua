@@ -231,6 +231,11 @@ function CP:LayoutVisualCard(b,entry,width)
     self:MetricStrip(b,entry.metrics,55,y,width-70)
     y=y+58
     if entry.tooltipItem then b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,entry.tooltipItem) end) end
+  elseif (entry.recipeID or entry.tooltipItem) and entry.showMarket==false then
+    -- 0.2.1: tooltip on hover only, without the price strip (raid stock, wishlist).
+    for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
+    local item=entry.tooltipItem or self:RecipeMarketOutput(entry.recipeKey or self.db.view,entry.recipeID)
+    b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,item) end)
   elseif entry.recipeID or entry.tooltipItem then
     local item=entry.tooltipItem or self:RecipeMarketOutput(entry.recipeKey or self.db.view,entry.recipeID)
     local m=item and self:ItemMarket(item)

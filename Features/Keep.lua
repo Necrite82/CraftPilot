@@ -385,7 +385,7 @@ function CP:TooltipLines(item)
     end
   end
   local wish=self.WishedRecipeItems and self:WishedRecipeItems()[item]
-  if wish then lines[#lines+1]={"|cffffd200★ "..L("Auf deiner Rezept-Wunschliste").."|r",1,1,1} end
+  if wish then lines[#lines+1]={(CP.WISH_MARK or "").."|cffffd200"..L("Auf deiner Rezept-Wunschliste").."|r",1,1,1} end
   local limit=self:PriceLimit(key,item)
   if limit then lines[#lines+1]={L("Lohnt sich bis ")..self:FormatCostMoney(limit.price)..L(" je Stück"),.8,.8,.8} end
   if #lines==0 then cache.lines[item]=false;return nil end

@@ -60,7 +60,7 @@ CP.db.ui.favorRate=5000
 assert(CP:FavorInGold(30)==150000)
 for _,v in ipairs(CP:RecipeVendors("cooking",1249963,true)) do if v.source and v.source.favor then favorVendor=v end end
 assert(favorVendor.favorEstimate and favorVendor.cost==150000,"Favor converted at the player's rate")
-assert(CP:VendorOfferPrice(favorVendor):find("≈",1,true))
+assert(CP:VendorOfferPrice(favorVendor):find("ca. ",1,true))
 local favorList=CP:FavorRecipes("cooking")
 assert(#favorList>0 and favorList[1].favor,"Favor recipes of the profession are listed")
 local favorCards=CP:EndgameCards("cooking")

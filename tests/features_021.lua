@@ -20,7 +20,7 @@ local text=CP:RecipeSourceText(key,id)
 assert(text:find("Testboss · Testdungeon",1,true) and text:find("Zweiter Boss",1,true),"Bosses from QuestieDB")
 local cards=CP:WishlistCards(key)
 local wished=false
-for _,c in ipairs(cards) do if c.title and c.title:find("★",1,true) then wished=true;assert(c.detail:find("Testboss",1,true)) end end
+for _,c in ipairs(cards) do if c.title and c.title:find("ReadyCheck-Ready",1,true) then wished=true;assert(c.detail:find("Testboss",1,true)) end end
 assert(wished,"Wished recipe listed with its sources")
 -- Tooltips
 assert(CP:NpcIDFromGUID("Creature-0-3299-0-12-10001-0000ABCDEF")==10001)
@@ -102,6 +102,29 @@ for _,b in ipairs(createdFrames) do
 end
 CP.ShowCraftTooltip=savedTip
 assert(hovered and (shownItem==990300 or shownItem==990301),"Raid stock card opens the item tooltip")
+-- Cards without a slider (raid stock candidates, wishlist) open the tooltip too, without a price strip.
+local cardEntry
+for _,c in ipairs(stockCards) do if c.title=="Testtrank" then cardEntry=c end end
+if not cardEntry then
+  CP:SetRaidStock(990300,"alchemy",990400,0)
+  for _,c in ipairs(CP:RaidStockCards("alchemy")) do if c.title=="Testtrank" then cardEntry=c end end
+  CP:SetRaidStock(990300,"alchemy",990400,5)
+end
+assert(cardEntry and cardEntry.tooltipItem==990300 and cardEntry.showMarket==false,"Candidate card carries its item for the tooltip")
+-- Rendered: the candidate card (no slider) opens the tooltip of its potion.
+CP:SetRaidStock(990300,"alchemy",990400,0)
+CP:OpenTab("endgame")
+local seen={}
+CP.ShowCraftTooltip=function(_,_,_,_,item) seen[item or 0]=true end
+for _,b in ipairs(createdFrames) do
+  local slider=rawget(b,"settingSlider")
+  local enter=b:IsShown() and not (slider and slider:IsShown()) and type(b.GetScript)=="function" and b:GetScript("OnEnter")
+  if enter then pcall(enter) end
+end
+CP.ShowCraftTooltip=savedTip
+assert(seen[990300],"Candidate card opens the potion tooltip")
+CP:SetRaidStock(990300,"alchemy",990400,5)
+CP:OpenTab("now")
 CP:OpenTab("now")
 -- Export to Auctionator
 local created
@@ -120,3 +143,23 @@ CP.db.raidStock=nil;CP:InvalidateReservations();CP.reservedCache=nil
 CP.db.recipes.alchemy[990400]=nil;CP.db.recipes.alchemy[990401]=nil
 C_Item.GetItemInfoInstant=savedInstant;Auctionator.API.v1=savedApi
 print("PASS: 0.2.1 raid stock: craft or buy, shared reservation and Auctionator export")
+
+-- The game font has no glyphs for these characters; they show up as boxes. Keep them out of in-game text.
+local toc=io.open("CraftPilot.toc","r")
+for line in toc:lines() do
+  local path=line:gsub("\\","/"):gsub("%s+$","")
+  if path:match("%.lua$") and not path:match("^ThirdParty") then
+    local f=assert(io.open(path,"r"))
+    local n=0
+    for code in f:lines() do
+      n=n+1
+      local text=code:gsub("%-%-.*$","")
+      for _,glyph in ipairs({"≈","★","✓","✔","→","←"}) do
+        assert(not text:find(glyph,1,true),path..":"..n.." uses "..glyph.." (no glyph in the game font)")
+      end
+    end
+    f:close()
+  end
+end
+toc:close()
+print("PASS: 0.2.1 tooltips on raid stock and wishlist cards, no box glyphs in game text")
