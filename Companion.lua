@@ -73,6 +73,9 @@ function CP:CompanionFrame()
     CP.currentRecommendation=CP.currentCompanionRecommendation;CP:SearchRecommendation()
   end)
   f.open=smallButton(f,112,L("CraftPilot öffnen"),function() CP:OpenTab("now") end)
+  -- Craft the recommendation from here. Must run straight from the click (hardware event).
+  f.craft=smallButton(f,140,L("Herstellen"),function() CP:CraftRecommendation(false) end)
+  f.craftOne=smallButton(f,84,L("1×"),function() CP:CraftRecommendation(true) end)
   f.trainer=smallButton(f,112,L("Lehrer markieren"),function() CP:TrainerWaypoint() end)
   if self.StylePrimaryButton then self:StylePrimaryButton(f.select) end
   f:Hide()
@@ -150,7 +153,7 @@ function CP:UpdateCompanion()
     node:ClearAllPoints();node:SetPoint("TOPLEFT",f,"TOPLEFT",12,-y);node:Show()
     local h=node:GetStringHeight();y=y+(type(h)=="number" and h>0 and h or 14)+(gap or 6)
   end
-  for _,node in ipairs({f.title,f.detail,f.progress,f.notice,f.extra,f.select,f.search,f.open,f.trainer}) do node:Hide() end
+  for _,node in ipairs({f.title,f.detail,f.progress,f.notice,f.extra,f.select,f.search,f.open,f.trainer,f.craft,f.craftOne}) do node:Hide() end
   if collapsed then
     f:SetHeight(34)
     f:Show()
@@ -194,6 +197,19 @@ function CP:UpdateCompanion()
   if session then extra[#extra+1]=session end
   if #extra>0 then f.extra:SetText(table.concat(extra,"\n"));put(f.extra,8) end
   local atCap=record.cap and record.cap<300 and (record.skill or 0)>=record.cap
+  -- Craft row: the recommended amount, limited by what the bags allow right now.
+  if rec and not rec.learn then
+    local count,available=self:CraftableCount(rec)
+    f.craft:ClearAllPoints();f.craft:SetPoint("TOPLEFT",f,"TOPLEFT",12,-y)
+    f.craftOne:ClearAllPoints();f.craftOne:SetPoint("LEFT",f.craft,"RIGHT",4,0)
+    if available==nil or available>0 then
+      f.craft:SetText(string.format(L("Herstellen: %d×"),count));f.craft:SetEnabled(true);f.craftOne:SetEnabled(true)
+    else
+      f.craft:SetText(L("Material fehlt"));f.craft:SetEnabled(false);f.craftOne:SetEnabled(false)
+    end
+    f.craft:Show();f.craftOne:Show()
+    y=y+30
+  end
   local row={}
   if rec and not rec.learn then row[#row+1]=f.select end
   if rec and not rec.learn and rec.missing>0 then row[#row+1]=f.search end
@@ -222,3 +238,31 @@ events:SetScript("OnEvent",function(_,event)
   if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(.1,function() CP:UpdateCompanion() end)
   else CP:UpdateCompanion() end
 end)
+
+-- How many of the recommendation can be crafted now: the recommended count, at most what the materials allow.
+function CP:CraftableCount(rec)
+  local T=C_TradeSkillUI
+  local info=T and type(T.GetRecipeInfo)=="function" and T.GetRecipeInfo(rec.id)
+  local available=type(info)=="table" and tonumber(info.numAvailable) or nil
+  local count=math.max(1,rec.count or 1)
+  if available then count=math.min(count,math.max(available,0)) end
+  return math.max(1,count),available
+end
+
+-- Called directly from the button click; the game allows crafting only from a player's action.
+function CP:CraftRecommendation(single)
+  local rec=self.currentCompanionRecommendation
+  if not rec or rec.learn then return false end
+  if type(InCombatLockdown)=="function" and InCombatLockdown() then self:Say(L("Im Kampf nicht möglich."));return false end
+  local T=C_TradeSkillUI
+  if not T or type(T.CraftRecipe)~="function" then
+    self:Say(L("Herstellen per Addon ist in diesem Client nicht verfügbar · Rezept im Berufsfenster herstellen."))
+    if self.OpenLearnedRecipe then self:OpenLearnedRecipe(rec.key,rec.id) end
+    return false
+  end
+  local count,available=self:CraftableCount(rec)
+  if available==0 then self:Say(L("Material fehlt."));return false end
+  if single then count=1 end
+  T.CraftRecipe(rec.id,count)
+  return true
+end
