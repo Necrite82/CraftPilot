@@ -29,7 +29,7 @@ Seit 0.29 ist das Addon **QuestieDB** (Forever-Fassung) eine feste Voraussetzung
 
 ## Lehrer
 
-Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): die gelehrten Ränge aus **CMaNGOS classic-db**; Positionen, Fraktion und Titel seit 0.29 zur Laufzeit aus dem **QuestieDB**-Addon. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
+Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): die gelehrten Ränge aus **CMaNGOS classic-db**; Positionen, Fraktion und Titel seit 0.29 zur Laufzeit aus dem **QuestieDB**-Addon. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Core/Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
 
 ## Sammelgebiete
 
