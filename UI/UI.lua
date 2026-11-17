@@ -783,7 +783,7 @@ local function setVisualCards(entries)
   local baseHeight=settingsView and 92 or 73
   local offset=0
   for i,entry in ipairs(entries) do
-    local market=not entry.metrics and (entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
+    local market=not entry.metrics and entry.showMarket~=false and (entry.recipeID and CP:RecipeMarketText(entry.recipeKey or CP.db.view,entry.recipeID)
       or (entry.tooltipItem and CP:ItemMarketText(entry.tooltipItem))) or nil
     local cardHeight=market and 122 or baseHeight
     local b=U.cards[i]
@@ -933,6 +933,14 @@ local function setVisualCards(entries)
       for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
       if rawget(b,"dataTable") then b.dataTable:Hide() end
       b.titleLabel:Show();b.footLabel:Show()
+      -- 0.2.1: slider cards with an item (raid stock) show its tooltip like every other item card.
+      local item=entry.tooltipItem
+      b:SetScript("OnEnter",item and function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,item) end or nil)
+      b:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
+      if b.settingSlider and type(b.settingSlider.SetScript)=="function" then
+        b.settingSlider:SetScript("OnEnter",item and function() CP:ShowCraftTooltip(b,entry.recipeKey or CP.db.view,entry.recipeID,item) end or nil)
+        b.settingSlider:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
+      end
     end
     offset=offset+cardHeight+1
     b:Show()

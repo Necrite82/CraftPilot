@@ -1,6 +1,6 @@
 -- 0.2.1: Endgame tab name, recipe wishlist with sources and tooltips, AH alarm, raid stock with reservation
 -- and Auctionator export.
-local CP=...
+local CP,createdFrames=...
 
 -- Tab name ----------------------------------------------------------------------------------------------------------
 CP:OpenTab("endgame");assert(CP.db.ui.tab=="endgame")
@@ -89,6 +89,20 @@ local stockCards=CP:RaidStockCards("alchemy")
 local slider=false
 for _,c in ipairs(stockCards) do if c.slider then slider=true end end
 assert(slider,"One slider per stocked item")
+-- The slider cards show the item tooltip on hover.
+CP.db.view="alchemy";CP:OpenTab("endgame")
+local savedTip=CP.ShowCraftTooltip
+local shownItem
+CP.ShowCraftTooltip=function(_,_,_,_,item) shownItem=item end
+local hovered=false
+for _,b in ipairs(createdFrames) do
+  local slider=rawget(b,"settingSlider")
+  local enter=slider and b:IsShown() and slider:IsShown() and b:GetScript("OnEnter")
+  if enter then enter();hovered=true;break end
+end
+CP.ShowCraftTooltip=savedTip
+assert(hovered and (shownItem==990300 or shownItem==990301),"Raid stock card opens the item tooltip")
+CP:OpenTab("now")
 -- Export to Auctionator
 local created
 Auctionator.API.v1.ConvertToSearchString=function(_,t) return t.searchString..";"..t.quantity end

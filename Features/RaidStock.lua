@@ -149,7 +149,7 @@ function CP:RaidStockCards(key)
     else status=string.format(L("%d fehlen · kein Preis und kein Hersteller bekannt"),row.missing) end
     local item,entry=row.item,{key=row.key,id=row.id}
     cards[#cards+1]={title=self:ItemName(item)..": "..row.count,footer=string.format(L("%d von %d da · "),math.min(row.have,row.count),row.count)..status,
-      color=row.how=="have" and "green" or "gold",tooltipItem=item,
+      color=row.how=="have" and "green" or "gold",tooltipItem=item,recipeKey=row.key,recipeID=row.id,showMarket=false,
       slider={label=self:ItemName(item)..": ",value=row.count,min=0,max=40,step=1,unit="",apply=function(value)
         CP:SetRaidStock(item,entry.key,entry.id,value)
       end}}
