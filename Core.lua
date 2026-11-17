@@ -76,11 +76,13 @@ end
 
 function CP:ItemAvailability(itemID)
   local bags=self:RawItemCount(itemID,false)
+  -- Twinks on the same realm and faction can mail their stock; counted unless switched off.
+  local alts=self.AltReachable and self:AltReachable(itemID) or 0
   if self.db and self.db.includeBank then
     local bank,live,known=self:BankCount(itemID)
-    return bags+bank,bags,bank,live,known
+    return bags+bank+alts,bags,bank,live,known,alts
   end
-  return bags,bags,0,false,true
+  return bags+alts,bags,0,false,true,alts
 end
 
 function CP:ItemCount(itemID)
@@ -724,6 +726,7 @@ function CP:Refresh(capture)
   self:RefreshProfessionSkills()
   if capture then self:CaptureProfession() end
   if self.Render then self:Render() end
+  if self.UpdateCompanion then self:UpdateCompanion() end
   self:RefreshCostWindow()
   if self.RefreshPersonalShopping then self:RefreshPersonalShopping() end
 end

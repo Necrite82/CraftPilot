@@ -1030,6 +1030,7 @@ print("PASS: cash versus economic costs, one-time book fees, missing prices, rou
 assert(loadfile("tests/planning.lua"))(CP)
 assert(loadfile("tests/market.lua"))(CP)
 assert(loadfile("tests/recommendation.lua"))(CP)
+assert(loadfile("tests/companion_alts.lua"))(CP)
 assert(loadfile("tests/shopping.lua"))(CP)
 assert(loadfile("tests/trainer_recipes.lua"))(CP)
 assert(loadfile("tests/presentation.lua"))(CP,createdFrames)

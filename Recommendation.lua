@@ -37,6 +37,11 @@ function CP:Recommendation(key)
     detail=L("Fehlt: ")..table.concat(parts,", ").." · "
       ..(cost.cashComplete and (L("ca. ")..self:FormatCostMoney(cost.buy)) or L("Preis unvollständig"))
   end
+  local pickups={}
+  for _,mat in ipairs(cost.materials) do
+    if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
+  end
+  if #pickups>0 then detail=detail.."  ·  "..L("Von Twinks: ")..table.concat(pickups,", ") end
   for _,offer in ipairs(self:TrainerOffersCached(key)) do
     local saving=offer.comparison and offer.comparison.cashSaving
     if saving and saving>0 then
