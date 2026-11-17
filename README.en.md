@@ -26,7 +26,7 @@ Forward planning checks at most 24 alternative routes in up to two passes, withi
 
 ## New in 0.19.1: browse every stored merchant recipe
 
-Under **Skill now → Merchant recipes**, browse all **698 merchant recipes in the bundled dataset**, covering the eight crafting professions including Cooking and First Aid. Skill, character level, training cap, tools, reputation, specialization, cooldowns and already learned recipes do not remove entries. Unmet requirements appear dimmed. Merchant restrictions such as faction, events or additional currency remain visible with notes. The setting for vendor skill suggestions does not hide this directory.
+Under **Skill now → Merchant recipes**, browse all **748 merchant recipes in the bundled dataset**, covering the eight crafting professions including Cooking and First Aid. Skill, character level, training cap, tools, reputation, specialization, cooldowns and already learned recipes do not remove entries. Unmet requirements appear dimmed. Merchant restrictions such as faction, events or additional currency remain visible with notes. The setting for vendor skill suggestions does not hide this directory.
 
 Cards show the merchant, location, coordinates, recorded price and requirements. **Waypoint** targets the first suitable stored location; clicking the recipe reveals other offers. Search by recipe, merchant, zone or recipe/item ID; sort by skill or name. **Accurate Scope** from **Mazk Snipeshot** (recipe item 13310, profession skill 180) remains visible below its required skill.
 
@@ -52,7 +52,7 @@ Engineering, Mining, Blacksmithing, Enchanting, Tailoring, Leatherworking, Herba
 
 The original eight have a **1–300 milestone overview**. Currently learned crafting recipes can be ranked by estimated material cost per skill point using the current recipe difficulty and stored auction prices. Mining and Herbalism offer gathering progression overviews. Profession levels can also be read from the character profession list.
 
-**Scope:** An attributed GPL-3.0 crafting recipe snapshot is now bundled for the six crafting professions, plus a smelting subset for Mining. The source client build (1.60.1.70425–70450, October 2026) predates the latest live build; trainer availability and current skill colors are not guaranteed. Routes are estimates, not proven global cost optima.
+**Scope:** An attributed GPL-3.0 crafting recipe snapshot is now bundled for the six crafting professions, plus a smelting subset for Mining. The data comes from live client build 1.60.1.70938 (Craft Ladder 1.11.0, November 2026) and is kept current by an automated sync; server-side hotfixes may still be missing, and trainer availability is not guaranteed. Routes are estimates, not proven global cost optima.
 
 ## Features
 

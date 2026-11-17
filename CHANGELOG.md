@@ -1,5 +1,9 @@
 # Changelog
 
+## Unveröffentlicht
+
+Rezeptdaten auf Craft Ladder 1.11.0 gehoben: Live-Build 1.60.1.70938 statt der Beta-Builds aus dem Oktober. 33 neue Rezepte (u. a. Acolyte's-, Crusader's- und Guard's-Kettenteile, Brawler's- und Totemic-Lederteile, Goblin-Mörser, Stiefelverzauberung – Tempo), aktualisierte Taschenrezepte der Schneiderei, Grober Schleifstein bis Skill 90 und geänderte Bezugsquellen (Händler, Quest, Drop) bei 393 Rezepten. Händlerrezept-Verzeichnis jetzt mit 748 statt 698 Einträgen. Neuer automatischer Abgleich (`tools/sync_craft_ladder.py`, Workflow `data-sync.yml`), der neue Craft-Ladder-Releases als Pull Request vorschlägt.
+
 ## 0.20.1-alpha
 
 Behebt den Lua-5.1-Ladefehler der Oberfläche und den daraus folgenden Fehler beim Minimap-Klick. Vollständige Syntax- und Funktionstests laufen vor Pull-Request-Übernahme und Veröffentlichung nun unter Lua 5.1 und 5.4. [Details](docs/RELEASE_0.20.1-alpha.md).

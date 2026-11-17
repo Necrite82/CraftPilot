@@ -2,7 +2,7 @@
 
 ## Included reference data
 
-CraftPilot 0.11 adds only the camping subset of the already used Craft Ladder snapshot, revision `b9c61346ad4cf63245f35cadb1e0a88467fb6e75`:
+CraftPilot 0.11 adds only the camping subset of the already used Craft Ladder snapshot. Since the Craft Ladder 1.11.0 sync the revision is `fd801d7af49465bbe8d24d0cba558f77f4f6a595` (live build 1.60.1.70938; the camp objects themselves are unchanged from the earlier revision `b9c61346`):
 
 - `ThirdParty/CraftLadder/Camp.lua`: unchanged original file, generated 2026-10-16 from Forever build **1.60.1.70425**. Contains three campfires, profession objects, upgrades, level-based effects, exclusive class buffs and relevant material names. Faction filtering produces **37 objects per faction**, covering all twelve professions.
 - `ThirdParty/CraftLadder/CampingRecipes.lua`: eight recipe records selected from Cooking and FirstAid by the maker IDs in Camp.lua. Fishing was checked but yielded no matching recipe records. Other camping recipes use the previously bundled manufacturing catalog; missing gathering-profession recipe metadata remains unknown.

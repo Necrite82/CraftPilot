@@ -53,5 +53,9 @@ jobs:
               assert set(zipfile.namelist()) == {"CraftPilot/" + name for name in expected}
           print("PASS: historical 0.8 archive integrity and pinned SHA-256; development is not packaged")
           PY
-      - name: Verify current alpha install archive matches source
-        run: python3 tools/build_release.py --check
+      - name: Verify bundled Craft Ladder data matches its pinned upstream release
+        run: python3 tools/sync_craft_ladder.py --check
+      - name: Build install archive from the allowlist
+        # The committed dist/ archive is compared with the source when a release tag is pushed
+        # (release.yml); between releases main may carry newer files than the last archive.
+        run: python3 tools/build_release.py --out "$RUNNER_TEMP/dist"

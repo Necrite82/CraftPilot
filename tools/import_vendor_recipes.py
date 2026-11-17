@@ -24,7 +24,7 @@ def main():
     lines=['-- Vendor recipe subset derived from Craft Ladder, GPL-3.0.',
            '-- Original copyright and notices: CREDITS.txt and SOURCE.md.',
            '-- Modified: only vendor crafting recipes and referenced NPC records.',
-           '-- Build 1.60.1.70425; existing pinned input hashes in CAMP_SOURCES.json.',
+           f"-- Build {lock['build']}; existing pinned input hashes in CAMP_SOURCES.json.",
            'local _,CP=...', 'CP.VendorRecipeCatalogs={']
     count=0
     for name in ['Cooking','FirstAid']:
