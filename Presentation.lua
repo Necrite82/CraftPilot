@@ -17,10 +17,22 @@ function CP:StylePrimaryButton(b)
     if primaryFont and GameFontHighlightSmall then primaryFont:CopyFontObject(GameFontHighlightSmall) end
     if primaryFont then primaryFont:SetTextColor(.11,.08,.02) end
   end
-  if primaryFont then b:SetNormalFontObject(primaryFont);b:SetHighlightFontObject(primaryFont) end
+  if primaryFont then b:SetNormalFontObject(primaryFont);b:SetHighlightFontObject(primaryFont);b:SetDisabledFontObject(primaryFont) end
   local label=b:GetFontString();if label and type(label.SetTextColor)=="function" then label:SetTextColor(.11,.08,.02) end
+  local enabled=type(b.IsEnabled)~="function" or b:IsEnabled()~=false
+  if not enabled then b:SetBackdropColor(.40,.33,.18,1);b:SetBackdropBorderColor(.40,.33,.18,1) end
   local h=b:GetHighlightTexture();if h then h:SetVertexColor(1,1,1,.18) end
   b.craftPrimary=true
+end
+-- One option of a segmented control: gold when selected, otherwise a quiet label on the group surface.
+function CP:StyleSegment(b,on)
+  if on then
+    self:StylePrimaryButton(b)
+  else
+    b:SetBackdropColor(0,0,0,0);b:SetBackdropBorderColor(0,0,0,0)
+    b:SetNormalFontObject("GameFontHighlightSmall");b:SetHighlightFontObject("GameFontHighlightSmall")
+    local label=b:GetFontString();if label and type(label.SetTextColor)=="function" then label:SetTextColor(.80,.79,.75) end
+  end
 end
 function CP:RenderCheckbox(b,spec,width)
   if not rawget(b,"settingCheck") then

@@ -9,6 +9,12 @@ local GOLD = "|cffffd878"
 local MUTED = "|cff9dabb8"
 local RESET = "|r"
 local SKILL_COLORS = {orange={1,.5,.25},yellow={1,.82,0},green={.25,.75,.25},grey={.62,.62,.62}}
+-- The game font has no arrow glyphs; use client textures instead.
+local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:12:12:0:-3|t"
+local ARROW_UP = "|TInterface\\Buttons\\Arrow-Up-Up:12:12:0:3|t"
+local EXPAND = "|TInterface\\Buttons\\UI-PlusButton-Up:12:12:0:0|t "
+local COLLAPSE = "|TInterface\\Buttons\\UI-MinusButton-Up:12:12:0:0|t "
+local DOT = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
 
 local U = {buttons={}, rows={}, trainerRows={}, recipeRows={}, vendorRows={}, cards={}, listRows={},
   learnRows={}, stageButtons={}, profItems={}, filterItems={}, detail={}}
@@ -59,9 +65,46 @@ local function button(parent, width, height, x, y, caption, callback)
   return b
 end
 
+-- Own-styled controls: never handed to EllesmereUI, so tabs, segments and primary actions keep the
+-- CraftPilot look under every skin.
+local function plain(parent,width,height,caption,callback)
+  local b=CreateFrame("Button",nil,parent,"BackdropTemplate")
+  CP:StyleActionButton(b)
+  b:SetSize(width,height)
+  b:SetText(caption)
+  b:SetScript("OnClick",callback)
+  return b
+end
+local function segmentMarker(b)
+  local m={on=false}
+  function m:SetShown(v) self.on=v and true or false;CP:StyleSegment(b,self.on) end
+  function m:Show() self:SetShown(true) end
+  function m:Hide() self:SetShown(false) end
+  function m:IsShown() return self.on end
+  return m
+end
+local function segment(parent,width,height,caption,callback)
+  local b=plain(parent,width,height,caption,callback)
+  b.selectionMarker=segmentMarker(b)
+  CP:StyleSegment(b,false)
+  return b
+end
 local function primary(b)
   if CP.StylePrimaryButton then CP:StylePrimaryButton(b) end
   return b
+end
+local function primaryButton(parent,width,height,caption,callback)
+  local b=plain(parent,width,height,caption,callback)
+  b.selectionMarker={SetShown=function() end,Show=function() end,Hide=function() end,IsShown=function() return false end}
+  return primary(b)
+end
+local function setPrimaryEnabled(b,on)
+  b:SetEnabled(on)
+  primary(b)
+end
+local function dot(texture,color)
+  if type(texture.SetTexture)=="function" then texture:SetTexture(DOT) end
+  if type(texture.SetVertexColor)=="function" then texture:SetVertexColor(color[1],color[2],color[3],1) end
 end
 
 local function place(c,x,y,w,h)
@@ -114,6 +157,9 @@ elseif type(frame.SetMinResize)=="function" then
   if type(frame.SetMaxResize)=="function" then frame:SetMaxResize(1100,930) end
 end
 if type(frame.SetClampedToScreen)=="function" then frame:SetClampedToScreen(true) end
+-- Above unit frames and action bars (MEDIUM/LOW), below dialogs and popups (DIALOG).
+if type(frame.SetFrameStrata)=="function" then frame:SetFrameStrata("HIGH") end
+if type(frame.SetToplevel)=="function" then frame:SetToplevel(true) end
 frame:Hide()
 CP.frame = frame
 if type(UISpecialFrames)=="table" then
@@ -237,7 +283,7 @@ for i,t in ipairs(U.tabs) do
   b:SetScript("OnClick",function() CP:OpenTab(t.key) end)
   U.tabButtons[i]=b
 end
-U.back=button(frame,110,26,0,0,L("‹ Zurück"),function() CP:OpenTab(CP.db.ui.lastMainTab or "now") end)
+U.back=button(frame,110,26,0,0,L("Zurück"),function() CP:OpenTab(CP.db.ui.lastMainTab or "now") end)
 U.section=text(frame,"GameFontNormal",18,-104,W-50,"")
 
 -- Generic scroll area, used by every view except the recipe list --------------------------------------------
@@ -322,7 +368,7 @@ local function fieldNumber(field,fallback)
   local value=type(field.GetText)=="function" and field:GetText() or nil
   return tonumber(value) or fallback
 end
-U.plan.build=primary(button(frame,130,26,0,0,L("Plan erstellen"),function()
+U.plan.build=primaryButton(frame,130,26,L("Plan erstellen"),function()
   local key=CP.db.view
   local p=CP:PlanFor(key)
   if not CP:SetPlanRange(key,fieldNumber(U.plan.rangeStart,p.start),fieldNumber(U.plan.rangeEnd,p.target)) then
@@ -332,7 +378,7 @@ U.plan.build=primary(button(frame,130,26,0,0,L("Plan erstellen"),function()
   local ok,route=CP:RequestRouteBuild(key)
   if not ok then CP:Say(route or L("Keine Kandidaten.")) end
   CP:Render()
-end))
+end)
 U.plan.add=button(frame,200,26,0,0,L("Gewähltes Rezept hinzufügen"),function()
   local key=CP.db.view
   if CP.db.ui.selectedVendorKey==key and CP.db.ui.selectedVendorRecipe then CP:Say(L("Erst das Kaufrezept lernen und den Beruf neu einlesen."));return end
@@ -357,11 +403,11 @@ U.plan.clear=button(frame,120,26,0,0,L("Plan leeren"),function()
   end
   CP:Render()
 end)
-U.plan.export=primary(button(frame,150,30,0,0,L("An Auctionator"),function()
+U.plan.export=primaryButton(frame,150,30,L("An Auctionator"),function()
   local p=CP:PlanFor(CP.db.view)
   if fieldNumber(U.plan.rangeStart,p.start)~=p.start or fieldNumber(U.plan.rangeEnd,p.target)~=p.target then CP:Say(L("Bereich geändert · zuerst Plan erstellen."));return end
   CP:ExportToAuctionator(CP.db.view);CP:Render()
-end))
+end)
 U.plan.manual=button(frame,150,30,0,0,L("Eigene Liste bearbeiten"),function() CP:OpenPersonalShopping() end)
 U.plan.totalLabel=text(frame,"GameFontDisableSmall",0,0,200,L("Zukauf gesamt"))
 U.plan.total=text(frame,"GameFontNormalLarge",0,0,220,"")
@@ -370,7 +416,7 @@ U.plan.footerLine:SetHeight(1)
 U.plan.footerLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 U.plan.pages={}
 for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="details",label=L("Details")}}) do
-  U.plan.pages[i]=button(frame,96,26,0,0,page.label,function() CP.db.ui.planPage=page.key;CP:Render() end)
+  U.plan.pages[i]=segment(frame,96,24,page.label,function() CP.db.ui.planPage=page.key;CP:Render() end)
   U.plan.pages[i].pageKey=page.key
 end
 U.plan.controls={U.plan.rangeLabel,U.plan.rangeStart,U.plan.targetLabel,U.plan.rangeEnd,U.plan.quantityLabel,U.plan.rangeQty,
@@ -393,13 +439,13 @@ end
 U.trainer={}
 U.trainer.pages={}
 for i,page in ipairs({{key="trainers",label=L("Lehrer")},{key="merchants",label=L("Händlerrezepte")}}) do
-  U.trainer.pages[i]=button(frame,130,26,0,0,page.label,function()
+  U.trainer.pages[i]=segment(frame,130,24,page.label,function()
     CP.db.ui.vendorBrowser=page.key=="merchants";CP:Render()
   end)
   U.trainer.pages[i].pageKey=page.key
 end
 U.trainer.info=text(frame,"GameFontHighlightSmall",0,0,300,"")
-U.trainer.recommend=primary(button(frame,190,26,0,0,L("Empfohlenen markieren"),function() CP:TrainerWaypoint() end))
+U.trainer.recommend=primaryButton(frame,190,26,L("Empfohlenen markieren"),function() CP:TrainerWaypoint() end)
 U.trainer.nearest=button(frame,150,26,0,0,L("Nächsten markieren"),function() CP:TrainerWaypoint("nearest") end)
 U.merchant={}
 U.merchant.searchLabel=text(frame,"GameFontDisableSmall",0,0,50,L("Suche"))
@@ -416,7 +462,7 @@ U.trainer.controls={U.trainer.info,U.trainer.recommend,U.trainer.nearest,U.train
 -- Camping controls --------------------------------------------------------------------------------------------
 U.camp={}
 for i,page in ipairs({{key="fires",label=L("Lagerfeuer")},{key="buffs",label=L("Buffs")},{key="objects",label=L("Objekte")},{key="shopping",label=L("Einkauf")}}) do
-  U.camp[i]=button(frame,110,26,0,0,page.label,function()
+  U.camp[i]=segment(frame,110,24,page.label,function()
     CP.db.ui.campingPage=page.key;CP:Render()
   end)
   U.camp[i].pageKey=page.key
@@ -425,6 +471,26 @@ U.campFilter=button(frame,170,26,0,0,L("Nur gewählter Beruf"),function()
   CP.db.ui.campingAll=CP.db.ui.campingAll==false
   CP:Render()
 end)
+
+U.segBg={}
+for _,name in ipairs({"plan","trainer","camp"}) do
+  local bg=panel(frame,"raised")
+  bg:SetFrameLevel(math.max(0,(frame:GetFrameLevel() or 1)))
+  bg:Hide()
+  U.segBg[name]=bg
+end
+local function segmentGroup(name,buttons)
+  local first,last=buttons[1],buttons[#buttons]
+  local bg=U.segBg[name]
+  local x1,y1=select(4,first:GetPoint(1)),select(5,first:GetPoint(1))
+  local x2=select(4,last:GetPoint(1))
+  if type(x1)~="number" or type(x2)~="number" or type(y1)~="number" then return end
+  local w=(x2-x1)+(last:GetWidth() or 0)
+  bg:ClearAllPoints();bg:SetPoint("TOPLEFT",frame,"TOPLEFT",x1-3,y1+3);bg:SetSize(w+6,(first:GetHeight() or 24)+6)
+  bg:Show()
+  for _,b in ipairs(buttons) do if type(b.SetFrameLevel)=="function" then b:SetFrameLevel((bg:GetFrameLevel() or 0)+2) end end
+end
+U.segmentGroup=segmentGroup
 
 -- Settings header -----------------------------------------------------------------------------------------------
 U.settingsTitle=text(frame,"GameFontNormalLarge",18,0,300,L("Einstellungen"))
@@ -485,11 +551,15 @@ local function learnRow(i,offset,entry,key)
     r.infoLabel=text(r,"GameFontDisableSmall",28,-24,300,"")
     r.fee=text(r,"GameFontHighlightSmall",0,-15,110,"");r.fee:SetJustifyH("RIGHT")
     r.go=button(r,90,24,0,0,L("Wegpunkt"),function() if r.go.waypoint then CP:SetWaypoint(r.go.waypoint) end end)
+    r.sep=r:CreateTexture(nil,"ARTWORK");r.sep:SetHeight(1)
+    r.sep:SetPoint("BOTTOMLEFT",r,"BOTTOMLEFT",8,0);r.sep:SetPoint("BOTTOMRIGHT",r,"BOTTOMRIGHT",-8,0)
     U.learnRows[i]=r
   end
   local w=(content:GetWidth() or W-96)-8
   r:ClearAllPoints();r:SetPoint("TOPLEFT",content,"TOPLEFT",4,-offset);r:SetSize(w,44)
-  local c=SKILL_COLORS[colorOf(entry)];r.dot:SetColorTexture(c[1],c[2],c[3],1)
+  r:SetBackdropColor(0,0,0,0);r:SetBackdropBorderColor(0,0,0,0)
+  r.sep:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
+  dot(r.dot,SKILL_COLORS[colorOf(entry)])
   local vendor=entry.vendors and entry.vendors[1]
   r.go.waypoint=vendor and vendor.location
   r.craftRecipe=entry
@@ -502,7 +572,7 @@ local function learnRow(i,offset,entry,key)
   r.go:ClearAllPoints();r.go:SetPoint("RIGHT",r,"RIGHT",-8,0);r.go:SetEnabled(r.go.waypoint~=nil)
   r:SetScript("OnClick",function() CP.db.ui.tab="now";CP:ActivateRecipeRow(key,entry) end)
   r:Show()
-  return 48
+  return 44
 end
 
 local function setTrainerRows(choices,recommended,nearest,selected,offers,key)
@@ -523,11 +593,15 @@ local function setTrainerRows(choices,recommended,nearest,selected,offers,key)
       b.nameLabel=text(b,"GameFontHighlight",12,-6,300,"")
       b.infoLabel=text(b,"GameFontDisableSmall",12,-24,300,"")
       b.capLabel=text(b,"GameFontHighlightSmall",0,-15,140,"");b.capLabel:SetJustifyH("RIGHT")
+      b.sep=b:CreateTexture(nil,"ARTWORK");b.sep:SetHeight(1)
+      b.sep:SetPoint("BOTTOMLEFT",b,"BOTTOMLEFT",8,0);b.sep:SetPoint("BOTTOMRIGHT",b,"BOTTOMRIGHT",-8,0)
       U.trainerRows[i]=b
     end
     local npc=entry.npc
     b.craftTrainer=npc
     b:ClearAllPoints();b:SetPoint("TOPLEFT",content,"TOPLEFT",4,-offset);b:SetSize(w,44)
+    b:SetBackdropColor(0,0,0,0);b:SetBackdropBorderColor(0,0,0,0)
+    b.sep:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
     local flags=""
     if npc==recommended then flags=flags.."  |cff7fd99a"..L("Empfohlen")..RESET end
     if npc==nearest then flags=flags.."  "..GOLD..L("Am nächsten")..RESET end
@@ -539,7 +613,7 @@ local function setTrainerRows(choices,recommended,nearest,selected,offers,key)
     b.capLabel:ClearAllPoints();b.capLabel:SetPoint("RIGHT",b,"RIGHT",-12,0)
     b.capLabel:SetText(entry.canTeach and (L("lehrt bis ")..npc.cap) or (MUTED..L("nur bis ")..npc.cap..RESET))
     b:Show()
-    offset=offset+48
+    offset=offset+44
   end
   if #choices==0 then
     setRows({L("Für deine Fraktion ist noch kein Lehrer hinterlegt."),L("Bitte einen fehlenden Lehrerstandort als GitHub-Issue melden.")})
@@ -688,7 +762,7 @@ local function setVisualCards(entries)
     b.titleLabel:ClearAllPoints();b.titleLabel:SetPoint("TOPLEFT",b,"TOPLEFT",55,-7)
     if type(b.SetBackdropColor)=="function" and not CP.ellesmereSkin then
       b:SetBackdropColor(PALETTE.panel[1],PALETTE.panel[2],PALETTE.panel[3],1)
-      b:SetBackdropBorderColor(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
+      b:SetBackdropBorderColor(PALETTE.panel[1],PALETTE.panel[2],PALETTE.panel[3],1)
     end
     if entry.slider then
       if not b.settingSlider then
@@ -830,7 +904,7 @@ local function setRecipeList(key,entries,chosen)
     r:SetBackdropColor(on and .16 or 0,on and .18 or 0,on and .22 or 0,on and 1 or 0)
     r:SetBackdropBorderColor(0,0,0,0)
     r.stripe:SetShown(on)
-    local c=SKILL_COLORS[colorOf(entry)];r.dot:SetColorTexture(c[1],c[2],c[3],1)
+    dot(r.dot,SKILL_COLORS[colorOf(entry)]);r.dot:Show()
     r.nameLabel:SetWidth(w-170);r.subLabel:SetWidth(w-170)
     r.nameLabel:SetText(entry.name)
     r.nameLabel:SetTextColor(entry.vendorRecipe and .78 or .93,entry.vendorRecipe and .76 or .92,entry.vendorRecipe and .72 or .88)
@@ -862,7 +936,7 @@ local function detailLabel(name,font)
 end
 local function detailButton(name,w,h,caption,fn,isPrimary)
   local d=U.detail
-  if not d[name] then d[name]=button(U.detailContent,w,h,0,0,caption,fn);if isPrimary then primary(d[name]) end end
+  if not d[name] then d[name]=isPrimary and primaryButton(U.detailContent,w,h,caption,fn) or button(U.detailContent,w,h,0,0,caption,fn) end
   return d[name]
 end
 local function textHeight(node,fallback)
@@ -1056,7 +1130,7 @@ local function renderDetail(key,entry)
 
   local open=CP.db.ui.detailsOpen==true
   local toggle=detailButton("detailsToggle",inner,22,"",function() CP.db.ui.detailsOpen=not CP.db.ui.detailsOpen;CP:Render() end)
-  toggle:SetText((open and "▾ " or "▸ ")..L("Kosten-Details"))
+  toggle:SetText((open and COLLAPSE or EXPAND)..L("Kosten-Details"))
   toggle:SetWidth(inner);put(toggle,12,28)
   if open then
     local data=CP:RecipeDisplayData(key,entry.id)
@@ -1109,7 +1183,6 @@ local function registerEllesmereUI()
     useSkin(S,"Panel",U.detailPanel)
     useSkin(S,"CloseButton",U.close)
     for _,b in ipairs(U.buttons) do useSkin(S,"Button",b) end
-    for _,b in ipairs(U.tabButtons) do useSkin(S,"Tab",b) end
     for _,s in ipairs({U.scroll,U.listScroll,U.detailScroll}) do if s.ScrollBar then useSkin(S,"ScrollBar",s.ScrollBar) end end
     useSkin(S,"ApplyBarFill",U.skillBar)
     if CP.db then CP:ApplyTheme() end
@@ -1125,6 +1198,8 @@ end
 
 function CP:ApplyTheme()
   if not self.db then return end
+  -- A skin may reset the strata; keep the window above unit frames and action bars.
+  if type(frame.SetFrameStrata)=="function" then frame:SetFrameStrata("HIGH") end
   local pref=self.db.ui.skin or "auto"
   local hasEUI=pref=="auto" and type(self.ellesmereSkin)=="table"
   if pref=="classic" then
@@ -1280,6 +1355,7 @@ local function hideAll()
   for _,b in ipairs(U.stageButtons) do b:Hide() end
   U.campFilter:Hide();U.settingsTitle:Hide();U.settingsDone:Hide();U.back:Hide()
   U.listPanel:Hide();U.detailPanel:Hide();U.contentPanel:Hide();U.section:Hide()
+  for _,bg in pairs(U.segBg) do bg:Hide() end
 end
 
 local function showContent(top,bottom)
@@ -1293,7 +1369,7 @@ local function renderHeader(self,key,prof,record)
   local skill=record and record.skill or 0
   local cap=record and record.cap or 0
   local owned=self:OwnsProfession(key)
-  U.profButton:SetText((owned and "|TInterface\\RaidFrame\\ReadyCheck-Ready:12|t " or "").."|T"..D.professionIcons[key]..":16|t "..prof.name.."  ▾")
+  U.profButton:SetText((owned and "|TInterface\\RaidFrame\\ReadyCheck-Ready:12|t " or "").."|T"..D.professionIcons[key]..":16|t "..prof.name.."  "..ARROW_DOWN)
   if type(U.skillBar.SetMinMaxValues)=="function" then U.skillBar:SetMinMaxValues(0,math.max(75,cap>0 and cap or 300)) end
   if type(U.skillBar.SetValue)=="function" then U.skillBar:SetValue(math.max(0,skill)) end
   U.skillText:SetText(record and (skill.." / "..cap) or L("nicht eingelesen"))
@@ -1335,8 +1411,6 @@ local function renderTabs(self,tab)
     if b.label and type(b.label.SetTextColor)=="function" then
       if on then b.label:SetTextColor(.95,.94,.91) else b.label:SetTextColor(.62,.66,.70) end
     end
-    local S=self.ellesmereSkin
-    if S and self.db.ui.skin=="auto" and type(S.SetTabSelection)=="function" then pcall(S.SetTabSelection,b,on) end
     b:SetShown(tab~="settings")
   end
 end
@@ -1384,7 +1458,7 @@ local function renderNow(self,key,prof,record,inner)
   for i,b in ipairs(U.sortCols) do
     b:ClearAllPoints();b:SetPoint("TOPLEFT",U.listPanel,"TOPLEFT",colX[i],-42);b:SetWidth(colW[i])
     local on=self.db.ui.recipeSort==b.sortKey
-    b:SetText(b.baseLabel..(on and (b.sortKey=="chance" and " ▾" or " ▴") or ""))
+    b:SetText(b.baseLabel..(on and (b.sortKey=="chance" and (" "..ARROW_DOWN) or (" "..ARROW_UP)) or ""))
     if b.label and type(b.label.SetTextColor)=="function" then if on then b.label:SetTextColor(.88,.69,.31) else b.label:SetTextColor(.56,.60,.64) end end
   end
   U.listLine:ClearAllPoints();U.listLine:SetPoint("TOPLEFT",U.listPanel,"TOPLEFT",1,-62);U.listLine:SetPoint("TOPRIGHT",U.listPanel,"TOPRIGHT",-1,-62)
@@ -1399,7 +1473,7 @@ local function renderNow(self,key,prof,record,inner)
   local current=captured and captured.key==key and captured.skill==skill
   local entries,viewKey=recipeEntries(self,key,chosen,options or {},current)
   local labels={useful=L("Sinnvolle Rezepte"),unlearned=L("Nicht gelernt"),all=L("Alle Rezepte")}
-  U.filterButton:SetText(labels[viewKey].."  ▾")
+  U.filterButton:SetText(labels[viewKey].."  "..ARROW_DOWN)
   for _,item in ipairs(U.filterItems) do item.selectionMarker:SetShown(item.viewKey==viewKey) end
   U.countText:SetText(string.format(#entries==1 and L("%d Rezept") or L("%d Rezepte"),#entries))
   local active=setRecipeList(key,entries,chosen)
@@ -1411,7 +1485,7 @@ local function renderNow(self,key,prof,record,inner)
     row.nameLabel:SetText(not record and L("Beruf noch nicht auf diesem Charakter erfasst.")
       or (not current and L("Berufsfenster öffnen und aktualisieren.") or L("Keine passenden Rezepte.")))
     row.subLabel:SetText(not current and L("Nur aktuelle Skillfarben lassen sich sinnvoll vergleichen.") or L("Filter oben ändern oder alle Rezepte anzeigen."))
-    row.chanceLabel:SetText("");row.costLabel:SetText("");row.stripe:Hide();row.dot:SetColorTexture(0,0,0,0)
+    row.chanceLabel:SetText("");row.costLabel:SetText("");row.stripe:Hide();row.dot:Hide()
     row:SetBackdropColor(0,0,0,0);row:SetBackdropBorderColor(0,0,0,0)
     row:Show()
   end
@@ -1464,12 +1538,13 @@ local function renderPlan(self,key,prof,record,inner)
   place(U.plan.rangeEnd,124,y+1);U.plan.rangeEnd:Show()
   place(U.plan.build,182,y,130);U.plan.build:Show()
   U.plan.build:SetText(pending and L("Berechne…") or (self:AutoRouteShopping(key) and L("Neu berechnen") or L("Plan erstellen")))
-  U.plan.build:SetEnabled(self:Catalog(key)~=nil and not pending)
+  setPrimaryEnabled(U.plan.build,self:Catalog(key)~=nil and not pending)
   local segW=92
   for i,b in ipairs(U.plan.pages) do
-    place(b,18+inner-3*segW-2*4+(i-1)*(segW+4),y,segW);b:Show()
+    place(b,18+inner-3*segW-3+(i-1)*segW,y+1,segW);b:Show()
     b.selectionMarker:SetShown(b.pageKey==page)
   end
+  segmentGroup("plan",U.plan.pages)
   y=y+38
   if page=="crafts" then
     local p=self:PlanFor(key);local choice=self:SelectedOption(key)
@@ -1508,7 +1583,7 @@ local function renderPlan(self,key,prof,record,inner)
     place(U.plan.totalLabel,18,h-80);U.plan.totalLabel:Show()
     place(U.plan.total,18,h-66,260);U.plan.total:Show()
     U.plan.total:SetText(pending and L("Berechne…") or ((c.cashComplete and "" or L("Ab "))..self:FormatCostMoney(c.cash)))
-    place(U.plan.export,18+inner-150,h-80,150);U.plan.export:Show();U.plan.export:SetEnabled(not pending)
+    place(U.plan.export,18+inner-150,h-80,150);U.plan.export:Show();setPrimaryEnabled(U.plan.export,not pending)
     place(U.plan.print,18+inner-150-8-140,h-80,140);U.plan.print:Show()
     place(U.plan.manual,18+inner-150-8-140-8-150,h-80,150);U.plan.manual:Show()
   end
@@ -1519,8 +1594,9 @@ local function renderTrainers(self,key,prof,inner)
   local merchants=ui.vendorBrowser==true and not (prof.gathering and not prof.crafting)
   local y=106
   for i,b in ipairs(U.trainer.pages) do
-    place(b,18+(i-1)*134,y,130);b:Show();b.selectionMarker:SetShown((b.pageKey=="merchants")==merchants)
+    place(b,18+(i-1)*130,y+1,130);b:Show();b.selectionMarker:SetShown((b.pageKey=="merchants")==merchants)
   end
+  segmentGroup("trainer",U.trainer.pages)
   if merchants then
     y=y+36
     place(U.merchant.searchLabel,18,y+7);place(U.merchant.search,70,y+1,220);place(U.merchant.clear,300,y,70)
@@ -1538,7 +1614,7 @@ local function renderTrainers(self,key,prof,inner)
   end
   local choices,rank,recommended,nearest=self:TrainerChoices(key)
   place(U.trainer.nearest,18+inner-150,y,150);U.trainer.nearest:Show();U.trainer.nearest:SetEnabled(nearest~=nil)
-  place(U.trainer.recommend,18+inner-150-8-190,y,190);U.trainer.recommend:Show();U.trainer.recommend:SetEnabled(recommended~=nil)
+  place(U.trainer.recommend,18+inner-150-8-190,y,190);U.trainer.recommend:Show();setPrimaryEnabled(U.trainer.recommend,recommended~=nil)
   y=y+36
   place(U.trainer.info,18,y,inner);U.trainer.info:Show()
   U.trainer.info:SetText(U.rankText or "")
@@ -1554,10 +1630,11 @@ end
 
 local function renderCamping(self,key,inner)
   local y=106
-  local w=(inner-8-180-3*6)/4
+  local w=(inner-16-180)/4
   for i,b in ipairs(U.camp) do
-    place(b,18+(i-1)*(w+6),y,w);b:Show();b.selectionMarker:SetShown(self.db.ui.campingPage==b.pageKey)
+    place(b,18+(i-1)*w,y+1,w);b:Show();b.selectionMarker:SetShown(self.db.ui.campingPage==b.pageKey)
   end
+  segmentGroup("camp",U.camp)
   place(U.campFilter,18+inner-180,y,180);U.campFilter:Show()
   U.campFilter:SetText(self.db.ui.campingAll==false and L("Alle Camping-Berufe") or L("Nur gewählter Beruf"))
   showContent(y+36)
@@ -1579,7 +1656,7 @@ local function settingsList(self)
     end
   end
   local open=self.db.ui.settingsAdvanced==true
-  out[#out+1]={title=(open and "▾ " or "▸ ")..L("Erweitert · Punktgrenzen, Vorausschau, Datenquellen"),
+  out[#out+1]={title=(open and COLLAPSE or EXPAND)..L("Erweitert · Punktgrenzen, Vorausschau, Datenquellen"),
     detail=L("Feineinstellungen für Routen, Datenquellen und Prüfwerkzeuge."),footer="",color="gold",
     action=function() CP.db.ui.settingsAdvanced=not CP.db.ui.settingsAdvanced;CP:Render() end}
   if open then for _,card in ipairs(groups.advanced) do out[#out+1]=card end end

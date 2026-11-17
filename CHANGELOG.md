@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.21.1-alpha
+
+Fenster liegt über Einheitenfenstern und Aktionsleisten; Reiter, Umschalter und Hauptaktionen behalten auch mit EllesmereUI das Design aus dem Mockup; runde Skillfarbpunkte, flache Lehrerzeilen, Pfeile als Texturen. [Details](docs/RELEASE_0.21.1-alpha.md).
+
 ## 0.21.0-alpha
 
 Neue, aufgeräumte Oberfläche: eine Kopfzeile mit Berufsmenü und Skillbalken, vier Reiter, Rezeptliste mit Detailbereich, eine gemeinsame Einkaufsliste und gruppierte Einstellungen. Lehrer für alle zwölf Berufe aus QuestieDB und CMaNGOS. [Details](docs/RELEASE_0.21.0-alpha.md).
