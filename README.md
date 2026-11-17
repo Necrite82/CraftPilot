@@ -4,9 +4,13 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.25.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.26.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
+
+## Neu in 0.26: Aufheben, Preisgrenzen, Händler, Tooltips
+
+Klare Hinweise, was du für spätere Schritte **nicht verkaufen** sollst – und „schon vorhanden“ statt doppelt herstellen. Dazu Preisgrenzen je Material, ein Händler-Helfer, der genau die fehlende Menge kauft, Planhinweise in jedem Gegenstands-Tooltip, die Seite „Verwerten“ für übrige Herstellungen und ein Budget-Modus. [Release-Details](docs/RELEASE_0.26.0-alpha.md).
 
 ## Neu in 0.25: einstellbarer Skillweg, Lerntour, Twinks und mehr
 

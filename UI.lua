@@ -486,13 +486,13 @@ U.plan.footerLine=frame:CreateTexture(nil,"ARTWORK")
 U.plan.footerLine:SetHeight(1)
 U.plan.footerLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 U.plan.pages={}
-for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="details",label=L("Details")}}) do
+for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")}}) do
   U.plan.pages[i]=segment(frame,96,24,page.label,function() CP.db.ui.planPage=page.key;CP:Render() end)
   U.plan.pages[i].pageKey=page.key
 end
 U.plan.controls={U.plan.rangeLabel,U.plan.rangeStart,U.plan.targetLabel,U.plan.rangeEnd,U.plan.quantityLabel,U.plan.rangeQty,
   U.plan.build,U.plan.add,U.plan.draft,U.plan.print,U.plan.clear,U.plan.export,U.plan.manual,U.plan.totalLabel,U.plan.total,
-  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3]}
+  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4]}
 local syncedPlan
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -1226,6 +1226,14 @@ local function renderDetail(key,entry)
     pickup:SetText("|cff8fd6a6"..L("Von Twinks holen: ")..RESET..table.concat(pickups,", "))
     put(pickup,12);y=y+8
   end
+  -- Made for a later step: say clearly to keep it (or that enough is already there).
+  local output=CP:RecipeMarketOutput(key,entry.id)
+  local keep=output and CP:KeepEntry(key,output)
+  if keep then
+    local keepLine=detailLabel("keepLine","GameFontHighlightSmall");keepLine:SetWidth(inner)
+    keepLine:SetText((keep.enough and "|cff8fd6a6" or "|cffffd200")..CP:KeepText(keep)..RESET)
+    put(keepLine,12);y=y+8
+  end
   if advice.nextStep and advice.nextStep.id then
     local nextLine=detailLabel("nextStep","GameFontDisableSmall");nextLine:SetWidth(inner)
     nextLine:SetText(L("Danach: ")..CP:RecipeName(key,advice.nextStep.id)..L(" ab Skill ")..tostring(advice.nextStep.skill or "?"))
@@ -1684,7 +1692,7 @@ local function renderPlan(self,key,prof,record,inner)
     setVisualCards({{title=L("Sammelberuf · kein Rezept-Einkaufsplan"),detail=L("Die Etappen oben zeigen Sammelgebiete; Lehrer stehen unter Lehrer & Händler."),color="blue"}})
     return
   end
-  if not ({shopping=true,crafts=true,details=true})[ui.planPage] then ui.planPage="shopping" end
+  if not ({shopping=true,crafts=true,leftovers=true,details=true})[ui.planPage] then ui.planPage="shopping" end
   local page=ui.planPage
   syncPlanFields(key)
   local pending=self:RouteBuildPending(key)
@@ -1697,7 +1705,7 @@ local function renderPlan(self,key,prof,record,inner)
   setPrimaryEnabled(U.plan.build,self:Catalog(key)~=nil and not pending)
   local segW=92
   for i,b in ipairs(U.plan.pages) do
-    place(b,18+inner-3*segW-3+(i-1)*segW,y+1,segW);b:Show()
+    place(b,18+inner-#U.plan.pages*segW-3+(i-1)*segW,y+1,segW);b:Show()
     b.selectionMarker:SetShown(b.pageKey==page)
   end
   segmentGroup("plan",U.plan.pages)
