@@ -1303,4 +1303,11 @@ CP.English = {
   ["alles in der Tasche"]="all in your bags",
   ["Vorrätig · erst aus Bank/von Twinks holen"]="In stock · fetch from bank/alts first",
   ["Alles in der Tasche · direkt herstellen"]="All in your bags · craft right away",
+  -- 0.28.2
+  ["beim Lehrer lernen"]="learn at the trainer",
+  ["beim Händler kaufen"]="buy from the vendor",
+  ["im AH kaufen"]="buy at the AH",
+  ["Als Nächstes lernen: %s ab Skill %d"]="Learn next: %s from skill %d",
+  ["Gesamt bis Skill %d"]="Total to skill %d",
+  ["AH"]="AH",
 }

@@ -322,3 +322,43 @@ function CP:PathSummaryLines(path)
   if path.unpriced>0 then lines[#lines+1]=string.format(L("%d Rezepte ohne vollständige Preise nicht verglichen · AH scannen."),path.unpriced) end
   return lines
 end
+
+-- The path as a readable tooltip: one row per stretch (skill range and recipe left, cost right), learning
+-- on its own indented row, the total, then notes. Rows: {left, right, color} or {left, color, wrap=true}.
+local SOURCE_TEXT={trainer=L("beim Lehrer lernen"),vendor=L("beim Händler kaufen"),ah=L("im AH kaufen")}
+function CP:PathTooltip(path)
+  local rows={}
+  local white,grey,gold,learn={1,1,1},{.65,.68,.72},{1,.82,.30},{.55,.80,1}
+  local nextLearn=self:NextLearnStep(path)
+  if nextLearn then
+    rows[#rows+1]={left=string.format(L("Als Nächstes lernen: %s ab Skill %d"),nextLearn.name,nextLearn.first),color=learn,wrap=true}
+    rows[#rows+1]={left=" "}
+  end
+  for _,s in ipairs(path.segments) do
+    rows[#rows+1]={left=string.format("%d–%d   %d× %s",s.first,s.last,s.crafts,s.name),right=self:FormatCostMoney(s.cost),color=white}
+    if not s.learned then
+      rows[#rows+1]={left="      "..(SOURCE_TEXT[s.source] or L("lernen")),right=(s.fee or 0)>0 and self:FormatCostMoney(s.fee) or "",color=learn}
+    end
+  end
+  rows[#rows+1]={left=" "}
+  rows[#rows+1]={left=string.format(L("Gesamt bis Skill %d"),path.reached),right=self:FormatCostMoney(path.total),color=gold}
+  local notes={}
+  if path.reached<path.target then notes[#notes+1]=string.format(L("Ab %d fehlen Preise oder Rezepte für einen sicheren Weg."),path.reached) end
+  for i,c in ipairs(path.altCrafts or {}) do
+    if i<=3 then notes[#notes+1]=string.format(L("%s: %s kann es herstellen · spart ca. %s je Stück"),self:ItemName(c.item),c.alt,self:FormatCostMoney(c.saving)) end
+  end
+  if self.db.ui.countSales then notes[#notes+1]=L("Verkaufserlös der hergestellten Dinge ist abgezogen.") end
+  local p=path.priceItems and self:PriceSummary(path.priceItems)
+  if p and p.stale>0 then notes[#notes+1]=string.format(L("%d Preise älter als 3 Tage · am AH neu scannen."),p.stale) end
+  if path.unpriced>0 then notes[#notes+1]=string.format(L("%d Rezepte ohne vollständige Preise nicht verglichen · AH scannen."),path.unpriced) end
+  if #notes>0 then rows[#rows+1]={left=" "} end
+  for _,n in ipairs(notes) do rows[#rows+1]={left=n,color=grey,wrap=true} end
+  return rows
+end
+
+-- The next recipe the path learns: shown ahead, so the trainer or vendor visit can be planned in time.
+function CP:NextLearnStep(path)
+  for _,s in ipairs(path and path.segments or {}) do
+    if not s.learned then return s end
+  end
+end

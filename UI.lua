@@ -118,7 +118,13 @@ local function tooltip(owner,title,lines)
     if not GameTooltip then return end
     GameTooltip:SetOwner(owner,"ANCHOR_BOTTOM")
     GameTooltip:SetText(type(title)=="function" and title() or title)
-    for _,line in ipairs(type(lines)=="function" and lines() or lines or {}) do GameTooltip:AddLine(line,1,1,1,true) end
+    for _,line in ipairs(type(lines)=="function" and lines() or lines or {}) do
+      if type(line)=="table" then
+        local c=line.color or {1,1,1}
+        if line.right then GameTooltip:AddDoubleLine(line.left,line.right,c[1],c[2],c[3],1,1,1)
+        else GameTooltip:AddLine(line.left,c[1],c[2],c[3],line.wrap==true) end
+      else GameTooltip:AddLine(line,1,1,1,true) end
+    end
     GameTooltip:Show()
   end)
   owner:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
@@ -420,6 +426,7 @@ U.detailContent=CreateFrame("Frame",nil,U.detailScroll)
 U.detailContent:SetSize(300,200)
 U.detailScroll:SetScrollChild(U.detailContent)
 CP.recipeDetail=U.detail
+CP.recBanner=U.rec
 
 -- Plan & Einkauf controls -------------------------------------------------------------------------------------
 U.plan={}
@@ -1885,7 +1892,7 @@ function CP:RenderRecommendation(key,inner)
   U.rec:EnableMouse(true)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
     local r=CP.currentRecommendation
-    return r and r.path and CP:PathSummaryLines(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    return r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
   end)
   return true
 end
