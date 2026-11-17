@@ -4,9 +4,13 @@
 
 CraftPilot compares currently learned recipes using materials available to the character, estimated skill-up chances and stored Auctionator prices. It also offers trainer waypoints without manual coordinate entry.
 
-**Status:** 0.29.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha acceptance: existing core flows assumed confirmed**
+**Status:** 0.1.0-beta · Forever 1.60.x · Interface 16001 · **Beta**
 
 [Deutsch](README.md) · [Data sources](DATA_SOURCES.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+## 0.1.0-beta: first beta on CurseForge
+
+CraftPilot is now on CurseForge (project 1812811) and installs through the CurseForge app; QuestieDB is installed automatically. Numbering restarts with the beta; the feature set equals 0.29.0-alpha. [Release details (German)](docs/RELEASE_0.1.0-beta.md).
 
 ## New in 0.29: QuestieDB required
 

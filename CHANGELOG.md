@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-beta
+
+Erste Beta auf CurseForge (Projekt 1812811). Die Nummerierung beginnt neu; der Funktionsstand entspricht 0.29.0-alpha. [Details](docs/RELEASE_0.1.0-beta.md).
+
 ## 0.29.0-alpha
 
 QuestieDB ist jetzt feste Voraussetzung (`## Dependencies: QuestieDB`, CurseForge installiert es mit). Lehrer-Positionen und Sammelgebiete werden zur Laufzeit aus QuestieDB gelesen statt mitgeliefert; im Paket stehen nur noch IDs, Ränge und Sammel-Skills. [Details](docs/RELEASE_0.29.0-alpha.md).
