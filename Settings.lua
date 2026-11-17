@@ -12,7 +12,7 @@ end
 
 function CP:InitializeControls()
   local ui=self.db.ui
-  if type(ui.useQuestieDB)~="boolean" then ui.useQuestieDB=true end
+  ui.useQuestieDB=nil -- QuestieDB is required since 0.29; the old switch is gone.
   if type(ui.showVendorRecipes)~="boolean" then ui.showVendorRecipes=true end
   if type(ui.preferReliableSkill)~="boolean" then ui.preferReliableSkill=true end
   self:InitializeSkillPolicy()
@@ -252,7 +252,7 @@ function CP:SettingsCards()
     slider(L("Grün: weitere Skillpunkte "),ui.greenPoints or 0,0,75,1,"",function(value) ui.greenPoints=value;CP.pathCache=nil;CP:SkillPolicyChanged() end),
     check("planAhead",L("Vorausschauend planen"),L("Vergleicht früh hergestellte Zwischenprodukte mit ihrem Bedarf in späteren Schritten."),ui.planAhead~=false,"advanced"),
     slider(L("AH-Abzug beim Verkauf "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value) ui.economyCut=value;CP.pathCache=nil;CP:Render() end),
-    check("useQuestieDB",self:QuestieStatus(),L("Zusätzlich installiertes Datenaddon lokal für Händlernamen und Standorte nutzen."),ui.useQuestieDB==true,"advanced"),
+    {title=self:QuestieStatus(),detail=L("Liefert Lehrer, Händlerstandorte und Sammelgebiete. Wird über die CurseForge-App automatisch mitinstalliert."),footer="",icon=ICON,color=self:QuestieProvider() and "green" or "red",group="advanced"},
     {title=L("Vorratsreservierungen"),detail=L("Gemeinsame Bestände aller Berufs- und Campingpläne; Priorität ändern."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("reservations") end},
     {title=L("Berufsdaten prüfen"),detail=L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("audit") end},
     {title=CP:VersionStatus(),detail=L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),footer=L("Anklicken: Release-Link kopieren"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenReleaseLink() end},

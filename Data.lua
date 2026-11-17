@@ -261,15 +261,32 @@ local manualTrainers = {
   T("leatherworking","Hahrana Ironhide","Feralas",1444,74.4,43.0,"Horde",300),
 }
 
+-- Trainer list: CP.TrainerRanks (NPC id, profession, highest rank; CMaNGOS) completed at runtime with name,
+-- position, faction and title from the QuestieDB addon. The hand-kept list fills in trainers that are
+-- missing there; until QuestieDB is read, it is the whole list.
+D.manualTrainers = manualTrainers
 D.trainers = {}
-local generatedKeys = {}
-for _,row in ipairs(CP.GeneratedTrainers or {}) do
-  local prof,npc,name,zone,map,x,y,side,cap,title=row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10]
-  local entry=T(prof,name,mapName(map,zone),map,x,y,side,cap)
-  entry.npcID,entry.title,entry.generated=npc,title,true
-  D.trainers[#D.trainers+1]=entry
-  generatedKeys[prof..":"..name]=true
-end
-for _,entry in ipairs(manualTrainers) do
-  if not generatedKeys[entry.profession..":"..entry.name] then D.trainers[#D.trainers+1]=entry end
+for _,entry in ipairs(manualTrainers) do D.trainers[#D.trainers+1]=entry end
+function CP:BuildTrainers()
+  local built,keys={},{}
+  for _,row in ipairs(self.TrainerRanks or {}) do
+    local prof,npc,cap=row[1],row[2],row[3]
+    local record=self.QuestieNpcRecord and self:QuestieNpcRecord(npc)
+    if record then
+      local p=record.point
+      local entry=T(prof,record.name,mapName(p.map,L("Karte ")..p.map),p.map,p.x*100,p.y*100,record.faction,cap)
+      entry.npcID,entry.title,entry.generated=npc,record.title,true
+      built[#built+1]=entry
+      keys[prof..":"..record.name]=true
+    end
+  end
+  if #built==0 then return false end
+  for _,entry in ipairs(manualTrainers) do
+    if not keys[entry.profession..":"..entry.name] then built[#built+1]=entry end
+  end
+  -- Replace the contents in place: other modules keep a reference to D.trainers.
+  for i=#D.trainers,1,-1 do D.trainers[i]=nil end
+  for i,entry in ipairs(built) do D.trainers[i]=entry end
+  self.trainersFromQuestie=true
+  return true
 end

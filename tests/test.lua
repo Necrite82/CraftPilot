@@ -111,6 +111,21 @@ C_TradeSkillUI={
     }}
   end,
 }
+-- QuestieDB is a required dependency: a mock built from test fixtures stands in for the installed addon.
+local questieNpcs=dofile("tests/fixtures/questie_npcs.lua")
+local questieGathering=dofile("tests/fixtures/questie_gathering.lua")
+local zoneText,zoneSeen={"return {"},{}
+local function addZones(spawns) for area in pairs(spawns) do if not zoneSeen[area] then zoneSeen[area]=true;zoneText[#zoneText+1]="["..area.."]="..area.."," end end end
+for _,n in pairs(questieNpcs) do addZones(n.spawns) end
+for _,o in pairs(questieGathering.objects) do addZones(o.spawns) end
+zoneText[#zoneText+1]="}"
+fixtureQuestie={RequireContract=function(v) return v==1 end,
+ ModeIndicator={GetStatus=function() return {expansion="Forever",mode="baked"} end},
+ Npc={Get=function(id,key) local n=questieNpcs[id];return n and n[key] end},
+ Item={Get=function(id,key) local i=questieGathering.items[id];return i and i[key] end},
+ Object={Get=function(id,key) local o=questieGathering.objects[id];return o and o[key] end},
+ Support={Get=function() return {private={areaIdToUiMapId=table.concat(zoneText)}} end}}
+LibQuestieDB=fixtureQuestie
 local CP={}
 -- Load the same file order as the game client, including the full UI module.
 for line in io.lines("CraftPilot.toc") do
@@ -650,7 +665,7 @@ CP.db.recipes.cooking[sample.maker]=prior
 -- Compact checkboxes exercise both directions, including inverted minimap visibility.
 CP.db.ui.settingsAdvanced=true
 CP:OpenTab("settings")
-for _,key in ipairs({"hideMinimap","autoOpen","companion","learnRecipes","countSales","useQuestieDB","planAhead"}) do
+for _,key in ipairs({"hideMinimap","autoOpen","companion","learnRecipes","countSales","planAhead"}) do
  local control
  for _,candidate in ipairs(createdFrames) do local spec=rawget(candidate,"craftCheckSpec");if spec and spec.key==key then control=candidate end end
  assert(control,"Missing checkbox: "..key)
@@ -941,7 +956,9 @@ UnitFactionGroup,GetProfessions,GetProfessionInfo=savedFaction,savedProfessions,
 CP.db.ui.selectedVendorRecipe=nil;CP.db.ui.selectedVendorKey=nil
 print("PASS: vendor eligibility, flat row actions, TomTom coordinates and protected direct recipe opening")
 
--- Optional QuestieDB API is read-only and refuses another flavor or invalid coordinates.
+-- QuestieDB API is read-only and refuses another flavor or invalid coordinates.
+assert(CP.trainersFromQuestie,"Trainer list completed from QuestieDB at start")
+LibQuestieDB=nil
 assert(CP:QuestieProvider()==nil)
 local providerGets=0
 LibQuestieDB={RequireContract=function(version) return version==1 end,
@@ -971,14 +988,10 @@ LibQuestieDB.ModeIndicator.GetStatus=function() return {expansion="Vanilla",mode
 assert(CP:QuestieNpcLocation(991)==nil)
 LibQuestieDB.ModeIndicator.GetStatus=function() return {expansion="Forever",mode="source"} end
 assert(CP:QuestieStatus():find("Entwicklungsmodus",1,true))
-CP.db.ui.useQuestieDB=false
-local readsBefore=providerGets
-assert(CP:QuestieNpcLocation(991)==nil and providerGets==readsBefore)
-CP.db.ui.useQuestieDB=true
 LibQuestieDB.RequireContract=function() return false end
 assert(CP:QuestieNpcLocation(991)==nil)
-LibQuestieDB=nil
-print("PASS: optional QuestieDB contract/flavor checks, normalized valid points and safe fallback")
+LibQuestieDB=fixtureQuestie
+print("PASS: QuestieDB contract/flavor checks, normalized valid points and safe fallback")
 assert(loadfile("tests/compatibility.lua"))(CP,createdFrames)
 
 -- Flat cost calculation distinguishes cash, owned value and conditional sale proceeds.

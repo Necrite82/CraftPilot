@@ -32,6 +32,9 @@ function CP:HelpCards()
     cards[#cards+1]=card(L("Auctionator fehlt"),L("Ohne Auctionator kennt CraftPilot nur Händlerpreise. Für den günstigsten Weg, Preisgrenzen und das Einkaufen am AH bitte Auctionator installieren und einmal am Auktionshaus scannen."),nil,nil,"red")
   end
 
+  if not self:QuestieProvider() then
+    cards[#cards+1]=card(L("QuestieDB fehlt"),L("CraftPilot braucht das Addon QuestieDB (Version für WoW Forever) für Lehrer, Händlerstandorte und Sammelgebiete. Über die CurseForge-App wird es automatisch mitinstalliert, sonst bitte von Hand installieren."),nil,nil,"red")
+  end
   cards[#cards+1]=header(L("DIE REITER"))
   cards[#cards+1]=card(L("Jetzt"),L("Empfehlung oben, Rezeptliste links (Filter, Sortierung über die Spaltenköpfe), Details rechts mit Menge, Materialien, Kosten und „Behalten“-Hinweisen. Nicht erlernte Rezepte haben ein Kartensymbol für den Weg zum Lehrer oder Händler."),
     function() CP:OpenTab("now") end)

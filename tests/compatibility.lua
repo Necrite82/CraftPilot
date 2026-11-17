@@ -1,7 +1,5 @@
 local CP,frames=...
 local oldLib,oldAddons,oldMetadata=LibQuestieDB,C_AddOns,GetAddOnMetadata
-local oldToggle=CP.db.ui.useQuestieDB
-CP.db.ui.useQuestieDB=true
 local flavor="Forever"
 LibQuestieDB={addonName="QuestieDB",readMode="baked",RequireContract=function(v) return v==1 end,
  ModeIndicator={GetStatus=function() return {mode="baked",contractVersion=4} end},
@@ -21,7 +19,7 @@ assert(CP:QuestieProvider()==nil,"Baked metadata cannot certify an unidentified 
 LibQuestieDB.ModeIndicator.GetStatus=function() return {mode="baked"} end
 LibQuestieDB.RequireContract=function() return false end
 assert(CP:QuestieProvider()==nil and CP:QuestieStatus():find("API",1,true))
-LibQuestieDB,C_AddOns,GetAddOnMetadata=oldLib,oldAddons,oldMetadata;CP.db.ui.useQuestieDB=oldToggle
+LibQuestieDB,C_AddOns,GetAddOnMetadata=oldLib,oldAddons,oldMetadata
 
 local oldList,oldInfo=GetProfessions,GetProfessionInfo
 local oldNative,oldLinked=C_TradeSkillUI.GetProfessionInfoBySkillLineID,C_TradeSkillUI.IsTradeSkillLinked
