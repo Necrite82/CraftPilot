@@ -42,7 +42,8 @@ function CP:RecipeRangeText(key,id)
   local parts={}
   for i=1,3 do
     local ending=colors[i+1]-1
-    parts[#parts+1]=inks[i]..labels[i].." "..(ending>=colors[i] and (colors[i].."-"..ending) or "-").."|r"
+    -- A color the recipe skips (e.g. learned already yellow) is left out instead of "Orange -".
+    if ending>=colors[i] then parts[#parts+1]=inks[i]..labels[i].." "..colors[i].."-"..ending.."|r" end
   end
   parts[#parts+1]=inks[4]..labels[4]..L(" ab ")..colors[4].."|r"
   return table.concat(parts," | ")..(conflict and L(" · Grenzen abweichend") or L(" · Grenzen unbestätigt"))

@@ -4,7 +4,7 @@
 
 CraftPilot zeigt die nächsten sinnvollen Schritte beim Leveln von Berufen direkt im Spiel. Das Addon kombiniert die im Berufsfenster sichtbaren Rezepte und Materialien mit vorhandenen Beständen, geschätzten Skillchancen und den zuletzt gespeicherten Auktionshauspreisen. Bekannte Berufslehrer können ohne manuelle Koordinateneingabe als Wegpunkt gesetzt werden.
 
-**Entwicklungsstand:** 0.28.0-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
+**Entwicklungsstand:** 0.28.1-alpha · Forever 1.60.x · Interface 16001 · **Alpha-Freigabe: bisherige Kernabläufe als bestätigt angenommen**
 
 [English](README.en.md) · [Datenquellen](DATA_SOURCES.md) · [Änderungsverlauf](CHANGELOG.md) · [Mitwirken](CONTRIBUTING.md)
 

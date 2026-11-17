@@ -72,10 +72,24 @@ function CP:ButtonItem(b)
 end
 
 -- Only what an item button offers is read: no sizes or positions of foreign frames (those can be secret).
+-- CraftPilot's own rows (material lists, cards) show items too, but already say what they are for.
+local function ownFrame(f)
+  local node=f
+  for _=1,25 do
+    if type(node)~="table" then return false end
+    local ok,name=pcall(function() return node:GetName() end)
+    if ok and type(name)=="string" and not secret(name) and name:sub(1,10)=="CraftPilot" then return true end
+    local okParent,parent=pcall(function() return node:GetParent() end)
+    if not okParent or parent==nil or parent==node then return false end
+    node=parent
+  end
+  return false
+end
 local function looksLikeItemButton(f)
   if type(f)~="table" then return false end
   local ok,isButton=pcall(function() return f:IsObjectType("Button") end)
   if not ok or isButton~=true then return false end
+  if ownFrame(f) then return false end
   return type(f.GetBagID)=="function" or type(f.GetSlotAndBagID)=="function" or rawget(f,"bagID")~=nil or rawget(f,"bag")~=nil
     or type(f.GetItemID)=="function" or rawget(f,"itemID")~=nil or rawget(f,"itemLink")~=nil
 end

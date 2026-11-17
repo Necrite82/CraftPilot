@@ -65,7 +65,7 @@ function CP:PlanPageCards(key,page)
     for _,card in ipairs(self:KeepCards(key)) do cards[#cards+1]=card end
     return cards
   end
-  if not route and not next(plan.crafts) then return {{title=L("1. Bereich wählen → 2. Plan erstellen → 3. Einkaufen"),
+  if not route and not next(plan.crafts) then return {{title=L("1. Bereich wählen · 2. Plan erstellen · 3. Einkaufen"),
     detail=L("Die Route und alle fehlenden Zutaten werden für den gewählten Skillbereich berechnet."),footer=L("Unter Herstellen kannst du die Rezeptschritte anschließend austauschen."),color="blue"}} end
   local rows={};for _,m in ipairs(c.materials) do if m.missing>0 then rows[#rows+1]=m end end
   if #rows==0 then cards[#cards+1]={title=L("Alles für diesen Plan vorhanden"),detail=L("Keine zusätzlichen Materialkäufe erkannt. Unbekannte Angaben unter Details beachten."),color="green"}

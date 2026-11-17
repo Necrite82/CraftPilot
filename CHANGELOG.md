@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.28.1-alpha
+
+Korrekturen aus dem Spieltest: Herstellen-Knopf zählt das Material in den Taschen, „vorrätig · erst aus Bank/von Twinks holen“ statt „alles vorrätig“, keine Markierungspunkte mehr auf CraftPilots eigenen Materialzeilen, keine Kästchen statt Pfeilen, übersprungene Farben ausgeblendet, „Vorrat reicht“ statt „zusätzlich einplanen 0“. [Details](docs/RELEASE_0.28.1-alpha.md).
+
 ## 0.28.0-alpha
 
 Behebt den Lua-Fehler „secret number value“ der Taschenmarkierung. Neu: „Herstellen: N×“ im Begleitfenster, Einkaufsrunde am Auktionshaus mit Preisgrenze und automatischem Abzählen, erster Start mit Willkommen und eine komplett überarbeitete Hilfe („?“ in der Kopfzeile, `/cp hilfe`). [Details](docs/RELEASE_0.28.0-alpha.md).
