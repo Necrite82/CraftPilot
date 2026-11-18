@@ -56,7 +56,8 @@ function CP:Recommendation(key)
     detail=L("Fehlt: ")..table.concat(parts,", ").." · "
       ..(cost.cashComplete and (L("Zukauf ca. ")..self:FormatCostMoney(cost.buy)) or L("Preis unvollständig"))
   end
-  local pickups={}
+  local pickups,fromAlts={},{}
+  for _,mat in ipairs(cost.materials) do if (mat.alts or 0)>0 then fromAlts[#fromAlts+1]={id=mat.id,count=mat.alts} end end
   for _,mat in ipairs(cost.materials) do
     if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
   end
@@ -93,7 +94,7 @@ function CP:Recommendation(key)
   local gate=self.RankGate and self:RankGate(key)
   if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
   local extra=#extras>0 and table.concat(extras,"  ·  ") or nil
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 
