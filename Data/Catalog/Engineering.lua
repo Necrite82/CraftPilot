@@ -12,6 +12,7 @@
 -- makes/yield = product and count; mats = { [item] = count }; tools = tool kinds; cooldown = seconds.
 -- item = the recipe item; rep = { faction, standing }; spec = specialization spell; trainers = the only trainers.
 -- vendorPrices = reagents vendors sell (copper per unit, by side); sell = what a vendor pays. Costs in copper.
+-- specs = specialization names; specGuides = the quests to a specialization (see tools/catalog/spec_guides.py).
 local _, CP = ...
 CP.CatalogData = CP.CatalogData or {}
 CP.CatalogData.engineering = {
@@ -22,6 +23,14 @@ CP.CatalogData.engineering = {
     { name = "Journeyman", cap = 150, spell = 4037, how = "trainer", cost = 450, charLevel = 10, learnAt = 50 },
     { name = "Expert", cap = 225, spell = 4038, how = "trainer", cost = 4500, charLevel = 20, learnAt = 125 },
     { name = "Artisan", cap = 300, spell = 12656, how = "trainer", cost = 45000, charLevel = 35, learnAt = 200 },
+  },
+  specGuides = {
+    { spec = 20219, icon = 132996, level = 30, skill = 200, steps = { { quests = { 3630, 3632, 3634, 3635, 3637 }, items = { { item = 10789, n = 1 } } }, { quests = { 3640, 3642 } }, { quests = { 3641, 3643 }, items = { { item = 10559, n = 6 }, { item = 4407, n = 1 }, { item = 4392, n = 2 } } } } },
+    { spec = 20222, icon = 135826, level = 30, skill = 200, steps = { { quests = { 3526, 3629, 3633, 4181 }, items = { { item = 10789, n = 1 } } }, { quests = { 3638 }, items = { { item = 11270, n = 1 } } }, { quests = { 3639 }, items = { { item = 4394, n = 20 }, { item = 10507, n = 20 }, { item = 4384, n = 5 } } } } },
+  },
+  specs = {
+    [20219] = "Gnomish Engineer",
+    [20222] = "Goblin Engineer",
   },
   toolKinds = {
     [14] = { name = "Arclight Spanner", items = { 6219 } },
@@ -300,11 +309,14 @@ CP.CatalogData.engineering = {
     [2838] = { name = "Crazk Sparks", faction = "AH", map = 1434, zone = "Stranglethorn Vale", x = 28.4, y = 76.7 },
     [3134] = { name = "Kzixx", faction = "AH", map = 1431, zone = "Duskwood", x = 81.8, y = 19.8 },
     [3413] = { name = "Sovik", faction = "H", map = 1454, zone = "Orgrimmar", x = 75.5, y = 25.4 },
+    [3494] = { name = "Tinkerwiz", faction = "AH", map = 1413, zone = "The Barrens", x = 62.7, y = 36.3 },
     [3495] = { name = "Gagsprocket", faction = "AH", map = 1413, zone = "The Barrens", x = 62.6, y = 36.3 },
     [3537] = { name = "Zixil", faction = "AH", map = 1424, zone = "Hillsbrad Foothills", x = 55.4, y = 34.7 },
     [4086] = { name = "Veenix", faction = "AH", map = 1442, zone = "Stonetalon Mountains", x = 58.2, y = 51.7 },
+    [4586] = { name = "Graham Van Talen", faction = "H", map = 1458, zone = "Undercity", x = 75.3, y = 73.1 },
     [5174] = { name = "Springspindle Fizzlegear", faction = "A", map = 1455, zone = "Ironforge", x = 68.5, y = 43.5 },
     [5175] = { name = "Gearcutter Cogspinner", faction = "A", map = 1455, zone = "Ironforge", x = 67.8, y = 42.5 },
+    [5518] = { name = "Lilliam Sparkspindle", faction = "A", map = 1453, zone = "Stormwind City", x = 62.1, y = 30.3 },
     [6730] = { name = "Jinky Twizzlefixxit", faction = "AH", map = 1441, zone = "Thousand Needles", x = 77.7, y = 77.9 },
     [6777] = { name = "Zan Shivsproket", faction = "AH", map = 1416, zone = "Alterac Mountains", x = 86, y = 80 },
     [7406] = { name = "Oglethorpe Obnoticus", faction = "AH", map = 1434, zone = "Stranglethorn Vale", x = 28.4, y = 76.3 },
@@ -334,6 +346,21 @@ CP.CatalogData.engineering = {
   quests = {
     [1371] = { name = "Gizmo for Warug", faction = "AH", giver = 5398, giverName = "Warug", zone = "Desolace", x = 75, y = 68.2, reqLevel = 30, level = 35 },
     [1559] = { name = "Flash Bomb Recipe", faction = "AH", giver = 2817, giverName = "Rigglefuzz", zone = "Badlands", x = 42.4, y = 52.9, reqLevel = 30, level = 37, skill = 1 },
+    [3526] = { name = "Goblin Engineering", faction = "H", giver = 4586, giverName = "Graham Van Talen", zone = "Undercity", x = 75.3, y = 73.1, reqLevel = 30, level = 47, skill = 200 },
+    [3629] = { name = "Goblin Engineering", faction = "A", giver = 5174, giverName = "Springspindle Fizzlegear", zone = "Ironforge", x = 68.5, y = 43.5, reqLevel = 30, level = 47, skill = 200 },
+    [3630] = { name = "Gnome Engineering", faction = "A", giver = 5518, giverName = "Lilliam Sparkspindle", zone = "Stormwind City", x = 62.1, y = 30.3, reqLevel = 30, level = 47, skill = 200 },
+    [3632] = { name = "Gnome Engineering", faction = "A", giver = 5174, giverName = "Springspindle Fizzlegear", zone = "Ironforge", x = 68.5, y = 43.5, reqLevel = 30, level = 47, skill = 200 },
+    [3633] = { name = "Goblin Engineering", faction = "AH", giver = 3494, giverName = "Tinkerwiz", zone = "The Barrens", x = 62.7, y = 36.3, reqLevel = 30, level = 47, skill = 200 },
+    [3634] = { name = "Gnome Engineering", faction = "A", giver = 3494, giverName = "Tinkerwiz", zone = "The Barrens", x = 62.7, y = 36.3, reqLevel = 30, level = 47, skill = 200 },
+    [3635] = { name = "Gnome Engineering", faction = "H", giver = 4586, giverName = "Graham Van Talen", zone = "Undercity", x = 75.3, y = 73.1, reqLevel = 30, level = 47, skill = 200 },
+    [3637] = { name = "Gnome Engineering", faction = "H", giver = 3494, giverName = "Tinkerwiz", zone = "The Barrens", x = 62.7, y = 36.3, reqLevel = 30, level = 47, skill = 200 },
+    [3638] = { name = "The Pledge of Secrecy", faction = "AH", giver = 8126, giverName = "Nixx Sprocketspring", zone = "Tanaris", x = 52.5, y = 27.3, reqLevel = 30, level = 47, skill = 200 },
+    [3639] = { name = "Show Your Work", faction = "AH", giver = 8126, giverName = "Nixx Sprocketspring", zone = "Tanaris", x = 52.5, y = 27.3, reqLevel = 30, level = 47, skill = 200 },
+    [3640] = { name = "The Pledge of Secrecy", faction = "A", giver = 7944, giverName = "Tinkmaster Overspark", zone = "Ironforge", x = 69.5, y = 50.3, reqLevel = 30, level = 47, skill = 200 },
+    [3641] = { name = "Show Your Work", faction = "A", giver = 7944, giverName = "Tinkmaster Overspark", zone = "Ironforge", x = 69.5, y = 50.3, reqLevel = 30, level = 47, skill = 200 },
+    [3642] = { name = "The Pledge of Secrecy", faction = "H", giver = 7406, giverName = "Oglethorpe Obnoticus", zone = "Stranglethorn Vale", x = 28.4, y = 76.3, reqLevel = 30, level = 47, skill = 200 },
+    [3643] = { name = "Show Your Work", faction = "H", giver = 7406, giverName = "Oglethorpe Obnoticus", zone = "Stranglethorn Vale", x = 28.4, y = 76.3, reqLevel = 30, level = 47, skill = 200 },
+    [4181] = { name = "Goblin Engineering", faction = "A", giver = 5518, giverName = "Lilliam Sparkspindle", zone = "Stormwind City", x = 62.1, y = 30.3, reqLevel = 30, level = 47, skill = 200 },
     [8769] = { name = "A Ticking Present", faction = "AH", reqLevel = 40, level = 40 },
     [8798] = { name = "A Yeti of Your Own", faction = "AH", giver = 10305, giverName = "Umi Rumplesnicker", zone = "Winterspring", x = 60.9, y = 37.6, reqLevel = 55, level = 60, skill = 250 },
     [8876] = { name = "Small Rockets", faction = "AH", giver = 15909, giverName = "Fariel Starsong", zone = "Moonglade", x = 53.8, y = 35.3, reqLevel = 25, level = 60 },

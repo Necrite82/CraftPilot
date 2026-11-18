@@ -113,7 +113,7 @@ Bugs and ideas are welcome as [issues](https://github.com/Necrite82/CraftPilot/i
 
 CraftPilot is licensed under the **GNU GPL-3.0-only**, see [LICENSE](LICENSE).
 
-- Recipe data: [Craft Ladder](https://github.com/saintmodx/craft-ladder) (GPL-3.0)
+- Recipe data: built by CraftPilot itself from the Forever client's tables (via wago.tools), [QuestieDB](https://github.com/Questie/QuestieDB), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) and [AllTheThings](https://github.com/ATTWoWAddon/AllTheThings) (MIT)
 - Trainer ranks: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0)
 - Trainer and gathering node locations: read at runtime from the [QuestieDB](https://github.com/Questie/QuestieDB) addon
 

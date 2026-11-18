@@ -1,19 +1,20 @@
 # Eigener Rezeptkatalog / Own recipe catalog
 
-CraftPilot baut seinen Rezeptkatalog (`Data/Catalog/*.lua`) selbst aus öffentlichen Quellen. Craft Ladder wird dafür nicht mehr gebraucht.
+CraftPilot baut seinen Rezeptkatalog und die Camp-Daten (`Data/Catalog/*.lua`) selbst aus öffentlichen Quellen.
 
 | Schritt | Werkzeug | Ergebnis |
 |---|---|---|
 | 1. Eingaben holen | `fetch_inputs.py` (Workflow `catalog-inputs.yml`, täglich) | Zweig `catalog-inputs`: Client-Tabellen (DB2 von wago.tools), QuestieDB-Releasepaket, AllTheThings-Quellen, `manifest.json` mit SHA-256 |
-| 2. Katalog bauen | `build_catalog.py` (Workflow `catalog-build.yml`) | `Data/Catalog/<Beruf>.lua` und `SOURCES.json` |
-| 3. Vergleichen | `compare_catalog.py` | `docs/CATALOG_COMPARE.md` (Unterschiede zum Craft-Ladder-Schnappschuss) |
+| 2. Katalog bauen | `build_catalog.py`, `build_camp.py`, `spec_guides.py` (Workflow `catalog-build.yml`) | `Data/Catalog/<Beruf>.lua`, `Camp.lua`, `SOURCES.json` |
+| 3. Vergleichen | `compare_catalog.py` | Änderungsbericht im Pull Request (neu vs. bisher) |
 
 Lokal (Eingaben aus dem Zweig `catalog-inputs` entpackt, CMaNGOS-Datei aus `ThirdParty/Trainers/SOURCES.json`):
 
 ```
 git archive origin/catalog-inputs | tar -x -C /tmp/inputs
 python3 tools/catalog/build_catalog.py --inputs /tmp/inputs --classicdb ClassicDB_1_12_1_z2815.sql.gz
-python3 tools/catalog/compare_catalog.py --out docs/CATALOG_COMPARE.md
+python3 tools/catalog/build_camp.py --inputs /tmp/inputs
+python3 tools/catalog/compare_catalog.py --theirs ALTER_KATALOG_ORDNER --out bericht.md
 ```
 
 Woher was stammt:

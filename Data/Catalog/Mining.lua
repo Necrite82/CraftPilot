@@ -12,6 +12,7 @@
 -- makes/yield = product and count; mats = { [item] = count }; tools = tool kinds; cooldown = seconds.
 -- item = the recipe item; rep = { faction, standing }; spec = specialization spell; trainers = the only trainers.
 -- vendorPrices = reagents vendors sell (copper per unit, by side); sell = what a vendor pays. Costs in copper.
+-- specs = specialization names; specGuides = the quests to a specialization (see tools/catalog/spec_guides.py).
 local _, CP = ...
 CP.CatalogData = CP.CatalogData or {}
 CP.CatalogData.mining = {
@@ -20,6 +21,10 @@ CP.CatalogData.mining = {
   ranks = {
     { name = "Apprentice", cap = 75, spell = 2575, how = "trainer", cost = 10, learnAt = 0 },
     { name = "Journeyman", cap = 150, spell = 2576, how = "trainer", cost = 500, learnAt = 50 },
+  },
+  specGuides = {
+  },
+  specs = {
   },
   toolKinds = {
   },

@@ -1,8 +1,8 @@
 name: Catalog build (own recipe catalog)
 
-# Builds CraftPilot's own recipe catalog (Data/Catalog) from the client tables on the `catalog-inputs` branch,
-# CMaNGOS classic-db, QuestieDB and AllTheThings, compares it with the bundled Craft Ladder snapshot and proposes
-# changes as a pull request into dev. Nothing is merged automatically.
+# Builds CraftPilot's own recipe catalog and camp data (Data/Catalog) from the client tables on the `catalog-inputs`
+# branch, CMaNGOS classic-db, QuestieDB and AllTheThings, compares it with the catalog in dev and proposes the
+# changes as one pull request into dev (branch data/catalog). Nothing is merged automatically.
 on:
   push:
     branches: [dev]
@@ -50,16 +50,18 @@ jobs:
       - name: Build and compare
         run: |
           set -e
+          cp -r Data/Catalog "$RUNNER_TEMP/previous"
           python3 tools/catalog/build_catalog.py --inputs "$RUNNER_TEMP/inputs" --classicdb "$RUNNER_TEMP/classicdb.sql.gz"
-          python3 tools/catalog/compare_catalog.py --out docs/CATALOG_COMPARE.md > /dev/null
-          for version in 5.1 5.4; do for file in Data/Catalog/*.lua; do "luac$version" -p "$file"; done; done
+          python3 tools/catalog/build_camp.py --inputs "$RUNNER_TEMP/inputs"
+          python3 tools/catalog/compare_catalog.py --theirs "$RUNNER_TEMP/previous" --label bisher --out "$RUNNER_TEMP/changes.md" > /dev/null
+          for version in 5.1 5.4; do for file in Data/Catalog/*.lua; do "luac$version" -p "$file"; done; "lua$version" tests/test.lua > /dev/null; done
 
       - name: Open or update the pull request
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          if git diff --quiet -- Data/Catalog docs/CATALOG_COMPARE.md && [ -z "$(git ls-files --others --exclude-standard Data/Catalog)" ]; then
+          if git diff --quiet -- Data/Catalog && [ -z "$(git ls-files --others --exclude-standard Data/Catalog)" ]; then
             echo "Catalog unchanged"; exit 0
           fi
           build=$(python3 -c "import json;print(json.load(open('Data/Catalog/SOURCES.json'))['client']['build'])")
@@ -67,15 +69,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
-          git add -A Data/Catalog docs/CATALOG_COMPARE.md
+          git add -A Data/Catalog
           git commit -qm "Eigener Katalog: Client-Build $build"
           git push -q --force -u origin "$branch"
           {
             echo "Eigener Rezeptkatalog für Client-Build **$build**, neu erzeugt aus den Client-Tabellen (Zweig \`catalog-inputs\`), CMaNGOS, QuestieDB und AllTheThings."
             echo
-            sed -n '3,18p' docs/CATALOG_COMPARE.md
+            head -c 50000 "$RUNNER_TEMP/changes.md"
             echo
-            echo "Vollständiger Vergleich mit Craft Ladder: \`docs/CATALOG_COMPARE.md\`. Automatisch erzeugt von \`.github/workflows/catalog-build.yml\`."
+            echo "Automatisch erzeugt von \`.github/workflows/catalog-build.yml\`. Vor dem Mergen Tests abwarten und Stichproben im Spiel prüfen."
           } > "$RUNNER_TEMP/body.md"
           if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
             gh pr edit "$branch" --body-file "$RUNNER_TEMP/body.md"

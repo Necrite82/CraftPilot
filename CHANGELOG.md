@@ -2,6 +2,9 @@
 
 ## 0.2.3-beta
 
+- **Eigener Rezeptkatalog**: CraftPilot baut seine Rezept-, Händler-, Camping- und Spezialisierungsdaten jetzt selbst aus den Tabellen des Forever-Clients (Build 1.60.1.70959), QuestieDB, CMaNGOS und AllTheThings und aktualisiert sie täglich; keine Craft-Ladder-Daten mehr
+- Merchant's-Favor-Rezepte nennen die nötige Rufstufe (z. B. „ab Ruf Freundlich“); Favor-Preise gelten für die Händler beider Fraktionen
+- Drop-Rezepte nennen die Zahl der Gegner auch im Camping-Bereich; Rezepte, die es in Forever noch nicht gibt, werden nicht mehr eingeplant
 - Neue Oberfläche: Navigation in einer **Seitenleiste** links statt Reitern oben, mit Logo, Berufswahl und Skillbalken oben sowie Einstellungen und Hilfe unten
 - **Abgerundete Ecken** für Fenster, Seitenleiste, Karten, Felder und Knöpfe
 - Kopf mit Seitentitel, kurzer Erklärung und Statusfeldern „AH aktuell“ und „N Gegenstände reserviert“ (Klick öffnet die Reservierung)

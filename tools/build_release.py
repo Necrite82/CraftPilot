@@ -4,18 +4,15 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ['CraftPilot.toc', 'Core/Locale.lua', 'Locales/enUS.lua', 'Features/Camping.lua', 'Features/Economy.lua', 'Features/RecipeActions.lua', 'Core/TrainerRecipes.lua', 'UI/Presentation.lua', 'Features/ManualShopping.lua', 'Planning/CraftSuggestions.lua', 'UI/PlanUX.lua', 'Core/SkillPolicy.lua', 'Planning/ForwardPlanning.lua', 'Planning/CheapestPath.lua', 'Planning/Recommendation.lua', 'Features/Alts.lua', 'Features/Companion.lua', 'Planning/Learning.lua', 'Features/Farming.lua', 'Features/Account.lua', 'Features/Keep.lua', 'Features/Marks.lua', 'Features/Round.lua', 'Features/Endgame.lua', 'Features/Wishlist.lua', 'Features/RaidStock.lua', 'Features/Protection.lua', 'UI/Help.lua', 'Features/VendorBrowser.lua', 'Planning/Costing.lua', 'Planning/Planning.lua', 'Features/Market.lua', 'Features/Shopping.lua', 'Core/Diagnostics.lua', 'Core/QuestieBridge.lua', 'Core/Updates.lua', 'Core/SkillInfo.lua', 'ThirdParty/CraftLadder/SecondarySkillRanges.lua', 'ThirdParty/CraftLadder/VendorRecipes.lua', 'Core/Data.lua', 'Core/Core.lua', 'Core/Catalog.lua',
+FILES = ['CraftPilot.toc', 'Core/Locale.lua', 'Locales/enUS.lua', 'Features/Camping.lua', 'Features/Economy.lua', 'Features/RecipeActions.lua', 'Core/TrainerRecipes.lua', 'UI/Presentation.lua', 'Features/ManualShopping.lua', 'Planning/CraftSuggestions.lua', 'UI/PlanUX.lua', 'Core/SkillPolicy.lua', 'Planning/ForwardPlanning.lua', 'Planning/CheapestPath.lua', 'Planning/Recommendation.lua', 'Features/Alts.lua', 'Features/Companion.lua', 'Planning/Learning.lua', 'Features/Farming.lua', 'Features/Account.lua', 'Features/Keep.lua', 'Features/Marks.lua', 'Features/Round.lua', 'Features/Endgame.lua', 'Features/Wishlist.lua', 'Features/RaidStock.lua', 'Features/Protection.lua', 'UI/Help.lua', 'Features/VendorBrowser.lua', 'Planning/Costing.lua', 'Planning/Planning.lua', 'Features/Market.lua', 'Features/Shopping.lua', 'Core/Diagnostics.lua', 'Core/QuestieBridge.lua', 'Core/Updates.lua', 'Core/SkillInfo.lua', 'Core/Data.lua', 'Core/Core.lua', 'Core/Catalog.lua',
          'Core/PriceHistory.lua', 'Planning/Route.lua', 'UI/UI.lua', 'Core/Settings.lua', 'Media/CraftPilot.tga', 'Media/Round.tga', 'LICENSE',
-         'README.md', 'DATA_SOURCES.md', 'docs/CAMPING_SOURCES.md', 'docs/PROFESSION_STATUS.md',
-         'ThirdParty/CraftLadder/Camp.lua', 'ThirdParty/CraftLadder/CampingRecipes.lua',
-         'ThirdParty/CraftLadder/CAMP_SOURCES.json',
-         'ThirdParty/CraftLadder/UPSTREAM.json',
+         'README.md', 'DATA_SOURCES.md', 'docs/PROFESSION_STATUS.md',
+         'Data/Catalog/SOURCES.json', 'Data/Catalog/SOURCE.md',
          'ThirdParty/Trainers/Trainers.lua', 'ThirdParty/Trainers/SOURCES.json', 'ThirdParty/Trainers/SOURCE.md',
-         'ThirdParty/Gathering/Gathering.lua', 'ThirdParty/Gathering/SOURCES.json', 'ThirdParty/Gathering/SOURCE.md',
-         'ThirdParty/CraftLadder/CREDITS.txt', 'ThirdParty/CraftLadder/SOURCE.md']
-FILES += ['ThirdParty/CraftLadder/' + name + '.lua' for name in
-          ['Alchemy', 'Blacksmithing', 'Enchanting', 'Engineering',
-           'Leatherworking', 'Tailoring', 'MiningSmelting']]
+         'ThirdParty/Gathering/Gathering.lua', 'ThirdParty/Gathering/SOURCES.json', 'ThirdParty/Gathering/SOURCE.md']
+FILES += ['Data/Catalog/' + name + '.lua' for name in
+          ['Camp', 'Alchemy', 'Blacksmithing', 'Enchanting', 'Engineering', 'Leatherworking', 'Tailoring', 'Mining',
+           'Cooking', 'FirstAid', 'Herbalism', 'Skinning', 'Fishing']]
 
 def source_bytes(name):
     data=(ROOT / name).read_bytes()

@@ -66,7 +66,7 @@ assert(CP:RankGateWarning("engineering",200) and not CP:RankGateWarning("enginee
 UnitLevel=level
 assert(CP:RankGate("engineering").ok)
 
--- Specializations from the bundled Craft Ladder data.
+-- Specializations from the bundled catalog.
 CP.Catalog=saved.Catalog
 CP.db.professions.engineering={skill=210,cap=225}
 local specs=CP:Specializations("engineering")

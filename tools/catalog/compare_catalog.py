@@ -1,9 +1,10 @@
-"""Compare CraftPilot's own catalog (Data/Catalog) with the bundled Craft Ladder snapshot (ThirdParty/CraftLadder).
+"""Compare two catalogs, e.g. a freshly built Data/Catalog with the previous one (catalog-build.yml does that for
+its pull request), or with any other catalog in the same format.
 
-    python3 tools/catalog/compare_catalog.py [--ours Data/Catalog] [--theirs ThirdParty/CraftLadder] [--out FILE.md]
+    python3 tools/catalog/compare_catalog.py --theirs OLD_DIR [--ours Data/Catalog] [--label "bisher"] [--out FILE.md]
 
-Used while CraftPilot moves to its own catalog: it shows, per profession, recipes only one side has and recipes whose
-colours, learn skill, product, materials or way to learn differ. Writes Markdown.
+Shows, per profession, recipes only one side has and recipes whose colours, learn skill, product, materials or way to
+learn differ. Writes Markdown.
 """
 import argparse
 import sys
@@ -16,7 +17,8 @@ sys.path.insert(0, str(HERE))
 import sources  # noqa: E402
 
 FILES = {'alchemy': 'Alchemy', 'blacksmithing': 'Blacksmithing', 'enchanting': 'Enchanting',
-         'engineering': 'Engineering', 'leatherworking': 'Leatherworking', 'tailoring': 'Tailoring'}
+         'engineering': 'Engineering', 'leatherworking': 'Leatherworking', 'tailoring': 'Tailoring',
+         'mining': 'Mining', 'cooking': 'Cooking', 'firstaid': 'FirstAid'}
 EXAMPLES = 12
 
 
@@ -91,10 +93,13 @@ def name(data, spell):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--ours', type=Path, default=ROOT / 'Data' / 'Catalog')
-    ap.add_argument('--theirs', type=Path, default=ROOT / 'ThirdParty' / 'CraftLadder')
+    ap.add_argument('--theirs', type=Path, required=True)
+    ap.add_argument('--label', default='bisher', help='name of the other catalog in the report')
+    ap.add_argument('--title', default='Katalogvergleich')
     ap.add_argument('--out', type=Path)
     args = ap.parse_args()
-    lines = ['# Katalogvergleich: eigener Katalog vs. Craft Ladder', '']
+    other = args.label
+    lines = [f'# {args.title}: neu vs. {other}', '']
     total = Counter()
     for key, display in FILES.items():
         ours_path, theirs_path = args.ours / f'{display}.lua', args.theirs / f'{display}.lua'
@@ -107,39 +112,39 @@ def main():
         for k, v in diffs.items():
             total[k] += len(v)
         lines += [f'## {display}', '',
-                  f'Rezepte: eigen {len(ours["recipes"])}, Craft Ladder {len(theirs["recipes"])}, gemeinsam {len(both)}',
+                  f'Rezepte: neu {len(ours["recipes"])}, {other} {len(theirs["recipes"])}, gemeinsam {len(both)}',
                   '']
         get_ours = Counter(k for r in ours['recipes'].values() for k in kinds(r))
         get_theirs = Counter(k for r in theirs['recipes'].values() for k in kinds(r))
-        lines.append('| Lernweg | eigen | Craft Ladder |')
+        lines.append(f'| Lernweg | neu | {other} |')
         lines.append('|---|---|---|')
         for kind in sorted(set(get_ours) | set(get_theirs)):
             lines.append(f'| {kind} | {get_ours[kind]} | {get_theirs[kind]} |')
         lines.append('')
         if only_ours:
-            lines.append(f'**Nur eigen ({len(only_ours)}):** ' + ', '.join(
+            lines.append(f'**Nur neu ({len(only_ours)}):** ' + ', '.join(
                 f'{s} {name(ours, s)}' for s in only_ours[:EXAMPLES]) + (' …' if len(only_ours) > EXAMPLES else ''))
             lines.append('')
         if only_theirs:
-            lines.append(f'**Nur Craft Ladder ({len(only_theirs)}):** ' + ', '.join(
+            lines.append(f'**Nur {other} ({len(only_theirs)}):** ' + ', '.join(
                 f'{s} {name(theirs, s)}' for s in only_theirs[:EXAMPLES]) + (' …' if len(only_theirs) > EXAMPLES else ''))
             lines.append('')
         for k, rows in diffs.items():
             if rows:
                 lines.append(f'**Abweichung {k} ({len(rows)}):**')
                 for spell, x, y in rows[:EXAMPLES]:
-                    lines.append(f'- {spell} {name(ours, spell)}: eigen `{x}` / CL `{y}`')
+                    lines.append(f'- {spell} {name(ours, spell)}: neu `{x}` / {other} `{y}`')
                 lines.append('')
-    labels = [('ours', 'Rezepte eigener Katalog'), ('theirs', 'Rezepte Craft Ladder'), ('both', 'gemeinsam'),
-              ('onlyOurs', 'nur eigen'), ('onlyTheirs', 'nur Craft Ladder'), ('colors', 'abweichende Skillfarben'),
+    labels = [('ours', 'Rezepte neu'), ('theirs', f'Rezepte {other}'), ('both', 'gemeinsam'),
+              ('onlyOurs', 'nur neu'), ('onlyTheirs', f'nur {other}'), ('colors', 'abweichende Skillfarben'),
               ('learn', 'abweichende Lernstufe'), ('makes', 'abweichendes Ergebnis'), ('yield', 'abweichende Menge'),
               ('mats', 'abweichende Materialien'), ('item', 'abweichender Rezeptgegenstand'),
               ('get', 'abweichender Lernweg'), ('trainerCost', 'abweichende Lehrerkosten'),
               ('favor', 'abweichender Favor-Preis')]
     summary = ['| Kennzahl | Anzahl |', '|---|---|'] + [f'| {label} | {total[key]} |' for key, label in labels]
     lines[1:1] = [''] + summary + ['', 'Lernweg „trainer?“ = Lehrer mit geschätzten Kosten. Rezepte, die es laut '
-                                   'AllTheThings in Forever (noch) nicht gibt, stehen im eigenen Katalog als '
-                                   '`unavailable` ohne Lernweg.', '']
+                                   'AllTheThings in Forever (noch) nicht gibt, stehen als `unavailable` ohne Lernweg.',
+                                   '']
     text = '\n'.join(lines) + '\n'
     if args.out:
         args.out.write_text(text, encoding='utf-8')

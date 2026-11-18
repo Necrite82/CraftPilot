@@ -1,26 +1,62 @@
 -- CraftPilot catalog bridge.
--- Bundled Craft Ladder data is GPL-3.0, independently attributed in
--- ThirdParty/CraftLadder/SOURCE.md and the preserved CREDITS.txt.
--- This module is original CraftPilot integration code.
+-- The catalog (Data/Catalog/*.lua) is CraftPilot's own, built by tools/catalog from the WoW Forever client's
+-- tables, CMaNGOS classic-db, QuestieDB and AllTheThings; sources and checksums in Data/Catalog/SOURCES.json.
 local _, CP = ...
 local L=CP.L
 local D=CP.Data
+-- professions whose full catalog drives planning; cooking and first aid use the client's own list
+-- plus the derived tables below
 local ids={
-  engineering="ENGINEERING", mining="MINING",
-  blacksmithing="BLACKSMITHING", enchanting="ENCHANTING",
-  tailoring="TAILORING", leatherworking="LEATHERWORKING",
-  alchemy="ALCHEMY"
+  engineering=true, mining=true, blacksmithing=true, enchanting=true,
+  tailoring=true, leatherworking=true, alchemy=true,
 }
 local sourceKeys={
   engineering=true,blacksmithing=true,enchanting=true,
   tailoring=true,leatherworking=true,alchemy=true
 }
-CP.catalogBuild="Forever 1.60.1.70425–70450 (2026-10)"
-CP.catalogUpstream="saintmodx/craft-ladder @ b9c61346"
+CP.CatalogData=CP.CatalogData or {}
+do
+  local any=CP.CatalogData.alchemy
+  CP.catalogBuild=any and ("Forever "..tostring(any.build).." ("..tostring(any.built)..")") or "?"
+  CP.catalogUpstream="CraftPilot (tools/catalog)"
+end
+
+-- Cooking and first aid: skill colours of every recipe, the recipes vendors sell, and the camp recipes of
+-- every profession that makes camp objects, all derived from the catalog.
+CP.SecondarySkillRanges={}
+CP.VendorRecipeCatalogs={}
+CP.CampingRecipeData={}
+for _,key in ipairs({"cooking","firstaid"}) do
+  local data=CP.CatalogData[key]
+  local ranges,vendorRecipes={},{}
+  if data then
+    for id,recipe in pairs(data.recipes or {}) do
+      ranges[id]=recipe.colors
+      if not recipe.unavailable then
+        for _,source in ipairs(recipe.get or {}) do
+          if source.kind=="vendor" then vendorRecipes[id]=recipe;break end
+        end
+      end
+    end
+  end
+  CP.SecondarySkillRanges[key]=ranges
+  CP.VendorRecipeCatalogs[key]={recipes=vendorRecipes,npcs=data and data.npcs or {}}
+end
+for _,key in ipairs({"cooking","firstaid","herbalism","skinning","fishing"}) do
+  local data=CP.CatalogData[key]
+  CP.CampingRecipeData[key]=data and data.recipes or {}
+end
+
+-- A reputation standing (1 Hated .. 8 Exalted) in the client's language, e.g. for Merchant's Favor offers.
+local STANDINGS={"Hasserfüllt","Feindselig","Unfreundlich","Neutral","Freundlich","Wohlwollend","Respektvoll","Ehrfürchtig"}
+function CP:StandingName(standing)
+  local label=type(_G)=="table" and _G["FACTION_STANDING_LABEL"..tostring(standing)]
+  if type(label)=="string" and label~="" then return label end
+  return L(STANDINGS[standing] or tostring(standing))
+end
 
 function CP:Catalog(key)
-  local field=ids[key]
-  local entry=field and self[field]
+  local entry=ids[key] and self.CatalogData[key]
   if type(entry)=="table" and type(entry.recipes)=="table" then return entry end
   return nil
 end

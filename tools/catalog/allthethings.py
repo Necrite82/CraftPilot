@@ -323,6 +323,23 @@ class AllTheThings:
                         entry = out.setdefault(item, [favor, level, set()])
                         entry[2].add(self.call_id(call))
         self.walk_roots(visit)
+
+        # items a vendor sells for Merchant's Favor directly (cost and minReputation on the item itself)
+        def direct(call, ctx):
+            if call.func != 'i' or not self.call_id(call):
+                return
+            fields = self.fields(call)
+            favor = self._favor_cost(fields.get('cost'))
+            npc = next((ident for func, ident in reversed(ctx) if func == 'n' and isinstance(ident, int)), None)
+            if not favor or not npc:
+                return
+            level = STANDINGS['NEUTRAL']
+            rep = self.resolve(fields.get('minReputation'))
+            if isinstance(rep, Table) and len(rep.items) >= 2 and isinstance(rep.items[1], Name):
+                level = STANDINGS.get(rep.items[1].path, level)
+            entry = out.setdefault(self.call_id(call), [favor, level, set()])
+            entry[2].add(npc)
+        self.walk_roots(direct)
         return {item: (v[0], v[1], v[2]) for item, v in out.items()}
 
     def _favor_cost(self, cost):

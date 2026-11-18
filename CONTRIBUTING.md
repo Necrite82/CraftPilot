@@ -26,7 +26,7 @@ Neue Funktionen am besten als Issue mit einem kurzen Anwendungsfall vorschlagen:
 
 Vor jeder Veröffentlichung müssen Syntaxprüfung und vollständige Tests sowohl unter Lua 5.1 als auch unter Lua 5.4 bestehen. Die ältere Version prüft insbesondere die vom Client benötigten Grenzen für lokale Variablen und erfasste Funktionswerte.
 
-Rezept-, Händler- und Camping-Daten aus Craft Ladder werden nicht von Hand bearbeitet. Neuen Stand übernehmen: `python3 tools/sync_craft_ladder.py --update --report bericht.md` (optional `--ref vX.Y.Z`), danach die Tests unter Lua 5.1 und 5.4. Der Workflow `data-sync.yml` erledigt das regelmäßig und öffnet einen Pull Request.
+Rezept-, Händler- und Camping-Daten (`Data/Catalog`) werden nicht von Hand bearbeitet, sondern mit `tools/catalog` aus ihren Quellen gebaut (siehe [tools/catalog/README.md](tools/catalog/README.md)). Fehler in den Daten bitte an der Regel im Builder beheben. Die Workflows `catalog-inputs.yml` und `catalog-build.yml` aktualisieren den Katalog täglich per Pull Request; `data-sync.yml` (mit `tools/sync_data.py`) hält Lehrerliste und Sammelgebiete aktuell.
 
 Vor größeren Änderungen empfiehlt sich ein kurzes Issue, damit keine doppelte Arbeit entsteht.
 

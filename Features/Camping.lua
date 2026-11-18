@@ -1,4 +1,4 @@
--- Own display integration; raw reference data retains its original notices.
+-- Camp display. Camp data: Data/Catalog/Camp.lua, built by tools/catalog/build_camp.py from the client's tables.
 local _,CP=...
 local L=CP.L
 local dropLocations={
@@ -37,7 +37,7 @@ function CP:CampingRecipes(key)
       local text
       if source.kind=="trainer" then text=L("Lehrer; aktuelles Angebot prüfen")
       elseif source.kind=="quest" then text=L("Quest ")..tostring(source.quest or "?")
-      elseif source.kind=="drop" then text=L("Drop im alten Katalog; Boss nicht belegt")
+      elseif source.kind=="drop" then text=type(source.npcs)=="number" and string.format(L("Drop (%d Gegner)"),source.npcs) or L("Drop")
       elseif source.kind=="vendor" then text=L("Händler ")..tostring(source.npc or "?")
       elseif source.kind=="start" then text=L("Startrezept") end
       if text and factionFits(source) and not unique[text] then ways[#ways+1]=text;unique[text]=true end
@@ -107,7 +107,7 @@ function CP:CampingCards(key)
   local filter=self.db.ui.campingAll==false and key or nil
   local cards={{title=L("Camping: Grundobjekte und Ausbauten"),
     detail=L("Eine Minute sitzen oder herstellen; Camp-Objekte teilen eine Stunde Abklingzeit."),
-    footer=L("Aktuelle Tooltips haben Vorrang vor dem Referenzbuild 1.60.1.70425."),color="gold"}}
+    footer=string.format(L("Aktuelle Tooltips haben Vorrang vor dem Referenzbuild %s."),tostring(self.CAMP.build or "?")),color="gold"}}
   if page=="buffs" then
     local seen={}
     for _,base in ipairs(self.CAMP.features) do

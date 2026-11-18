@@ -62,7 +62,7 @@ function CP:HelpCards()
   cards[#cards+1]=card(L("Skillweg"),L("Günstigster Weg: rein nach AH-Preisen je Skillpunkt. Sichere Farben bevorzugen: Grün nur, wenn es über 25 % billiger ist. Nur Orange und Gelb: nie Grün. Schnellster Weg: so wenige Herstellungen wie möglich. Einstellbar unter Einstellungen."),
     function() CP:OpenTab("settings") end)
   cards[#cards+1]=card(L("Farben und Chancen"),L("Orange gibt immer einen Punkt, Gelb meist (ca. 70 %), Grün selten (ca. 35 %), Grau nie. CraftPilot rechnet mit diesen Chancen; einzelne Ergebnisse können abweichen."))
-  cards[#cards+1]=card(L("Preise sind Schätzungen"),L("Grundlage ist dein letzter Auctionator-Scan. Fehlende oder alte Preise werden genannt, nicht geraten. Rezeptdaten stammen aus Craft Ladder, Lehrer und Sammelgebiete aus QuestieDB und CMaNGOS."))
+  cards[#cards+1]=card(L("Preise sind Schätzungen"),L("Grundlage ist dein letzter Auctionator-Scan. Fehlende oder alte Preise werden genannt, nicht geraten. Rezeptdaten baut CraftPilot selbst aus den Tabellen des Forever-Clients, QuestieDB, CMaNGOS und AllTheThings."))
   cards[#cards+1]=card(L("Befehle"),L("/cp öffnet und schließt · /cp hilfe · /cp <Beruf> (z. B. /cp schmied) · /cp plan · /cp lehrer · /cp trainer (Wegpunkt) · /cp naechster · /cp refresh · /cp resetpos · /cp skin auto|dark|classic"))
   cards[#cards+1]=card(L("Fehler melden"),L("Erstellt einen Bericht mit Version und Lua-Fehlern zum Kopieren für GitHub."),function() CP:OpenDiagnosticReport() end,L("Klick: Bericht öffnen"),"gold")
   return cards

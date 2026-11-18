@@ -12,7 +12,7 @@ function CP:VendorOfferNotes(vendor)
   if s.rep then notes[#notes+1]=L("Rufvoraussetzung prüfen") end
   if s.event then notes[#notes+1]=L("Ereignis: ")..(type(s.event)=="string" and s.event or L("Angebot zeitlich begrenzt")) end
   if s.favor then notes[#notes+1]=L("Merchant's Favor: ")..(type(s.favor)=="number" and s.favor or L("Preis unbekannt")) end
-  if s.favorLevel then notes[#notes+1]=L("Favor-Stufe ")..s.favorLevel end
+  if s.favorStanding then notes[#notes+1]=L("ab Ruf ")..CP:StandingName(s.favorStanding) end
   if s.otherCost then notes[#notes+1]=L("Zusätzliche Währung erforderlich") end
   if vendor.unverified then notes[#notes+1]=L("Zusatzangebot · Voraussetzungen prüfen") end
   return table.concat(notes," · ")

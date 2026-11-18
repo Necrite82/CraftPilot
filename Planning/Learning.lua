@@ -182,7 +182,7 @@ function CP:RankGateWarning(key,target)
   return gate
 end
 
--- Specializations (Craft Ladder's specGuides): requirements, the current step and its quest giver.
+-- Specializations (catalog specGuides): requirements, the current step and its quest giver.
 local function specKnown(spec)
   if type(IsPlayerSpell)=="function" then local ok,known=pcall(IsPlayerSpell,spec);if ok and known then return true end end
   if type(IsSpellKnown)=="function" then local ok,known=pcall(IsSpellKnown,spec);if ok and known then return true end end
@@ -200,7 +200,7 @@ CP.SpecQuestDone=questDone
 function CP:Specializations(key)
   local catalog=self:Catalog(key)
   local guides=catalog and catalog.specGuides
-  if not guides then return nil end
+  if not guides or #guides==0 then return nil end
   local out={}
   local level=safe(UnitLevel,"player") or 0
   local skill=(self.db.professions[key] or {}).skill or 0
@@ -257,7 +257,7 @@ function CP:SpecCards(key)
   if not specs then
     return {{title=L("Keine Spezialisierung für diesen Beruf"),detail=L("In WoW Forever haben Schmiedekunst, Ingenieurskunst und Lederverarbeitung Spezialisierungen."),color="blue"}}
   end
-  local cards={{title=L("Wähle mit Bedacht"),detail=L("Eine Spezialisierung schaltet eigene Rezepte frei; ein Wechsel kostet Gold und die Rezepte der alten. Die Schritte stammen aus Craft Ladder."),color="gold"}}
+  local cards={{title=L("Wähle mit Bedacht"),detail=L("Eine Spezialisierung schaltet eigene Rezepte frei; ein Wechsel kostet Gold und die Rezepte der alten. Die Schritte stammen aus den Questdaten (QuestieDB, CMaNGOS)."),color="gold"}}
   for _,s in ipairs(specs) do
     local status
     if s.known then status=L("Erlernt")

@@ -81,7 +81,7 @@ function CP:FavorRecipes(key)
     if not (native and native.learned) and not recipe.unavailable then
       local favor,level
       for _,source in ipairs(recipe.get or {}) do
-        if source.kind=="vendor" and type(source.favor)=="number" and (not favor or source.favor<favor) then favor,level=source.favor,source.favorLevel end
+        if source.kind=="vendor" and type(source.favor)=="number" and (not favor or source.favor<favor) then favor,level=source.favor,source.favorStanding end
       end
       if favor then
         local profit=self:RecipeProfit(key,id)
@@ -188,7 +188,7 @@ function CP:FavorCards(key)
     color="blue",action=rate<=0 and function() CP:OpenTab("settings") end or nil}
   for i=1,math.min(10,#favor) do
     local f=favor[i]
-    local detail=string.format(L("Kostet %d Favor"),f.favor)..(f.level and (" · "..L("Favor-Stufe ")..f.level) or "")
+    local detail=string.format(L("Kostet %d Favor"),f.favor)..(f.level and (" · "..L("ab Ruf ")..self:StandingName(f.level)) or "")
       ..(f.learn and (" · "..L("ab Skill ")..f.learn) or "")
     local go=self:RecipeGoTo(key,f.id)
     if go then detail=detail.."\n"..go.label..(go.location.zone and go.location.zone~="" and (" · "..go.location.zone) or "") end

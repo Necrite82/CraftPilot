@@ -12,6 +12,7 @@
 -- makes/yield = product and count; mats = { [item] = count }; tools = tool kinds; cooldown = seconds.
 -- item = the recipe item; rep = { faction, standing }; spec = specialization spell; trainers = the only trainers.
 -- vendorPrices = reagents vendors sell (copper per unit, by side); sell = what a vendor pays. Costs in copper.
+-- specs = specialization names; specGuides = the quests to a specialization (see tools/catalog/spec_guides.py).
 local _, CP = ...
 CP.CatalogData = CP.CatalogData or {}
 CP.CatalogData.blacksmithing = {
@@ -22,6 +23,17 @@ CP.CatalogData.blacksmithing = {
     { name = "Journeyman", cap = 150, spell = 3100, how = "trainer", cost = 450, charLevel = 10, learnAt = 50 },
     { name = "Expert", cap = 225, spell = 3538, how = "trainer", cost = 4500, charLevel = 20, learnAt = 125 },
     { name = "Artisan", cap = 300, spell = 9785, how = "trainer", cost = 50000, charLevel = 35, learnAt = 200 },
+  },
+  specGuides = {
+    { spec = 9787, icon = 135326, level = 40, skill = 200, steps = { { quests = { 5284, 5302 }, items = { { item = 3853, n = 4 }, { item = 3855, n = 4 }, { item = 7941, n = 2 }, { item = 7945, n = 2 } } }, { pick = { { quests = { 5306 }, items = { { item = 13352, n = 1 } }, spec = 17041 }, { quests = { 5305, 8869 }, items = { { item = 13351, n = 1 } }, spec = 17040 }, { quests = { 5307 }, items = { { item = 13350, n = 1 } }, spec = 17039 } } } } },
+    { spec = 9788, icon = 132739, level = 40, skill = 200, steps = { { quests = { 5283, 5301 }, items = { { item = 7937, n = 4 }, { item = 7936, n = 2 }, { item = 7935, n = 1 } } } } },
+  },
+  specs = {
+    [9787] = "Weaponsmith",
+    [9788] = "Armorsmith",
+    [17039] = "Master Swordsmith",
+    [17040] = "Master Hammersmith",
+    [17041] = "Master Axesmith",
   },
   toolKinds = {
     [162] = { name = "Blacksmith Hammer", items = { 5956, 285280, 285281 } },
@@ -509,7 +521,12 @@ CP.CatalogData.blacksmithing = {
     [8176] = { name = "Gharash", faction = "H", map = 1435, zone = "Swamp of Sorrows", x = 45.5, y = 51.4 },
     [8878] = { name = "Muuran", faction = "H", map = 1443, zone = "Desolace", x = 55.6, y = 56.5 },
     [9179] = { name = "Jazzrik", faction = "AH", map = 1418, zone = "Badlands", x = 42.5, y = 52.5 },
+    [11146] = { name = "Ironus Coldsteel", faction = "A", map = 1455, zone = "Ironforge", x = 50.3, y = 43.6 },
     [11177] = { name = "Okothos Ironrager", faction = "H", map = 1454, zone = "Orgrimmar", x = 79.8, y = 24.1 },
+    [11178] = { name = "Borgosh Corebender", faction = "H", map = 1454, zone = "Orgrimmar", x = 79.4, y = 23.7 },
+    [11191] = { name = "Lilith the Lithe", faction = "AH", map = 1452, zone = "Winterspring", x = 61.3, y = 37.1 },
+    [11192] = { name = "Kilram", faction = "AH", map = 1452, zone = "Winterspring", x = 61.3, y = 37.1 },
+    [11193] = { name = "Seril Scourgebane", faction = "AH", map = 1452, zone = "Winterspring", x = 61.3, y = 37.2 },
     [11278] = { name = "Magnus Frostwake", faction = "AH", map = 1422, zone = "Western Plaguelands", x = 68.1, y = 77.6 },
     [11557] = { name = "Meilosh", faction = "AH", map = 1448, zone = "Felwood", x = 65.7, y = 2.8 },
     [15176] = { name = "Vargus", faction = "AH", map = 1451, zone = "Silithus", x = 51.2, y = 38.9 },
@@ -543,6 +560,10 @@ CP.CatalogData.blacksmithing = {
     [2773] = { name = "The Mithril Kid", faction = "AH", giver = 7804, giverName = "Trenton Lighthammer", zone = "Tanaris", x = 51.4, y = 28.8, reqLevel = 40, level = 45, skill = 210 },
     [5124] = { name = "Fiery Plate Gauntlets", faction = "AH", giver = 10637, giverName = "Malyfous Darkhammer", zone = "Winterspring", x = 61, y = 38.8, reqLevel = 55, level = 60, skill = 275 },
     [5127] = { name = "The Demon Forge", faction = "AH", giver = 10918, giverName = "Lorax", zone = "Winterspring", x = 63.8, y = 73.8, reqLevel = 55, level = 60, skill = 270 },
+    [5283] = { name = "The Art of the Armorsmith", faction = "A", giver = 5164, giverName = "Grumnus Steelshaper", zone = "Ironforge", x = 50, y = 42.8, reqLevel = 40, level = 40, skill = 200 },
+    [5284] = { name = "The Way of the Weaponsmith", faction = "A", giver = 11146, giverName = "Ironus Coldsteel", zone = "Ironforge", x = 50.3, y = 43.6, reqLevel = 40, level = 40, skill = 200 },
+    [5301] = { name = "The Art of the Armorsmith", faction = "H", giver = 11177, giverName = "Okothos Ironrager", zone = "Orgrimmar", x = 79.8, y = 24.1, reqLevel = 40, level = 40, skill = 200 },
+    [5302] = { name = "The Way of the Weaponsmith", faction = "H", giver = 11178, giverName = "Borgosh Corebender", zone = "Orgrimmar", x = 79.4, y = 23.7, reqLevel = 40, level = 40, skill = 200 },
     [5305] = { name = "Sweet Serenity", faction = "AH", giver = 11191, giverName = "Lilith the Lithe", zone = "Winterspring", x = 61.3, y = 37.1, reqLevel = 50, level = 60, skill = 250 },
     [5306] = { name = "Snakestone of the Shadow Huntress", faction = "AH", giver = 11192, giverName = "Kilram", zone = "Winterspring", x = 61.3, y = 37.1, reqLevel = 50, level = 60, skill = 250 },
     [5307] = { name = "Corruption", faction = "AH", giver = 11193, giverName = "Seril Scourgebane", zone = "Winterspring", x = 61.3, y = 37.2, reqLevel = 50, level = 60, skill = 250 },

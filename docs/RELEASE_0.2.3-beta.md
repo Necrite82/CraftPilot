@@ -3,6 +3,7 @@
 CraftPilot hilft jetzt auch nach dem Skillen, rechtzeitig vor den ersten Raids.
 
 **Neu:**
+- **Eigene Daten**: Rezepte, Händler, Camping und Spezialisierungen baut CraftPilot jetzt selbst aus den Tabellen des Forever-Clients (Build 1.60.1.70959), QuestieDB, CMaNGOS und AllTheThings – und aktualisiert sie täglich. Favor-Rezepte nennen die nötige Rufstufe; Rezepte, die es in Forever noch nicht gibt, werden nicht mehr eingeplant.
 - **Neue Oberfläche**: Navigation in einer Seitenleiste links mit Berufswahl, abgerundete Ecken, Seitentitel mit kurzer Erklärung und Statusfeldern, Gewinn-Karten im Raster mit Wertebalken, Endgame in vier Unterseiten (Gewinn, Raid-Vorrat, Wunschliste, Merchant's Favor), sichtbare Knöpfe statt Rechtsklick und Plus/Minus statt Regler.
 - **Endgame**: neue Seite mit Gewinn je Herstellung für deine erlernten Rezepte. Zwei Rechnungen nebeneinander: mit gekauften Materialien und mit eigenen. Eigene oder gefarmte Materialien sind nicht gratis, sie zählen mit dem, was ihr Verkauf bringen würde.
 - **Rezept-Wunschliste**: Rezepte vormerken und sehen, woher sie kommen – Lehrer, Händler, Merchant's Favor, Quest oder Boss (aus QuestieDB). Bosse zeigen dein Wunschrezept im Tooltip.

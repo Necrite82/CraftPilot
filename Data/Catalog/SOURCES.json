@@ -21,7 +21,9 @@
       "ItemXItemEffect.csv.gz": "4a0604e047f72390991e3a7914fe3e309829fb8773c36f5e4aff5628b7913f88",
       "SkillLine.csv.gz": "f3867d43ab42d1f5278e6e5028d0151bc06e4ef8e5cbd790a20df6ee57aa654d",
       "SkillLineAbility.csv.gz": "6696abd03ef90ad250a12ac23778616c292c46f6a0082130fbe187c96ead0aa0",
+      "Spell.csv.gz": "1bbb3dbe51236c2f431efe2d6c7168b462819e4a63bcf2776e584ced440bdce1",
       "SpellCooldowns.csv.gz": "f9ee0b38458f23cfd38aa0605b8015853276b1401aa3e5bcb46a34b8732b4fc4",
+      "SpellDuration.csv.gz": "4787f303fe8487cd67e5f9e8574fdc6fa2a03516dcfaabba23d9944f937223f5",
       "SpellEffect.csv.gz": "c872f27d9103aa73736c8e46a0d82b14fa86416cb3493f0088e726956f9a9c8d",
       "SpellLevels.csv.gz": "8bb6142b47be66c5110c7f64e53bbc27223a1d2bde739dafde1eec5c92a42649",
       "SpellMisc.csv.gz": "e2032d651fba6a21cd15a07cd6d33147636a9dc294c10712aa639ace3e096b10",
@@ -76,6 +78,17 @@
         "vendor": 196
       }
     },
+    "cooking": {
+      "recipes": 131,
+      "skipped": 10,
+      "sources": {
+        "drop": 25,
+        "quest": 32,
+        "start": 4,
+        "trainer": 7,
+        "vendor": 225
+      }
+    },
     "enchanting": {
       "recipes": 238,
       "skipped": 11,
@@ -100,6 +113,34 @@
         "vendor": 109
       }
     },
+    "firstaid": {
+      "recipes": 31,
+      "skipped": 8,
+      "sources": {
+        "drop": 10,
+        "quest": 1,
+        "start": 1,
+        "trainer": 8,
+        "trainer?": 7,
+        "vendor": 5
+      }
+    },
+    "fishing": {
+      "recipes": 3,
+      "skipped": 11,
+      "sources": {
+        "drop": 2,
+        "trainer?": 1
+      }
+    },
+    "herbalism": {
+      "recipes": 3,
+      "skipped": 14,
+      "sources": {
+        "drop": 1,
+        "trainer?": 1
+      }
+    },
     "leatherworking": {
       "recipes": 545,
       "skipped": 25,
@@ -121,6 +162,14 @@
         "start": 1,
         "trainer": 9,
         "trainer?": 3
+      }
+    },
+    "skinning": {
+      "recipes": 3,
+      "skipped": 9,
+      "sources": {
+        "drop": 2,
+        "trainer?": 1
       }
     },
     "tailoring": {
