@@ -134,9 +134,9 @@ end
 
 function CP:ProfitCards(key)
   local cards={}
-  local hasPrices=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
+  local hasPrices=#self:AvailablePriceSources()>0
   if not hasPrices then
-    cards[#cards+1]={title=L("Keine AH-Preise"),detail=L("Auctionator installieren und einmal am Auktionshaus scannen. Ohne Preise kann CraftPilot keinen Gewinn ausrechnen."),color="red"}
+    cards[#cards+1]={title=L("Keine AH-Preise"),detail=L("Auctionator (oder TradeSkillMaster/Auctioneer) installieren und einmal am Auktionshaus scannen. Ohne Preise kann CraftPilot keinen Gewinn ausrechnen."),color="red"}
   end
   local rows,incomplete=self:ProfitList(key)
   cards[#cards+1]={sectionHeader=true,title=L("Gewinn je Herstellung · erlernte Rezepte")}

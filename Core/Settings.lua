@@ -170,9 +170,9 @@ function CP:ToggleSetting(key)
     self.db.ui.showVendorRecipes=on;self.db.ui.knownRecipesOnly=not on
   elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
     self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true,ahAlarm=true,bankHelper=true,mailHelper=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true,ahAlarm=true,bankHelper=true,mailHelper=true,skillLog=true})[key] then
     -- Companion and twinks default to on (nil): the first click turns them off.
-    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" or key=="ahAlarm" or key=="bankHelper" or key=="mailHelper" then self.db.ui[key]=self.db.ui[key]==false
+    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" or key=="ahAlarm" or key=="bankHelper" or key=="mailHelper" or key=="skillLog" then self.db.ui[key]=self.db.ui[key]==false
     else self.db.ui[key]=not self.db.ui[key] end
   else return end
   self.pendingSettingsReset=nil
@@ -233,6 +233,8 @@ function CP:SettingsCards()
     -- General
     choice(L("Vorräte"),stockNames[scope],self:BankStatus().."\n"..(self.AltStatus and self:AltStatus() or ""),
       function() CP:SetStockScope(cycle(CP.StockScopes,CP:StockScope())) end,"general","Interface\\Icons\\INV_Misc_Bag_08"),
+    choice(L("Preisquelle"),CP:PriceSourceName(ui.priceSource),CP:PriceSourceDetail(),
+      function() ui.priceSource=cycle({"auto","auctionator","tsm","auctioneer"},ui.priceSource or "auto");CP.pathCache=nil;CP:Render() end,"general","Interface\\Icons\\INV_Misc_Coin_02"),
     check("companion",L("Begleitfenster am Berufsfenster"),L("Empfehlung, verbleibende Herstellungen, Sitzungsbilanz und Cooldowns direkt neben dem Berufsfenster."),ui.companion~=false,"general"),
     check("autoOpen",L("Berufsfenster beim Wechsel öffnen"),L("Ein Klick im Berufsmenü öffnet auch das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),ui.autoOpen==true,"general"),
     check("tooltips",L("Hinweise in Gegenstands-Tooltips"),L("Bedarf deines Plans, „nicht verkaufen“, Twink-Bestände und Preisgrenze direkt am Gegenstand."),ui.tooltips~=false,"general"),
@@ -240,6 +242,7 @@ function CP:SettingsCards()
     check("ahAlarm",L("AH-Alarm"),L("Nach einem Auctionator-Scan: Wunschrezepte im AH und Raid-Vorrat, der im AH deutlich günstiger ist als Herstellen. Jeder Fund einmal am Tag."),ui.ahAlarm~=false,"general","Interface\\Icons\\INV_Misc_Bell_01"),
     check("bankHelper",L("Hinweis an der Bank"),L("Zeigt an der Bank, was deine Pläne von dort brauchen. Schließen blendet ihn aus, bis sich die Liste ändert."),ui.bankHelper~=false,"general","Interface\\Icons\\INV_Misc_Bag_10_Blue"),
     check("mailHelper",L("Hinweis am Briefkasten"),L("Zeigt am Briefkasten, was deine Twinks für ihre Pläne brauchen. Schließen blendet ihn aus, bis sich die Liste ändert."),ui.mailHelper~=false,"general","Interface\\Icons\\INV_Letter_15"),
+    check("skillLog",L("Skilldaten mitschreiben"),L("Merkt sich bei jedem Herstellen Skill und ob ein Punkt kam – für eigene Hinweise und zum Teilen (Hilfe › Skilldaten teilen). Keine Namen."),ui.skillLog~=false,"general","Interface\\Icons\\INV_Misc_Note_02"),
     check("hideMinimap",L("Minimap-Button"),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),not ui.hideMinimap,"general"),
     -- Route
     choice(L("Skillweg"),pathNames[path],pathDetails[path].."\n"..L("Gilt für Empfehlung, Begleitfenster und Plan erstellen."),

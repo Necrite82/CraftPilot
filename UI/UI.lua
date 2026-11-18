@@ -492,6 +492,15 @@ U.rec.prices=button(U.rec,120,28,0,0,L("Preise prüfen"),function()
 end)
 U.rec.prices:Hide()
 U.rec:Hide()
+-- 1.1.0: the budget, visible on "Jetzt" right below the recommendation; a click opens the input.
+U.budget=CreateFrame("Button",nil,frame,"BackdropTemplate")
+CP:Round(U.budget,true);U.budget:SetBackdropColor(.098,.114,.137,1)
+U.budget.icon=U.budget:CreateTexture(nil,"ARTWORK");U.budget.icon:SetSize(16,16);U.budget.icon:SetPoint("LEFT",U.budget,"LEFT",12,0)
+if type(U.budget.icon.SetTexture)=="function" then U.budget.icon:SetTexture("Interface\\Icons\\INV_Misc_Coin_02") end
+U.budget.text=U.budget:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");U.budget.text:SetPoint("LEFT",U.budget,"LEFT",36,0);U.budget.text:SetJustifyH("LEFT");U.budget.text:SetWordWrap(false)
+U.budget.action=U.budget:CreateFontString(nil,"OVERLAY","GameFontNormalSmall");U.budget.action:SetPoint("RIGHT",U.budget,"RIGHT",-12,0);U.budget.action:SetJustifyH("RIGHT")
+U.budget:SetScript("OnClick",function() CP:OpenBudgetWindow() end)
+U.budget:Hide()
 
 U.detailPanel=panel(frame,"panel")
 U.detailScroll=CreateFrame("ScrollFrame","CraftPilotProDetailScroll",U.detailPanel,"UIPanelScrollFrameTemplate")
@@ -1261,7 +1270,8 @@ local function renderDetail(key,entry)
   colorLine:SetText((entry.referenceOnly and (entry.referenceStatus or "") or CP:RecipeColorLabel(key,entry.id))..chance)
   put(colorLine,12);y=y+4
   local rangeLabel=detailLabel("rangeLabel","GameFontDisableSmall");rangeLabel:SetWidth(inner)
-  rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
+  local observed=CP.SkillObservationText and CP:SkillObservationText(key,entry.id)
+  rangeLabel:SetText(CP:RecipeRangeText(key,entry.id)..(observed and ("\n|cff8fd6a6"..observed.."|r") or ""))
   put(rangeLabel,12);y=y+12
 
   if entry.vendorRecipe or entry.referenceOnly then
@@ -1736,7 +1746,7 @@ local function hideAll()
   for _,c in ipairs(U.camp) do c:Hide() end
   for _,b in ipairs(U.stageButtons) do b:Hide() end
   U.campFilter:Hide();U.settingsTitle:Hide();U.settingsDone:Hide();U.back:Hide()
-  U.listPanel:Hide();U.detailPanel:Hide();U.contentPanel:Hide();U.section:Hide();U.rec:Hide()
+  U.listPanel:Hide();U.detailPanel:Hide();U.contentPanel:Hide();U.section:Hide();U.rec:Hide();U.budget:Hide()
   for _,bg in pairs(U.segBg) do bg:Hide() end
 end
 
@@ -1874,6 +1884,13 @@ local function renderNow(self,key,prof,record,inner)
   local top=106
   local recHeight=CP:RenderRecommendation(key,inner)
   if recHeight then top=top+recHeight+8 end
+  local budgetLine=CP:BudgetLine(key,CP.currentRecommendation)
+  if budgetLine then
+    U.budget:ClearAllPoints();U.budget:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-top);U.budget:SetSize(inner,28);U.budget:Show()
+    U.budget.text:SetWidth(inner-180);U.budget.text:SetText(budgetLine.text)
+    U.budget.action:SetText(budgetLine.action)
+    top=top+36
+  else U.budget:Hide() end
   U.listPanel:ClearAllPoints();U.listPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-top);U.listPanel:SetSize(leftW,h-top-44);U.listPanel:Show()
   U.detailPanel:ClearAllPoints();U.detailPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",30+leftW,-top);U.detailPanel:SetSize(rightW,h-top-44);U.detailPanel:Show()
   U.countText:ClearAllPoints();U.countText:SetPoint("TOPRIGHT",U.listPanel,"TOPRIGHT",-12,-15)
@@ -2146,7 +2163,14 @@ function CP:RenderRecommendation(key,inner)
   U.rec:EnableMouse(true)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
     local r=CP.currentRecommendation
-    return r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    local lines=r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    -- Hints that did not fit into the banner.
+    if r and r.allExtra and r.allExtra~=r.extra then
+      local all={}
+      for part in (r.allExtra.."  ·  "):gmatch("(.-)  ·  ") do all[#all+1]=part end
+      for i=#all,1,-1 do table.insert(lines,1,all[i]) end
+    end
+    return lines
   end)
   return height
 end

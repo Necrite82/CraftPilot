@@ -46,7 +46,14 @@ function CP:RecipeRangeText(key,id)
     if ending>=colors[i] then parts[#parts+1]=inks[i]..labels[i].." "..colors[i].."-"..ending.."|r" end
   end
   parts[#parts+1]=inks[4]..labels[4]..L(" ab ")..colors[4].."|r"
-  return table.concat(parts," | ")..(conflict and L(" · Grenzen abweichend") or L(" · Grenzen unbestätigt"))
+  -- 1.1.0: what players saw (Data/Catalog/Observed.lua from shared skill notes).
+  local seen=self.ObservedSkill and self.ObservedSkill[key] and self.ObservedSkill[key][id]
+  local status
+  if seen and seen.status=="confirmed" then status=string.format(L(" · Grenzen bestätigt (%d Herstellungen)"),seen.crafts)
+  elseif seen and seen.status=="conflict" and seen.lastPoint then status=string.format(L(" · Spieler bekamen noch bei %d einen Punkt"),seen.lastPoint)
+  elseif conflict then status=L(" · Grenzen abweichend")
+  else status=L(" · Grenzen unbestätigt") end
+  return table.concat(parts," | ")..status
 end
 function CP:RecipeChanceAt(key,id,recipe,skill)
   local native=(self.db.recipes[key] or {})[id]

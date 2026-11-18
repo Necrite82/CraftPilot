@@ -26,6 +26,8 @@ function CP:PlanPageCards(key,page)
           CP:SearchItems(list,L("Preise"),L("Auctionator scannt die Materialien deines Plans."))
         end}
     end
+    for _,card in ipairs(self:SecondProfessionCards(key)) do cards[#cards+1]=card end
+    for _,card in ipairs(self:BuyTimingCards(key)) do cards[#cards+1]=card end
     for _,card in ipairs(self:BudgetCards(key)) do cards[#cards+1]=card end
     cards[#cards+1]={sectionHeader=true,title=L("PLAN TEILEN")}
     cards[#cards+1]={title=L("Plan als Text teilen"),detail=L("Rezepte und Mengen als kurzer Text, z. B. für Gildenmitglieder, die für dich sammeln."),footer=L("Klick: Text anzeigen"),color="blue",

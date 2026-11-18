@@ -72,6 +72,10 @@ function CP:SnapshotNeeds()
       if n>have then needs[id]=(needs[id] or 0)+(n-have) end
     end
   end
+  -- 1.1.0: what the current recommendation wants from twinks counts too, so the twink's mailbox can pack it.
+  for _,m in ipairs(self.currentRecommendation and self.currentRecommendation.fromAlts or {}) do
+    needs[m.id]=math.max(needs[m.id] or 0,m.count)
+  end
   entry.needs=needs
 end
 
@@ -135,15 +139,76 @@ function CP:MailForTwinks()
   return out
 end
 
--- Fill in recipient and subject; the player attaches the items and sends the mail.
+-- Fill in recipient and subject and attach the items (1.1.0: post packer). Sending stays with the player.
 function CP:PrepareMail(name,items)
   if type(_G.SendMailNameEditBox)~="table" then self:Say(L("Briefkasten nicht geöffnet."));return false end
   if type(MailFrameTab_OnClick)=="function" then pcall(MailFrameTab_OnClick,nil,2) end
   pcall(SendMailNameEditBox.SetText,SendMailNameEditBox,name)
   if type(_G.SendMailSubjectEditBox)=="table" then pcall(SendMailSubjectEditBox.SetText,SendMailSubjectEditBox,"CraftPilot") end
+  local queued,short=self:AttachMailItems(items)
   local list={};for _,it in ipairs(items or {}) do list[#list+1]=it.count.."× "..it.name end
-  self:Say(string.format(L("Brief an %s vorbereitet · bitte anhängen: %s"),name,table.concat(list,", ")))
+  if queued>0 then
+    self:Say(string.format(L("Brief an %s gepackt (%d Anhänge) · prüfen und auf „Senden“ klicken."),name,queued)
+      ..(short and (" "..L("Nicht alles passte in einen Brief – danach erneut packen.")) or ""))
+  else
+    self:Say(string.format(L("Brief an %s vorbereitet · bitte anhängen: %s"),name,table.concat(list,", ")))
+  end
   return true
+end
+
+-- Bag slots holding the items, exact amounts: whole stacks, the last one split. At most the free attachment slots.
+function CP:MailAttachmentPlan(items)
+  local api=_G.C_Container
+  local getInfo=api and api.GetContainerItemInfo
+  local numSlots=api and api.GetContainerNumSlots
+  local plan,short={},false
+  local free=_G.ATTACHMENTS_MAX_SEND or 12
+  if type(GetSendMailItem)=="function" then
+    for i=1,(_G.ATTACHMENTS_MAX_SEND or 12) do if GetSendMailItem(i) then free=free-1 end end
+  end
+  if type(getInfo)~="function" or type(numSlots)~="function" then return plan,false end
+  for _,it in ipairs(items or {}) do
+    local left=it.count or 0
+    for bag=0,(_G.NUM_BAG_SLOTS or 4) do
+      for slot=1,(numSlots(bag) or 0) do
+        if left<=0 then break end
+        local info=getInfo(bag,slot)
+        if type(info)=="table" and info.itemID==it.id and not info.isLocked and (info.stackCount or 0)>0 then
+          if #plan>=free then short=true;break end
+          local take=math.min(left,info.stackCount)
+          plan[#plan+1]={bag=bag,slot=slot,take=take,split=take<info.stackCount,id=it.id}
+          left=left-take
+        end
+      end
+    end
+    if left>0 and #plan>=free then short=true end
+  end
+  return plan,short
+end
+
+-- One attachment every 0.3 s: the client locks a slot for a moment after each move.
+function CP:AttachMailItems(items)
+  local plan,short=self:MailAttachmentPlan(items)
+  if #plan==0 then return 0,short end
+  local api=_G.C_Container
+  local i=0
+  local function nextOne()
+    i=i+1
+    local step=plan[i]
+    if not step or type(_G.SendMailNameEditBox)~="table" then return end
+    if step.split then pcall(api.SplitContainerItem,step.bag,step.slot,step.take) else pcall(api.PickupContainerItem,step.bag,step.slot) end
+    if type(ClickSendMailItemButton)=="function" then
+      local index=1
+      if type(GetSendMailItem)=="function" then while GetSendMailItem(index) do index=index+1 end end
+      pcall(ClickSendMailItemButton,index)
+    end
+    if type(CursorHasItem)=="function" and CursorHasItem() and type(ClearCursor)=="function" then ClearCursor() end
+    if plan[i+1] then
+      if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(.3,nextOne) else nextOne() end
+    end
+  end
+  nextOne()
+  return #plan,short
 end
 
 -- A small panel beside the bank or the mailbox. Lines: {text, action, caption}.
@@ -229,7 +294,7 @@ function CP:ShowMailHelper()
     local parts={};for i,it in ipairs(t.items) do if i<=4 then parts[#parts+1]=it.count.."× "..it.name end end
     if #t.items>4 then parts[#parts+1]=string.format(L("+%d weitere"),#t.items-4) end
     local name,items=t.name,t.items
-    rows[#rows+1]={text=string.format(L("%s braucht: %s"),t.name,table.concat(parts,", ")),caption=string.format(L("Brief an %s vorbereiten"),t.name),
+    rows[#rows+1]={text=string.format(L("%s braucht: %s"),t.name,table.concat(parts,", ")),caption=string.format(L("Brief an %s packen"),t.name),
       action=function() CP:PrepareMail(name,items) end}
   end
   local f=helperPanel(self,"MailHelper",_G.MailFrame)

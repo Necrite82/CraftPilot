@@ -187,6 +187,83 @@ function CP:BudgetCards(key)
   return cards
 end
 
+-- 1.1.0: one line for "Jetzt" and the companion. Without a budget it offers one and names the whole way's cost.
+function CP:BudgetLine(key,rec)
+  local gold=tonumber(self.db.ui.budgetGold) or 0
+  local path=self.CheapestPath and self:CheapestPath(key)
+  if gold<=0 then
+    if path and path.total and path.reached and path.reached>(path.from or 0) then
+      return {text=string.format(L("Ganzer Weg bis %d: ca. %s · Wie weit reicht dein Gold?"),path.reached,self:FormatCostMoney(path.total)),
+        short=string.format(L("Bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total)),action=L("Budget festlegen"),off=true}
+    end
+    return {text=L("Budget festlegen: CraftPilot zeigt, bis zu welchem Skill dein Gold reicht."),action=L("Budget festlegen"),off=true}
+  end
+  local reach=self:BudgetReach(path,gold*10000)
+  local text,short
+  if not reach then
+    text=string.format(L("Budget %d Gold · für die Reichweite fehlen Preise (AH scannen)"),gold);short=text
+  elseif reach.reached>=reach.target then
+    text=string.format(L("Budget %d Gold · reicht für den ganzen Weg bis %d (ca. %s)"),gold,reach.target,self:FormatCostMoney(reach.spent))
+    short=string.format(L("Budget %d Gold reicht bis %d"),gold,reach.target)
+  else
+    text=string.format(L("Budget %d Gold · reicht bis Skill %d von %d"),gold,reach.reached,reach.target)
+    short=string.format(L("Budget %d Gold reicht bis %d"),gold,reach.reached)
+  end
+  local over=rec and rec.buy and rec.buyComplete and rec.buy>gold*10000
+  if over then
+    local warn=string.format(L("Nächster Schritt kostet %s – mehr als dein Budget"),self:FormatCostMoney(rec.buy))
+    text=text.."  ·  |cffff7f66"..warn.."|r";short=short.."\n|cffff7f66"..warn.."|r"
+  end
+  return {text=text,short=short,action=L("Budget ändern"),over=over,reach=reach}
+end
+
+function CP:SetBudget(gold)
+  gold=math.max(0,math.min(100000,math.floor(tonumber(gold) or 0)))
+  self.db.ui.budgetGold=gold
+  if self.Render then self:Render() end
+  return gold
+end
+
+function CP:OpenBudgetWindow()
+  local f=self.budgetWindow
+  if not f then
+    f=CreateFrame("Frame","CraftPilotProBudgetWindow",UIParent,"BackdropTemplate")
+    f:SetSize(340,150);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true)
+    if type(f.SetBackdrop)=="function" then
+      f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})
+      f:SetBackdropColor(.07,.08,.10,.97);f:SetBackdropBorderColor(.88,.69,.31,.9)
+    end
+    f.title=f:CreateFontString(nil,"OVERLAY","GameFontNormal");f.title:SetPoint("TOPLEFT",f,"TOPLEFT",12,-10);f.title:SetText(L("Budget"))
+    f.hint=f:CreateFontString(nil,"OVERLAY","GameFontDisableSmall");f.hint:SetPoint("TOPLEFT",f,"TOPLEFT",12,-30);f.hint:SetWidth(316);f.hint:SetJustifyH("LEFT")
+    f.hint:SetText(L("Wie viel Gold willst du fürs Skillen ausgeben? 0 schaltet das Budget aus."))
+    f.box=CreateFrame("EditBox",nil,f,"InputBoxTemplate");f.box:SetSize(70,24);f.box:SetPoint("TOPLEFT",f,"TOPLEFT",132,-66);f.box:SetAutoFocus(false)
+    if type(f.box.SetNumeric)=="function" then f.box:SetNumeric(true) end
+    if type(f.box.SetMaxLetters)=="function" then f.box:SetMaxLetters(6) end
+    f.unit=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");f.unit:SetPoint("LEFT",f.box,"RIGHT",6,0);f.unit:SetText(L("Gold"))
+    local function step(d,x)
+      local b=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");b:SetSize(36,22);b:SetPoint("TOPLEFT",f,"TOPLEFT",x,-67)
+      b:SetText((d>0 and "+" or "−")..math.abs(d))
+      b:SetScript("OnClick",function() f.box:SetText(tostring(math.max(0,(tonumber(f.box:GetText()) or 0)+d))) end)
+      return b
+    end
+    step(-5,12);step(-1,52);step(1,250);step(5,290)
+    local function apply() CP:SetBudget(f.box:GetText());f:Hide() end
+    f.box:SetScript("OnEnterPressed",apply);f.box:SetScript("OnEscapePressed",function() f:Hide() end)
+    f.apply=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");f.apply:SetSize(120,24);f.apply:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",12,12)
+    f.apply:SetText(L("Übernehmen"));f.apply:SetScript("OnClick",apply)
+    f.off=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");f.off:SetSize(90,24);f.off:SetPoint("BOTTOM",f,"BOTTOM",30,12)
+    f.off:SetText(L("Aus"));f.off:SetScript("OnClick",function() CP:SetBudget(0);f:Hide() end)
+    f.close=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");f.close:SetSize(80,24);f.close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-12,12)
+    f.close:SetText(L("Schließen"));f.close:SetScript("OnClick",function() f:Hide() end)
+    self.budgetWindow=f
+  end
+  f.box:SetText(tostring(tonumber(self.db.ui.budgetGold) or 0))
+  f:Show()
+  if type(f.box.SetFocus)=="function" then f.box:SetFocus() end
+  if type(f.box.HighlightText)=="function" then f.box:HighlightText() end
+  return true
+end
+
 -- Leftovers -------------------------------------------------------------------------------------------------------
 -- Crafted items in the bags that no plan keeps: sell at the AH, sell to a vendor or let an enchanter disenchant.
 local function vendorSell(item)

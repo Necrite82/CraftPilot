@@ -56,13 +56,20 @@ function CP:Recommendation(key)
     detail=L("Fehlt: ")..table.concat(parts,", ").." · "
       ..(cost.cashComplete and (L("Zukauf ca. ")..self:FormatCostMoney(cost.buy)) or L("Preis unvollständig"))
   end
-  local pickups={}
+  local pickups,fromAlts={},{}
+  for _,mat in ipairs(cost.materials) do if (mat.alts or 0)>0 then fromAlts[#fromAlts+1]={id=mat.id,count=mat.alts} end end
   for _,mat in ipairs(cost.materials) do
     if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
   end
   local extras={}
   local raw=self.RawMaterialHints and self:RawMaterialHints(cost.materials,1) or {}
-  if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1] end
+  if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1]
+  else
+    local second=self.SecondProfessionOptions and self:SecondProfessionOptions(key)[1]
+    if second then extras[#extras+1]=L("Zweiter Beruf: ")..self:SecondProfessionText(second) end
+  end
+  local deal=self.BuyTimingDeals and self:BuyTimingDeals(key,1)[1]
+  if deal then extras[#extras+1]="|cff8fd6a6"..L("Jetzt günstig: ")..self:BuyTimingText(deal).."|r" end
   if #pickups>0 then extras[#extras+1]=L("Von Twinks: ")..table.concat(pickups,", ") end
   -- Saving tip: a recipe (perhaps still to learn) that is much cheaper per point right now than the pick,
   -- e.g. a green one the "reliable" setting passes over.
@@ -92,8 +99,18 @@ function CP:Recommendation(key)
   end
   local gate=self.RankGate and self:RankGate(key)
   if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
-  local extra=#extras>0 and table.concat(extras,"  ·  ") or nil
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,
+  -- The banner has room for two hints; the companion shows them all (allExtra). Order is priority: twinks,
+  -- making it yourself, cheap now, saving tip, whole way (the budget strip names the whole way too).
+  local order={}
+  for _,prefix in ipairs({L("Von Twinks: "),L("Selbst herstellen: "),L("Zweiter Beruf: "),"|cff8fd6a6"..L("Jetzt günstig: "),L("Spartipp: "),L("Tipp: ")}) do
+    for i=#extras,1,-1 do
+      if extras[i]:sub(1,#prefix)==prefix then order[#order+1]=table.remove(extras,i) end
+    end
+  end
+  for _,e in ipairs(extras) do order[#order+1]=e end
+  local allExtra=#order>0 and table.concat(order,"  ·  ") or nil
+  local extra=#order>0 and table.concat({order[1],order[2]},"  ·  ") or nil
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

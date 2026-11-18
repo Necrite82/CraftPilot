@@ -8,15 +8,72 @@ local function call(fn,...)
   if ok then return result end
   return nil
 end
+-- 1.1.0: auction prices from Auctionator, TradeSkillMaster or Auctioneer, each through its own public API.
+-- "auto" takes the first that has a price, in that order; a chosen source comes first, the others stay fallbacks.
+-- A source that is missing, has no price or throws is skipped quietly.
+local function itemLink(id)
+  local link
+  if C_Item and type(C_Item.GetItemInfo)=="function" then link=select(2,call(C_Item.GetItemInfo,id)) end
+  if type(link)~="string" and type(GetItemInfo)=="function" then link=select(2,call(GetItemInfo,id)) end
+  return type(link)=="string" and link or ("item:"..id)
+end
+local function valid(n) return type(n)=="number" and n==n and n~=math.huge and n>0 and n or nil end
+CP.PriceSources={
+  {key="auctionator",name="Auctionator",get=function(id)
+    local api=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
+    if not api then return nil end
+    local price=valid(call(api.GetAuctionPriceByItemID,"CraftPilot",id))
+    if not price then return nil end
+    local age=call(api.GetAuctionAgeByItemID,"CraftPilot",id)
+    if type(age)~="number" or age~=age or age==math.huge or age<0 then age=nil end
+    return price,age
+  end},
+  {key="tsm",name="TradeSkillMaster",get=function(id)
+    local api=_G.TSM_API
+    if type(api)~="table" or type(api.GetCustomPriceValue)~="function" then return nil end
+    return valid(call(api.GetCustomPriceValue,"first(DBMinBuyout, DBRecent, DBMarket)","i:"..id)),nil
+  end},
+  {key="auctioneer",name="Auctioneer",get=function(id)
+    local api=_G.AucAdvanced and _G.AucAdvanced.API
+    if type(api)~="table" or type(api.GetMarketValue)~="function" then return nil end
+    return valid(call(api.GetMarketValue,itemLink(id))),nil
+  end},
+}
+function CP:AvailablePriceSources()
+  local out={}
+  for _,s in ipairs(self.PriceSources) do
+    local present=(s.key=="auctionator" and _G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1)
+      or (s.key=="tsm" and type(_G.TSM_API)=="table") or (s.key=="auctioneer" and type(_G.AucAdvanced)=="table")
+    if present then out[#out+1]=s end
+  end
+  return out
+end
+function CP:PriceSourceName(key)
+  return ({auto=L("Automatisch"),auctionator="Auctionator",tsm="TradeSkillMaster",auctioneer="Auctioneer"})[key or "auto"] or L("Automatisch")
+end
+function CP:PriceSourceDetail()
+  local names={}
+  for _,s in ipairs(self:AvailablePriceSources()) do names[#names+1]=s.name end
+  return L("Automatisch: Auctionator, dann TradeSkillMaster, dann Auctioneer – die erste mit Preis zählt. Eine gewählte Quelle wird zuerst gefragt.")
+    .."\n"..L("Gefunden: ")..(#names>0 and table.concat(names,", ") or L("keine – Auctionator empfohlen"))
+end
+function CP:AuctionPrice(itemID)
+  local pref=self.db and self.db.ui and self.db.ui.priceSource or "auto"
+  local order={}
+  for _,s in ipairs(self.PriceSources) do if s.key==pref then order[#order+1]=s end end
+  for _,s in ipairs(self.PriceSources) do if s.key~=pref then order[#order+1]=s end end
+  for _,s in ipairs(order) do
+    local ok,price,age=pcall(s.get,itemID)
+    if ok and price then return price,age,s.name end
+  end
+  return nil
+end
 function CP:PriceDetails(itemID)
-  local api=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
-  local ah=api and call(api.GetAuctionPriceByItemID,"CraftPilot",itemID)
-  if type(ah)~="number" or ah~=ah or ah==math.huge or ah<=0 then ah=nil end
-  local age=api and call(api.GetAuctionAgeByItemID,"CraftPilot",itemID)
-  if type(age)~="number" or age~=age or age==math.huge or age<0 then age=nil end
+  local ah,age,provider=self:AuctionPrice(itemID)
   local vendor=self:CatalogVendorPrice(itemID)
   local selected=ah
-  local source=ah and "Auctionator" or L("unbekannt")
+  -- "Auctionator" stays the source name for Auctionator; other providers are named as themselves.
+  local source=ah and provider or L("unbekannt")
   if vendor and (not selected or vendor<selected) then
     selected=vendor
     source=L("Haendler")
@@ -29,7 +86,7 @@ function CP:PriceDetails(itemID)
   elseif age>3 then freshness="aging"
   else freshness="fresh" end
   return {price=selected,auction=ah,vendor=vendor,ageDays=age,
-    source=source,freshness=freshness}
+    source=source,provider=provider,freshness=freshness}
 end
 
 function CP:PriceFreshness(itemID)
@@ -70,8 +127,7 @@ function CP:LastAuctionScan()
 end
 
 function CP:ProfessionPriceStatus(key)
-  local api=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
-  if not api or type(api.GetAuctionPriceByItemID)~="function" then return L("AH: Auctionator fehlt"),"missing" end
+  if #self:AvailablePriceSources()==0 then return L("AH: Auctionator fehlt"),"missing" end
   local seen={}
   for _,recipe in pairs(self.db.recipes[key] or {}) do
     if not recipe.disabled then

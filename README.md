@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 1.0.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 1.1.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Fragen, Ideen und Fehler:** im Spiel über „Fehler melden“, im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -34,12 +34,18 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - Begleitfenster am Berufsfenster: Empfehlung, „noch N× bis zur nächsten Farbe“, **Herstellen-Knopf**, Sitzungsbilanz
 - Klare Hinweise, was du für spätere Schritte **aufheben** musst, und „schon vorhanden“ statt doppelt herstellen
 - Vorschau auf den nächsten Lernschritt, Warnungen bei Rang- und Levelsperren
+- **Budget** direkt auf „Jetzt“: wie weit dein Gold reicht, Warnung, wenn ein Schritt dein Budget sprengt
+- **Zwei Berufe zusammen**: Zwischenprodukte mit deinem zweiten Beruf selbst herstellen (z. B. Barren verhütten) – Ersparnis und Skillpunkte dort
+- **Bestätigte Skillgrenzen**: CraftPilot schreibt mit, bei welchem Skill es Punkte gab; geteilte Daten machen die Farbgrenzen für alle genauer
 
 **Einkaufen**
 - Einkaufsplan für jeden Skillbereich, Preisgrenze je Material („lohnt sich bis 12s“)
 - **Einkaufsrunde am Auktionshaus** mit Auctionator: Posten für Posten, Gekauftes wird abgezählt
 - **Händler-Helfer** kauft genau die fehlende Menge, Bank-Helfer zeigt, was du mitnehmen musst
-- Sammelgebiete für Erze, Steine und Kräuter, Verkaufserlös, Budget-Modus
+- Sammelgebiete für Erze, Steine und Kräuter, Verkaufserlös
+- **Jetzt günstig**: Materialien deines Weges, die heute deutlich unter ihrem üblichen Preis liegen, mit Ersparnis
+- **Farmen oder kaufen** nach deinem eigenen Sammeltempo
+- Preise aus **Auctionator, TradeSkillMaster oder Auctioneer**
 
 **Lernen**
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
@@ -54,7 +60,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 
 **Twinks**
 - Bestände in Taschen, Bank und Post aller Charaktere, Cooldowns, Twinks als günstigere Hersteller
-- Am Briefkasten: was deine Twinks brauchen, mit vorbereitetem Brief
+- **Post-Packer**: Am Briefkasten packt CraftPilot den Brief an deinen Twink mit genau den fehlenden Mengen – du klickst nur noch „Senden“
 
 **Sicherheit**
 - Markierung reservierter Gegenstände in jeder Taschenansicht (Standardtaschen, EllesmereUI, Baganator, Bagnon, AdiBags …)
@@ -66,7 +72,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-1.0.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.0.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-1.1.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.1.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilotPro\CraftPilotPro.toc` muss direkt im Ordner `CraftPilotPro` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 
@@ -74,6 +80,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 | --- | --- |
 | QuestieDB | **erforderlich**: Lehrer, Händlerstandorte, Sammelgebiete |
 | Auctionator | empfohlen: AH-Preise, Einkaufsrunde |
+| TradeSkillMaster / Auctioneer | optional: weitere Preisquellen |
 | TomTom | optional: Wegpunkte mit Pfeil |
 | EllesmereUI | optional: passendes Design |
 

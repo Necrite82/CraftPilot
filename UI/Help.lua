@@ -23,6 +23,7 @@ function CP:HelpCards()
   end
   cards[#cards+1]=card(L("Community auf Discord"),L("Fragen, Ideen und Fehlermeldungen – auch ohne GitHub-Konto. Deutsch und Englisch."),
     function() CP:OpenDiscordLink() end,L("Klick: Link zum Kopieren"),"green")
+  if self.SkillLogCard and self.db.ui.skillLog~=false then cards[#cards+1]=self:SkillLogCard() end
   cards[#cards+1]=header(L("ERSTE SCHRITTE"))
   cards[#cards+1]=card(L("1. Beruf wählen"),L("Oben links im Berufsmenü. Erlernte Berufe stehen zuerst; ein Klick auf einen erlernten Beruf öffnet auch sein Berufsfenster (abschaltbar)."))
   cards[#cards+1]=card(L("2. Berufsfenster einmal öffnen"),L("Dabei liest CraftPilot deine Rezepte, Skillfarben und Materialien ein. Danach stimmt die Empfehlung."))
@@ -30,6 +31,9 @@ function CP:HelpCards()
     function() CP:OpenTab("now") end)
   if self:AuctionatorStatus() then
     cards[#cards+1]=card(L("Auctionator gefunden"),L("Preise kommen aus deinen Auctionator-Scans. Ein voller Scan am Auktionshaus bringt die besten Ergebnisse; „Preise alt“ scannt gezielt nach."),nil,nil,"green")
+  elseif #self:AvailablePriceSources()>0 then
+    local names={};for _,s in ipairs(self:AvailablePriceSources()) do names[#names+1]=s.name end
+    cards[#cards+1]=card(L("Preise aus ")..table.concat(names,", "),L("CraftPilot liest die Preise dort. Einkaufslisten und gezieltes Nachscannen am AH brauchen weiter Auctionator."),nil,nil,"gold")
   else
     cards[#cards+1]=card(L("Auctionator fehlt"),L("Ohne Auctionator kennt CraftPilot nur Händlerpreise. Für den günstigsten Weg, Preisgrenzen und das Einkaufen am AH bitte Auctionator installieren und einmal am Auktionshaus scannen."),nil,nil,"red")
   end

@@ -276,9 +276,13 @@ function CP:CheapestPath(key,from,to)
     end
   end
   local altCrafts={}
+  local quantities={}
   for _,s in ipairs(segments) do
     local recipe=recipes[s.id]
-    for item in pairs(materials(self,key,s.id,recipe)) do addItem(item,0) end
+    for item,q in pairs(materials(self,key,s.id,recipe)) do
+      addItem(item,0)
+      if type(q)=="number" then quantities[item]=(quantities[item] or 0)+q*(s.expected or 0) end
+    end
   end
   for item in pairs(used) do
     local note=memo.notes[item]
@@ -312,7 +316,7 @@ function CP:CheapestPath(key,from,to)
     end
   end
   local path={key=key,from=skill,target=target,reached=reached,segments=segments,total=total+fees,fees=fees,
-    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits}
+    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits,quantities=quantities}
   self.pathCache=true
   self.pathCaches[token]={at=now(),path=path}
   return path

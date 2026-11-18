@@ -15,7 +15,7 @@ by your own auction house prices, with shopping, trainers, alts and crafting in 
 
 ---
 
-**Status:** 1.0.0 · WoW Forever 1.60.x (Interface 16001) · English and German
+**Status:** 1.1.0 · WoW Forever 1.60.x (Interface 16001) · English and German
 
 > **Questions, ideas and bugs:** in-game via "Report bug", on [Discord](https://discord.gg/DpsBkHtQS) or as a [GitHub issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -34,12 +34,18 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 - Companion panel at the profession window: recommendation, "N× more to the next color", **craft button**, session balance
 - Clear hints on what to **keep** for later steps, and "already there" instead of crafting twice
 - Preview of the next recipe to learn, warnings for rank and level requirements
+- **Budget** right on "Now": how far your gold gets you, with a warning when a step exceeds it
+- **Two professions together**: make intermediates with your second profession (e.g. smelt bars) – saving and skill points there
+- **Confirmed skill ranges**: CraftPilot notes at which skill points came; shared data makes the colour ranges more accurate for everyone
 
 **Shopping**
 - Shopping plan for any skill range, price limit per material ("worth it up to 12s")
 - **Shopping round at the auction house** with Auctionator: item by item, purchases are counted
 - **Vendor helper** buys exactly the missing amount; bank helper shows what to take along
-- Gathering zones for ores, stones and herbs, sale value, budget mode
+- Gathering zones for ores, stones and herbs, sale value
+- **Cheap now**: materials of your path that are clearly below their usual price today, with the saving
+- **Farm or buy** by your own gathering pace
+- Prices from **Auctionator, TradeSkillMaster or Auctioneer**
 
 **Learning**
 - One click to every trainer and vendor, a learning tour along the cheapest path
@@ -54,7 +60,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 
 **Alts**
 - Stock in bags, bank and mail of every character, cooldowns, alts as cheaper crafters
-- At the mailbox: what your alts need, with a prepared mail
+- **Mail packer**: at the mailbox CraftPilot packs the mail to your alt with exactly the missing amounts – you only click "Send"
 
 **Safety**
 - Marks on reserved items in any bag view (default bags, EllesmereUI, Baganator, Bagnon, AdiBags …)
@@ -66,7 +72,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **CurseForge app (recommended):** search for CraftPilot and install it. **QuestieDB** is installed automatically.
 
 **Manually:**
-1. Download [CraftPilot-1.0.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.0.0.zip) (not the GitHub source archive).
+1. Download [CraftPilot-1.1.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.1.0.zip) (not the GitHub source archive).
 2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilotPro\CraftPilotPro.toc` must sit directly in the `CraftPilotPro` folder.
 3. Also install **QuestieDB** (Forever version).
 
@@ -74,6 +80,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 | --- | --- |
 | QuestieDB | **required**: trainers, vendor locations, gathering zones |
 | Auctionator | recommended: AH prices, shopping round |
+| TradeSkillMaster / Auctioneer | optional: further price sources |
 | TomTom | optional: waypoints with arrow |
 | EllesmereUI | optional: matching look |
 
