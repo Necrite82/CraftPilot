@@ -99,8 +99,18 @@ function CP:Recommendation(key)
   end
   local gate=self.RankGate and self:RankGate(key)
   if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
-  local extra=#extras>0 and table.concat(extras,"  ·  ") or nil
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
+  -- The banner has room for two hints; the companion shows them all (allExtra). Order is priority: twinks,
+  -- making it yourself, cheap now, saving tip, whole way (the budget strip names the whole way too).
+  local order={}
+  for _,prefix in ipairs({L("Von Twinks: "),L("Selbst herstellen: "),L("Zweiter Beruf: "),"|cff8fd6a6"..L("Jetzt günstig: "),L("Spartipp: "),L("Tipp: ")}) do
+    for i=#extras,1,-1 do
+      if extras[i]:sub(1,#prefix)==prefix then order[#order+1]=table.remove(extras,i) end
+    end
+  end
+  for _,e in ipairs(extras) do order[#order+1]=e end
+  local allExtra=#order>0 and table.concat(order,"  ·  ") or nil
+  local extra=#order>0 and table.concat({order[1],order[2]},"  ·  ") or nil
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

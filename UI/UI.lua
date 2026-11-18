@@ -2163,7 +2163,14 @@ function CP:RenderRecommendation(key,inner)
   U.rec:EnableMouse(true)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
     local r=CP.currentRecommendation
-    return r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    local lines=r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    -- Hints that did not fit into the banner.
+    if r and r.allExtra and r.allExtra~=r.extra then
+      local all={}
+      for part in (r.allExtra.."  ·  "):gmatch("(.-)  ·  ") do all[#all+1]=part end
+      for i=#all,1,-1 do table.insert(lines,1,all[i]) end
+    end
+    return lines
   end)
   return height
 end
