@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0
+
+- **Neue Seite „Gegenstände“**: jeden Gegenstand suchen (oder Alt-Klick in der Tasche, `/cpp item <Name>`) und sehen, in welchen Rezepten aller Berufe er Zutat ist und wodurch er hergestellt wird – mit Farbbereich, Menge, Preis, Vorrat und Drops
+- **Fehlende Rezepte deines Berufs** stehen dort mit Lernquelle; ein Klick setzt den Wegpunkt zum Lehrer oder Händler
+- **Rezeptkette** vom Rohstoff bis zum Endprodukt (z. B. Mithrilerz > Mithrilbarren > Mithrilrohr > …)
+- **Jetzt herstellbar**: alle erlernten Rezepte, die du mit Taschen, Bank, Post und Twinks sofort herstellen kannst – Skillpunkte zuerst, dann nach Gewinn
+- **Behalten oder verkaufen** im Tooltip: Zutat für deinen Weg, deine Berufe, deine Twinks – oder nur für andere Berufe mit AH-Preis bzw. Händlerpreis (abschaltbar)
+- **Merkliste**: Gegenstände merken; der AH-Alarm meldet sie nach dem Scan, Gegner, die sie droppen, zeigen es im Tooltip
+- **Direkt planen**: aus „Hergestellt durch“ einen Vorrat anlegen (Endgame › Raid-Vorrat) – mit Herstellen-oder-kaufen, Reservierung und Einkaufsliste
+- - **Fehler im Kampf behoben**: „CraftPilotPro hat versucht die geschützte Funktion SetFrameStrata aufzurufen“ (ADDON_ACTION_BLOCKED). Die Knöpfe des Berufswechslers hingen nach dem Schließen noch am Fenster und machten es im Kampf zu einem geschützten Fenster; sie werden jetzt gelöst, und die Ebene des Fensters wird im Kampf nicht mehr gesetzt
+
 ## 1.1.0
 
 - **Budget sichtbar**: Auf „Jetzt“ steht direkt unter der Empfehlung, wie weit dein Budget reicht (oder was der ganze Weg kostet); Klick öffnet eine Eingabe mit Plus/Minus. Kostet der nächste Schritt mehr als dein Budget, steht es dabei. Auch im Begleitfenster

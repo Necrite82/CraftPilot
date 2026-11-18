@@ -461,6 +461,10 @@ function CP:TooltipLines(item)
       end
     end
   end
+  if self.IsWatched and self:IsWatched(item) then lines[#lines+1]={"|cffffd200"..L("Auf deiner Merkliste").."|r",1,1,1} end
+  local verdict,vc
+  if self.ItemVerdict then verdict,vc=self:ItemVerdict(item) end
+  if verdict and not keep then lines[#lines+1]={verdict,vc and vc[1] or .8,vc and vc[2] or .8,vc and vc[3] or .8} end
   local wish=self.WishedRecipeItems and self:WishedRecipeItems()[item]
   if wish then lines[#lines+1]={(CP.WISH_MARK or "").."|cffffd200"..L("Auf deiner Rezept-Wunschliste").."|r",1,1,1} end
   local limit=self:PriceLimit(key,item)
@@ -506,7 +510,7 @@ for _,event in ipairs({"PLAYER_LOGIN","MERCHANT_SHOW","MERCHANT_CLOSED","MERCHAN
   pcall(frame.RegisterEvent,frame,event)
 end
 frame:SetScript("OnEvent",function(_,event,unit,_,spell)
-  if event=="PLAYER_LOGIN" then CP:HookTooltips();return end
+  if event=="PLAYER_LOGIN" then CP:HookTooltips();if CP.HookItemDB then CP:HookItemDB() end;return end
   if not CP.db then return end
   if event=="MERCHANT_SHOW" then
     if C_Timer and C_Timer.After then C_Timer.After(.2,function() CP:ShowMerchantHelper() end) else CP:ShowMerchantHelper() end

@@ -781,6 +781,12 @@ local function command(input)
     CP:Say(L("Berufsfenster automatisch öffnen: ")..(CP.db.ui.autoOpen and L("AN") or L("AUS")))
   elseif text=="discord" then
     if CP.OpenDiscordLink then CP:OpenDiscordLink() end
+  elseif text:match("^item") or text:match("^gegenstand") then
+    -- /cpp item <name or link>: opens the item database with that search or item.
+    local rest=(input or ""):match("^%s*%S+%s*(.-)%s*$") or ""
+    local id=tonumber(rest:match("item:(%d+)") or rest:match("^(%d+)$") or "")
+    CP.db.ui.itemPage="search"
+    if id then CP:OpenItemInDB(id) else CP.db.ui.itemQuery=rest;CP.db.ui.itemSelected=nil;CP:OpenTab("items") end
     CP:Say(L("Discord: ")..CP.discordURL)
   elseif text=="hilfe" or text=="help" then
     if CP.OpenTab then CP:OpenTab("help") end

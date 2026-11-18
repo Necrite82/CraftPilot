@@ -7,7 +7,7 @@ local nav={}
 for _,b in ipairs(createdFrames) do
   if b.parent==side and rawget(b,"iconBox") then nav[#nav+1]=b end
 end
-assert(#nav==8,"Six pages plus settings and help in the sidebar")
+assert(#nav==9,"Seven pages plus settings and help in the sidebar")
 -- Clicking a sidebar entry opens its page and marks it.
 local endgame
 for _,b in ipairs(nav) do if b.displayText=="Endgame" then endgame=b end end

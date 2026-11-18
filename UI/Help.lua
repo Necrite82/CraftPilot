@@ -53,6 +53,8 @@ function CP:HelpCards()
     function() CP:OpenTab("twinks") end)
   cards[#cards+1]=card(L("Endgame"),L("Was dein Beruf nach dem Skillen bringt: Gewinn je Herstellung, Merchant's-Favor-Rezepte, deine Rezept-Wunschliste mit Bossen und Händlern, der Raid-Vorrat und der AH-Alarm."),
     function() CP:OpenTab("endgame") end)
+  cards[#cards+1]=card(L("Gegenstände"),L("Jeder Gegenstand mit allen Rezepten, in denen er steckt, und wer ihn herstellt – mit Rezeptkette, Preis, Vorrat und Drops. Dazu „Jetzt herstellbar“ aus deinem Vorrat und eine Merkliste. Alt-Klick in der Tasche oder /cpp item <Name> öffnet einen Gegenstand direkt."),
+    function() CP:OpenTab("items") end,L("Klick: öffnen"),"blue")
 
   cards[#cards+1]=header(L("AM BERUFSFENSTER"))
   cards[#cards+1]=card(L("Begleitfenster"),L("Neben dem Berufsfenster: Empfehlung, „noch N× bis zur nächsten Farbe“, Herstellen-Knopf, Aufheben-Hinweise, bereite Cooldowns und die Sitzungsbilanz. Verschieben an der Kopfzeile, Minus minimiert, X schließt bis zum nächsten Öffnen."))

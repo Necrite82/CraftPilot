@@ -231,7 +231,8 @@ local function inCombat() return type(InCombatLockdown)=="function" and InCombat
 U.secure={}
 local function hideSecure()
   if inCombat() then return end
-  for _,s in ipairs(U.secure) do s:Hide() end
+  -- Hide and unanchor: a secure button still anchored to the window makes the window itself protected in combat.
+  for _,s in ipairs(U.secure) do s:Hide();if type(s.ClearAllPoints)=="function" then s:ClearAllPoints() end end
 end
 U.hideSecure=hideSecure
 local function secureButton(i)
@@ -258,7 +259,7 @@ local combatWatcher=CreateFrame("Frame")
 pcall(combatWatcher.RegisterEvent,combatWatcher,"PLAYER_REGEN_DISABLED")
 combatWatcher:SetScript("OnEvent",function()
   -- Still allowed while this event runs; afterwards secure frames are locked.
-  for _,s in ipairs(U.secure) do s:Hide() end
+  for _,s in ipairs(U.secure) do s:Hide();if type(s.ClearAllPoints)=="function" then s:ClearAllPoints() end end
   if U.profMenu then U.profMenu:Hide() end
 end)
 
@@ -317,6 +318,7 @@ U.tabs={
   {key="camping", label=L("Camping")},
   {key="twinks", label=L("Twinks")},
   {key="endgame", label=L("Endgame")},
+  {key="items", label=L("Gegenstände")},
 }
 -- 0.2.2: navigation in a sidebar on the left of the window instead of tabs on top. The sidebar is a child of the
 -- window, attached to its left edge: it moves, hides and scales with it, and the window keeps its own layout.
@@ -324,7 +326,7 @@ local SIDE=180
 U.tabIcons={now="Interface\\Icons\\INV_Misc_PocketWatch_01",plan="Interface\\Icons\\INV_Misc_Note_01",
   trainers="Interface\\Icons\\INV_Misc_Map_01",camping="Interface\\Icons\\Spell_Fire_Fire",
   twinks="Interface\\Icons\\INV_Misc_Head_Human_01",endgame="Interface\\Icons\\INV_Misc_Coin_02",
-  settings="Interface\\Icons\\INV_Misc_Gear_01",help="Interface\\Icons\\INV_Misc_QuestionMark"}
+  items="Interface\\Icons\\INV_Misc_Book_09",settings="Interface\\Icons\\INV_Misc_Gear_01",help="Interface\\Icons\\INV_Misc_QuestionMark"}
 local side=CreateFrame("Frame","CraftPilotProSidebar",frame,"BackdropTemplate")
 U.side=side
 side:SetWidth(SIDE)
@@ -412,6 +414,27 @@ for i,p in ipairs(U.endgamePages) do
   b:Hide()
   U.endgameButtons[i]=b
 end
+-- 1.2.0: item database – three pages, a search field and "back to the results".
+U.itemPages={{key="search",label=L("Suchen")},{key="build",label=L("Jetzt herstellbar")},{key="watch",label=L("Merkliste")}}
+U.itemButtons={}
+for i,p in ipairs(U.itemPages) do
+  local b=segment(frame,128,26,p.label,function() CP.db.ui.itemPage=p.key;CP:Render() end)
+  b:Hide()
+  U.itemButtons[i]=b
+end
+U.itemSearch=CreateFrame("EditBox","CraftPilotProItemSearch",frame,"InputBoxTemplate")
+U.itemSearch:SetSize(260,24);U.itemSearch:SetAutoFocus(false);U.itemSearch:Hide()
+U.itemSearch:SetScript("OnTextChanged",function(self,user)
+  if not user then return end
+  CP.db.ui.itemQuery=self:GetText();CP.db.ui.itemSelected=nil
+  if CP.itemSearchTimer and CP.itemSearchTimer.Cancel then CP.itemSearchTimer:Cancel() end
+  if C_Timer and type(C_Timer.NewTimer)=="function" then CP.itemSearchTimer=C_Timer.NewTimer(.25,function() CP:Render() end) else CP:Render() end
+end)
+U.itemSearch:SetScript("OnEnterPressed",function(self) self:ClearFocus();CP:Render() end)
+U.itemSearch:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+CP.itemSearchBox=U.itemSearch
+U.itemResults=segment(frame,150,26,L("Zu den Ergebnissen"),function() CP.db.ui.itemSelected=nil;CP:Render() end)
+U.itemResults:Hide()
 U.back=button(header,110,26,0,0,L("Zurück"),function() CP:OpenTab(CP.db.ui.lastMainTab or "now") end)
 U.section=text(frame,"GameFontNormal",18,-104,W-50,"")
 
@@ -1554,7 +1577,9 @@ end
 function CP:ApplyTheme()
   if not self.db then return end
   -- A skin may reset the strata; keep the window above unit frames and action bars.
-  if type(frame.SetFrameStrata)=="function" then frame:SetFrameStrata("HIGH") end
+  -- Only when needed and never in combat (ADDON_ACTION_BLOCKED if the window counts as protected).
+  if type(frame.SetFrameStrata)=="function" and not inCombat()
+    and not (type(frame.GetFrameStrata)=="function" and frame:GetFrameStrata()=="HIGH") then frame:SetFrameStrata("HIGH") end
   local pref=self.db.ui.skin or "auto"
   local hasEUI=pref=="auto" and type(self.ellesmereSkin)=="table"
   if pref=="classic" then
@@ -1650,6 +1675,9 @@ local function layout()
   U.pageSub:ClearAllPoints();U.pageSub:SetPoint("TOPLEFT",frame,"TOPLEFT",19,-50)
   U.pageTitle:SetWidth(inner-290);U.pageSub:SetWidth(inner-60)
   for i,b in ipairs(U.endgameButtons) do b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*134,-104) end
+  for i,b in ipairs(U.itemButtons) do b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*134,-104) end
+  U.itemSearch:ClearAllPoints();U.itemSearch:SetPoint("TOPLEFT",frame,"TOPLEFT",432,-105)
+  U.itemResults:ClearAllPoints();U.itemResults:SetPoint("TOPLEFT",frame,"TOPLEFT",704,-104)
   U.tabLine:ClearAllPoints();U.tabLine:SetPoint("TOPLEFT",frame,"TOPLEFT",1,-94);U.tabLine:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-1,-94)
   U.back:ClearAllPoints();U.back:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-62)
   U.footerLine:ClearAllPoints();U.footerLine:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",1,32);U.footerLine:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-1,32)
@@ -1674,12 +1702,12 @@ layout()
 registerEllesmereUI()
 
 -- Navigation ----------------------------------------------------------------------------------------------------
-local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true,endgame=true}
+local MAIN={now=true,plan=true,trainers=true,camping=true,twinks=true,endgame=true,items=true}
 function CP:OpenTab(tab)
   if not self.db then return end
   local alias={stages="plan",mats="now",after300="endgame"}
   tab=alias[tab] or tab
-  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,endgame=true,economy=true,audit=true,reservations=true,settings=true,help=true}
+  local valid={now=true,plan=true,trainers=true,camping=true,twinks=true,endgame=true,items=true,economy=true,audit=true,reservations=true,settings=true,help=true}
   if not valid[tab] then return end
   if MAIN[tab] then self.db.ui.lastMainTab=tab end
   self.db.ui.tab=tab
@@ -1807,6 +1835,7 @@ local PAGE_SUB={
   trainers=L("Lehrer, Händlerrezepte, Lerntour und Spezialisierung"),
   camping=L("Lagerfeuer, Buffs und Camp-Objekte aller Berufe"),
   twinks=L("Bestände, Cooldowns und Hersteller deiner Charaktere"),
+  items=L("Wofür ein Gegenstand gebraucht wird, wer ihn herstellt und was du jetzt bauen kannst"),
   help=L("So funktioniert CraftPilot"),
 }
 local ENDGAME_SUB={
@@ -1838,7 +1867,9 @@ local function renderTabs(self,tab)
   navState(U.sideHelp,tab=="help")
   U.side:Show()
   for _,b in ipairs(U.endgameButtons) do b:Hide() end
-  local titles={now=L("Jetzt"),plan=L("Plan & Einkauf"),trainers=L("Lehrer & Händler"),camping=L("Camping"),twinks=L("Twinks"),
+  for _,b in ipairs(U.itemButtons) do b:Hide() end
+  U.itemSearch:Hide();U.itemResults:Hide()
+  local titles={items=L("Gegenstände"),now=L("Jetzt"),plan=L("Plan & Einkauf"),trainers=L("Lehrer & Händler"),camping=L("Camping"),twinks=L("Twinks"),
     endgame=L("Endgame"),help=L("Hilfe"),economy=L("Clever skillen"),audit=L("Berufsdaten"),reservations=L("Vorratsreservierung")}
   local sub=PAGE_SUB[tab]
   if tab=="endgame" then sub=ENDGAME_SUB[self.db.ui.endgamePage or "profit"] or ENDGAME_SUB.profit end
@@ -2226,6 +2257,20 @@ function CP:Render()
   elseif tab=="twinks" then
     showContent(106)
     setVisualCards(self:TwinkCards(key))
+  elseif tab=="items" then
+    local page=ui.itemPage or "search"
+    for i,b in ipairs(U.itemButtons) do
+      b:Show()
+      if b.selectionMarker then b.selectionMarker:SetShown(U.itemPages[i].key==page) end
+    end
+    if page=="search" then
+      if self.RequestItemNames then self:RequestItemNames() end
+      U.itemSearch:Show()
+      if not (type(U.itemSearch.HasFocus)=="function" and U.itemSearch:HasFocus()) then U.itemSearch:SetText(ui.itemQuery or "") end
+      U.itemResults:SetShown(ui.itemSelected~=nil)
+    end
+    showContent(140)
+    setVisualCards(self:ItemDBCards())
   elseif tab=="endgame" then
     local page=ui.endgamePage or "profit"
     for i,b in ipairs(U.endgameButtons) do

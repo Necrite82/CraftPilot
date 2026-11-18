@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 1.1.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 1.2.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Fragen, Ideen und Fehler:** im Spiel über „Fehler melden“, im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -58,6 +58,10 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - **Raid-Vorrat**: Tränke, Fläschchen und Essen mit Zielmenge, Herstellen oder AH-Kauf im Vergleich, Reservierung und Einkaufsliste für Auctionator
 - **AH-Alarm** nach dem Scan: Wunschrezepte im AH und günstiger Raid-Vorrat
 
+**Gegenstände**
+- Jeder Gegenstand mit allen Rezepten, in denen er Zutat ist, und wer ihn herstellt – Rezeptkette, Preis, Vorrat, Drops; fehlende Rezepte deines Berufs mit Wegpunkt
+- **Jetzt herstellbar** aus Taschen, Bank, Post und Twinks, **Merkliste** mit AH-Alarm, **Behalten oder verkaufen** im Tooltip
+
 **Twinks**
 - Bestände in Taschen, Bank und Post aller Charaktere, Cooldowns, Twinks als günstigere Hersteller
 - **Post-Packer**: Am Briefkasten packt CraftPilot den Brief an deinen Twink mit genau den fehlenden Mengen – du klickst nur noch „Senden“
@@ -72,7 +76,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-1.1.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.1.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-1.2.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.2.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilotPro\CraftPilotPro.toc` muss direkt im Ordner `CraftPilotPro` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 
