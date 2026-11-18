@@ -64,6 +64,8 @@ function CP:Recommendation(key)
   local extras={}
   local raw=self.RawMaterialHints and self:RawMaterialHints(cost.materials,1) or {}
   if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1] end
+  local deal=self.BuyTimingDeals and self:BuyTimingDeals(key,1)[1]
+  if deal then extras[#extras+1]="|cff8fd6a6"..L("Jetzt günstig: ")..self:BuyTimingText(deal).."|r" end
   if #pickups>0 then extras[#extras+1]=L("Von Twinks: ")..table.concat(pickups,", ") end
   -- Saving tip: a recipe (perhaps still to learn) that is much cheaper per point right now than the pick,
   -- e.g. a green one the "reliable" setting passes over.
