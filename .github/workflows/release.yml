@@ -30,7 +30,7 @@ jobs:
       - name: Release tag
         run: |
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            VERSION=$(sed -n 's/^## Version: *//p' CraftPilot.toc | tr -d '\r')
+            VERSION=$(sed -n 's/^## Version: *//p' CraftPilotPro.toc | tr -d '\r')
             echo "TAG=v$VERSION" >> "$GITHUB_ENV"
           else
             echo "TAG=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
@@ -38,7 +38,7 @@ jobs:
       - name: Check version
         run: |
           VERSION="${TAG#v}"
-          grep -q "## Version: $VERSION" CraftPilot.toc
+          grep -q "## Version: $VERSION" CraftPilotPro.toc
           test -f "dist/CraftPilot-$VERSION.zip" && test -f "docs/RELEASE_$VERSION.md"
       - name: Publish GitHub release
         env:

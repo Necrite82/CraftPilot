@@ -41,7 +41,7 @@ CraftPilot builds its recipe data itself – from the WoW Forever client's table
 - **Auctionator** – recommended, for auction house prices
 - **TomTom** – optional, for waypoints
 
-Open with `/cp` or the minimap button. `/cp hilfe` shows the help, `/cp discord` the Discord link.
+Open with `/cpp` or the minimap button. `/cpp hilfe` shows the help, `/cpp discord` the Discord link.
 
 ---
 

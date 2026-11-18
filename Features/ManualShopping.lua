@@ -76,7 +76,7 @@ function CP:RefreshPersonalShopping()
 end
 function CP:OpenPersonalShopping()
   if not self.personalShoppingWindow then
-    local f=CreateFrame("Frame","CraftPilotPersonalShopping",UIParent,"BackdropTemplate")
+    local f=CreateFrame("Frame","CraftPilotProPersonalShopping",UIParent,"BackdropTemplate")
     f:SetSize(800,620);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true);f:SetMovable(true);f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart",f.StartMoving);f:SetScript("OnDragStop",f.StopMovingOrSizing)
     f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1});f:SetBackdropColor(.035,.055,.075,.99);f:SetBackdropBorderColor(.4,.5,.57,1)
@@ -103,7 +103,7 @@ function CP:OpenPersonalShopping()
     self:DisplayLabel(f,"GameFontDisableSmall",22,0,750,"")
     local hint=self:DisplayLabel(f,"GameFontDisableSmall",22,0,750,L("Rezept-Zugänge addieren aktuelle Fehlmengen. Kaufmengen bleiben bis zur manuellen Änderung erhalten."));hint:ClearAllPoints();hint:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,63)
     local close=CreateFrame("Button",nil,f,"UIPanelCloseButton");close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() f:Hide() end)
-    UISpecialFrames[#UISpecialFrames+1]="CraftPilotPersonalShopping";self.personalShoppingWindow=f
+    UISpecialFrames[#UISpecialFrames+1]="CraftPilotProPersonalShopping";self.personalShoppingWindow=f
   end
   self.personalShoppingWindow:Show();self:RefreshPersonalShopping()
 end

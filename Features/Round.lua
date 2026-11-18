@@ -62,7 +62,7 @@ function CP:ShowRoundPanel()
   if not self.db or not (self.AuctionHouseOpen and self:AuctionHouseOpen()) then if self.RoundPanel then self.RoundPanel:Hide() end;return end
   local f=self.RoundPanel
   if not f then
-    f=CreateFrame("Frame","CraftPilotRoundPanel",UIParent,"BackdropTemplate")
+    f=CreateFrame("Frame","CraftPilotProRoundPanel",UIParent,"BackdropTemplate")
     f:SetSize(290,120);f:SetFrameStrata("HIGH");f:SetClampedToScreen(true)
     if type(f.SetBackdrop)=="function" then
       f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})

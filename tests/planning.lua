@@ -44,17 +44,18 @@ local oldName,oldSecret,oldGrabber=UnitName,issecretvalue,BugGrabber
 UnitName=function() return "TestPlayer" end
 CP.db.diagnostics={};CP.diagnosticNotice=nil
 assert(not CP:CaptureDiagnostic("OtherAddon failure","other.lua:1"))
-assert(CP:CaptureDiagnostic("CraftPilot TestPlayer failure user@example.com","C:\\Users\\Person\\secret.lua\nCraftPilot/Core.lua:1"))
+assert(not CP:CaptureDiagnostic("Error","Interface/AddOns/CraftPilot/Core/Init.lua:3"),"The other addon named CraftPilot is not ours")
+assert(CP:CaptureDiagnostic("CraftPilotPro TestPlayer failure user@example.com","C:\\Users\\Person\\secret.lua\nCraftPilotPro/Core.lua:1"))
 local report=CP:BuildDiagnosticReport()
 assert(not report:find("TestPlayer",1,true) and not report:find("user@example",1,true) and not report:find("Person",1,true))
-assert(report:find("CraftPilot/Core.lua:1",1,true))
-assert(CP:CaptureDiagnostic("CraftPilot TestPlayer failure user@example.com","C:\\Users\\Person\\secret.lua\nCraftPilot/Core.lua:1"))
+assert(report:find("CraftPilotPro/Core.lua:1",1,true))
+assert(CP:CaptureDiagnostic("CraftPilotPro TestPlayer failure user@example.com","C:\\Users\\Person\\secret.lua\nCraftPilotPro/Core.lua:1"))
 assert(#CP.db.diagnostics==1 and CP.db.diagnostics[1].count==2)
-for i=1,25 do CP:CaptureDiagnostic("CraftPilot issue "..i,"") end
+for i=1,25 do CP:CaptureDiagnostic("CraftPilotPro issue "..i,"") end
 assert(#CP.db.diagnostics==20)
 issecretvalue=function(value) return value=="secret" end
-assert(not CP:CaptureDiagnostic("secret","CraftPilot"));issecretvalue=oldSecret
-BugGrabber={GetDB=function() return {{message="CraftPilot imported",stack="CraftPilot/UI.lua:1",locals="DO NOT COLLECT"}} end}
+assert(not CP:CaptureDiagnostic("secret","CraftPilotPro"));issecretvalue=oldSecret
+BugGrabber={GetDB=function() return {{message="CraftPilotPro imported",stack="CraftPilotPro/UI.lua:1",locals="DO NOT COLLECT"}} end}
 CP:ImportBugGrabberDiagnostics()
 report=CP:BuildDiagnosticReport();assert(not report:find("DO NOT COLLECT",1,true))
 local link=CP:DiagnosticIssueURL(string.rep("CraftPilot ä\n",5000))
@@ -63,7 +64,7 @@ local oldHandler,oldReady=AddLuaErrorHandler,CP.diagnosticsReady
 local listener
 AddLuaErrorHandler=function(callback) listener=callback end
 CP.diagnosticsReady=nil;CP:InitializeDiagnostics();assert(type(listener)=="function")
-listener("Native failure","CraftPilot/Core.lua:44")
+listener("Native failure","CraftPilotPro/Core.lua:44")
 assert(CP.db.diagnostics[#CP.db.diagnostics].message=="Native failure")
 local oldTicker,oldFrame,oldRender,oldRefresh=C_Timer.NewTicker,CP.frame,CP.Render,CP.RefreshCostWindow
 local oldPlanningTicker=CP.planningTicker
