@@ -206,9 +206,11 @@ end
 function CP:WishUnitLines(npc)
   if not self.db or self.db.ui.tooltips==false or type(npc)~="number" then return nil end
   local wishes=self:WishDropIndex()[npc]
-  if not wishes then return nil end
+  local watched=self.WatchUnitLines and self:WatchUnitLines(npc)
+  if not wishes and not watched then return nil end
   local lines={}
-  for _,w in ipairs(wishes) do lines[#lines+1]=L("Droppt dein Wunschrezept: ")..self:RecipeName(w.key,w.id) end
+  for _,w in ipairs(wishes or {}) do lines[#lines+1]=L("Droppt dein Wunschrezept: ")..self:RecipeName(w.key,w.id) end
+  for _,l in ipairs(watched or {}) do lines[#lines+1]=l end
   return lines
 end
 local unitHooked=false
@@ -251,6 +253,7 @@ function CP:AuctionAlarms()
         self:ItemName(row.item),self:FormatCostMoney(row.ah),self:FormatCostMoney(row.craft))}
     end
   end
+  for _,a in ipairs(self.WatchAlarms and self:WatchAlarms() or {}) do out[#out+1]=a end
   table.sort(out,function(a,b) return a.item<b.item end)
   return out
 end

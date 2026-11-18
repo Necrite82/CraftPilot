@@ -25,6 +25,12 @@ CraftPilot only buys, learns or crafts when you click. German and English.
 - **Alts and bank:** stock across your characters, hints at the bank, and a **mail packer** that fills the mail to your alt with exactly the missing amounts – you just click Send.
 - **Item protection:** reserved materials are marked in your bags and warn before you sell, destroy, disenchant or mail them. The reservation page lists every reserved item per plan.
 
+## Items
+
+- **Item database:** every item with all recipes it goes into (every profession) and who makes it – recipe chain, price, your stock and where it drops. Missing recipes of your profession come with a waypoint to learn them.
+- **Craftable now:** everything you can craft right away from bags, bank, mail and alts.
+- **Watchlist** with AH alarm and drop hints, and **keep or sell** right in the item tooltip.
+
 ## Endgame – after 300
 
 - **Profit per craft** for your learned recipes – with bought materials and with your own (valued at what they would sell for).
