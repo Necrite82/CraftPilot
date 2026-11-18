@@ -30,6 +30,9 @@ function CP:HelpCards()
     function() CP:OpenTab("now") end)
   if self:AuctionatorStatus() then
     cards[#cards+1]=card(L("Auctionator gefunden"),L("Preise kommen aus deinen Auctionator-Scans. Ein voller Scan am Auktionshaus bringt die besten Ergebnisse; „Preise alt“ scannt gezielt nach."),nil,nil,"green")
+  elseif #self:AvailablePriceSources()>0 then
+    local names={};for _,s in ipairs(self:AvailablePriceSources()) do names[#names+1]=s.name end
+    cards[#cards+1]=card(L("Preise aus ")..table.concat(names,", "),L("CraftPilot liest die Preise dort. Einkaufslisten und gezieltes Nachscannen am AH brauchen weiter Auctionator."),nil,nil,"gold")
   else
     cards[#cards+1]=card(L("Auctionator fehlt"),L("Ohne Auctionator kennt CraftPilot nur Händlerpreise. Für den günstigsten Weg, Preisgrenzen und das Einkaufen am AH bitte Auctionator installieren und einmal am Auktionshaus scannen."),nil,nil,"red")
   end

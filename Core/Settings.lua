@@ -233,6 +233,8 @@ function CP:SettingsCards()
     -- General
     choice(L("Vorräte"),stockNames[scope],self:BankStatus().."\n"..(self.AltStatus and self:AltStatus() or ""),
       function() CP:SetStockScope(cycle(CP.StockScopes,CP:StockScope())) end,"general","Interface\\Icons\\INV_Misc_Bag_08"),
+    choice(L("Preisquelle"),CP:PriceSourceName(ui.priceSource),CP:PriceSourceDetail(),
+      function() ui.priceSource=cycle({"auto","auctionator","tsm","auctioneer"},ui.priceSource or "auto");CP.pathCache=nil;CP:Render() end,"general","Interface\\Icons\\INV_Misc_Coin_02"),
     check("companion",L("Begleitfenster am Berufsfenster"),L("Empfehlung, verbleibende Herstellungen, Sitzungsbilanz und Cooldowns direkt neben dem Berufsfenster."),ui.companion~=false,"general"),
     check("autoOpen",L("Berufsfenster beim Wechsel öffnen"),L("Ein Klick im Berufsmenü öffnet auch das Berufsfenster des erlernten Berufs; im Kampf nicht möglich."),ui.autoOpen==true,"general"),
     check("tooltips",L("Hinweise in Gegenstands-Tooltips"),L("Bedarf deines Plans, „nicht verkaufen“, Twink-Bestände und Preisgrenze direkt am Gegenstand."),ui.tooltips~=false,"general"),
