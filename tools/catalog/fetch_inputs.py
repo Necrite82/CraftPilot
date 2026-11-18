@@ -46,6 +46,8 @@ TABLES = [
     'ItemXItemEffect',    # item -> its effects
     'Faction',            # reputation names
     'AreaTable',          # zone names
+    'Spell',              # spell descriptions (what a camp feature gives, by level)
+    'SpellDuration',      # durations the descriptions name
 ]
 # The Classic Era client still has the teaching spells trainers use (CMaNGOS lists those); Forever's no longer.
 ERA_TABLES = ['SkillLineAbility', 'SpellEffect', 'SpellName']
