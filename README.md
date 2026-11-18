@@ -15,9 +15,9 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 0.1.0-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 0.2.3-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
-> **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
+> **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
 
 ## Was CraftPilot macht
 
@@ -30,7 +30,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 ## Funktionen
 
 **Skillen**
-- Günstigster Weg nach AH-Preisen, wählbar: *günstigster Weg*, *sichere Farben bevorzugen* oder *nur Orange und Gelb*
+- Günstigster Weg nach AH-Preisen, wählbar: *günstigster Weg*, *sichere Farben bevorzugen*, *nur Orange und Gelb* oder *schnellster Weg*
 - Begleitfenster am Berufsfenster: Empfehlung, „noch N× bis zur nächsten Farbe“, **Herstellen-Knopf**, Sitzungsbilanz
 - Klare Hinweise, was du für spätere Schritte **aufheben** musst, und „schon vorhanden“ statt doppelt herstellen
 - Vorschau auf den nächsten Lernschritt, Warnungen bei Rang- und Levelsperren
@@ -45,13 +45,20 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
 - Spezialisierungen (Schmied, Ingenieur, Lederer) mit Schritten und Questgeber
 
+**Endgame**
+- Gewinn je Herstellung für deine erlernten Rezepte: mit gekauften und mit eigenen Materialien (eigene und gefarmte Materialien zählen mit ihrem Verkaufswert)
+- Rezepte für **Merchant's Favor** mit Gewinn je Herstellung; auf Wunsch rechnet CraftPilot Favor in Gold um und bezieht Favor-Rezepte in den günstigsten Weg ein
+- **Rezept-Wunschliste** mit Quellen (Lehrer, Händler, Favor, Quest, Bosse aus QuestieDB); Bosse zeigen dein Wunschrezept im Tooltip
+- **Raid-Vorrat**: Tränke, Fläschchen und Essen mit Zielmenge, Herstellen oder AH-Kauf im Vergleich, Reservierung und Einkaufsliste für Auctionator
+- **AH-Alarm** nach dem Scan: Wunschrezepte im AH und günstiger Raid-Vorrat
+
 **Twinks**
 - Bestände in Taschen, Bank und Post aller Charaktere, Cooldowns, Twinks als günstigere Hersteller
 - Am Briefkasten: was deine Twinks brauchen, mit vorbereitetem Brief
 
 **Sicherheit**
 - Markierung reservierter Gegenstände in jeder Taschenansicht (Standardtaschen, EllesmereUI, Baganator, Bagnon, AdiBags …)
-- Warnung und „Zurückkaufen“, wenn du doch etwas Reserviertes verkaufst; Warnung am Auktionshaus
+- Warnung und „Zurückkaufen“, wenn du doch etwas Reserviertes verkaufst; Warnung am Auktionshaus, beim Zerstören, Entzaubern und beim Verschicken an fremde Charaktere
 - Hinweise in Gegenstands-Tooltips
 
 ## Installation
@@ -59,7 +66,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-0.1.0-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.1.0-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-0.2.3-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.3-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilot\CraftPilot.toc` muss direkt im Ordner `CraftPilot` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 
@@ -77,7 +84,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 3. Am Auktionshaus einmal mit Auctionator scannen.
 4. Der Empfehlung oben in „Jetzt“ folgen.
 
-Die Hilfe im Spiel öffnest du jederzeit über „?“ oben rechts oder `/cp hilfe`.
+Die Hilfe im Spiel öffnest du jederzeit über „Hilfe“ unten in der Seitenleiste oder `/cp hilfe`.
 
 ## Befehle
 
@@ -100,13 +107,13 @@ Die Hilfe im Spiel öffnest du jederzeit über „?“ oben rechts oder `/cp hil
 
 ## Mitmachen
 
-Fehler und Ideen gern als [Issue](https://github.com/Necrite82/CraftPilot/issues). Im Spiel erstellt „Fehler melden“ einen fertigen Bericht mit Version und Lua-Fehlern. Hinweise für Entwickler stehen in [CONTRIBUTING.md](CONTRIBUTING.md); die automatisierten Tests laufen unter Lua 5.1 und 5.4.
+Fehler und Ideen gern im [Discord](https://discord.gg/DpsBkHtQS) (auch ohne GitHub-Konto) oder als [Issue](https://github.com/Necrite82/CraftPilot/issues). Im Spiel erstellt „Fehler melden“ einen fertigen Bericht mit Version und Lua-Fehlern. Hinweise für Entwickler stehen in [CONTRIBUTING.md](CONTRIBUTING.md); die automatisierten Tests laufen unter Lua 5.1 und 5.4.
 
 ## Lizenz und Daten
 
 CraftPilot steht unter der **GNU GPL-3.0-only**, siehe [LICENSE](LICENSE).
 
-- Rezeptdaten: [Craft Ladder](https://github.com/saintmodx/craft-ladder) (GPL-3.0)
+- Rezeptdaten: von CraftPilot selbst gebaut aus den Tabellen des Forever-Clients (über wago.tools), [QuestieDB](https://github.com/Questie/QuestieDB), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) und [AllTheThings](https://github.com/ATTWoWAddon/AllTheThings) (MIT)
 - Lehrer-Ränge: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0)
 - Standorte von Lehrern und Sammelvorkommen: zur Laufzeit aus dem Addon [QuestieDB](https://github.com/Questie/QuestieDB)
 

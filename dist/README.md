@@ -1,6 +1,6 @@
 # CraftPilot – Installationspaket / Install package
 
-[CraftPilot 0.1.0-beta herunterladen / Download](CraftPilot-0.1.0-beta.zip)
+[CraftPilot 0.2.3-beta herunterladen / Download](CraftPilot-0.2.3-beta.zip)
 
 Den Ordner `CraftPilot/` aus dem Zip nach `World of Warcraft\_forever_\Interface\AddOns` entpacken und zusätzlich **QuestieDB** (Forever-Fassung) installieren. Einfacher geht es über die CurseForge-App, die QuestieDB automatisch mitinstalliert.
 

@@ -1,0 +1,188 @@
+{
+  "allthethings": {
+    "commit": "f2c9335ec4eeafc87c83d0e525ad84f6c4d5491f",
+    "files": 197,
+    "sha256": "11c07d4d5d2dc6c53eebb467fa44315014191be5041081ef27e09805c6f62d4d"
+  },
+  "classicdb": {
+    "sha256": "4f92db520868ab4e566726f68b5b2e380ae781209beaf22237b4f7f04600d0c0",
+    "source": "https://github.com/cmangos/classic-db"
+  },
+  "client": {
+    "build": "1.60.1.70959",
+    "eraBuild": "1.15.9.70576",
+    "source": "https://wago.tools",
+    "tables": {
+      "AreaTable.csv.gz": "9aac5960ef4b8f3c01d9f46f399628ce7bb633ff865709d59fb59d9ce4cb43df",
+      "Faction.csv.gz": "8d83f21f58cd2835a49085d58fab481305220d1d26c5e99d148583a48a137d6c",
+      "Item.csv.gz": "32ee11866ddee06477a4830105b084f68e972644fd6b067d77c859168cbf9df3",
+      "ItemEffect.csv.gz": "4e6090e887ab2e82d2aac7e5526a5b8aea6366aeaebfc10a272e2c513eaa7bc4",
+      "ItemSparse.csv.gz": "0e194578bca2289558a133fe6d4184b1baba848327c0fa0442ba2846b9b39a55",
+      "ItemXItemEffect.csv.gz": "4a0604e047f72390991e3a7914fe3e309829fb8773c36f5e4aff5628b7913f88",
+      "SkillLine.csv.gz": "f3867d43ab42d1f5278e6e5028d0151bc06e4ef8e5cbd790a20df6ee57aa654d",
+      "SkillLineAbility.csv.gz": "6696abd03ef90ad250a12ac23778616c292c46f6a0082130fbe187c96ead0aa0",
+      "Spell.csv.gz": "1bbb3dbe51236c2f431efe2d6c7168b462819e4a63bcf2776e584ced440bdce1",
+      "SpellCooldowns.csv.gz": "f9ee0b38458f23cfd38aa0605b8015853276b1401aa3e5bcb46a34b8732b4fc4",
+      "SpellDuration.csv.gz": "4787f303fe8487cd67e5f9e8574fdc6fa2a03516dcfaabba23d9944f937223f5",
+      "SpellEffect.csv.gz": "c872f27d9103aa73736c8e46a0d82b14fa86416cb3493f0088e726956f9a9c8d",
+      "SpellLevels.csv.gz": "8bb6142b47be66c5110c7f64e53bbc27223a1d2bde739dafde1eec5c92a42649",
+      "SpellMisc.csv.gz": "e2032d651fba6a21cd15a07cd6d33147636a9dc294c10712aa639ace3e096b10",
+      "SpellName.csv.gz": "820691f35767955e96f929a5f66782d3825aeea8169644dbbbb5fa4d8578452f",
+      "SpellReagents.csv.gz": "be6e987755f7097348eb072073ae3175b3d56016f43f90615a081d33d6affff6",
+      "SpellTotems.csv.gz": "43be02451227ce8a588e95ce9f8804b818a4e02cb7c5b9db0126266e65227471",
+      "TotemCategory.csv.gz": "ba854281b52d07468935aed2384c7dbd7f663fc272dbc12d68028968270ca5ac",
+      "era-SkillLineAbility.csv.gz": "5bb0ddce9943379976192bbb3cd6a438db47fd1abc2f642d89de500de19a02b3",
+      "era-SpellEffect.csv.gz": "7f61c558042e0f95045dfcdd54f8bd8df8f33fb1e4e05aa0887871c3ffb7b0d1",
+      "era-SpellName.csv.gz": "5ac8f81bc9b8aae4838c40cceb2e97bf5ca461838d9133eb2dd602cc7b0ebdd8"
+    }
+  },
+  "questiedb": {
+    "asset": "QuestieDB-1.1.2-Forever.zip",
+    "files": {
+      "questiedb-Forever.toc.gz": {
+        "bytes": 17969328,
+        "from": "QuestieDB/QuestieDB_Forever.toc",
+        "sha256": "02020e6789efdcdcd032d9388ff2fe14586363ea94a5fca847db9360f2015d49"
+      },
+      "questiedb-areaIdToUiMapId.lua.gz": {
+        "bytes": 59485,
+        "from": "QuestieDB/support/Forever/Zones/areaIdToUiMapId.lua",
+        "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
+      }
+    },
+    "sha256": "157eb57e624b92f0340c04bfdf2263c6d803335883fad930f1bb8179f0343786",
+    "tag": "v1.1.2"
+  },
+  "summary": {
+    "alchemy": {
+      "recipes": 185,
+      "skipped": 16,
+      "sources": {
+        "drop": 80,
+        "quest": 12,
+        "start": 3,
+        "trainer": 28,
+        "trainer?": 17,
+        "vendor": 107
+      }
+    },
+    "blacksmithing": {
+      "recipes": 463,
+      "skipped": 20,
+      "sources": {
+        "drop": 202,
+        "quest": 34,
+        "start": 5,
+        "trainer": 77,
+        "trainer?": 23,
+        "vendor": 196
+      }
+    },
+    "cooking": {
+      "recipes": 131,
+      "skipped": 10,
+      "sources": {
+        "drop": 25,
+        "quest": 32,
+        "start": 4,
+        "trainer": 7,
+        "vendor": 225
+      }
+    },
+    "enchanting": {
+      "recipes": 238,
+      "skipped": 11,
+      "sources": {
+        "drop": 88,
+        "quest": 3,
+        "start": 5,
+        "trainer": 61,
+        "trainer?": 3,
+        "vendor": 147
+      }
+    },
+    "engineering": {
+      "recipes": 259,
+      "skipped": 21,
+      "sources": {
+        "drop": 76,
+        "quest": 21,
+        "start": 3,
+        "trainer": 72,
+        "trainer?": 17,
+        "vendor": 109
+      }
+    },
+    "firstaid": {
+      "recipes": 31,
+      "skipped": 8,
+      "sources": {
+        "drop": 10,
+        "quest": 1,
+        "start": 1,
+        "trainer": 8,
+        "trainer?": 7,
+        "vendor": 5
+      }
+    },
+    "fishing": {
+      "recipes": 3,
+      "skipped": 11,
+      "sources": {
+        "drop": 2,
+        "trainer?": 1
+      }
+    },
+    "herbalism": {
+      "recipes": 3,
+      "skipped": 14,
+      "sources": {
+        "drop": 1,
+        "trainer?": 1
+      }
+    },
+    "leatherworking": {
+      "recipes": 545,
+      "skipped": 25,
+      "sources": {
+        "drop": 200,
+        "quest": 23,
+        "start": 6,
+        "trainer": 68,
+        "trainer?": 7,
+        "vendor": 324
+      }
+    },
+    "mining": {
+      "recipes": 17,
+      "skipped": 15,
+      "sources": {
+        "drop": 2,
+        "quest": 1,
+        "start": 1,
+        "trainer": 9,
+        "trainer?": 3
+      }
+    },
+    "skinning": {
+      "recipes": 3,
+      "skipped": 9,
+      "sources": {
+        "drop": 2,
+        "trainer?": 1
+      }
+    },
+    "tailoring": {
+      "recipes": 441,
+      "skipped": 15,
+      "sources": {
+        "drop": 174,
+        "quest": 8,
+        "start": 5,
+        "trainer": 76,
+        "trainer?": 17,
+        "vendor": 339
+      }
+    }
+  }
+}

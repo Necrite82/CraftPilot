@@ -1,0 +1,86 @@
+name: Catalog build (own recipe catalog)
+
+# Builds CraftPilot's own recipe catalog and camp data (Data/Catalog) from the client tables on the `catalog-inputs`
+# branch, CMaNGOS classic-db, QuestieDB and AllTheThings, compares it with the catalog in dev and proposes the
+# changes as one pull request into dev (branch data/catalog). Nothing is merged automatically.
+on:
+  push:
+    branches: [dev]
+    paths:
+      - tools/catalog/**
+      - .github/workflows/catalog-build.yml
+  workflow_run:
+    workflows: ['Catalog inputs (client tables)']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: catalog-build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Lua 5.1 and 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+
+      - name: Inputs
+        run: |
+          set -e
+          mkdir -p "$RUNNER_TEMP/inputs"
+          git fetch -q origin catalog-inputs
+          git archive origin/catalog-inputs | tar -x -C "$RUNNER_TEMP/inputs"
+          read -r url sha < <(python3 -c "import json;c=json.load(open('ThirdParty/Trainers/SOURCES.json'))['classicdb'];print('https://raw.githubusercontent.com/cmangos/classic-db/%s/%s' % (c['commit'], c['path']), c['sha256'])")
+          curl -sSfL -o "$RUNNER_TEMP/classicdb.sql.gz" "$url"
+          echo "$sha  $RUNNER_TEMP/classicdb.sql.gz" | sha256sum -c -
+
+      - name: Build and compare
+        run: |
+          set -e
+          cp -r Data/Catalog "$RUNNER_TEMP/previous"
+          python3 tools/catalog/build_catalog.py --inputs "$RUNNER_TEMP/inputs" --classicdb "$RUNNER_TEMP/classicdb.sql.gz"
+          python3 tools/catalog/build_camp.py --inputs "$RUNNER_TEMP/inputs"
+          python3 tools/catalog/compare_catalog.py --theirs "$RUNNER_TEMP/previous" --label bisher --out "$RUNNER_TEMP/changes.md" > /dev/null
+          for version in 5.1 5.4; do for file in Data/Catalog/*.lua; do "luac$version" -p "$file"; done; "lua$version" tests/test.lua > /dev/null; done
+
+      - name: Open or update the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          if git diff --quiet -- Data/Catalog && [ -z "$(git ls-files --others --exclude-standard Data/Catalog)" ]; then
+            echo "Catalog unchanged"; exit 0
+          fi
+          build=$(python3 -c "import json;print(json.load(open('Data/Catalog/SOURCES.json'))['client']['build'])")
+          branch="data/catalog"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A Data/Catalog
+          git commit -qm "Eigener Katalog: Client-Build $build"
+          git push -q --force -u origin "$branch"
+          {
+            echo "Eigener Rezeptkatalog für Client-Build **$build**, neu erzeugt aus den Client-Tabellen (Zweig \`catalog-inputs\`), CMaNGOS, QuestieDB und AllTheThings."
+            echo
+            head -c 50000 "$RUNNER_TEMP/changes.md"
+            echo
+            echo "Automatisch erzeugt von \`.github/workflows/catalog-build.yml\`. Vor dem Mergen Tests abwarten und Stichproben im Spiel prüfen."
+          } > "$RUNNER_TEMP/body.md"
+          if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --head "$branch" --base dev --title "Eigener Katalog: Client-Build $build" --body-file "$RUNNER_TEMP/body.md"
+          fi

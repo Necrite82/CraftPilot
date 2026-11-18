@@ -15,7 +15,7 @@ by your own auction house prices, with shopping, trainers, alts and crafting in 
 
 ---
 
-**Status:** 0.1.0-beta · WoW Forever 1.60.x (Interface 16001) · English and German
+**Status:** 0.2.3-beta · WoW Forever 1.60.x (Interface 16001) · English and German
 
 > **Beta:** CraftPilot is new. Please report bugs in-game via "Report bug" or as a [GitHub issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -30,7 +30,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 ## Features
 
 **Leveling**
-- Cheapest path by AH prices, selectable: *cheapest*, *prefer reliable colors* or *orange and yellow only*
+- Cheapest path by AH prices, selectable: *cheapest*, *prefer reliable colors*, *orange and yellow only* or *fastest*
 - Companion panel at the profession window: recommendation, "N× more to the next color", **craft button**, session balance
 - Clear hints on what to **keep** for later steps, and "already there" instead of crafting twice
 - Preview of the next recipe to learn, warnings for rank and level requirements
@@ -45,13 +45,20 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 - One click to every trainer and vendor, a learning tour along the cheapest path
 - Specializations (blacksmith, engineer, leatherworker) with steps and quest givers
 
+**Endgame**
+- Profit per craft for your learned recipes: with bought and with own materials (own and farmed materials count at their sale value)
+- Recipes for **Merchant's Favor** with profit per craft; optionally CraftPilot converts Favor into gold and includes Favor recipes in the cheapest path
+- **Recipe wishlist** with sources (trainer, vendor, Favor, quest, bosses from QuestieDB); bosses show your wished recipe in their tooltip
+- **Raid stock**: potions, flasks and food with a target amount, crafting versus buying, reservation and an Auctionator shopping list
+- **AH alarm** after a scan: wished recipes on the AH and cheap raid stock
+
 **Alts**
 - Stock in bags, bank and mail of every character, cooldowns, alts as cheaper crafters
 - At the mailbox: what your alts need, with a prepared mail
 
 **Safety**
 - Marks on reserved items in any bag view (default bags, EllesmereUI, Baganator, Bagnon, AdiBags …)
-- Warning and "Buy back" when you sell something reserved anyway; warning at the auction house
+- Warning and "Buy back" when you sell something reserved anyway; warnings at the auction house, when destroying, disenchanting and when mailing to someone else's character
 - Hints in item tooltips
 
 ## Installation
@@ -59,7 +66,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **CurseForge app (recommended):** search for CraftPilot and install it. **QuestieDB** is installed automatically.
 
 **Manually:**
-1. Download [CraftPilot-0.1.0-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.1.0-beta.zip) (not the GitHub source archive).
+1. Download [CraftPilot-0.2.3-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.3-beta.zip) (not the GitHub source archive).
 2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilot\CraftPilot.toc` must sit directly in the `CraftPilot` folder.
 3. Also install **QuestieDB** (Forever version).
 
@@ -77,7 +84,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 3. Scan once at the auction house with Auctionator.
 4. Follow the recommendation at the top of "Now".
 
-Open the in-game help any time with "?" at the top right or `/cp help`.
+Open the in-game help any time with "Help" at the bottom of the sidebar or `/cp help`.
 
 ## Commands
 
@@ -100,13 +107,13 @@ Open the in-game help any time with "?" at the top right or `/cp help`.
 
 ## Contributing
 
-Bugs and ideas are welcome as [issues](https://github.com/Necrite82/CraftPilot/issues). In-game, "Report bug" builds a ready-made report with version and Lua errors. Developer notes are in [CONTRIBUTING.md](CONTRIBUTING.md); automated tests run under Lua 5.1 and 5.4.
+Bugs and ideas are welcome on [Discord](https://discord.gg/DpsBkHtQS) (no GitHub account needed) or as [issues](https://github.com/Necrite82/CraftPilot/issues). In-game, "Report bug" builds a ready-made report with version and Lua errors. Developer notes are in [CONTRIBUTING.md](CONTRIBUTING.md); automated tests run under Lua 5.1 and 5.4.
 
 ## License and data
 
 CraftPilot is licensed under the **GNU GPL-3.0-only**, see [LICENSE](LICENSE).
 
-- Recipe data: [Craft Ladder](https://github.com/saintmodx/craft-ladder) (GPL-3.0)
+- Recipe data: built by CraftPilot itself from the Forever client's tables (via wago.tools), [QuestieDB](https://github.com/Questie/QuestieDB), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) and [AllTheThings](https://github.com/ATTWoWAddon/AllTheThings) (MIT)
 - Trainer ranks: [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0)
 - Trainer and gathering node locations: read at runtime from the [QuestieDB](https://github.com/Questie/QuestieDB) addon
 

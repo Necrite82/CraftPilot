@@ -46,7 +46,14 @@ local priorCapture=CP.db.lastCapture
 CP.db.lastCapture={key="engineering",skill=100}
 local rec=CP:Recommendation("engineering")
 assert(rec and rec.id==C and rec.learn and rec.title:find("Erst lernen",1,true),"Recommendation starts with learning the bargain")
-assert(rec.detail:find("Günstigster Weg bis 110",1,true))
+assert(rec.detail:find("Ganzer Weg bis 110",1,true))
+-- Saving tip: a far cheaper option per point than the pick is named.
+local fakePath={segments={{id=A,name="Pick",crafts=10,last=110,learned=true}},perPointNow={[A]=100,[C]=20},reached=110,total=1000,
+  optionsNow={{id=C,name="Bargain",perPoint=20,learned=false},{id=A,name="Pick",perPoint=100,learned=true}}}
+local savedPath=CP.CheapestPath;CP.CheapestPath=function() return fakePath end
+local tipRec=CP:Recommendation("engineering")
+assert(tipRec.tip and tipRec.tip.id==C and tipRec.detail:find("Spartipp: Bargain",1,true),"Cheaper option named as saving tip")
+CP.CheapestPath=savedPath
 assert(#CP:PathSummaryLines(path)>=2)
 -- Missing prices are reported rather than guessed.
 prices[51003]=nil;CP.pathCache=nil

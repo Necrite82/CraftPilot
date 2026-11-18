@@ -1,27 +1,29 @@
 # Datenherkunft / Data sources
 
-**Stand:** 2026-11-17 · WoW Forever Live-Build 1.60.1.70938 · Craft Ladder 1.11.0
+**Stand:** 2026-11-18 · WoW Forever Client-Build 1.60.1.70959 · eigener Katalog seit CraftPilot 0.2.3-beta
 
-## Lizenzierter Herstellungs-Rezeptkatalog
+## Eigener Rezeptkatalog
 
-CraftPilot integriert einen Schnappschuss aus dem **GPL-3.0-Projekt [Craft Ladder](https://github.com/saintmodx/craft-ladder)**: vollständige `Data/*.lua`-Dateien für Alchemy, Blacksmithing, Enchanting, Engineering, Leatherworking und Tailoring sowie einen ausdrücklich gekennzeichneten Schmelzrezept-Auszug aus Mining.
+Seit 0.2.3-beta baut CraftPilot seinen Rezeptkatalog (`Data/Catalog`) selbst. Werkzeuge und Ablauf: [tools/catalog](tools/catalog/README.md). Quellen, Lizenzhinweise und Prüfsummen: [Data/Catalog/SOURCE.md](Data/Catalog/SOURCE.md) und `Data/Catalog/SOURCES.json`.
 
-Verwendete Quellrevision: `fd801d7af49465bbe8d24d0cba558f77f4f6a595` (Craft Ladder `v1.11.0`). Alle Eingaben samt SHA-256 stehen in [UPSTREAM.json](ThirdParty/CraftLadder/UPSTREAM.json).
+| Quelle | Was CraftPilot daraus liest |
+|---|---|
+| Tabellen des WoW-Forever-Clients (über [wago.tools](https://wago.tools)) | welche Zauber Rezepte sind, Skillfarben, Materialien, Ergebnis und Menge, Werkzeuge, Abklingzeiten, Rezeptgegenstände samt geforderter Stufe, Ruf und Spezialisierung, Händlerpreise, Camp-Objekte und ihre Boni |
+| [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0) | Lehrerkosten und Lernstufe, wo Forever ein Classic-Rezept beim Lehrer lässt; Quests, die ein Rezept oder eine Spezialisierung verleihen |
+| [QuestieDB](https://github.com/Questie/QuestieDB) (GPL-3.0, Forever-Releasepaket) | Händler, Drops und Questbelohnungen von Rezeptgegenständen, NPC-Namen und -Orte, Quest-Voraussetzungen |
+| [AllTheThings](https://github.com/ATTWoWAddon/AllTheThings) (MIT) | welche Rezepte Forevers Lehrer lehren, was noch nicht veröffentlicht ist, Merchant's-Favor-Preise und Rufstufen, Lernstufen neuer Forever-Rezepte |
 
-- Originaldateien und deren Kopfkommentare: [ThirdParty/CraftLadder](ThirdParty/CraftLadder)
-- Originale mehrstufige Urheber- und Lizenzhinweise: [CREDITS.txt](ThirdParty/CraftLadder/CREDITS.txt)
-- Quellrevision, Data-Builds und Adaptionsgrenzen: [SOURCE.md](ThirdParty/CraftLadder/SOURCE.md)
-- Gesamtlizenz: GNU GPL-3.0 (siehe [LICENSE](LICENSE))
+Übernommen werden nur Fakten (IDs, Zahlen, Namen), keine Dateien. Rezepte, die nur noch im Client stehen (z. B. aus Season of Discovery) oder laut AllTheThings noch nicht veröffentlicht sind, bleiben als `unavailable` im Katalog und werden nicht geplant. Lehrerkosten neuer Forever-Rezepte kennt keine Quelle; sie werden aus Rezepten ähnlicher Stufe geschätzt und als Schätzung gekennzeichnet.
 
-Craft Ladder führt insbesondere die **Blizzard-Clienttabellen über wago.tools, CMaNGOS classic-db, QuestieDB und AllTheThings** als Datenursprünge auf. Die ursprüngliche MIT-Notiz für AllTheThings ist vollständig in `CREDITS.txt` enthalten. Es werden weder fremde Guide-Texte noch Grafiken aus Websites übernommen. Fremde Daten, Spieldateien, Namen und Marken behalten ihre jeweiligen Rechte; die GPL allein erteilt keine Rechte an Blizzard-Marken oder beliebigen fremden Datenbanken.
+Frühere Versionen (auf CurseForge bis 0.1.0-beta) enthielten einen Schnappschuss des GPL-3.0-Projekts [Craft Ladder](https://github.com/saintmodx/craft-ladder). Der Abschlussvergleich vor der Umstellung steht in [docs/CATALOG_COMPARE.md](docs/CATALOG_COMPARE.md): keine Abweichung bei Materialien, Ergebnis, Menge, Rezeptgegenstand und Skillfarben.
 
-**Zeitliche Grenze:** Die eingebundenen Herstellungsdaten stammen aus dem **Live-Client-Build 1.60.1.70938** (erzeugt 13.–15. November 2026). Bezugsquellen von Rezepten wurden upstream aus AllTheThings und QuestieDB 1.1.1 neu aufgebaut. Serverseitige Hotfixes nach diesem Build können fehlen; bis CraftPilot 0.20.1 stammten die Daten aus den Beta-Builds 1.60.1.70425/70450 vom Oktober. Der Datenkatalog enthält Einträge, deren Trainerangebot, Beuterezept, Lernstufe oder tatsächliche Serverfreigabe noch nicht bestätigt ist. Er ist für die Planung ein Referenzdatensatz, **kein garantierter, aktueller Live-Rezeptbestand**.
+## Automatische Aktualisierung
 
-## Automatischer Abgleich
+- [catalog-inputs.yml](.github/workflows/catalog-inputs.yml) holt täglich die Client-Tabellen, das QuestieDB-Releasepaket und die AllTheThings-Daten in den Zweig `catalog-inputs` (nur wenn sich etwas geändert hat).
+- [catalog-build.yml](.github/workflows/catalog-build.yml) baut daraus den Katalog neu, prüft Syntax und Tests und schlägt Änderungen als ein einziger Pull Request `data/catalog` nach `dev` vor.
+- [data-sync.yml](.github/workflows/data-sync.yml) hält Lehrerliste und Sammelgebiete aktuell (`tools/sync_data.py`).
 
-`tools/sync_craft_ladder.py` übernimmt einen Craft-Ladder-Release vollständig und reproduzierbar: die sechs Herstellungskataloge, `Camp.lua` und `CREDITS.txt` unverändert, den Schmelz-Auszug aus `Mining.lua` sowie die Teilmengen für Camping, Kochen und Erste Hilfe über die bestehenden Importer. Jede Eingabe wird mit Commit und SHA-256 in `UPSTREAM.json` festgehalten; `--check` prüft in der CI, dass die gebündelten Dateien exakt daraus entstehen.
-
-Der Workflow [data-sync.yml](.github/workflows/data-sync.yml) sucht montags und donnerstags nach einem neuen Craft-Ladder-Release. Gibt es einen, führt er Syntaxprüfung, Tests und ZIP-Bau aus und öffnet einen Pull Request mit einer Änderungsübersicht je Beruf. Übernommen wird nichts automatisch. Craft Ladder bündelt bereits Blizzard-Clienttabellen (wago.tools), QuestieDB, AllTheThings und CMaNGOS; deshalb folgt CraftPilot diesen Quellen über Craft Ladder statt sie einzeln zu importieren.
+Übernommen wird nichts automatisch.
 
 ## QuestieDB als Voraussetzung
 
@@ -29,7 +31,7 @@ Seit 0.29 ist das Addon **QuestieDB** (Forever-Fassung) eine feste Voraussetzung
 
 ## Lehrer
 
-Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): die gelehrten Ränge aus **CMaNGOS classic-db**; Positionen, Fraktion und Titel seit 0.29 zur Laufzeit aus dem **QuestieDB**-Addon. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
+Seit 0.21 stammt die Lehrerliste aus [ThirdParty/Trainers](ThirdParty/Trainers/SOURCE.md): die gelehrten Ränge aus **CMaNGOS classic-db**; Positionen, Fraktion und Titel seit 0.29 zur Laufzeit aus dem **QuestieDB**-Addon. Beide sind in `SOURCES.json` mit Commit und SHA-256 festgehalten; `tools/import_trainers.py` erzeugt die Datei reproduzierbar. Das deckt alle zwölf Berufe ab (228 Einträge statt bisher 69 für acht Berufe). Handgepflegte Einträge in `Core/Data.lua` ergänzen nur, was dort fehlt. Der Abgleich-Workflow prüft auch diese Quellen und schlägt Änderungen nur vor, wenn sich die Lehrerliste tatsächlich ändert. Lizenzhinweise siehe SOURCE.md.
 
 ## Sammelgebiete
 
@@ -37,7 +39,7 @@ Seit 0.25 zeigt CraftPilot für Erze, Steine und Kräuter die Gebiete mit den me
 
 ## Spezialisierungen
 
-Die Schritte zu Waffen-/Rüstungsschmied, Gnomen-/Goblin-Ingenieur und Drachen-/Elementar-/Stammeslederer stammen aus den mitgelieferten Craft-Ladder-Dateien (`specGuides`, Quests und Questgeber).
+Die Schritte zu Waffen-/Rüstungsschmied (samt Meister-Spezialisierungen), Gnomen-/Goblin-Ingenieur und Drachen-/Elementar-/Stammeslederer leitet `tools/catalog/spec_guides.py` ab: die verleihende Quest aus CMaNGOS, die Vorquests aus QuestieDB, die verlangten Gegenstände aus CMaNGOS.
 
 ## Daten aus dem Spiel
 
@@ -63,6 +65,7 @@ Preise werden nicht als Echtzeitangebote ausgegeben. Ein fehlendes Preisdatum wi
 
 Quellenänderungen für den Rezeptkatalog sollten aus einem rechtlich kompatiblen, nachweisbaren Herkunftsstand übernommen und mit Commit-ID, Client-Build, Erstellerhinweisen und Tests dokumentiert werden. Neue Fremddaten dürfen nicht ohne Prüfung der Lizenz- und Datenbankrechte übernommen werden.
 
-## Camping reference subset (0.11)
+## Camping
 
-The separate Camping view uses the pinned Craft Ladder camp file and eight matching recipe records. Original notices and GPL terms remain intact. Exact inputs, SHA-256 hashes, scope, factual cross-checks and known differences are documented in [Camping sources](docs/CAMPING_SOURCES.md) and [CAMP_SOURCES.json](ThirdParty/CraftLadder/CAMP_SOURCES.json). Client-captured recipe information takes priority over this older reference snapshot. No current boss/drop completeness is claimed.
+Lagerfeuer, Camp-Objekte, ihre Boni je Charakterstufe, Ausbauten und Herstellrezepte baut `tools/catalog/build_camp.py` aus den Zauberbeschreibungen und Rezepttabellen des Clients (`Data/Catalog/Camp.lua`). Aktuelle Tooltips im Spiel haben Vorrang.
+
