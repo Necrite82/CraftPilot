@@ -148,7 +148,7 @@ function CP:CompactMoney(value)
 end
 
 -- Window ----------------------------------------------------------------------------------------------------
-local frame = CreateFrame("Frame", "CraftPilotMainFrame", UIParent, "BackdropTemplate")
+local frame = CreateFrame("Frame", "CraftPilotProMainFrame", UIParent, "BackdropTemplate")
 U.frame=frame
 frame:SetSize(W, H)
 frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
@@ -169,7 +169,7 @@ if type(frame.SetToplevel)=="function" then frame:SetToplevel(true) end
 frame:Hide()
 CP.frame = frame
 if type(UISpecialFrames)=="table" then
-  table.insert(UISpecialFrames, "CraftPilotMainFrame")
+  table.insert(UISpecialFrames, "CraftPilotProMainFrame")
 end
 
 -- Header: logo, name, profession menu, skill bar, price status, settings, close ---------------------------------
@@ -188,12 +188,12 @@ header:SetScript("OnDragStop", function()
   if CP.SaveWindowPosition then CP:SaveWindowPosition() end
 end)
 -- Keep artwork on its own child: EUI Panel deliberately fades header regions.
-local brandFrame=CreateFrame("Frame","CraftPilotBrandFrame",header)
+local brandFrame=CreateFrame("Frame","CraftPilotProBrandFrame",header)
 brandFrame:SetSize(30,30)
 brandFrame:SetPoint("LEFT",header,"LEFT",12,0)
 local brand=brandFrame:CreateTexture(nil,"ARTWORK")
 brand:SetAllPoints(brandFrame)
-brand:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
+brand:SetTexture("Interface\\AddOns\\CraftPilotPro\\Media\\CraftPilot")
 U.title = text(header, "GameFontNormalLarge", 50, -17, 110, "CraftPilot")
 
 U.profButton=button(header,180,30,160,-12,"",function()
@@ -237,7 +237,7 @@ U.hideSecure=hideSecure
 local function secureButton(i)
   local s=U.secure[i]
   if s then return s end
-  s=CreateFrame("Button","CraftPilotProfessionCast"..i,UIParent,"SecureActionButtonTemplate")
+  s=CreateFrame("Button","CraftPilotProProfessionCast"..i,UIParent,"SecureActionButtonTemplate")
   if type(s.SetFrameStrata)=="function" then s:SetFrameStrata("DIALOG") end
   if type(s.SetFrameLevel)=="function" then s:SetFrameLevel(60) end
   if type(s.RegisterForClicks)=="function" then s:RegisterForClicks("AnyUp","AnyDown") end
@@ -325,7 +325,7 @@ U.tabIcons={now="Interface\\Icons\\INV_Misc_PocketWatch_01",plan="Interface\\Ico
   trainers="Interface\\Icons\\INV_Misc_Map_01",camping="Interface\\Icons\\Spell_Fire_Fire",
   twinks="Interface\\Icons\\INV_Misc_Head_Human_01",endgame="Interface\\Icons\\INV_Misc_Coin_02",
   settings="Interface\\Icons\\INV_Misc_Gear_01",help="Interface\\Icons\\INV_Misc_QuestionMark"}
-local side=CreateFrame("Frame","CraftPilotSidebar",frame,"BackdropTemplate")
+local side=CreateFrame("Frame","CraftPilotProSidebar",frame,"BackdropTemplate")
 U.side=side
 side:SetWidth(SIDE)
 side:SetPoint("TOPRIGHT",frame,"TOPLEFT",1,0)
@@ -342,7 +342,7 @@ end)
 if type(frame.SetClampRectInsets)=="function" then frame:SetClampRectInsets(-SIDE,0,0,0) end
 U.sideBrand=CreateFrame("Frame",nil,side);U.sideBrand:SetSize(30,30);U.sideBrand:SetPoint("TOPLEFT",side,"TOPLEFT",14,-14)
 local sideLogo=U.sideBrand:CreateTexture(nil,"ARTWORK");sideLogo:SetAllPoints(U.sideBrand)
-sideLogo:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
+sideLogo:SetTexture("Interface\\AddOns\\CraftPilotPro\\Media\\CraftPilot")
 U.sideTitle=text(side,"GameFontNormalLarge",52,-14,SIDE-60,"CraftPilot")
 U.sideSub=text(side,"GameFontDisableSmall",52,-33,SIDE-60,L("Berufsbegleiter"))
 local function navButton(key,caption,callback)
@@ -413,7 +413,7 @@ U.section=text(frame,"GameFontNormal",18,-104,W-50,"")
 
 -- Generic scroll area, used by every view except the recipe list --------------------------------------------
 U.contentPanel=CreateFrame("Frame",nil,frame)
-U.scroll=CreateFrame("ScrollFrame","CraftPilotScroll",U.contentPanel,"UIPanelScrollFrameTemplate")
+U.scroll=CreateFrame("ScrollFrame","CraftPilotProScroll",U.contentPanel,"UIPanelScrollFrameTemplate")
 U.scroll:SetPoint("TOPLEFT",U.contentPanel,"TOPLEFT",0,0)
 U.scroll:SetPoint("BOTTOMRIGHT",U.contentPanel,"BOTTOMRIGHT",-24,0)
 U.content=CreateFrame("Frame",nil,U.scroll)
@@ -460,7 +460,7 @@ end
 U.listLine=U.listPanel:CreateTexture(nil,"ARTWORK")
 U.listLine:SetHeight(1)
 U.listLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
-U.listScroll=CreateFrame("ScrollFrame","CraftPilotRecipeScroll",U.listPanel,"UIPanelScrollFrameTemplate")
+U.listScroll=CreateFrame("ScrollFrame","CraftPilotProRecipeScroll",U.listPanel,"UIPanelScrollFrameTemplate")
 U.listContent=CreateFrame("Frame",nil,U.listScroll)
 U.listContent:SetSize(300,200)
 U.listScroll:SetScrollChild(U.listContent)
@@ -489,7 +489,7 @@ U.rec.prices:Hide()
 U.rec:Hide()
 
 U.detailPanel=panel(frame,"panel")
-U.detailScroll=CreateFrame("ScrollFrame","CraftPilotDetailScroll",U.detailPanel,"UIPanelScrollFrameTemplate")
+U.detailScroll=CreateFrame("ScrollFrame","CraftPilotProDetailScroll",U.detailPanel,"UIPanelScrollFrameTemplate")
 U.detailContent=CreateFrame("Frame",nil,U.detailScroll)
 U.detailContent:SetSize(300,200)
 U.detailScroll:SetScrollChild(U.detailContent)
@@ -989,7 +989,7 @@ local function setVisualCards(entries)
     end
     if entry.slider then
       if not b.settingSlider then
-        local slider=CreateFrame("Slider","CraftPilotSettingsSlider"..i,b)
+        local slider=CreateFrame("Slider","CraftPilotProSettingsSlider"..i,b)
         b.settingSlider=slider
         slider:SetPoint("TOPLEFT",b,"TOPLEFT",60,-32)
         slider:SetHeight(18)
@@ -1004,7 +1004,7 @@ local function setVisualCards(entries)
         local thumb=slider:GetThumbTexture()
         if thumb then thumb:SetSize(14,20);thumb:SetVertexColor(.88,.69,.31,1) end
         for _,part in ipairs({"Low","High","Text"}) do
-          local label=rawget(slider,part) or _G["CraftPilotSettingsSlider"..i..part]
+          local label=rawget(slider,part) or _G["CraftPilotProSettingsSlider"..i..part]
           if label and type(label.Hide)=="function" then label:Hide() end
         end
         slider:SetScript("OnValueChanged",function(control,value)

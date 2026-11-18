@@ -128,7 +128,7 @@ fixtureQuestie={RequireContract=function(v) return v==1 end,
 LibQuestieDB=fixtureQuestie
 local CP={}
 -- Load the same file order as the game client, including the full UI module.
-for line in io.lines("CraftPilot.toc") do
+for line in io.lines("CraftPilotPro.toc") do
   if line:match("%.lua$") then assert(loadfile((line:gsub("\\","/"))))("CraftPilot",CP) end
 end
 assert(type(CP.Render)=="function" and type(CP.OpenTab)=="function" and type(CP.ToggleWindow)=="function","TOC must load every window entry point before initialization")
@@ -214,7 +214,7 @@ CP:TrainerWaypoint()
 assert(#waypoints==1 and waypoints[1].map==1453)
 CP:TrainerWaypoint("nearest")
 assert(#waypoints==2 and waypoints[2].map==1453)
--- 0.28: help is its own view again (header "?" and /cp hilfe), matching the current interface.
+-- 0.28: help is its own view again (header "?" and /cpp hilfe), matching the current interface.
 CP:OpenTab("help")
 assert(CP.db.ui.tab=="help" and CP.frame.visible==true)
 local helpTitles={}
@@ -550,7 +550,7 @@ C_TradeSkillUI.OpenTradeSkill=oldOpen
 -- EUI's region fading must leave the logo on its child frame visible.
 local logo
 for _,texture in ipairs(createdTextures) do
-  if texture.parent.frameName=="CraftPilotBrandFrame" then logo=texture end
+  if texture.parent.frameName=="CraftPilotProBrandFrame" then logo=texture end
 end
 assert(logo and logo.alpha==1 and logo.texture:find("Media"))
 CP.db.ui.settingsAdvanced=true
@@ -1122,9 +1122,9 @@ print("PASS: semantic version comparison, one-time notices, message filtering, t
 -- Load the actual TOC into fresh addon tables to test language at construction time.
 for _,locale in ipairs({"enUS","enGB","frFR"}) do
   GetLocale=function() return locale end
-  CraftPilotDB={}
+  CraftPilotProDB={}
   local translated={}
-  for line in io.lines("CraftPilot.toc") do
+  for line in io.lines("CraftPilotPro.toc") do
     if line:match("%.lua$") then assert(loadfile((line:gsub("\\","/"))))("CraftPilot",translated) end
   end
   translated:Initialize()

@@ -1,6 +1,6 @@
 local _, CP = ...
 local L=CP.L
-_G.CraftPilot = CP
+_G.CraftPilotPro = CP
 local D = CP.Data
 local pending = false
 local pendingCapture = false
@@ -19,8 +19,8 @@ function CP:Say(message)
 end
 
 function CP:Initialize()
-  if type(CraftPilotDB) ~= "table" then CraftPilotDB = {} end
-  local db = CraftPilotDB
+  if type(CraftPilotProDB) ~= "table" then CraftPilotProDB = {} end
+  local db = CraftPilotProDB
   if type(db.professions) ~= "table" then db.professions = {} end
   if type(db.recipes) ~= "table" then db.recipes = {} end
   if not D.professions[db.view] then db.view = "engineering" end
@@ -799,7 +799,7 @@ local function command(input)
   elseif text=="sort cost" or text=="sort chance" or text=="sort missing" or text=="sort name" then
     CP.db.ui.recipeSort=text:sub(6);CP:Refresh(false)
   else
-    CP:Say(L("Hilfe im Addon: /cp hilfe. Direkt: /cp plan | lehrer | trainer | naechster | refresh | resetpos | discord | skin auto|dark|classic."))
+    CP:Say(L("Hilfe im Addon: /cpp hilfe. Direkt: /cpp plan | lehrer | trainer | naechster | refresh | resetpos | discord | skin auto|dark|classic."))
   end
 end
 
@@ -828,9 +828,10 @@ CP.SlashCommand=command
 events:SetScript("OnEvent",function(_,event,...)
   if event=="PLAYER_LOGIN" then
     CP:Initialize()
-    SLASH_CRAFTPILOT1="/cp"
-    SLASH_CRAFTPILOT2="/craftpilot"
-    SlashCmdList.CRAFTPILOT=command
+    -- /cpp and /craftpilotpro: another addon also calls itself CraftPilot and takes /cpp and /craftpilot.
+    SLASH_CRAFTPILOTPRO1="/cpp"
+    SLASH_CRAFTPILOTPRO2="/craftpilotpro"
+    SlashCmdList.CRAFTPILOTPRO=command
   elseif event=="GET_ITEM_INFO_RECEIVED" then
     local item,success=...
     if CP.marketRequested and CP.marketRequested[item]==true then

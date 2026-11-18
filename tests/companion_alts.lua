@@ -1,19 +1,19 @@
 -- Twink stock across the account and the companion panel beside the profession window.
 local CP=...
-local saved={account=CraftPilotAccountDB,unitName=UnitName,realm=GetRealmName,faction=UnitFactionGroup,container=C_Container,
+local saved={account=CraftPilotProAccountDB,unitName=UnitName,realm=GetRealmName,faction=UnitFactionGroup,container=C_Container,
   bankOpen=CP.bankIsOpen,includeAlts=CP.db.ui.includeAlts,prof=CP.db.professions.engineering,recipes=CP.db.recipes.engineering,
   capture=CP.db.lastCapture,tradeFrame=TradeSkillFrame,cost=CP.CostCalculation,offers=CP.TrainerRecipeOptions,name=CP.ItemName,
   companion=CP.db.ui.companion,errors=UIErrorsFrame}
 UnitName=function() return "Main" end
 GetRealmName=function() return "Forever" end
 UnitFactionGroup=function() return "Horde" end
-CraftPilotAccountDB={characters={
+CraftPilotProAccountDB={characters={
   ["Twink-Forever"]={name="Twink",realm="Forever",faction="Horde",bags={[60001]=2},bank={[60001]=3}},
   ["Ally-Forever"]={name="Ally",realm="Forever",faction="Alliance",bags={[60001]=7},bank={}},
   ["Far-Other"]={name="Far",realm="Other",faction="Horde",bags={[60001]=9},bank={}},
 }}
 CP:InitializeAlts()
-assert(CP.characterKey=="Main-Forever" and CraftPilotAccountDB.characters["Main-Forever"])
+assert(CP.characterKey=="Main-Forever" and CraftPilotProAccountDB.characters["Main-Forever"])
 local stock=CP:AltStock(60001)
 assert(#stock==3 and stock[1].name=="Twink" and stock[1].reachable and stock[1].count==5,"Mailable twinks come first")
 assert(not stock[2].reachable and not stock[3].reachable,"Other faction or realm is information only")
@@ -31,11 +31,11 @@ CP.db.ui.includeAlts=true
 C_Container={GetContainerNumSlots=function(bag) return (bag==0 or bag==-1) and 2 or 0 end,
   GetContainerItemInfo=function(bag,slot) if slot==1 then return {itemID=bag==-1 and 70002 or 70001,stackCount=4} end end}
 CP:SnapshotCharacterBags()
-assert(CraftPilotAccountDB.characters["Main-Forever"].bags[70001]==4)
+assert(CraftPilotProAccountDB.characters["Main-Forever"].bags[70001]==4)
 CP.bankIsOpen=false;CP:SnapshotCharacterBank()
-assert(next(CraftPilotAccountDB.characters["Main-Forever"].bank)==nil,"No bank scan without an open bank")
+assert(next(CraftPilotProAccountDB.characters["Main-Forever"].bank)==nil,"No bank scan without an open bank")
 CP.bankIsOpen=true;CP:SnapshotCharacterBank()
-assert(CraftPilotAccountDB.characters["Main-Forever"].bank[70002]==4)
+assert(CraftPilotProAccountDB.characters["Main-Forever"].bank[70002]==4)
 CP.bankIsOpen=saved.bankOpen
 
 -- Companion: shown beside the open profession window with crafts to the next color.
@@ -74,7 +74,7 @@ CP.companionClosed=nil
 CP.db.ui.companion=false;CP:UpdateCompanion();assert(not panel:IsShown())
 CP.db.ui.companion=true;hostShown=false;CP:UpdateCompanion();assert(not panel:IsShown(),"Hidden without a profession window")
 
-CraftPilotAccountDB,UnitName,GetRealmName,UnitFactionGroup,C_Container=saved.account,saved.unitName,saved.realm,saved.faction,saved.container
+CraftPilotProAccountDB,UnitName,GetRealmName,UnitFactionGroup,C_Container=saved.account,saved.unitName,saved.realm,saved.faction,saved.container
 CP.db.ui.includeAlts,CP.db.professions.engineering,CP.db.recipes.engineering,CP.db.lastCapture=saved.includeAlts,saved.prof,saved.recipes,saved.capture
 TradeSkillFrame,CP.CostCalculation,CP.TrainerRecipeOptions,CP.ItemName,CP.db.ui.companion,UIErrorsFrame=saved.tradeFrame,saved.cost,saved.offers,saved.name,saved.companion,saved.errors
 CP.account=nil;CP.characterKey=nil;CP.db.ui.companionCollapsed=nil;CP.db.ui.companionPos=nil;CP.trainerOfferCache=nil;CP.companionState=nil;CP.companionNotice=nil

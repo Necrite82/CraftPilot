@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 0.2.3-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 0.2.4-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
 
@@ -66,8 +66,8 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
 
 **Von Hand:**
-1. [CraftPilot-0.2.3-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.3-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
-2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilot\CraftPilot.toc` muss direkt im Ordner `CraftPilot` liegen.
+1. [CraftPilot-0.2.4-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.4-beta.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilotPro\CraftPilotPro.toc` muss direkt im Ordner `CraftPilotPro` liegen.
 3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 
 | Addon | |
@@ -79,25 +79,25 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 
 ## Erste Schritte
 
-1. `/cp` öffnet CraftPilot. Beim ersten Start erklärt die Hilfe die Bedienung.
+1. `/cpp` öffnet CraftPilot. Beim ersten Start erklärt die Hilfe die Bedienung.
 2. **Berufsfenster einmal öffnen**, damit CraftPilot deine Rezepte und Skillfarben einliest.
 3. Am Auktionshaus einmal mit Auctionator scannen.
 4. Der Empfehlung oben in „Jetzt“ folgen.
 
-Die Hilfe im Spiel öffnest du jederzeit über „Hilfe“ unten in der Seitenleiste oder `/cp hilfe`.
+Die Hilfe im Spiel öffnest du jederzeit über „Hilfe“ unten in der Seitenleiste oder `/cpp hilfe`.
 
 ## Befehle
 
 | Befehl | |
 | --- | --- |
-| `/cp` | Fenster öffnen oder schließen |
-| `/cp hilfe` | Hilfe |
-| `/cp <Beruf>` | Beruf wählen, z. B. `/cp schmied`, `/cp ingi`, `/cp leder` |
-| `/cp plan` · `/cp lehrer` | Plan & Einkauf · Lehrer & Händler |
-| `/cp trainer` · `/cp naechster` | Wegpunkt zum empfohlenen bzw. nächsten Lehrer |
-| `/cp refresh` | Berufsfenster neu einlesen |
-| `/cp resetpos` | Fensterposition zurücksetzen |
-| `/cp skin auto\|dark\|classic` | Darstellung |
+| `/cpp` | Fenster öffnen oder schließen |
+| `/cpp hilfe` | Hilfe |
+| `/cpp <Beruf>` | Beruf wählen, z. B. `/cpp schmied`, `/cpp ingi`, `/cpp leder` |
+| `/cpp plan` · `/cpp lehrer` | Plan & Einkauf · Lehrer & Händler |
+| `/cpp trainer` · `/cpp naechster` | Wegpunkt zum empfohlenen bzw. nächsten Lehrer |
+| `/cpp refresh` | Berufsfenster neu einlesen |
+| `/cpp resetpos` | Fensterposition zurücksetzen |
+| `/cpp skin auto\|dark\|classic` | Darstellung |
 
 ## Gut zu wissen
 

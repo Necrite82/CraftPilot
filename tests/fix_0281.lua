@@ -3,7 +3,7 @@ local CP=...
 -- No mark on CraftPilot's own rows (material table in the detail pane).
 local saved={count=CP.RawItemCount,recipes=CP.db.recipes.engineering,reserved=CP.ReservedItems,catalog=CP.Catalog}
 CP.ReservedItems=function() return {[2840]={kind="plan"}} end
-local own={GetName=function() return nil end,GetParent=function() return {GetName=function() return "CraftPilotMainFrame" end,GetParent=function() end} end,
+local own={GetName=function() return nil end,GetParent=function() return {GetName=function() return "CraftPilotProMainFrame" end,GetParent=function() end} end,
   IsObjectType=function() return true end,itemID=2840,IsVisible=function() return true end}
 local foreign={GetName=function() return "ContainerFrame1Item1" end,GetParent=function() end,IsObjectType=function() return true end,itemID=2840,IsVisible=function() return true end}
 local frames={own,foreign}

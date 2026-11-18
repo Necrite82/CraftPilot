@@ -46,7 +46,7 @@ Never publish credentials, tokens, private contact information or internal syste
 
 ## Release
 
-1. Version in `Updates.lua` and `CraftPilot.toc` raise (e.g. `0.1.1-beta`), add `docs/RELEASE_<version>.md` and a `CHANGELOG.md` entry.
+1. Version in `Updates.lua` and `CraftPilotPro.toc` raise (e.g. `0.1.1-beta`), add `docs/RELEASE_<version>.md` and a `CHANGELOG.md` entry.
 2. `python3 tools/build_release.py` builds `dist/CraftPilot-<version>.zip`; keep only the current zip in `dist/`.
 3. After the merge push the tag: `git tag v0.1.1-beta && git push origin v0.1.1-beta`.
 4. The `Release` workflow tests, creates the GitHub release and uploads the zip to CurseForge (project 1812811, WoW Forever, QuestieDB as required dependency). It needs the repository secret `CF_API_TOKEN`. `python3 tools/upload_curseforge.py <tag> --dry-run` shows what would be sent.

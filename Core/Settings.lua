@@ -1,7 +1,7 @@
 -- Original CraftPilot settings and minimap integration; no external libraries.
 local _,CP=...
 local L=CP.L
-local ICON="Interface\\AddOns\\CraftPilot\\Media\\CraftPilot"
+local ICON="Interface\\AddOns\\CraftPilotPro\\Media\\CraftPilot"
 
 function CP:FormatMoney(value)
   if type(value)~="number" then return L("Preis fehlt") end
@@ -54,7 +54,7 @@ end
 function CP:UpdateMinimapButton()
   if not self.db or not Minimap then return end
   if not self.minimapButton then
-    local b=CreateFrame("Button","CraftPilotMinimapButton",Minimap)
+    local b=CreateFrame("Button","CraftPilotProMinimapButton",Minimap)
     self.minimapButton=b
     b:SetSize(32,32)
     b:SetFrameStrata("MEDIUM")

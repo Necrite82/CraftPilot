@@ -319,7 +319,7 @@ function CP:ShowMerchantHelper()
   local f=self.MerchantHelper
   if #offers==0 then if f then f:Hide() end;return end
   if not f then
-    f=CreateFrame("Frame","CraftPilotMerchantHelper",UIParent,"BackdropTemplate")
+    f=CreateFrame("Frame","CraftPilotProMerchantHelper",UIParent,"BackdropTemplate")
     f:SetSize(280,80);f:SetFrameStrata("HIGH");f:SetClampedToScreen(true)
     if type(f.SetBackdrop)=="function" then
       f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})

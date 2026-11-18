@@ -131,7 +131,7 @@ end
 function CP:OpenRouteAlternatives(key,first,last,materialItem,units)
   local f=self.routeChooser
   if not f then
-    f=CreateFrame("Frame","CraftPilotRouteChooser",UIParent,"BackdropTemplate");f:SetSize(780,590);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true)
+    f=CreateFrame("Frame","CraftPilotProRouteChooser",UIParent,"BackdropTemplate");f:SetSize(780,590);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true)
     f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1});f:SetBackdropColor(.035,.055,.075,.99);f:SetBackdropBorderColor(.3,.45,.55,1)
     f.title=self:DisplayLabel(f,"GameFontNormalLarge",22,20,710,"")
     self:DisplayLabel(f,"GameFontDisableSmall",22,55,710,L("Rezept wählen: Der Rest der Route und der Einkauf werden neu berechnet. Preise für diesen Schritt sind nur eine Vorschau."))
@@ -139,7 +139,7 @@ function CP:OpenRouteAlternatives(key,first,last,materialItem,units)
     f.list=CreateFrame("Frame",nil,scroll);f.list:SetSize(710,100);scroll:SetScrollChild(f.list);f.rows={}
     f.reset=CreateFrame("Button",nil,f,"BackdropTemplate");self:StyleActionButton(f.reset);f.reset:SetSize(260,26);f.reset:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",22,20);f.reset:SetText(L("Automatische Empfehlung verwenden"))
     local close=CreateFrame("Button",nil,f,"UIPanelCloseButton");close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() f:Hide() end)
-    UISpecialFrames[#UISpecialFrames+1]="CraftPilotRouteChooser";self.routeChooser=f
+    UISpecialFrames[#UISpecialFrames+1]="CraftPilotProRouteChooser";self.routeChooser=f
   end
   f.title:SetText(materialItem and (L("Zwischenprodukt: ")..self:ItemName(materialItem)) or string.format(L("Rezept für Skill %d–%d austauschen"),first,last))
   f.reset:SetScript("OnClick",function() if materialItem then CP:ChooseMaterialRecipe(key,materialItem,nil,first) else CP:ChooseRouteRecipe(key,first,last,nil) end;f:Hide();CP:Render() end)

@@ -28,7 +28,7 @@ end
 
 function CP:CompanionFrame()
   if self.companion then return self.companion end
-  local f=CreateFrame("Frame","CraftPilotCompanion",UIParent,"BackdropTemplate")
+  local f=CreateFrame("Frame","CraftPilotProCompanion",UIParent,"BackdropTemplate")
   f:SetSize(250,180);f:SetBackdrop(flat)
   f:SetBackdropColor(.078,.090,.110,.97);f:SetBackdropBorderColor(.17,.196,.227,1)
   if type(f.SetFrameStrata)=="function" then f:SetFrameStrata("HIGH") end
@@ -49,7 +49,7 @@ function CP:CompanionFrame()
   f.stripe:SetPoint("TOPLEFT",f,"TOPLEFT",0,0);f.stripe:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",0,0)
   f.stripe:SetColorTexture(.88,.69,.31,1)
   f.logo=f:CreateTexture(nil,"ARTWORK");f.logo:SetSize(18,18);f.logo:SetPoint("TOPLEFT",f,"TOPLEFT",10,-8)
-  f.logo:SetTexture("Interface\\AddOns\\CraftPilot\\Media\\CraftPilot")
+  f.logo:SetTexture("Interface\\AddOns\\CraftPilotPro\\Media\\CraftPilot")
   f.header=label(f,"GameFontNormal",150);f.header:SetPoint("TOPLEFT",f,"TOPLEFT",32,-10);f.header:SetText("CraftPilot")
   f.skill=label(f,"GameFontHighlightSmall",70);f.skill:SetJustifyH("RIGHT");f.skill:SetPoint("TOPRIGHT",f,"TOPRIGHT",-52,-11)
   -- Minimize to the header row and close until the profession window opens again.

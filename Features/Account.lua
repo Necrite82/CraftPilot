@@ -151,7 +151,7 @@ end
 local function helperPanel(self,name,host)
   local f=self[name]
   if not f then
-    f=CreateFrame("Frame","CraftPilot"..name,UIParent,"BackdropTemplate")
+    f=CreateFrame("Frame","CraftPilotPro"..name,UIParent,"BackdropTemplate")
     f:SetSize(280,80);f:SetFrameStrata("HIGH");f:SetClampedToScreen(true)
     f:SetMovable(true);f:EnableMouse(true);f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart",function() f:StartMoving() end)
@@ -318,7 +318,7 @@ end
 function CP:OpenShareWindow(key,mode)
   local f=self.shareWindow
   if not f then
-    f=CreateFrame("Frame","CraftPilotShareWindow",UIParent,"BackdropTemplate")
+    f=CreateFrame("Frame","CraftPilotProShareWindow",UIParent,"BackdropTemplate")
     f:SetSize(460,200);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true)
     if type(f.SetBackdrop)=="function" then
       f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})

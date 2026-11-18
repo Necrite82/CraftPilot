@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4-beta
+
+- Neuer interner Name **CraftPilotPro**: Addon-Ordner `CraftPilotPro`, gespeicherte Daten `CraftPilotProDB` / `CraftPilotProAccountDB`, Befehl **`/cpp`** (oder `/craftpilotpro`). Grund: Ein anderes Addon heißt ebenfalls „CraftPilot“ und belegt denselben Ordner, dieselben Daten und `/cp`. Im Spiel heißt CraftPilot weiter CraftPilot.
+- Fehlerberichte erfassen nur noch Fehler aus CraftPilotPro, nicht aus dem gleichnamigen Addon
+- Nach dem Update Einstellungen einmal setzen und jeden Beruf einmal öffnen
+
 ## 0.2.3-beta
 
 - **Discord-Community** direkt im Addon: Link in der Seitenleiste, in der Hilfe, im Fenster „Fehler melden“ und mit `/cp discord`, zum Kopieren bereit

@@ -1,7 +1,7 @@
 -- 0.2.2: navigation in a sidebar instead of tabs on top, page title, Endgame sub-pages.
 local CP,createdFrames=...
 local side
-for _,f in ipairs(createdFrames) do if f.frameName=="CraftPilotSidebar" then side=f end end
+for _,f in ipairs(createdFrames) do if f.frameName=="CraftPilotProSidebar" then side=f end end
 assert(side and side.parent==CP.frame,"Sidebar is part of the window")
 local nav={}
 for _,b in ipairs(createdFrames) do

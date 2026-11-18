@@ -20,8 +20,8 @@ function CP:CharacterKey()
 end
 
 function CP:InitializeAlts()
-  if type(CraftPilotAccountDB)~="table" then CraftPilotAccountDB={} end
-  local account=CraftPilotAccountDB
+  if type(CraftPilotProAccountDB)~="table" then CraftPilotProAccountDB={} end
+  local account=CraftPilotProAccountDB
   if type(account.characters)~="table" then account.characters={} end
   self.account=account
   local key,name,realm=self:CharacterKey()

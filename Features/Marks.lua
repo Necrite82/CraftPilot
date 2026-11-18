@@ -84,7 +84,7 @@ local function ownFrame(f)
   for _=1,25 do
     if type(node)~="table" then return false end
     local ok,name=pcall(function() return node:GetName() end)
-    if ok and type(name)=="string" and not secret(name) and name:sub(1,10)=="CraftPilot" then return true end
+    if ok and type(name)=="string" and not secret(name) and name:sub(1,13)=="CraftPilotPro" then return true end
     local okParent,parent=pcall(function() return node:GetParent() end)
     if not okParent or parent==nil or parent==node then return false end
     node=parent
@@ -192,7 +192,7 @@ end
 function CP:ShowBuybackHelper(item,text)
   local f=self.BuybackHelper
   if not f then
-    f=CreateFrame("Frame","CraftPilotBuybackHelper",UIParent,"BackdropTemplate")
+    f=CreateFrame("Frame","CraftPilotProBuybackHelper",UIParent,"BackdropTemplate")
     f:SetSize(300,96);f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true)
     if type(f.SetBackdrop)=="function" then
       f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})

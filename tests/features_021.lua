@@ -172,7 +172,7 @@ C_Item.GetItemInfoInstant=savedInstant;Auctionator.API.v1=savedApi
 print("PASS: 0.2.1 raid stock: craft or buy, shared reservation and Auctionator export")
 
 -- The game font has no glyphs for these characters; they show up as boxes. Keep them out of in-game text.
-local toc=io.open("CraftPilot.toc","r")
+local toc=io.open("CraftPilotPro.toc","r")
 for line in toc:lines() do
   local path=line:gsub("\\","/"):gsub("%s+$","")
   if path:match("%.lua$") and not path:match("^ThirdParty") then

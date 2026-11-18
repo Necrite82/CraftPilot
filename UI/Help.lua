@@ -1,8 +1,8 @@
--- Help view (header "?" and /cp hilfe) and the first start. Matches the 0.28 interface: five tabs, the
+-- Help view (header "?" and /cpp hilfe) and the first start. Matches the 0.28 interface: five tabs, the
 -- companion at the profession window and the helpers at bank, vendor, mailbox and auction house.
 local _,CP=...
 local L=CP.L
-local ICON="Interface\\AddOns\\CraftPilot\\Media\\CraftPilot"
+local ICON="Interface\\AddOns\\CraftPilotPro\\Media\\CraftPilot"
 
 local function card(title,detail,action,footer,color,icon)
   return {title=title,detail=detail,action=action,footer=footer or (action and L("Klick: öffnen") or ""),color=color or "blue",icon=icon or ICON}
@@ -65,7 +65,7 @@ function CP:HelpCards()
     function() CP:OpenTab("settings") end)
   cards[#cards+1]=card(L("Farben und Chancen"),L("Orange gibt immer einen Punkt, Gelb meist (ca. 70 %), Grün selten (ca. 35 %), Grau nie. CraftPilot rechnet mit diesen Chancen; einzelne Ergebnisse können abweichen."))
   cards[#cards+1]=card(L("Preise sind Schätzungen"),L("Grundlage ist dein letzter Auctionator-Scan. Fehlende oder alte Preise werden genannt, nicht geraten. Rezeptdaten baut CraftPilot selbst aus den Tabellen des Forever-Clients, QuestieDB, CMaNGOS und AllTheThings."))
-  cards[#cards+1]=card(L("Befehle"),L("/cp öffnet und schließt · /cp hilfe · /cp <Beruf> (z. B. /cp schmied) · /cp plan · /cp lehrer · /cp trainer (Wegpunkt) · /cp naechster · /cp refresh · /cp resetpos · /cp skin auto|dark|classic"))
+  cards[#cards+1]=card(L("Befehle"),L("/cpp öffnet und schließt · /cpp hilfe · /cpp <Beruf> (z. B. /cpp schmied) · /cpp plan · /cpp lehrer · /cpp trainer (Wegpunkt) · /cpp naechster · /cpp refresh · /cpp resetpos · /cpp skin auto|dark|classic"))
   cards[#cards+1]=card(L("Fehler melden"),L("Erstellt einen Bericht mit Version und Lua-Fehlern zum Kopieren für GitHub."),function() CP:OpenDiagnosticReport() end,L("Klick: Bericht öffnen"),"gold")
   return cards
 end

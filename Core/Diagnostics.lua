@@ -19,7 +19,8 @@ end
 function CP:CaptureDiagnostic(message,stack,blocked)
   if not self.db or self.capturingDiagnostic then return false end
   if type(issecretvalue)=="function" and (issecretvalue(message) or issecretvalue(stack)) then return false end
-  local own=(type(message)=="string" and message:find("CraftPilot",1,true)) or (type(stack)=="string" and stack:find("CraftPilot",1,true))
+  -- "CraftPilotPro": the folder and frame names; another addon named "CraftPilot" must not land in our reports.
+  local own=(type(message)=="string" and message:find("CraftPilotPro",1,true)) or (type(stack)=="string" and stack:find("CraftPilotPro",1,true))
   if not blocked and not own then return false end
   message=safeText(message,1500);stack=safeText(stack,3500)
   self.capturingDiagnostic=true
@@ -91,7 +92,7 @@ function CP:DiagnosticIssueURL(report)
 end
 function CP:OpenDiagnosticReport()
   if not self.diagnosticWindow then
-    local frame=CreateFrame("Frame","CraftPilotDiagnosticWindow",UIParent,"BackdropTemplate")
+    local frame=CreateFrame("Frame","CraftPilotProDiagnosticWindow",UIParent,"BackdropTemplate")
     frame:SetSize(650,590);frame:SetPoint("CENTER");frame:SetFrameStrata("DIALOG");frame:SetClampedToScreen(true)
     frame:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})
     frame:SetBackdropColor(.045,.06,.075,.99);frame:SetBackdropBorderColor(.75,.57,.25,1)
@@ -139,7 +140,7 @@ function CP:OpenDiagnosticReport()
     discord:SetScript("OnClick",function() CP:OpenDiscordLink() end)
     local close=CreateFrame("Button",nil,frame,"UIPanelCloseButton")
     close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() frame:Hide() end)
-    UISpecialFrames[#UISpecialFrames+1]="CraftPilotDiagnosticWindow";self.diagnosticWindow=frame
+    UISpecialFrames[#UISpecialFrames+1]="CraftPilotProDiagnosticWindow";self.diagnosticWindow=frame
   end
   self.diagnosticWindow.report:SetText(self:BuildDiagnosticReport());self.diagnosticWindow.link:SetText("");self.diagnosticWindow:Show()
 end

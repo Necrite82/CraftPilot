@@ -15,7 +15,7 @@ by your own auction house prices, with shopping, trainers, alts and crafting in 
 
 ---
 
-**Status:** 0.2.3-beta · WoW Forever 1.60.x (Interface 16001) · English and German
+**Status:** 0.2.4-beta · WoW Forever 1.60.x (Interface 16001) · English and German
 
 > **Beta:** CraftPilot is new. Please report bugs in-game via "Report bug" or as a [GitHub issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -66,8 +66,8 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **CurseForge app (recommended):** search for CraftPilot and install it. **QuestieDB** is installed automatically.
 
 **Manually:**
-1. Download [CraftPilot-0.2.3-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.3-beta.zip) (not the GitHub source archive).
-2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilot\CraftPilot.toc` must sit directly in the `CraftPilot` folder.
+1. Download [CraftPilot-0.2.4-beta.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-0.2.4-beta.zip) (not the GitHub source archive).
+2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilotPro\CraftPilotPro.toc` must sit directly in the `CraftPilotPro` folder.
 3. Also install **QuestieDB** (Forever version).
 
 | Addon | |
@@ -79,25 +79,25 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 
 ## First steps
 
-1. `/cp` opens CraftPilot. On first start, the help explains the basics.
+1. `/cpp` opens CraftPilot. On first start, the help explains the basics.
 2. **Open the profession window once** so CraftPilot reads your recipes and skill colors.
 3. Scan once at the auction house with Auctionator.
 4. Follow the recommendation at the top of "Now".
 
-Open the in-game help any time with "Help" at the bottom of the sidebar or `/cp help`.
+Open the in-game help any time with "Help" at the bottom of the sidebar or `/cpp help`.
 
 ## Commands
 
 | Command | |
 | --- | --- |
-| `/cp` | open or close the window |
-| `/cp help` | help |
-| `/cp <profession>` | choose a profession, e.g. `/cp blacksmithing`, `/cp engineering` |
-| `/cp plan` · `/cp lehrer` | Plan & shopping · Trainers & vendors |
-| `/cp trainer` · `/cp naechster` | waypoint to the recommended or nearest trainer |
-| `/cp refresh` | read the profession window again |
-| `/cp resetpos` | reset the window position |
-| `/cp skin auto\|dark\|classic` | look |
+| `/cpp` | open or close the window |
+| `/cpp help` | help |
+| `/cpp <profession>` | choose a profession, e.g. `/cpp blacksmithing`, `/cpp engineering` |
+| `/cpp plan` · `/cpp lehrer` | Plan & shopping · Trainers & vendors |
+| `/cpp trainer` · `/cpp naechster` | waypoint to the recommended or nearest trainer |
+| `/cpp refresh` | read the profession window again |
+| `/cpp resetpos` | reset the window position |
+| `/cpp skin auto\|dark\|classic` | look |
 
 ## Good to know
 

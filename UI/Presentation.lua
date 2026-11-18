@@ -5,7 +5,7 @@ local bg={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WH
 -- 0.2.3: rounded corners. Media/Round.tga is a backdrop edge whose corner pieces are filled quarter circles;
 -- fill and edge share one color, so a surface gets round corners without a visible outline. The square
 -- highlight texture of a button would poke out at the corners, so hovering brightens the color instead.
-local ROUND={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\AddOns\\CraftPilot\\Media\\Round",edgeSize=6,
+local ROUND={bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\AddOns\\CraftPilotPro\\Media\\Round",edgeSize=6,
   insets={left=6,right=6,top=6,bottom=6}}
 CP.ROUND_BACKDROP=ROUND
 function CP:Round(f,hover)
@@ -37,7 +37,7 @@ function CP:StylePrimaryButton(b)
   b:SetBackdropColor(.88,.69,.31,1);b:SetBackdropBorderColor(.88,.69,.31,1)
   -- A dedicated font object keeps the dark label when the button is enabled again.
   if not primaryFont and type(CreateFont)=="function" then
-    primaryFont=CreateFont("CraftPilotPrimaryButtonFont")
+    primaryFont=CreateFont("CraftPilotProPrimaryButtonFont")
     if primaryFont and GameFontHighlightSmall then primaryFont:CopyFontObject(GameFontHighlightSmall) end
     if primaryFont then primaryFont:SetTextColor(.11,.08,.02) end
   end
@@ -389,7 +389,7 @@ function CP:RenderCostDashboard(result,context)
   list:SetHeight(y+height(f.warnings,48)+18)
 end
 function CP:CreateCostDashboard()
-  local f=CreateFrame("Frame","CraftPilotCostWindow",UIParent,"BackdropTemplate")
+  local f=CreateFrame("Frame","CraftPilotProCostWindow",UIParent,"BackdropTemplate")
   f:SetSize(800,690);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true);f:SetMovable(true);f:RegisterForDrag("LeftButton")
   f:SetScript("OnDragStart",f.StartMoving);f:SetScript("OnDragStop",f.StopMovingOrSizing)
   f:SetBackdrop(bg);f:SetBackdropColor(.035,.055,.075,.99);f:SetBackdropBorderColor(.4,.5,.57,1)
@@ -404,5 +404,5 @@ function CP:CreateCostDashboard()
   local add=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(add);add:SetSize(230,25);add:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",214,14);add:SetText(L("+ Fehlmengen zur Einkaufsliste"));add:SetScript("OnClick",function() CP:AddCostDeficits(CP.costContext) end)
   local shopping=CreateFrame("Button",nil,f,"BackdropTemplate");CP:StyleActionButton(shopping);shopping:SetSize(220,25);shopping:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",456,14);shopping:SetText(L("Manuelle Einkaufsliste"));shopping:SetScript("OnClick",function() CP:OpenPersonalShopping() end)
   local close=CreateFrame("Button",nil,f,"UIPanelCloseButton");close:SetPoint("TOPRIGHT",-5,-5);close:SetScript("OnClick",function() f:Hide() end)
-  UISpecialFrames[#UISpecialFrames+1]="CraftPilotCostWindow";return f
+  UISpecialFrames[#UISpecialFrames+1]="CraftPilotProCostWindow";return f
 end
