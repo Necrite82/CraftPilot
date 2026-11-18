@@ -15,9 +15,13 @@ import gzip
 import hashlib
 import io
 import json
+import os
 import sys
+import tarfile
 import time
+import urllib.parse
 import urllib.request
+import zipfile
 from pathlib import Path
 
 UA = 'CraftPilot-catalog/1.0 (+https://github.com/Necrite82/CraftPilot)'
@@ -92,6 +96,68 @@ def fetch(table, build, out, prefix=''):
     return name, {'sha256': hashlib.sha256(data).hexdigest(), 'rows': rows, 'bytes': len(data), 'columns': header}
 
 
+QUESTIE_REPO = 'Questie/QuestieDB'
+# The baked Forever database (every correction folded in, as players have it installed) and the zone table.
+QUESTIE_FILES = {'QuestieDB_Forever.toc': 'questiedb-Forever.toc.gz',
+                 'support/Forever/Zones/areaIdToUiMapId.lua': 'questiedb-areaIdToUiMapId.lua.gz'}
+
+
+def github(url):
+    headers = {'User-Agent': UA, 'Accept': 'application/vnd.github+json'}
+    token = os.environ.get('GITHUB_TOKEN')
+    if token:
+        headers['Authorization'] = 'Bearer ' + token
+    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=300) as r:
+        return r.read()
+
+
+def fetch_questiedb(out):
+    """The newest QuestieDB release package: its baked QuestieDB_Forever.toc and the Forever zone table."""
+    release = json.loads(github(f'https://api.github.com/repos/{QUESTIE_REPO}/releases/latest'))
+    assets = [a for a in release.get('assets', []) if a['name'].lower().endswith('.zip')]
+    print(f"QuestieDB {release['tag_name']}: assets {[a['name'] for a in release.get('assets', [])]}")
+    if not assets:
+        raise SystemExit('QuestieDB release has no zip package')
+    data = get(assets[0]['browser_download_url'])
+    info = {'tag': release['tag_name'], 'asset': assets[0]['name'], 'sha256': hashlib.sha256(data).hexdigest(),
+            'files': {}}
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        names = z.namelist()
+        for wanted, target in QUESTIE_FILES.items():
+            match = [n for n in names if n.endswith('/' + wanted) or n == wanted]
+            if not match:
+                raise SystemExit(f'QuestieDB package lacks {wanted}; has e.g. {names[:15]}')
+            raw = z.read(sorted(match, key=len)[0])
+            (out / target).write_bytes(gz(raw))
+            info['files'][target] = {'from': match[0], 'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw)}
+            print(f'  {target}: {len(raw)} bytes from {match[0]}')
+    return info
+
+
+ATT_REPO = 'ATTWoWAddon/AllTheThings'
+ATT_DB = '.contrib/.db/forever/'
+
+
+def fetch_att(out):
+    """AllTheThings' Forever source database (MIT) at the newest commit, as one deterministic tar.gz."""
+    head = json.loads(github(f'https://api.github.com/repos/{ATT_REPO}/commits/HEAD'))['sha']
+    tree = json.loads(github(f'https://api.github.com/repos/{ATT_REPO}/git/trees/{head}?recursive=1'))
+    paths = sorted(t['path'] for t in tree['tree'] if t['type'] == 'blob' and t['path'].startswith(ATT_DB)
+                   and t['path'].endswith('.lua'))
+    print(f'AllTheThings {head[:7]}: {len(paths)} Forever source files (tree truncated: {tree.get("truncated")})')
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode='w', format=tarfile.USTAR_FORMAT) as tar:
+        for path in paths:
+            raw = get('https://raw.githubusercontent.com/%s/%s/%s' % (
+                ATT_REPO, head, urllib.parse.quote(path)))
+            entry = tarfile.TarInfo(path[len(ATT_DB):])
+            entry.size, entry.mtime, entry.mode = len(raw), 0, 0o644
+            tar.addfile(entry, io.BytesIO(raw))
+    data = buf.getvalue()
+    (out / 'att-forever.tar.gz').write_bytes(gz(data))
+    return {'commit': head, 'files': len(paths), 'sha256': hashlib.sha256(data).hexdigest()}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--out', required=True)
@@ -116,6 +182,8 @@ def main():
     for table in ERA_TABLES:
         name, info = fetch(table, era, out, prefix='era-')
         manifest['tables'][name] = info
+    manifest['questiedb'] = fetch_questiedb(out)
+    manifest['allthethings'] = fetch_att(out)
     (out / 'manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n')
     # The fingerprint without the fetch time: the workflow republishes only when this changes.
     stable = {k: v for k, v in manifest.items() if k != 'fetched'}

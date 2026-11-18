@@ -38,6 +38,7 @@ jobs:
       - name: Download client tables
         env:
           BUILD: ${{ inputs.build }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 tools/catalog/fetch_inputs.py --out "$RUNNER_TEMP/inputs" ${BUILD:+--build "$BUILD"}
 
       - name: Publish to the catalog-inputs branch
