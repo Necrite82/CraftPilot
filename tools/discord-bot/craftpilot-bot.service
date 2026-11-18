@@ -1,0 +1,21 @@
+[Unit]
+Description=CraftPilot Discord bug bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=craftpilot-bot
+EnvironmentFile=/etc/craftpilot-bot.env
+WorkingDirectory=/opt/craftpilot-bot
+ExecStart=/opt/craftpilot-bot/venv/bin/python /opt/craftpilot-bot/bot.py
+Restart=on-failure
+RestartSec=30
+StateDirectory=craftpilot-bot
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
