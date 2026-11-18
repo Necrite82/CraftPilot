@@ -77,3 +77,23 @@ local text2,state2=CP:ProfessionPriceStatus("engineering")
 assert(state2=="fresh" and text2:find("nicht im AH",1,true),"After a fresh scan: not listed at the AH, status current")
 CP.db.ahUpdated=nil;Auctionator.API.v1=savedApi2;CP.db.recipes.engineering=savedRecipes
 print("PASS: 0.2.3 clickable header buttons, prices after a fresh scan")
+
+-- 0.2.3: the reservation page lists the reserved items per plan; its cards open the plan.
+local savedLedger,savedOrder=CP.ReservationLedger,CP.ReservationOrder
+CP.ReservationOrder=function() return {"raid","engineering"} end
+CP.ReservationLedger=function() return {owners={raid={[990801]=4,[990802]=2},engineering={[990801]=1}},
+  allocated={raid={[990801]=3,[990802]=0},engineering={[990801]=0}},stock={},total={},unknown=0} end
+local res=CP:ReservationCards()
+local items,headers,raidCard=0,0,nil
+for _,c in ipairs(res) do
+  if c.sectionHeader then headers=headers+1 end
+  if c.tooltipItem then items=items+1 end
+  if c.title=="Raid-Vorrat" and c.buttons then raidCard=c end
+end
+assert(headers==2 and items==3,"One section per plan and a card per item")
+assert(raidCard and #raidCard.buttons==1,"First plan: open only, no move up")
+raidCard.action()
+assert(CP.db.ui.tab=="endgame" and CP.db.ui.endgamePage=="stock","Raid stock opens from the reservation page")
+CP.ReservationLedger,CP.ReservationOrder=savedLedger,savedOrder
+CP.db.ui.endgamePage=nil;CP:OpenTab("now")
+print("PASS: 0.2.3 reservation page lists reserved items and opens their plans")

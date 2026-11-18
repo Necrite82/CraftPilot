@@ -159,16 +159,57 @@ function CP:PlanReviewCard(owner)
     footer=L("Anklicken: neu bewerten; manuelle Rezeptwahl bleibt erhalten."),color=changed and "gold" or "blue",
     action=function() CP:ReevaluatePlan(owner,true);CP:Render() end}
 end
+-- Opens the plan a reservation belongs to: raid stock, camping shopping or a profession's plan.
+function CP:OpenReservationPlan(owner)
+  if owner=="raid" then self.db.ui.endgamePage="stock";self:OpenTab("endgame")
+  elseif owner=="camping" then self.db.ui.campingPage="shopping";self:OpenTab("camping")
+  elseif self.Data.professions[owner] then self.db.view=owner;self:OpenTab("plan") end
+end
+local function itemIcon(id)
+  if C_Item and type(C_Item.GetItemIconByID)=="function" then local ok,icon=pcall(C_Item.GetItemIconByID,id);if ok and icon then return icon end end
+  if type(GetItemIcon)=="function" then local ok,icon=pcall(GetItemIcon,id);if ok and icon then return icon end end
+  return nil
+end
 function CP:ReservationCards()
   local ledger=self:ReservationLedger()
-  local cards={{title=L("Gemeinsame Vorratsreservierung"),detail=L("Pläne erhalten Vorräte in dieser Reihenfolge. Einen Plan anklicken setzt ihn an die erste Stelle."),
-    footer=L("Nur vorhandene Bestände werden reserviert; fehlende Mengen bleiben Zukauf."),color="gold"}}
-  for _,owner in ipairs(self:ReservationOrder()) do
+  local order=self:ReservationOrder()
+  local plans={}
+  for _,owner in ipairs(order) do
+    local count=0;for _,n in pairs(ledger.owners[owner] or {}) do count=count+n end
+    if count>0 then plans[#plans+1]=owner end
+  end
+  local cards={{title=L("Gemeinsame Vorratsreservierung"),
+    detail=L("Was deine Pläne aus Taschen, Bank und Twinks für sich zurücklegen. Reservierte Gegenstände sind in den Taschen markiert und warnen beim Verkaufen, Zerstören, Entzaubern und Verschicken."),
+    footer=#plans>1 and L("Mehrere Pläne: wer weiter oben steht, bekommt Vorräte zuerst. „Nach vorn“ ändert die Reihenfolge.")
+      or L("Nur vorhandene Bestände werden reserviert; fehlende Mengen bleiben Zukauf."),color="gold"}}
+  if #plans==0 then
+    cards[#cards+1]={title=L("Nichts reserviert"),detail=L("Sobald ein Plan, der Raid-Vorrat oder ein Camping-Einkauf Materialien braucht, die du besitzt, erscheinen sie hier."),color="blue"}
+    return cards
+  end
+  for position,owner in ipairs(plans) do
     local key=owner
-    local count=0;for _,n in pairs(ledger.owners[owner]) do count=count+n end
-    if count>0 then cards[#cards+1]={title=owner=="camping" and L("Camping-Einkauf · alle Berufe") or (owner=="raid" and L("Raid-Vorrat")) or self.Data.professions[owner].name,
-      detail=L("Geplante Materialeinheiten: ")..count,footer=L("Anklicken: diesen Plan priorisieren"),color="blue",
-      action=function() CP:PrioritizePlan(key);CP:Render() end} end
+    local name=owner=="camping" and L("Camping-Einkauf · alle Berufe") or (owner=="raid" and L("Raid-Vorrat")) or self.Data.professions[owner].name
+    local needed,reserved,kinds=0,0,0
+    for id,n in pairs(ledger.owners[owner]) do
+      needed=needed+n
+      local used=(ledger.allocated[owner] or {})[id] or 0
+      reserved=reserved+used;if used>0 then kinds=kinds+1 end
+    end
+    local buttons={{label=L("Plan öffnen"),action=function() CP:OpenReservationPlan(key) end}}
+    if position>1 then buttons[#buttons+1]={label=L("Nach vorn"),action=function() CP:PrioritizePlan(key);CP:Render() end} end
+    cards[#cards+1]={sectionHeader=true,title=string.format("%d. %s",position,name)}
+    cards[#cards+1]={title=name,detail=string.format(L("%d Gegenstände reserviert · %d von %d benötigten Einheiten aus deinem Vorrat"),kinds,reserved,needed),
+      footer=L("Anklicken: Plan öffnen"),color="blue",action=function() CP:OpenReservationPlan(key) end,buttons=buttons}
+    local rows={}
+    for id,n in pairs(ledger.owners[owner]) do rows[#rows+1]={id=id,need=n,used=(ledger.allocated[owner] or {})[id] or 0} end
+    table.sort(rows,function(x,y) if (x.used>0)~=(y.used>0) then return x.used>0 end return self:ItemName(x.id)<self:ItemName(y.id) end)
+    for _,r in ipairs(rows) do
+      local missing=r.need-r.used
+      cards[#cards+1]={grid=true,showMarket=false,tooltipItem=r.id,icon=itemIcon(r.id),title=self:ItemName(r.id),
+        detail=r.used>0 and string.format(L("%d reserviert von %d"),r.used,r.need) or string.format(L("0 von %d vorrätig"),r.need),
+        footer=missing>0 and string.format(L("%d fehlen noch (Zukauf)"),missing) or L("vollständig vorrätig"),
+        color=missing>0 and (r.used>0 and "gold" or "red") or "green",action=function() CP:OpenReservationPlan(key) end}
+    end
   end
   return cards
 end
