@@ -1,4 +1,4 @@
-# Abschlussvergleich vor der Umstellung (0.2.3-beta): neu vs. Craft Ladder 1.11.0
+# Abschlussvergleich vor der Umstellung (0.2.3): neu vs. Craft Ladder 1.11.0
 
 | Kennzahl | Anzahl |
 |---|---|
