@@ -59,3 +59,21 @@ CP.db.recipes.engineering[990600]=nil;CP.db.recipes.engineering[990601]=nil
 Auctionator.API.v1=savedApi;CP.db.ui.endgamePage=nil
 CP:OpenTab("now")
 print("PASS: 0.2.3 round corners, grid cards with value bars, no stale bars under section headers")
+
+-- 0.2.3: the header doesn't swallow clicks on its chips and buttons; a fresh scan isn't reported as missing prices.
+local backs,onFrame=0,0
+for _,f in ipairs(createdFrames) do
+  if rawget(f,"displayText")=="Zurück" then backs=backs+1;if f.parent==CP.frame then onFrame=onFrame+1 end end
+end
+assert(backs>0 and onFrame==0,"No back button sits beneath the header")
+local savedApi2,savedRecipes=Auctionator.API.v1,CP.db.recipes.engineering
+CP.db.recipes.engineering={[990700]={learned=true,name="Probe",mats={{990701,1},{990702,1}}}}
+Auctionator.API.v1={GetAuctionPriceByItemID=function(_,id) return id==990701 and 100 or nil end,GetAuctionAgeByItemID=function() return 0 end}
+CP.db.ahUpdated=nil
+local _,state=CP:ProfessionPriceStatus("engineering")
+assert(state=="warning","Without a scan a missing price is a warning")
+CP.db.ahUpdated=time()
+local text2,state2=CP:ProfessionPriceStatus("engineering")
+assert(state2=="fresh" and text2:find("nicht im AH",1,true),"After a fresh scan: not listed at the AH, status current")
+CP.db.ahUpdated=nil;Auctionator.API.v1=savedApi2;CP.db.recipes.engineering=savedRecipes
+print("PASS: 0.2.3 clickable header buttons, prices after a fresh scan")

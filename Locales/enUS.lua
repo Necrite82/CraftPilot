@@ -122,6 +122,7 @@ CP.English = {
   ["AH/St.: "]="AH/unit: ",
   ["AH: "]="AH: ",
   ["AH: %d Materialien aktuell"]="AH: %d materials up to date",
+  ["AH: %d Materialien aktuell, %d derzeit nicht im AH"]="AH: %d materials up to date, %d not at the AH right now",
   ["AH: Auctionator fehlt"]="AH: Auctionator unavailable",
   ["AH: letzter Scan · Bank: letzter Stand · Stückerlöse sind kein garantierter Gewinn. Bindung, Nachfrage und Reise prüfen."]="AH: latest scan · Bank: last snapshot · Unit proceeds are not guaranteed profit. Check binding, demand and travel.",
   ["AH: noch keine Materialdaten"]="AH: no material data yet",

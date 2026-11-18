@@ -389,7 +389,7 @@ U.pageTitle=text(header,"GameFontNormalLarge",19,-60,W-200,"")
 U.pageSub=text(header,"GameFontHighlightSmall",19,-80,W-200,"")
 if type(U.pageSub.SetTextColor)=="function" then U.pageSub:SetTextColor(.72,.70,.66) end
 -- 0.2.3: how many items are reserved for plans, keep-for-later and the raid stock; a click opens the list.
-U.reservedChip=CreateFrame("Button",nil,frame,"BackdropTemplate")
+U.reservedChip=CreateFrame("Button",nil,header,"BackdropTemplate")
 CP:Round(U.reservedChip,true);U.reservedChip:SetSize(150,22)
 U.reservedText=text(U.reservedChip,"GameFontHighlightSmall",10,-5,132,"")
 U.reservedChip:SetScript("OnClick",function() CP:OpenTab("reservations") end)
@@ -402,7 +402,7 @@ for i,p in ipairs(U.endgamePages) do
   b:Hide()
   U.endgameButtons[i]=b
 end
-U.back=button(frame,110,26,0,0,L("Zurück"),function() CP:OpenTab(CP.db.ui.lastMainTab or "now") end)
+U.back=button(header,110,26,0,0,L("Zurück"),function() CP:OpenTab(CP.db.ui.lastMainTab or "now") end)
 U.section=text(frame,"GameFontNormal",18,-104,W-50,"")
 
 -- Generic scroll area, used by every view except the recipe list --------------------------------------------

@@ -283,7 +283,12 @@ frame:SetScript("OnEvent",function(_,event)
     CP:HookWishTooltips()
     local api=_G.Auctionator and Auctionator.API and Auctionator.API.v1
     if api and type(api.RegisterForDBUpdate)=="function" then
-      pcall(api.RegisterForDBUpdate,"CraftPilot",function() CP.tooltipCache=nil;CP:CheckAuctionAlarms() end)
+      pcall(api.RegisterForDBUpdate,"CraftPilot",function()
+        CP.tooltipCache=nil
+        if CP.db then CP.db.ahUpdated=type(time)=="function" and time() or nil end
+        CP:CheckAuctionAlarms()
+        if CP.frame and type(CP.frame.IsShown)=="function" and CP.frame:IsShown() and CP.Render then CP:Render() end
+      end)
     end
   elseif event=="AUCTION_HOUSE_CLOSED" and CP.db then
     CP:CheckAuctionAlarms()

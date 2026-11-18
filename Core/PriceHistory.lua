@@ -59,6 +59,16 @@ function CP:PriceSummary(items)
   return {items=n,stale=stale,unknown=unknown,missing=missing}
 end
 
+-- When Auctionator's price database last changed: our own note from its update callback, or Auctionator's
+-- record of its last full scan.
+function CP:LastAuctionScan()
+  local own=self.db and self.db.ahUpdated
+  local saved=_G.Auctionator and _G.Auctionator.SavedState and _G.Auctionator.SavedState.TimeOfLastGetAllScan
+  saved=type(saved)=="number" and saved or nil
+  if own and saved then return math.max(own,saved) end
+  return own or saved
+end
+
 function CP:ProfessionPriceStatus(key)
   local api=_G.Auctionator and _G.Auctionator.API and _G.Auctionator.API.v1
   if not api or type(api.GetAuctionPriceByItemID)~="function" then return L("AH: Auctionator fehlt"),"missing" end
@@ -79,11 +89,20 @@ function CP:ProfessionPriceStatus(key)
     else missing=missing+1 end
   end
   if n==0 then return L("AH: noch keine Materialdaten"),"unknown" end
+  -- After a scan within the last day, a material without any price simply isn't offered at the AH right now
+  -- (bound items, rare drops, vendor-only goods): that isn't something a new scan can fix.
+  local scanned=self:LastAuctionScan()
+  local recent=scanned and type(time)=="function" and time()-scanned<86400
+  local notListed=0
+  if recent then notListed,missing=missing,0 end
   local issues={}
   if missing>0 then issues[#issues+1]=missing..L(" fehlen") end
   if old>0 then issues[#issues+1]=old..L(" älter als 3 T.") end
   if unknown>0 then issues[#issues+1]=unknown..L(" ohne Datum") end
   if #issues>0 then return L("AH: ")..table.concat(issues," · "),"warning" end
   if vendors==n then return L("AH: nur Händlerpreise benötigt"),"vendor" end
+  if notListed>0 then
+    return string.format(L("AH: %d Materialien aktuell, %d derzeit nicht im AH"),n-vendors-notListed,notListed),"fresh"
+  end
   return string.format(L("AH: %d Materialien aktuell"),n-vendors),"fresh"
 end
