@@ -63,7 +63,11 @@ function CP:Recommendation(key)
   end
   local extras={}
   local raw=self.RawMaterialHints and self:RawMaterialHints(cost.materials,1) or {}
-  if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1] end
+  if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1]
+  else
+    local second=self.SecondProfessionOptions and self:SecondProfessionOptions(key)[1]
+    if second then extras[#extras+1]=L("Zweiter Beruf: ")..self:SecondProfessionText(second) end
+  end
   local deal=self.BuyTimingDeals and self:BuyTimingDeals(key,1)[1]
   if deal then extras[#extras+1]="|cff8fd6a6"..L("Jetzt günstig: ")..self:BuyTimingText(deal).."|r" end
   if #pickups>0 then extras[#extras+1]=L("Von Twinks: ")..table.concat(pickups,", ") end

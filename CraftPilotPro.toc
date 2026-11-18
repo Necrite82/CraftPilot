@@ -46,6 +46,7 @@ Core\QuestieBridge.lua
 Planning\Costing.lua
 Planning\RawMaterials.lua
 Planning\BuyTiming.lua
+Planning\SecondProfession.lua
 Planning\Planning.lua
 Features\Market.lua
 Features\Shopping.lua

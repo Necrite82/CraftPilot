@@ -24,6 +24,7 @@ local function producerIndex()
   return producers
 end
 function CP:ResetRawMaterialIndex() producers=nil end
+function CP:ItemProducers(item) return producerIndex()[item] or {} end
 
 -- What this character can use: bags, bank (if counted), own mailbox and twinks that can mail it.
 function CP:RawStock(itemID)
