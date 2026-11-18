@@ -93,7 +93,7 @@ function CP:Recommendation(key)
   local gate=self.RankGate and self:RankGate(key)
   if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
   local extra=#extras>0 and table.concat(extras,"  ·  ") or nil
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

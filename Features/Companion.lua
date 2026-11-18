@@ -202,6 +202,8 @@ function CP:UpdateCompanion()
   if cd then extra[#extra+1]=cd end
   local session=self.SessionText and self:SessionText(key)
   if session then extra[#extra+1]=session end
+  local budget=self.BudgetLine and self:BudgetLine(key,rec)
+  if budget and not budget.off and budget.short then extra[#extra+1]="|cffffd878"..budget.short.."|r" end
   if #extra>0 then f.extra:SetText(table.concat(extra,"\n"));put(f.extra,8) end
   local atCap=record.cap and record.cap<300 and (record.skill or 0)>=record.cap
   -- Craft row: the recommended amount, limited by what the bags allow right now.
