@@ -17,6 +17,10 @@ Craft Ladder führt insbesondere die **Blizzard-Clienttabellen über wago.tools,
 
 **Zeitliche Grenze:** Die eingebundenen Herstellungsdaten stammen aus dem **Live-Client-Build 1.60.1.70938** (erzeugt 13.–15. November 2026). Bezugsquellen von Rezepten wurden upstream aus AllTheThings und QuestieDB 1.1.1 neu aufgebaut. Serverseitige Hotfixes nach diesem Build können fehlen; bis CraftPilot 0.20.1 stammten die Daten aus den Beta-Builds 1.60.1.70425/70450 vom Oktober. Der Datenkatalog enthält Einträge, deren Trainerangebot, Beuterezept, Lernstufe oder tatsächliche Serverfreigabe noch nicht bestätigt ist. Er ist für die Planung ein Referenzdatensatz, **kein garantierter, aktueller Live-Rezeptbestand**.
 
+## Eigener Katalog (in Arbeit)
+
+Ab der nächsten Version soll CraftPilot seinen Rezeptkatalog selbst aus öffentlichen Quellen bauen statt den Craft-Ladder-Schnappschuss zu übernehmen: aus den Tabellen des Forever-Clients (über wago.tools), CMaNGOS classic-db, QuestieDB und AllTheThings. Werkzeuge und Ablauf: [tools/catalog](tools/catalog/README.md). Ergebnis: `Data/Catalog`. Der laufende Vergleich mit Craft Ladder steht in [docs/CATALOG_COMPARE.md](docs/CATALOG_COMPARE.md). Bis zur Umstellung lädt das Addon weiterhin den Craft-Ladder-Schnappschuss; `Data/Catalog` ist noch nicht im Addon-Paket.
+
 ## Automatischer Abgleich
 
 `tools/sync_craft_ladder.py` übernimmt einen Craft-Ladder-Release vollständig und reproduzierbar: die sechs Herstellungskataloge, `Camp.lua` und `CREDITS.txt` unverändert, den Schmelz-Auszug aus `Mining.lua` sowie die Teilmengen für Camping, Kochen und Erste Hilfe über die bestehenden Importer. Jede Eingabe wird mit Commit und SHA-256 in `UPSTREAM.json` festgehalten; `--check` prüft in der CI, dass die gebündelten Dateien exakt daraus entstehen.

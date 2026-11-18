@@ -114,7 +114,8 @@ def github(url):
 def fetch_questiedb(out):
     """The newest QuestieDB release package: its baked QuestieDB_Forever.toc and the Forever zone table."""
     release = json.loads(github(f'https://api.github.com/repos/{QUESTIE_REPO}/releases/latest'))
-    assets = [a for a in release.get('assets', []) if a['name'].lower().endswith('.zip')]
+    assets = sorted((a for a in release.get('assets', []) if a['name'].lower().endswith('.zip')),
+                    key=lambda a: 'forever' not in a['name'].lower())
     print(f"QuestieDB {release['tag_name']}: assets {[a['name'] for a in release.get('assets', [])]}")
     if not assets:
         raise SystemExit('QuestieDB release has no zip package')
