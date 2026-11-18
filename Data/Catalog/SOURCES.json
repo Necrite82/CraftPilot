@@ -35,7 +35,7 @@
     }
   },
   "questiedb": {
-    "asset": "QuestieDB-1.1.2-all.zip",
+    "asset": "QuestieDB-1.1.2-Forever.zip",
     "files": {
       "questiedb-Forever.toc.gz": {
         "bytes": 17969328,
@@ -48,7 +48,7 @@
         "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
       }
     },
-    "sha256": "e5e32860c70193dd5af24c853ecb20c1f0d4832e7045a9fce83cea06f503dcab",
+    "sha256": "157eb57e624b92f0340c04bfdf2263c6d803335883fad930f1bb8179f0343786",
     "tag": "v1.1.2"
   },
   "summary": {
