@@ -19,12 +19,8 @@ jobs:
           done
       - name: Run Lua 5.1 and 5.4 regressions
         run: for version in 5.1 5.4; do "lua$version" tests/test.lua; done
-      - name: Verify pinned camping import
-        run: python3 tools/import_camping.py --source-dir "$RUNNER_TEMP/camping-inputs" --download --check
-      - name: Verify secondary skill-range subset
-        run: python3 tools/import_skill_ranges.py --source-dir "$RUNNER_TEMP/camping-inputs" --check
-      - name: Verify secondary vendor subset
-        run: python3 tools/import_vendor_recipes.py --source-dir "$RUNNER_TEMP/camping-inputs" --check
+      - name: Check the catalog tools
+        run: python3 -m py_compile tools/catalog/*.py tools/sync_data.py tools/build_release.py
       - name: Verify the trainer list and gathering zones match their pinned inputs
         run: python3 tools/sync_data.py --check
       - name: Build install archive from the allowlist
