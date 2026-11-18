@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+- **Budget sichtbar**: Auf „Jetzt“ steht direkt unter der Empfehlung, wie weit dein Budget reicht (oder was der ganze Weg kostet); Klick öffnet eine Eingabe mit Plus/Minus. Kostet der nächste Schritt mehr als dein Budget, steht es dabei. Auch im Begleitfenster
+- **Post-Packer**: Am Briefkasten packt „Brief an … packen“ den Brief an deinen Twink mit genau den fehlenden Mengen (ganze Stapel, der letzte geteilt) – du prüfst und klickst „Senden“. Was die Empfehlung von Twinks braucht, zählt jetzt mit
+- **Jetzt günstig**: CraftPilot merkt sich die AH-Preise der Materialien deines Weges einmal am Tag. Liegt eines heute mindestens 20 % unter seinem üblichen Preis, nennen Empfehlung und „Plan & Einkauf“ es mit der Ersparnis
+- **Weitere Preisquellen**: TradeSkillMaster und Auctioneer neben Auctionator; Einstellungen › Preisquelle (Automatisch nimmt die erste mit Preis)
+- **Skilldaten**: Bei jedem Herstellen notiert CraftPilot Skill und ob ein Punkt kam (abschaltbar). In den Rezeptdetails stehen deine eigenen Werte; unter Hilfe › Skilldaten teilen gibt es einen Code für den Discord. Geteilte Daten fließen als „Grenzen bestätigt“ in den Katalog zurück
+- **Farmen oder kaufen**: CraftPilot misst beim Sammeln dein eigenes Tempo je Gebiet und nennt bei „Selbst farmen statt kaufen“, wie lange es dauert und was Farmen pro Stunde spart
+- **Zwei Berufe zusammen**: Zwischenprodukte, die du mit einem zweiten Beruf selbst herstellen kannst (z. B. Barren mit Bergbau), mit Ersparnis und den Skillpunkten, die es dort bringt
+
 ## 1.0.0
 
 CraftPilot ist fertig für alle: kein Beta-Status mehr. Ab jetzt heißen Fehlerbehebungen und kleine Änderungen 1.0.1, 1.0.2 …, neue Funktionen 1.1.0, 1.2.0 ….
