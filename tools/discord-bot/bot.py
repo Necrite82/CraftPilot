@@ -212,6 +212,12 @@ class BugBridge(discord.Client):
             if self.cfg.confirmed_tag in tag_names(thread.applied_tags):
                 await self._export(thread)
 
+    async def on_thread_create(self, thread: discord.Thread) -> None:
+        # A moderator may pick the confirmed tag right when creating the post.
+        if thread.parent_id == self.cfg.forum_id and self.cfg.confirmed_tag in tag_names(thread.applied_tags):
+            await asyncio.sleep(2)  # give Discord a moment to store the starter message
+            await self._export(thread)
+
     async def on_thread_update(self, before: discord.Thread, after: discord.Thread) -> None:
         if after.parent_id != self.cfg.forum_id:
             return
