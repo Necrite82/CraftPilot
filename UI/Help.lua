@@ -23,6 +23,7 @@ function CP:HelpCards()
   end
   cards[#cards+1]=card(L("Community auf Discord"),L("Fragen, Ideen und Fehlermeldungen – auch ohne GitHub-Konto. Deutsch und Englisch."),
     function() CP:OpenDiscordLink() end,L("Klick: Link zum Kopieren"),"green")
+  if self.SkillLogCard and self.db.ui.skillLog~=false then cards[#cards+1]=self:SkillLogCard() end
   cards[#cards+1]=header(L("ERSTE SCHRITTE"))
   cards[#cards+1]=card(L("1. Beruf wählen"),L("Oben links im Berufsmenü. Erlernte Berufe stehen zuerst; ein Klick auf einen erlernten Beruf öffnet auch sein Berufsfenster (abschaltbar)."))
   cards[#cards+1]=card(L("2. Berufsfenster einmal öffnen"),L("Dabei liest CraftPilot deine Rezepte, Skillfarben und Materialien ein. Danach stimmt die Empfehlung."))

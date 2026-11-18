@@ -28,6 +28,7 @@ Data\Catalog\FirstAid.lua
 Data\Catalog\Herbalism.lua
 Data\Catalog\Skinning.lua
 Data\Catalog\Fishing.lua
+Data\Catalog\Observed.lua
 Core\SkillInfo.lua
 Core\SkillPolicy.lua
 Core\Core.lua
@@ -69,4 +70,5 @@ Features\Endgame.lua
 Features\Wishlist.lua
 Features\RaidStock.lua
 Features\Protection.lua
+Features\SkillLog.lua
 UI\Help.lua

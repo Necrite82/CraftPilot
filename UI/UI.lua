@@ -1270,7 +1270,8 @@ local function renderDetail(key,entry)
   colorLine:SetText((entry.referenceOnly and (entry.referenceStatus or "") or CP:RecipeColorLabel(key,entry.id))..chance)
   put(colorLine,12);y=y+4
   local rangeLabel=detailLabel("rangeLabel","GameFontDisableSmall");rangeLabel:SetWidth(inner)
-  rangeLabel:SetText(CP:RecipeRangeText(key,entry.id))
+  local observed=CP.SkillObservationText and CP:SkillObservationText(key,entry.id)
+  rangeLabel:SetText(CP:RecipeRangeText(key,entry.id)..(observed and ("\n|cff8fd6a6"..observed.."|r") or ""))
   put(rangeLabel,12);y=y+12
 
   if entry.vendorRecipe or entry.referenceOnly then

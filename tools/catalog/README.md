@@ -25,3 +25,17 @@ Woher was stammt:
 - **AllTheThings (MIT):** welche Rezepte Forevers Lehrer lehren, was (noch) nicht veröffentlicht ist, Merchant's-Favor-Preise und Rufstufen, Lernstufen neuer Forever-Rezepte.
 
 Lehrerkosten neuer Forever-Rezepte kennt keine dieser Quellen. Sie werden aus Rezepten ähnlicher Stufe geschätzt (`costGuess`), bis CraftPilot sie im Spiel selbst erfasst.
+
+## Skilldaten aus der Community (seit 1.1.0)
+
+CraftPilot schreibt bei jedem Herstellen mit, bei welchem Skill ein Punkt kam (abschaltbar). Unter **Hilfe › Skilldaten teilen** kopieren Spieler einen Code der Form
+
+```
+CPSKILL1;<Client-Build>;<beruf>:<zauber-ID>:<skill>:<herstellungen>:<punkte>,...
+```
+
+und posten ihn im Discord-Kanal für Skilldaten. **Der CraftPilot-Bot legt für jeden solchen Post ein GitHub-Issue mit dem Label `skilldaten` an** (Text des Posts als Issue-Text genügt; der Code wird darin gesucht, gleiche Codes zählen einmal). Enthalten sind nur Beruf, Rezept, Skill und Anzahl.
+
+`.github/workflows/skill-data.yml` sammelt montags alle Issues mit diesem Label, rechnet sie mit `skill_data.py` zusammen und schlägt `Data/Catalog/Observed.lua` und `docs/SKILL_DATA.md` als Pull Request nach `dev` vor. Im Addon steht dann bei den Farbgrenzen „Grenzen bestätigt“ oder „Spieler bekamen noch bei N einen Punkt“.
+
+Lokal: `gh issue list --label skilldaten --state all --json number,body > issues.json && python3 tools/catalog/skill_data.py --issues issues.json`
