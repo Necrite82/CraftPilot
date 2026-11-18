@@ -384,8 +384,10 @@ U.sideFoot:ClearAllPoints();U.sideFoot:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",1
 U.tabLine=frame:CreateTexture(nil,"ARTWORK")
 U.tabLine:SetHeight(1)
 U.tabLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
-U.pageTitle=text(frame,"GameFontNormalLarge",19,-60,W-200,"")
-U.pageSub=text(frame,"GameFontDisableSmall",19,-80,W-200,"")
+-- On the header itself: text on the main frame would sit beneath the header's own background.
+U.pageTitle=text(header,"GameFontNormalLarge",19,-60,W-200,"")
+U.pageSub=text(header,"GameFontHighlightSmall",19,-80,W-200,"")
+if type(U.pageSub.SetTextColor)=="function" then U.pageSub:SetTextColor(.72,.70,.66) end
 -- 0.2.3: how many items are reserved for plans, keep-for-later and the raid stock; a click opens the list.
 U.reservedChip=CreateFrame("Button",nil,frame,"BackdropTemplate")
 CP:Round(U.reservedChip,true);U.reservedChip:SetSize(150,22)
@@ -657,6 +659,7 @@ local function clearRows()
   for _,b in ipairs(U.vendorRows) do b:Hide() end
   for _,b in ipairs(U.cards) do b:Hide() end
   for _,b in ipairs(U.learnRows) do b:Hide() end
+  if U.rows.learnTitle then U.rows.learnTitle:Hide() end
 end
 
 local function finishContent(height)
@@ -947,6 +950,11 @@ local function setVisualCards(entries)
         pcall(CP.ellesmereSkin.Panel,b)
       end
     end
+    -- Parts a card drew for an earlier page (value bars, metric panels, tables) go before it is reused.
+    for _,row in ipairs(rawget(b,"barRows") or {}) do for _,part in pairs(row) do part:Hide() end end
+    for _,p in ipairs(rawget(b,"metricPanels") or {}) do p:Hide() end
+    if rawget(b,"dataTable") then b.dataTable:Hide() end
+    CP:CardControls(b,{},0,0)
     if rawget(b,"settingCheck") then b.settingCheck:Hide() end
     b.craftAction=entry.action
     b.craftRightAction=entry.rightAction
@@ -1798,7 +1806,7 @@ local function renderTabs(self,tab)
   U.pageTitle:SetText(titles[tab] or "");U.pageSub:SetText(sub or "")
   U.pageTitle:SetShown(tab~="settings");U.pageSub:SetShown(tab~="settings")
   local status=self.ProfessionPriceStatus and select(2,self:ProfessionPriceStatus(self.db.view))
-  U.sideFoot:SetText((status=="fresh" and L("AH aktuell") or L("AH prüfen")).."\nCraftPilot "..tostring(self.version or ""))
+  U.sideFoot:SetText("CraftPilot "..tostring(self.version or ""))
 end
 
 local function recipeEntries(self,key,chosen,options,current)

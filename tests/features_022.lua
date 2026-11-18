@@ -45,7 +45,17 @@ for i=1,#placed do for j=i+1,#placed do
   if placed[i][5]==placed[j][5] and placed[i][4]~=placed[j][4] then sameRow=true end
 end end
 assert(sameRow,"Two profit cards side by side")
+-- Bars drawn for Endgame don't stay on cards reused as section headers by another page.
+local savedHelp=CP.HelpCards
+CP.HelpCards=function() local out={} for i=1,12 do out[i]={sectionHeader=true,title="H"..i} end return out end
+CP:OpenTab("help")
+for _,b in ipairs(createdFrames) do
+  for _,row in ipairs(rawget(b,"barRows") or {}) do
+    assert(not (b:IsShown() and row.track.visible),"No profit bars left under a section header")
+  end
+end
+CP.HelpCards=savedHelp
 CP.db.recipes.engineering[990600]=nil;CP.db.recipes.engineering[990601]=nil
 Auctionator.API.v1=savedApi;CP.db.ui.endgamePage=nil
 CP:OpenTab("now")
-print("PASS: 0.2.3 round corners, grid cards with value bars")
+print("PASS: 0.2.3 round corners, grid cards with value bars, no stale bars under section headers")
