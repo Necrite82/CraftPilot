@@ -231,7 +231,8 @@ local function inCombat() return type(InCombatLockdown)=="function" and InCombat
 U.secure={}
 local function hideSecure()
   if inCombat() then return end
-  for _,s in ipairs(U.secure) do s:Hide() end
+  -- Hide and unanchor: a secure button still anchored to the window makes the window itself protected in combat.
+  for _,s in ipairs(U.secure) do s:Hide();if type(s.ClearAllPoints)=="function" then s:ClearAllPoints() end end
 end
 U.hideSecure=hideSecure
 local function secureButton(i)
@@ -258,7 +259,7 @@ local combatWatcher=CreateFrame("Frame")
 pcall(combatWatcher.RegisterEvent,combatWatcher,"PLAYER_REGEN_DISABLED")
 combatWatcher:SetScript("OnEvent",function()
   -- Still allowed while this event runs; afterwards secure frames are locked.
-  for _,s in ipairs(U.secure) do s:Hide() end
+  for _,s in ipairs(U.secure) do s:Hide();if type(s.ClearAllPoints)=="function" then s:ClearAllPoints() end end
   if U.profMenu then U.profMenu:Hide() end
 end)
 
@@ -1554,7 +1555,9 @@ end
 function CP:ApplyTheme()
   if not self.db then return end
   -- A skin may reset the strata; keep the window above unit frames and action bars.
-  if type(frame.SetFrameStrata)=="function" then frame:SetFrameStrata("HIGH") end
+  -- Only when needed and never in combat (ADDON_ACTION_BLOCKED if the window counts as protected).
+  if type(frame.SetFrameStrata)=="function" and not inCombat()
+    and not (type(frame.GetFrameStrata)=="function" and frame:GetFrameStrata()=="HIGH") then frame:SetFrameStrata("HIGH") end
   local pref=self.db.ui.skin or "auto"
   local hasEUI=pref=="auto" and type(self.ellesmereSkin)=="table"
   if pref=="classic" then

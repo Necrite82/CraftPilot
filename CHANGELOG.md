@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- **Fehler im Kampf behoben**: „CraftPilotPro hat versucht die geschützte Funktion SetFrameStrata aufzurufen“ (ADDON_ACTION_BLOCKED). Die Knöpfe des Berufswechslers hingen nach dem Schließen noch am Fenster und machten es im Kampf zu einem geschützten Fenster; sie werden jetzt gelöst, und die Ebene des Fensters wird im Kampf nicht mehr gesetzt
+
 ## 1.1.0
 
 - **Budget sichtbar**: Auf „Jetzt“ steht direkt unter der Empfehlung, wie weit dein Budget reicht (oder was der ganze Weg kostet); Klick öffnet eine Eingabe mit Plus/Minus. Kostet der nächste Schritt mehr als dein Budget, steht es dabei. Auch im Begleitfenster
