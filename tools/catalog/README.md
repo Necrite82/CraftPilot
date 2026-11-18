@@ -4,7 +4,7 @@ CraftPilot baut seinen Rezeptkatalog (`Data/Catalog/*.lua`) selbst aus öffentli
 
 | Schritt | Werkzeug | Ergebnis |
 |---|---|---|
-| 1. Eingaben holen | `fetch_inputs.py` (Workflow `catalog-inputs.yml`, montags und donnerstags) | Zweig `catalog-inputs`: Client-Tabellen (DB2 von wago.tools), QuestieDB-Releasepaket, AllTheThings-Quellen, `manifest.json` mit SHA-256 |
+| 1. Eingaben holen | `fetch_inputs.py` (Workflow `catalog-inputs.yml`, täglich) | Zweig `catalog-inputs`: Client-Tabellen (DB2 von wago.tools), QuestieDB-Releasepaket, AllTheThings-Quellen, `manifest.json` mit SHA-256 |
 | 2. Katalog bauen | `build_catalog.py` (Workflow `catalog-build.yml`) | `Data/Catalog/<Beruf>.lua` und `SOURCES.json` |
 | 3. Vergleichen | `compare_catalog.py` | `docs/CATALOG_COMPARE.md` (Unterschiede zum Craft-Ladder-Schnappschuss) |
 

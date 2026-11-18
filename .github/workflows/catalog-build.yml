@@ -63,7 +63,7 @@ jobs:
             echo "Catalog unchanged"; exit 0
           fi
           build=$(python3 -c "import json;print(json.load(open('Data/Catalog/SOURCES.json'))['client']['build'])")
-          branch="data/catalog-$build"
+          branch="data/catalog"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"

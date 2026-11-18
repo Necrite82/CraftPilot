@@ -2,7 +2,7 @@ name: Catalog inputs (client tables)
 
 # Downloads the WoW Forever client tables (DB2 as CSV from wago.tools) that CraftPilot's own recipe catalog is
 # built from and publishes them, gzipped with a manifest, as the orphan branch `catalog-inputs`.
-# Republished only when a table changed. Nothing here is shipped with the addon.
+# Republished only when an input changed, so a daily run costs nothing on quiet days. Nothing here is shipped with the addon.
 on:
   push:
     branches: [dev]
@@ -10,7 +10,7 @@ on:
       - tools/catalog/fetch_inputs.py
       - .github/workflows/catalog-inputs.yml
   schedule:
-    - cron: '23 4 * * 1,4'   # Monday and Thursday, 04:23 UTC
+    - cron: '23 4 * * *'   # daily, 04:23 UTC (05:23 / 06:23 German time)
   workflow_dispatch:
     inputs:
       build:
