@@ -8,3 +8,6 @@ Thumbs.db
 __pycache__/
 *.pyc
 work/
+
+# Discord bot secrets
+tools/discord-bot/.env
