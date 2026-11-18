@@ -64,12 +64,10 @@ local function unitPrice(self,memo,item,depth)
   return price
 end
 
--- What one craft brings back when sold: AH minus the cut, or the vendor price, whichever is higher.
-function CP:ItemSaleValue(item)
+-- What a vendor always pays for an item (0 when unknown). The only sale the skill path may count on:
+-- whether the auction house buys 18 blunderbusses is anyone's guess.
+function CP:ItemVendorValue(item)
   if type(item)~="number" then return 0 end
-  local d=self:PriceDetails(item)
-  local cut=1-math.max(0,math.min(30,tonumber(self.db.ui.economyCut) or 5))/100
-  local ah=d.auction and d.freshness~="stale" and d.auction*cut or 0
   local vendor=0
   if C_Item and type(C_Item.GetItemInfo)=="function" then
     local ok,sell=pcall(function() return select(11,C_Item.GetItemInfo(item)) end)
@@ -78,7 +76,16 @@ function CP:ItemSaleValue(item)
     local ok,sell=pcall(function() return select(11,GetItemInfo(item)) end)
     if ok and type(sell)=="number" then vendor=sell end
   end
-  return math.max(ah,vendor)
+  return vendor
+end
+
+-- What one craft brings back when sold: AH minus the cut, or the vendor price, whichever is higher.
+function CP:ItemSaleValue(item)
+  if type(item)~="number" then return 0 end
+  local d=self:PriceDetails(item)
+  local cut=1-math.max(0,math.min(30,tonumber(self.db.ui.economyCut) or 5))/100
+  local ah=d.auction and d.freshness~="stale" and d.auction*cut or 0
+  return math.max(ah,self:ItemVendorValue(item))
 end
 
 local function materials(self,key,id,recipe)
@@ -162,7 +169,7 @@ function CP:CheapestPath(key,from,to)
       if known and cost>0 and ui.countSales then
         local native=(self.db.recipes[key] or {})[id]
         local out=recipe.makes or (native and native.outputItemID)
-        sale=math.min(cost,self:ItemSaleValue(out)*(recipe.count or recipe.yield or 1))
+        sale=math.min(cost,self:ItemVendorValue(out)*(recipe.count or recipe.yield or 1))
       end
       if not known or cost<=0 then unpriced=unpriced+1
       else
@@ -247,8 +254,17 @@ function CP:CheapestPath(key,from,to)
     s.crafts=math.max(1,math.ceil(s.expected-1e-9))
     if not s.learned and not charged[s.id] then charged[s.id]=true;fees=fees+(s.fee or 0) end
   end
-  local perPointNow={}
-  for _,c in ipairs(candidates) do perPointNow[c.id]=c.perPoint[skill] end
+  local perPointNow,optionsNow={},{}
+  for _,c in ipairs(candidates) do
+    perPointNow[c.id]=c.perPoint[skill]
+    if c.perPoint[skill] then
+      -- a fee to learn it, spread over the points the recipe can give from here
+      local span=0;for _ in pairs(c.perPoint) do span=span+1 end
+      optionsNow[#optionsNow+1]={id=c.id,name=c.name,perPoint=c.perPoint[skill]+(c.learned and 0 or (c.fee or 0)/math.max(1,span)),
+        chance=c.chances[skill],learned=c.learned,fee=c.fee,source=c.source}
+    end
+  end
+  table.sort(optionsNow,function(a,b) return a.perPoint<b.perPoint end)
   -- Materials the chosen path really uses, for the price age check and a targeted AH scan.
   local used={}
   local function addItem(item,depth)
@@ -296,7 +312,7 @@ function CP:CheapestPath(key,from,to)
     end
   end
   local path={key=key,from=skill,target=target,reached=reached,segments=segments,total=total+fees,fees=fees,
-    unpriced=unpriced,perPointNow=perPointNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits}
+    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits}
   self.pathCache=true
   self.pathCaches[token]={at=now(),path=path}
   return path
@@ -320,7 +336,7 @@ function CP:PathSummaryLines(path)
   for i,c in ipairs(path.altCrafts or {}) do
     if i<=3 then lines[#lines+1]=string.format(L("%s: %s kann es herstellen · spart ca. %s je Stück"),self:ItemName(c.item),c.alt,self:FormatCostMoney(c.saving)) end
   end
-  if self.db.ui.countSales then lines[#lines+1]=L("Verkaufserlös der hergestellten Dinge ist abgezogen.") end
+  if self.db.ui.countSales then lines[#lines+1]=L("Händlererlös der hergestellten Dinge ist abgezogen.") end
   local p=path.priceItems and self:PriceSummary(path.priceItems)
   if p and p.stale>0 then lines[#lines+1]=string.format(L("%d Preise älter als 3 Tage · am AH neu scannen."),p.stale) end
   if path.reached<path.target then lines[#lines+1]=string.format(L("Ab %d fehlen Preise oder Rezepte für einen sicheren Weg."),path.reached) end
@@ -352,7 +368,7 @@ function CP:PathTooltip(path)
   for i,c in ipairs(path.altCrafts or {}) do
     if i<=3 then notes[#notes+1]=string.format(L("%s: %s kann es herstellen · spart ca. %s je Stück"),self:ItemName(c.item),c.alt,self:FormatCostMoney(c.saving)) end
   end
-  if self.db.ui.countSales then notes[#notes+1]=L("Verkaufserlös der hergestellten Dinge ist abgezogen.") end
+  if self.db.ui.countSales then notes[#notes+1]=L("Händlererlös der hergestellten Dinge ist abgezogen.") end
   local p=path.priceItems and self:PriceSummary(path.priceItems)
   if p and p.stale>0 then notes[#notes+1]=string.format(L("%d Preise älter als 3 Tage · am AH neu scannen."),p.stale) end
   if path.unpriced>0 then notes[#notes+1]=string.format(L("%d Rezepte ohne vollständige Preise nicht verglichen · AH scannen."),path.unpriced) end

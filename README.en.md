@@ -107,7 +107,7 @@ Open the in-game help any time with "Help" at the bottom of the sidebar or `/cp 
 
 ## Contributing
 
-Bugs and ideas are welcome as [issues](https://github.com/Necrite82/CraftPilot/issues). In-game, "Report bug" builds a ready-made report with version and Lua errors. Developer notes are in [CONTRIBUTING.md](CONTRIBUTING.md); automated tests run under Lua 5.1 and 5.4.
+Bugs and ideas are welcome on [Discord](https://discord.gg/DpsBkHtQS) (no GitHub account needed) or as [issues](https://github.com/Necrite82/CraftPilot/issues). In-game, "Report bug" builds a ready-made report with version and Lua errors. Developer notes are in [CONTRIBUTING.md](CONTRIBUTING.md); automated tests run under Lua 5.1 and 5.4.
 
 ## License and data
 

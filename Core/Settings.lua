@@ -170,9 +170,9 @@ function CP:ToggleSetting(key)
     self.db.ui.showVendorRecipes=on;self.db.ui.knownRecipesOnly=not on
   elseif ({allowYellow=true,allowGreen=true,planAhead=true})[key] then
     self.db.ui[key]=not self.db.ui[key];self:SkillPolicyChanged();return
-  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true,ahAlarm=true})[key] then
+  elseif ({autoOpen=true,showAllProfessions=true,hideMinimap=true,knownRecipesOnly=true,showSourceDetails=true,preferReliableSkill=true,showVendorRecipes=true,useQuestieDB=true,includeAlts=true,companion=true,countSales=true,tooltips=true,itemMarks=true,ahAlarm=true,bankHelper=true,mailHelper=true})[key] then
     -- Companion and twinks default to on (nil): the first click turns them off.
-    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" or key=="ahAlarm" then self.db.ui[key]=self.db.ui[key]==false
+    if key=="companion" or key=="includeAlts" or key=="tooltips" or key=="itemMarks" or key=="ahAlarm" or key=="bankHelper" or key=="mailHelper" then self.db.ui[key]=self.db.ui[key]==false
     else self.db.ui[key]=not self.db.ui[key] end
   else return end
   self.pendingSettingsReset=nil
@@ -238,12 +238,14 @@ function CP:SettingsCards()
     check("tooltips",L("Hinweise in Gegenstands-Tooltips"),L("Bedarf deines Plans, „nicht verkaufen“, Twink-Bestände und Preisgrenze direkt am Gegenstand."),ui.tooltips~=false,"general"),
     check("itemMarks",L("Markierung in Taschen und Bank"),L("Gold: für einen späteren Schritt aufheben · Blau: dein Plan braucht es. Funktioniert mit den üblichen Taschen-Addons."),ui.itemMarks~=false,"general"),
     check("ahAlarm",L("AH-Alarm"),L("Nach einem Auctionator-Scan: Wunschrezepte im AH und Raid-Vorrat, der im AH deutlich günstiger ist als Herstellen. Jeder Fund einmal am Tag."),ui.ahAlarm~=false,"general","Interface\\Icons\\INV_Misc_Bell_01"),
+    check("bankHelper",L("Hinweis an der Bank"),L("Zeigt an der Bank, was deine Pläne von dort brauchen. Schließen blendet ihn aus, bis sich die Liste ändert."),ui.bankHelper~=false,"general","Interface\\Icons\\INV_Misc_Bag_10_Blue"),
+    check("mailHelper",L("Hinweis am Briefkasten"),L("Zeigt am Briefkasten, was deine Twinks für ihre Pläne brauchen. Schließen blendet ihn aus, bis sich die Liste ändert."),ui.mailHelper~=false,"general","Interface\\Icons\\INV_Letter_15"),
     check("hideMinimap",L("Minimap-Button"),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),not ui.hideMinimap,"general"),
     -- Route
     choice(L("Skillweg"),pathNames[path],pathDetails[path].."\n"..L("Gilt für Empfehlung, Begleitfenster und Plan erstellen."),
       function() CP:SetSkillPath(cycle(CP.SkillPaths,CP:SkillPath())) end,"route","Interface\\Icons\\INV_Misc_Map_01"),
     check("learnRecipes",L("Rezepte zum Lernen einbeziehen"),L("Lehrer-, Händler- und AH-Rezepte zählen mit, wenn sie den Weg trotz Lernkosten billiger machen."),self:LearnRecipesEnabled(),"route"),
-    check("countSales",L("Verkaufserlös gegenrechnen"),string.format(L("Was hergestellte Dinge im AH (abzüglich %d %%) oder beim Händler bringen, senkt die Kosten eines Rezepts."),tonumber(ui.economyCut) or 5),ui.countSales==true,"route","Interface\\Icons\\INV_Misc_Coin_01"),
+    check("countSales",L("Händlererlös gegenrechnen"),L("Was ein Händler sicher für hergestellte Dinge zahlt, senkt die Kosten eines Rezepts. Mögliche AH-Erlöse werden nur angezeigt, nie eingerechnet."),ui.countSales==true,"route","Interface\\Icons\\INV_Misc_Coin_01"),
     -- Display
     choice(L("Design"),({auto=L("Automatisch"),dark=L("Dunkel"),classic=L("Klassisch")})[ui.skin] or ui.skin,L("Automatisch übernimmt EllesmereUI, wenn es installiert ist."),function()
       ui.skin=ui.skin=="auto" and "dark" or (ui.skin=="dark" and "classic" or "auto")

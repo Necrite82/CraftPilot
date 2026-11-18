@@ -14,4 +14,8 @@ CraftPilot hilft jetzt auch nach dem Skillen, rechtzeitig vor den ersten Raids.
 - **Mehr Schutz**: reservierte Gegenstände lösen jetzt auch beim Zerstören, Entzaubern und beim Verschicken an fremde Charaktere eine Warnung aus.
 - Lehrerorte mit dem Kartennamen aus dem Spiel; englische Befehle `/cp stages` und `/cp shop`.
 
+- **Ehrlichere Empfehlung**: gerechnet wird nur mit dem, was ein Händler sicher zahlt – mögliche AH-Verkäufe werden angezeigt, nie eingerechnet. Dazu ein Spartipp, wenn ein anderes Rezept je Punkt deutlich billiger ist.
+- **Vorratsreservierung** mit allen reservierten Gegenständen je Plan; **Bank- und Briefkasten-Hinweis** verschiebbar, bis zur nächsten Änderung ausblendbar und abschaltbar.
+- **Discord-Community**: Link in der Seitenleiste, in der Hilfe und mit `/cp discord` – Fragen und Fehlermeldungen auch ohne GitHub-Konto: https://discord.gg/DpsBkHtQS
+
 **Voraussetzungen:** QuestieDB (Pflicht), Auctionator (empfohlen), TomTom (optional).

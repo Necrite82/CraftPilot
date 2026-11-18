@@ -97,3 +97,36 @@ assert(CP.db.ui.tab=="endgame" and CP.db.ui.endgamePage=="stock","Raid stock ope
 CP.ReservationLedger,CP.ReservationOrder=savedLedger,savedOrder
 CP.db.ui.endgamePage=nil;CP:OpenTab("now")
 print("PASS: 0.2.3 reservation page lists reserved items and opens their plans")
+
+-- 0.2.3: the bank hint can be moved, closed until its list changes, and switched off.
+local savedPickups=CP.BankPickups
+local list={{count=8,name="Instabiler Auslöser"},{count=2,name="Magiestoff"}}
+CP.BankPickups=function() return list end
+CP.db.ui.helperDismissed=nil;CP.db.ui.bankHelper=nil
+CP:ShowBankHelper()
+assert(CP.BankHelper and CP.BankHelper:IsShown(),"Bank hint shown")
+assert(CP.BankHelper:GetScript("OnDragStart"),"Bank hint can be dragged")
+CP.BankHelper.close:GetScript("OnClick")()
+assert(not CP.BankHelper:IsShown())
+CP:ShowBankHelper()
+assert(not CP.BankHelper:IsShown(),"Closed: stays hidden for the same list")
+list={{count=9,name="Instabiler Auslöser"}}
+CP:ShowBankHelper()
+assert(CP.BankHelper:IsShown(),"A changed list shows it again")
+CP:ToggleSetting("bankHelper")
+CP:ShowBankHelper()
+assert(CP.db.ui.bankHelper==false and not CP.BankHelper:IsShown(),"Switched off in the settings")
+CP:ToggleSetting("bankHelper")
+CP.BankPickups=savedPickups;CP.db.ui.helperDismissed=nil;CP.BankHelper:Hide()
+print("PASS: 0.2.3 bank hint movable, closable per list and switchable")
+
+-- 0.2.3: the Discord link is one click away and ready to copy.
+assert(CP.discordURL=="https://discord.gg/DpsBkHtQS")
+CP:OpenDiscordLink()
+local shownText=rawget(CP.releaseLinkEdit,"displayText") or CP.releaseLinkEdit:GetText()
+assert(CP.releaseLinkFrame:IsShown() and shownText==CP.discordURL,"Discord link ready to copy")
+CP.releaseLinkFrame:Hide()
+local helpHasDiscord=false
+for _,c in ipairs(CP:HelpCards()) do if c.title=="Community auf Discord" and c.action then helpHasDiscord=true end end
+assert(helpHasDiscord,"Help page offers the Discord link")
+print("PASS: 0.2.3 Discord link in sidebar, help and slash command")

@@ -17,7 +17,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 **Stand:** 0.2.3-beta · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
-> **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
+> **Beta:** CraftPilot ist neu. Fehler bitte im Spiel über „Fehler melden“ im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues) melden.
 
 ## Was CraftPilot macht
 
@@ -107,7 +107,7 @@ Die Hilfe im Spiel öffnest du jederzeit über „Hilfe“ unten in der Seitenle
 
 ## Mitmachen
 
-Fehler und Ideen gern als [Issue](https://github.com/Necrite82/CraftPilot/issues). Im Spiel erstellt „Fehler melden“ einen fertigen Bericht mit Version und Lua-Fehlern. Hinweise für Entwickler stehen in [CONTRIBUTING.md](CONTRIBUTING.md); die automatisierten Tests laufen unter Lua 5.1 und 5.4.
+Fehler und Ideen gern im [Discord](https://discord.gg/DpsBkHtQS) (auch ohne GitHub-Konto) oder als [Issue](https://github.com/Necrite82/CraftPilot/issues). Im Spiel erstellt „Fehler melden“ einen fertigen Bericht mit Version und Lua-Fehlern. Hinweise für Entwickler stehen in [CONTRIBUTING.md](CONTRIBUTING.md); die automatisierten Tests laufen unter Lua 5.1 und 5.4.
 
 ## Lizenz und Daten
 

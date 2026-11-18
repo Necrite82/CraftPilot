@@ -54,15 +54,29 @@ function CP:Recommendation(key)
     detail=L("Alles in der Tasche · direkt herstellen")
   else
     detail=L("Fehlt: ")..table.concat(parts,", ").." · "
-      ..(cost.cashComplete and (L("ca. ")..self:FormatCostMoney(cost.buy)) or L("Preis unvollständig"))
+      ..(cost.cashComplete and (L("Zukauf ca. ")..self:FormatCostMoney(cost.buy)) or L("Preis unvollständig"))
   end
   local pickups={}
   for _,mat in ipairs(cost.materials) do
     if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
   end
   if #pickups>0 then detail=detail.."  ·  "..L("Von Twinks: ")..table.concat(pickups,", ") end
+  -- Saving tip: a recipe (perhaps still to learn) that is much cheaper per point right now than the pick,
+  -- e.g. a green one the "reliable" setting passes over.
+  local tip
+  if first and path and path.perPointNow then
+    local mine=path.perPointNow[first.id]
+    for _,o in ipairs(path.optionsNow or {}) do
+      if o.id~=first.id and mine and o.perPoint<mine*0.6 then tip=o;break end
+      if o.id==first.id then break end
+    end
+  end
+  if tip then
+    detail=detail.."  ·  "..string.format(L("Spartipp: %s%s · ca. %s statt %s je Punkt"),tip.name,tip.learned and "" or L(" (lernen)"),
+      self:CompactMoney(tip.perPoint),self:CompactMoney(path.perPointNow[first.id]))
+  end
   if path and #path.segments>0 then
-    detail=detail.."  ·  "..string.format(L("Günstigster Weg bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total))
+    detail=detail.."  ·  "..string.format(L("Ganzer Weg bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total))
   elseif not first then
     for _,offer in ipairs(self:TrainerOffersCached(key)) do
       local saving=offer.comparison and offer.comparison.cashSaving
@@ -74,7 +88,7 @@ function CP:Recommendation(key)
   end
   local gate=self.RankGate and self:RankGate(key)
   if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,tip=tip,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

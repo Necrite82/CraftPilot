@@ -21,6 +21,8 @@ function CP:HelpCards()
       L("CraftPilot zeigt dir den günstigsten Weg, deine Berufe zu skillen, und hilft beim Einkaufen, Lernen und Herstellen. Es kauft, lernt und stellt nur her, wenn du klickst."),
       function() CP.db.ui.firstRunDone=true;CP:OpenTab("now") end,L("Klick: Los geht's"),"gold")
   end
+  cards[#cards+1]=card(L("Community auf Discord"),L("Fragen, Ideen und Fehlermeldungen – auch ohne GitHub-Konto. Deutsch und Englisch."),
+    function() CP:OpenDiscordLink() end,L("Klick: Link zum Kopieren"),"green")
   cards[#cards+1]=header(L("ERSTE SCHRITTE"))
   cards[#cards+1]=card(L("1. Beruf wählen"),L("Oben links im Berufsmenü. Erlernte Berufe stehen zuerst; ein Klick auf einen erlernten Beruf öffnet auch sein Berufsfenster (abschaltbar)."))
   cards[#cards+1]=card(L("2. Berufsfenster einmal öffnen"),L("Dabei liest CraftPilot deine Rezepte, Skillfarben und Materialien ein. Danach stimmt die Empfehlung."))

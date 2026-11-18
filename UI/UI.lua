@@ -371,15 +371,21 @@ for i,t in ipairs(U.tabs) do
 end
 U.sideSettings=navButton("settings",L("Einstellungen"),function() CP:ToggleSettings() end)
 U.sideSettings.craftNav="settings"
-U.sideSettings:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",8,78)
+U.sideSettings:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",8,96)
 U.sideHelp=navButton("help",L("Hilfe"),function() if CP.db.ui.tab=="help" then CP:OpenTab(CP.db.ui.lastMainTab or "now") else CP:OpenTab("help") end end)
 U.sideHelp.craftNav="help"
-U.sideHelp:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",8,42)
+U.sideHelp:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",8,60)
 U.sideLine=side:CreateTexture(nil,"ARTWORK");U.sideLine:SetHeight(1)
-U.sideLine:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",1,34);U.sideLine:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-1,34)
+U.sideLine:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",1,54);U.sideLine:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-1,54)
 U.sideLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 U.sideFoot=text(side,"GameFontDisableSmall",14,0,SIDE-24,"")
 U.sideFoot:ClearAllPoints();U.sideFoot:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",14,12)
+-- Discord: a quiet link above the version; click shows it ready to copy.
+U.sideDiscord=CreateFrame("Button",nil,side)
+U.sideDiscord:SetSize(SIDE-24,16);U.sideDiscord:SetPoint("BOTTOMLEFT",side,"BOTTOMLEFT",14,32)
+U.sideDiscord.label=text(U.sideDiscord,"GameFontHighlightSmall",0,0,SIDE-24,"|cff8fa8ff"..L("Discord-Community").."|r")
+U.sideDiscord:SetScript("OnClick",function() CP:OpenDiscordLink() end)
+tooltip(U.sideDiscord,L("Discord-Community"),function() return {CP.discordURL,L("Anklicken: Link zum Kopieren")} end)
 -- Page title where the tabs used to be.
 U.tabLine=frame:CreateTexture(nil,"ARTWORK")
 U.tabLine:SetHeight(1)
@@ -1437,9 +1443,16 @@ local function renderDetail(key,entry)
     -- Label left, amount right: readable in the narrow detail pane (the three-box strip wrapped).
     local costRows={
       {string.format(L("Zukauf für %d×"),qty),(data.cost.missingBuy==0 and data.cost.unknownRecipes==0) and CP:DisplayMoney(data.cost.buy) or L("unvollständig"),{1,.84,.46}},
-      {L("AH netto / Stück"),CP:DisplayMoney(data.market and not data.market.bound and data.market.net or nil),{.55,.9,.7}},
-      {L("Händler / Stück"),CP:DisplayMoney(data.market and data.market.vendor),{.91,.90,.87}},
     }
+    -- What the crafts bring back: the vendor's price is certain, an AH sale only possible, so it is never
+    -- counted in costs. Both for the whole quantity.
+    local recipe=(CP:RecipeVendorCatalog(key) or {recipes={}}).recipes[entry.id]
+    local native=(CP.db.recipes[key] or {})[entry.id]
+    local made=qty*math.max(1,(native and native.outputMin) or (recipe and (recipe.count or recipe.yield)) or 1)
+    local vendor=data.market and data.market.vendor
+    local net=data.market and not data.market.bound and data.market.net
+    costRows[#costRows+1]={string.format(L("Händler zahlt sicher (%d×)"),made),vendor and CP:DisplayMoney(vendor*made) or "—",{.91,.90,.87}}
+    costRows[#costRows+1]={string.format(L("AH vielleicht (%d×, nicht eingerechnet)"),made),net and CP:DisplayMoney(net*made) or "—",{.55,.9,.7}}
     d.costRows=d.costRows or {}
     for i,row in ipairs(costRows) do
       local line=d.costRows[i]
@@ -1451,7 +1464,7 @@ local function renderDetail(key,entry)
         line.sep:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
         d.costRows[i]=line
       end
-      line:SetWidth(inner);line.label:SetWidth(inner*.5);line.value:SetWidth(inner*.5)
+      line:SetWidth(inner);line.label:SetWidth(inner*.64);line.value:SetWidth(inner*.36)
       line.label:SetText(row[1]);line.value:SetText(row[2]);line.value:SetTextColor(row[3][1],row[3][2],row[3][3])
       put(line,12,24)
     end

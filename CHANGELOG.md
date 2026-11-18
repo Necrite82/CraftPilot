@@ -2,6 +2,12 @@
 
 ## 0.2.3-beta
 
+- **Discord-Community** direkt im Addon: Link in der Seitenleiste, in der Hilfe, im Fenster „Fehler melden“ und mit `/cp discord`, zum Kopieren bereit
+- **Empfehlung ehrlicher**: Der Skillweg rechnet nur noch mit dem, was ein Händler sicher zahlt („Händlererlös gegenrechnen“); mögliche AH-Verkäufe werden angezeigt, aber nie eingerechnet. „Zukauf“ und „Ganzer Weg“ sind klar getrennt, dazu ein **Spartipp**, wenn ein anderes Rezept je Punkt deutlich billiger ist
+- Kosten-Details zeigen für die ganze Menge, was ein Händler sicher zahlt und was im AH vielleicht möglich wäre
+- **Hinweis an Bank und Briefkasten**: verschiebbar (Position wird gemerkt), Schließen blendet ihn aus, bis sich die Liste ändert, und in den Einstellungen abschaltbar
+- **Vorratsreservierung** zeigt jeden reservierten Gegenstand je Plan; Klick öffnet den Plan, „Nach vorn“ ändert die Reihenfolge
+- AH-Status nach einem Scan: Materialien ohne Angebot zählen als „derzeit nicht im AH“ statt als fehlend; das Fenster aktualisiert sich nach dem Scan
 - **Eigener Rezeptkatalog**: CraftPilot baut seine Rezept-, Händler-, Camping- und Spezialisierungsdaten jetzt selbst aus den Tabellen des Forever-Clients (Build 1.60.1.70959), QuestieDB, CMaNGOS und AllTheThings und aktualisiert sie täglich; keine Craft-Ladder-Daten mehr
 - Merchant's-Favor-Rezepte nennen die nötige Rufstufe (z. B. „ab Ruf Freundlich“); Favor-Preise gelten für die Händler beider Fraktionen
 - Drop-Rezepte nennen die Zahl der Gegner auch im Camping-Bereich; Rezepte, die es in Forever noch nicht gibt, werden nicht mehr eingeplant

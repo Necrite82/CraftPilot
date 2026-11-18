@@ -147,24 +147,44 @@ function CP:PrepareMail(name,items)
 end
 
 -- A small panel beside the bank or the mailbox. Lines: {text, action, caption}.
+-- The bank and mailbox hints: movable (the spot is remembered), and closing one hides it until its list changes.
 local function helperPanel(self,name,host)
   local f=self[name]
   if not f then
     f=CreateFrame("Frame","CraftPilot"..name,UIParent,"BackdropTemplate")
     f:SetSize(280,80);f:SetFrameStrata("HIGH");f:SetClampedToScreen(true)
+    f:SetMovable(true);f:EnableMouse(true);f:RegisterForDrag("LeftButton")
+    f:SetScript("OnDragStart",function() f:StartMoving() end)
+    f:SetScript("OnDragStop",function()
+      f:StopMovingOrSizing()
+      local point,_,relative,x,y=f:GetPoint()
+      if CP.db and point then CP.db.ui.helperPos=CP.db.ui.helperPos or {};CP.db.ui.helperPos[name]={point,relative,x,y} end
+    end)
     if type(f.SetBackdrop)=="function" then
       f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})
       f:SetBackdropColor(.07,.08,.10,.96);f:SetBackdropBorderColor(.88,.69,.31,.8)
     end
     f.title=f:CreateFontString(nil,"OVERLAY","GameFontNormal");f.title:SetPoint("TOPLEFT",f,"TOPLEFT",10,-8);f.title:SetWidth(240);f.title:SetJustifyH("LEFT")
     f.close=CreateFrame("Button",nil,f,"UIPanelCloseButton");f.close:SetPoint("TOPRIGHT",f,"TOPRIGHT",2,2)
+    f.close:SetScript("OnClick",function()
+      if CP.db and f.signature then CP.db.ui.helperDismissed=CP.db.ui.helperDismissed or {};CP.db.ui.helperDismissed[name]=f.signature end
+      f:Hide()
+    end)
     f.lines={};f.buttons={}
     self[name]=f
   end
   f:ClearAllPoints()
-  if type(host)=="table" and type(host.IsShown)=="function" and host:IsShown() then f:SetPoint("TOPLEFT",host,"TOPRIGHT",8,0)
+  local saved=self.db and self.db.ui.helperPos and self.db.ui.helperPos[name]
+  if type(saved)=="table" and saved[1] then f:SetPoint(saved[1],UIParent,saved[2] or saved[1],saved[3] or 0,saved[4] or 0)
+  elseif type(host)=="table" and type(host.IsShown)=="function" and host:IsShown() then f:SetPoint("TOPLEFT",host,"TOPRIGHT",8,0)
   else f:SetPoint("CENTER",UIParent,"CENTER",300,100) end
   return f
+end
+-- Shown unless switched off or closed for exactly this list.
+local function helperWanted(self,name,setting,signature)
+  if not self.db or self.db.ui[setting]==false then return false end
+  local dismissed=self.db.ui.helperDismissed and self.db.ui.helperDismissed[name]
+  return dismissed~=signature
 end
 local function fillPanel(f,title,rows)
   f.title:SetText(title)
@@ -187,18 +207,23 @@ local function fillPanel(f,title,rows)
 end
 
 function CP:ShowBankHelper()
-  if not self.db or self.db.ui.bankHelper==false then return end
+  if not self.db then return end
   local pickups=self:BankPickups()
-  if #pickups==0 then if self.BankHelper then self.BankHelper:Hide() end;return end
   local parts={};for _,p in ipairs(pickups) do parts[#parts+1]=p.count.."× "..p.name end
+  local signature=table.concat(parts,";")
+  if #pickups==0 or not helperWanted(self,"BankHelper","bankHelper",signature) then if self.BankHelper then self.BankHelper:Hide() end;return end
   local f=helperPanel(self,"BankHelper",_G.BankFrame)
-  fillPanel(f,L("CraftPilot · aus der Bank mitnehmen"),{{text=table.concat(parts,"\n")}})
+  f.signature=signature
+  fillPanel(f,L("CraftPilot · aus der Bank mitnehmen"),{{text=table.concat(parts,"\n")},{text="|cff8c8c8c"..L("Ziehen zum Verschieben · X blendet aus, bis sich die Liste ändert").."|r"}})
 end
 
 function CP:ShowMailHelper()
   if not self.db then return end
   local twinks=self:MailForTwinks()
-  if #twinks==0 then if self.MailHelper then self.MailHelper:Hide() end;return end
+  local sig={}
+  for _,t in ipairs(twinks) do for _,it in ipairs(t.items) do sig[#sig+1]=t.name..":"..it.count..":"..it.name end end
+  local signature=table.concat(sig,";")
+  if #twinks==0 or not helperWanted(self,"MailHelper","mailHelper",signature) then if self.MailHelper then self.MailHelper:Hide() end;return end
   local rows={}
   for _,t in ipairs(twinks) do
     local parts={};for i,it in ipairs(t.items) do if i<=4 then parts[#parts+1]=it.count.."× "..it.name end end
@@ -207,7 +232,9 @@ function CP:ShowMailHelper()
     rows[#rows+1]={text=string.format(L("%s braucht: %s"),t.name,table.concat(parts,", ")),caption=string.format(L("Brief an %s vorbereiten"),t.name),
       action=function() CP:PrepareMail(name,items) end}
   end
-  fillPanel(helperPanel(self,"MailHelper",_G.MailFrame),L("CraftPilot · für deine Twinks"),rows)
+  local f=helperPanel(self,"MailHelper",_G.MailFrame)
+  f.signature=signature
+  fillPanel(f,L("CraftPilot · für deine Twinks"),rows)
 end
 
 -- Session balance -----------------------------------------------------------------------------------------------

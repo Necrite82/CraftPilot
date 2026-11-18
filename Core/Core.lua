@@ -779,6 +779,9 @@ local function command(input)
   elseif text=="autoopen on" or text=="autoopen off" then
     CP.db.ui.autoOpen=text=="autoopen on"
     CP:Say(L("Berufsfenster automatisch öffnen: ")..(CP.db.ui.autoOpen and L("AN") or L("AUS")))
+  elseif text=="discord" then
+    if CP.OpenDiscordLink then CP:OpenDiscordLink() end
+    CP:Say(L("Discord: ")..CP.discordURL)
   elseif text=="hilfe" or text=="help" then
     if CP.OpenTab then CP:OpenTab("help") end
   elseif text=="resetpos" then
@@ -796,7 +799,7 @@ local function command(input)
   elseif text=="sort cost" or text=="sort chance" or text=="sort missing" or text=="sort name" then
     CP.db.ui.recipeSort=text:sub(6);CP:Refresh(false)
   else
-    CP:Say(L("Hilfe im Addon: /cp hilfe. Direkt: /cp plan | lehrer | trainer | naechster | refresh | resetpos | skin auto|dark|classic."))
+    CP:Say(L("Hilfe im Addon: /cp hilfe. Direkt: /cp plan | lehrer | trainer | naechster | refresh | resetpos | discord | skin auto|dark|classic."))
   end
 end
 

@@ -174,8 +174,13 @@ CP.db.professions.engineering={skill=10,cap=20}
 CP.db.ui.countSales=false;CP.pathCache=nil
 assert(CP:CheapestPath("engineering").segments[1].id==S2,"Without sales the cheaper craft wins")
 CP.db.ui.countSales=true;CP.pathCache=nil
+assert(CP:CheapestPath("engineering").segments[1].id==S2,"A possible AH sale is never counted")
+local savedVendor=CP.ItemVendorValue
+CP.ItemVendorValue=function(_,item) return item==52101 and 200 or 0 end
+CP.pathCache=nil
 local withSales=CP:CheapestPath("engineering")
-assert(withSales.segments[1].id==S1,"The sale of the product pays for the dearer craft")
+assert(withSales.segments[1].id==S1,"What a vendor surely pays for the product pays for the dearer craft")
+CP.ItemVendorValue=savedVendor
 CP.db.ui.countSales=false;CP.pathCache=nil
 -- Twink crafting: the twink's mining makes material 52011 from 52020 at 30 instead of 100.
 CP.BuildOutputIndex=function() return {[52011]={{key="mining",id=98200,recipe={learn=1,mats={[52020]=1},makes=52011}}}} end

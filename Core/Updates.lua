@@ -3,6 +3,7 @@ local _,CP=...
 local L=CP.L
 CP.version="0.2.3-beta"
 CP.releaseURL="https://github.com/Necrite82/CraftPilot/releases"
+CP.discordURL="https://discord.gg/DpsBkHtQS"
 local PREFIX="CraftPilotVer"
 local channels={GUILD=true,PARTY=true,RAID=true,INSTANCE_CHAT=true}
 local function parse(version)
@@ -60,7 +61,12 @@ function CP:VersionStatus()
   if self:IsNewerVersion(reported,self.version) then return L("Neuere Version gemeldet: ")..reported end
   return L("Keine neuere Version gemeldet")
 end
-function CP:OpenReleaseLink()
+function CP:OpenReleaseLink() return self:OpenCopyLink(L("Release-Link kopieren: Strg+C"),self.releaseURL) end
+function CP:OpenDiscordLink()
+  return self:OpenCopyLink(L("Discord-Link kopieren: Strg+C, dann im Browser oder in Discord einfügen"),self.discordURL)
+end
+-- A small window with a link selected for copying (WoW can't open a browser itself).
+function CP:OpenCopyLink(caption,url)
   if not self.releaseLinkFrame then
     local frame=CreateFrame("Frame",nil,UIParent,"BackdropTemplate")
     frame:SetSize(520,130);frame:SetPoint("CENTER");frame:SetFrameStrata("DIALOG")
@@ -68,17 +74,18 @@ function CP:OpenReleaseLink()
     frame:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Tooltips\\UI-Tooltip-Border",edgeSize=16})
     frame:SetBackdropColor(.06,.08,.10,1)
     local title=frame:CreateFontString(nil,"OVERLAY","GameFontNormal")
-    title:SetPoint("TOPLEFT",20,-20);title:SetText(L("Release-Link kopieren: Strg+C"))
+    title:SetPoint("TOPLEFT",20,-20);title:SetWidth(470);title:SetJustifyH("LEFT")
     local edit=CreateFrame("EditBox",nil,frame,"InputBoxTemplate")
     edit:SetSize(470,30);edit:SetPoint("TOPLEFT",25,-55);edit:SetAutoFocus(false)
     edit:SetScript("OnEscapePressed",function() frame:Hide() end)
     edit:SetScript("OnEnterPressed",function() frame:Hide() end)
     local close=CreateFrame("Button",nil,frame,"UIPanelCloseButton")
     close:SetPoint("TOPRIGHT",-3,-3);close:SetScript("OnClick",function() frame:Hide() end)
-    self.releaseLinkFrame=frame;self.releaseLinkEdit=edit
+    self.releaseLinkFrame=frame;self.releaseLinkEdit=edit;self.releaseLinkTitle=title
   end
+  self.releaseLinkTitle:SetText(caption or "")
   self.releaseLinkFrame:Show()
-  self.releaseLinkEdit:SetText(self.releaseURL)
+  self.releaseLinkEdit:SetText(url or "")
   self.releaseLinkEdit:SetFocus();self.releaseLinkEdit:HighlightText()
 end
 function CP:InitializeVersionChecks()
