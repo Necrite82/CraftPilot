@@ -77,6 +77,8 @@ function CP:FarmCards(materials)
   for i,m in ipairs(rows) do
     if i>5 then break end
     local text,info,who=self:GatherHint(m.id)
+    local pace=self.FarmOrBuyText and self:FarmOrBuyText(m.id,m.missing)
+    text=text.."\n"..(pace or L("Eigenes Sammeltempo: noch nicht gemessen – CraftPilot misst beim Sammeln mit."))
     local map=info.zones[1] and info.zones[1].map
     cards[#cards+1]={title=m.missing.."× "..self:ItemName(m.id)..(m.cost and (" · "..L("spart ca. ")..self:FormatCostMoney(m.cost)) or ""),
       detail=text,footer=#who==0 and L("Niemand auf dem Account hat den Sammelberuf hoch genug.") or (map and L("Klick: Gebiet auf der Weltkarte zeigen") or ""),

@@ -62,6 +62,7 @@ Features\Alts.lua
 Features\Companion.lua
 Planning\Learning.lua
 Features\Farming.lua
+Features\FarmRate.lua
 Features\Account.lua
 Features\Keep.lua
 Features\Marks.lua
