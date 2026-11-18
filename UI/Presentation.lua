@@ -39,10 +39,17 @@ function CP:StylePrimaryButton(b)
   if not primaryFont and type(CreateFont)=="function" then
     primaryFont=CreateFont("CraftPilotProPrimaryButtonFont")
     if primaryFont and GameFontHighlightSmall then primaryFont:CopyFontObject(GameFontHighlightSmall) end
-    if primaryFont then primaryFont:SetTextColor(.11,.08,.02) end
+    if primaryFont then
+      primaryFont:SetTextColor(.11,.08,.02)
+      -- The inherited black drop shadow smears dark text on gold; a filled button needs none.
+      if type(primaryFont.SetShadowOffset)=="function" then primaryFont:SetShadowOffset(0,0) end
+      if type(primaryFont.SetShadowColor)=="function" then primaryFont:SetShadowColor(0,0,0,0) end
+    end
   end
   if primaryFont then b:SetNormalFontObject(primaryFont);b:SetHighlightFontObject(primaryFont);b:SetDisabledFontObject(primaryFont) end
   local label=b:GetFontString();if label and type(label.SetTextColor)=="function" then label:SetTextColor(.11,.08,.02) end
+  if label and type(label.SetShadowOffset)=="function" then label:SetShadowOffset(0,0) end
+  if label and type(label.SetShadowColor)=="function" then label:SetShadowColor(0,0,0,0) end
   local enabled=type(b.IsEnabled)~="function" or b:IsEnabled()~=false
   if not enabled then b:SetBackdropColor(.40,.33,.18,1);b:SetBackdropBorderColor(.40,.33,.18,1) end
   local h=b:GetHighlightTexture();if h then h:SetVertexColor(1,1,1,.18) end
@@ -56,6 +63,9 @@ function CP:StyleSegment(b,on)
     b:SetBackdropColor(0,0,0,0);b:SetBackdropBorderColor(0,0,0,0)
     b:SetNormalFontObject("GameFontHighlightSmall");b:SetHighlightFontObject("GameFontHighlightSmall")
     local label=b:GetFontString();if label and type(label.SetTextColor)=="function" then label:SetTextColor(.80,.79,.75) end
+    -- Back from gold: light text gets its normal shadow again.
+    if label and type(label.SetShadowOffset)=="function" then label:SetShadowOffset(1,-1) end
+    if label and type(label.SetShadowColor)=="function" then label:SetShadowColor(0,0,0,1) end
   end
 end
 function CP:RenderCheckbox(b,spec,width)

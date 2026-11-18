@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Upload dist/CraftPilot-<version>.zip to CurseForge (project 1812811, WoW Forever).
 
-    CF_API_TOKEN=... python3 tools/upload_curseforge.py v0.1.1-beta [--dry-run]
+    CF_API_TOKEN=... python3 tools/upload_curseforge.py v1.0.1 [--dry-run]
 
 The changelog is docs/RELEASE_<version>.md. QuestieDB is attached as a required dependency. The release type is
-"release" so the CurseForge app offers the file to everyone; the version name still says beta while CraftPilot is
-in beta. Game version: WoW Forever 1.60.1 (CurseForge ID 17053, the same ID QuestieDB uploads with).
+"release" so the CurseForge app offers the file to everyone. Game version: WoW Forever 1.60.1 (CurseForge ID 17053, the same ID QuestieDB uploads with).
 """
 import argparse
 import json
@@ -25,9 +24,9 @@ def main():
     p.add_argument('tag')
     p.add_argument('--dry-run', action='store_true')
     args = p.parse_args()
-    m = re.fullmatch(r'v(\d+\.\d+\.\d+(?:-beta)?)', args.tag)
+    m = re.fullmatch(r'v(\d+\.\d+\.\d+)', args.tag)
     if not m:
-        raise SystemExit('Tag must look like v1.2.3 or v1.2.3-beta')
+        raise SystemExit('Tag must look like v1.2.3')
     version = m.group(1)
     archive = ROOT / 'dist' / f'CraftPilot-{version}.zip'
     notes = ROOT / 'docs' / f'RELEASE_{version}.md'

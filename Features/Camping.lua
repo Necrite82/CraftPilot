@@ -44,7 +44,7 @@ function CP:CampingRecipes(key)
     end
     local drop=dropLocations[object.maker]
     if drop then ways={drop[1].." · "..L(drop[2]).." · "..L("Drop, Live-Verfügbarkeit unbestätigt")} end
-    if object.item==trapper.item then ways={"Houndmaster Loksey · "..L("Scharlachrotes Kloster: Bibliothek").." · "..L("Beta-Dropmeldung; aktuell unbestätigt")} end
+    if object.item==trapper.item then ways={"Houndmaster Loksey · "..L("Scharlachrotes Kloster: Bibliothek").." · "..L("Dropmeldung; aktuell unbestätigt")} end
     rows[#rows+1]={id=object.maker,object=object,base=base,recipe=recipe,prof=object.prof,tier=tier,
       mats=mats,useSkill=useRequirements[object.maker] or object.useSkill,materialsLive=native and native.mats~=nil,
       learned=native and native.learned==true and native.disabled~=true,

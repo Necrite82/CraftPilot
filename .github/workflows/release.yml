@@ -1,5 +1,5 @@
 name: Release
-# Push a tag such as v0.1.1-beta, or start it by hand (Actions > Release > Run workflow on main): tests, archive
+# Push a tag such as v1.0.1, or start it by hand (Actions > Release > Run workflow on main): tests, archive
 # check, GitHub release (the manual start creates the tag v<version from the TOC> itself) and CurseForge upload.
 on:
   push:

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0
+
+CraftPilot ist fertig für alle: kein Beta-Status mehr. Ab jetzt heißen Fehlerbehebungen und kleine Änderungen 1.0.1, 1.0.2 …, neue Funktionen 1.1.0, 1.2.0 ….
+
+- **Selbst herstellen**: Fehlt ein Material, dessen Vorstufe du hast (Erz für Barren, Stoff für Ballen …), nennen Empfehlung und Rezeptdetails sie, z. B. „bis 21 Mithrilbarren aus 21 Mithrilerz (Bergbau)“. Gezählt werden Tasche, Bank, Briefkasten und Twinks; kann ein Twink es statt dir herstellen, steht sein Name dabei
+- **Empfehlung ohne abgeschnittenen Text**: Was fehlt, steht in der ersten Zeile; Twinks, Spartipp und Kosten des ganzen Wegs in einer zweiten
+- **Schärfere Schrift** auf den goldenen Knöpfen (z. B. „Im AH suchen“, „Weg zum Lehrer“)
+- **Seitenleiste deckend**: Andere Fenster scheinen nicht mehr durch
+
 ## 0.2.4-beta
 
 - Neuer interner Name **CraftPilotPro**: Addon-Ordner `CraftPilotPro`, gespeicherte Daten `CraftPilotProDB` / `CraftPilotProAccountDB`, Befehl **`/cpp`** (oder `/craftpilotpro`). Grund: Ein anderes Addon heißt ebenfalls „CraftPilot“ und belegt denselben Ordner, dieselben Daten und `/cp`. Im Spiel heißt CraftPilot weiter CraftPilot.

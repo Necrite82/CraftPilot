@@ -621,7 +621,7 @@ for _,row in ipairs(campRows) do
     newObjects=newObjects+1
     assert(row.mats[4470]==2 and row.mats[4234]==4 and row.mats[3575]==1)
     assert(row.object.useSkill==300 and row.recipe.item==273109)
-    assert(row.source:find("Beta",1,true))
+    assert(row.source:find("Dropmeldung",1,true))
   end
   if row.id==1283400 then assert(row.source:find("Lord Serpentis",1,true) and row.useSkill==140) end
   if row.id==1263041 then assert(row.source:find("Gilnid",1,true)) end
@@ -1068,6 +1068,7 @@ print("PASS: cash versus economic costs, one-time book fees, missing prices, rou
 assert(loadfile("tests/planning.lua"))(CP)
 assert(loadfile("tests/market.lua"))(CP)
 assert(loadfile("tests/cheapest_path.lua"))(CP)
+assert(loadfile("tests/raw_materials.lua"))(CP)
 assert(loadfile("tests/recommendation.lua"))(CP)
 assert(loadfile("tests/companion_alts.lua"))(CP)
 assert(loadfile("tests/features_025.lua"))(CP,createdFrames)
@@ -1093,16 +1094,17 @@ assert(not CP:IsNewerVersion("0.9.0-alpha","0.19.1-alpha"))
 assert(not CP:IsNewerVersion("|Hbad|h","0.19.1-alpha"))
 assert(CP:IsNewerVersion("0.1.0-beta","0.29.0-alpha") and not CP:IsNewerVersion("0.29.0-alpha","0.1.0-beta"),"Any beta is newer than the old alphas")
 assert(CP:IsNewerVersion("0.1.0","0.1.0-beta") and CP:IsNewerVersion("0.2.0-beta","0.1.0-beta"))
+assert(CP:IsNewerVersion("1.0.0","0.2.4-beta") and CP:IsNewerVersion("1.0.1","1.0.0") and not CP:IsNewerVersion("1.0.0","1.0.0"),"1.0.0 counts as newer than every beta")
 local priorSay=CP.Say
 local notices=0
 CP.Say=function(_,text) notices=notices+1;assert(not text:find("evil",1,true)) end
-assert(not CP:ReceiveVersion("other","V|0.99.0-beta","GUILD"))
-assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta","WHISPER"))
-assert(not CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta|evil","GUILD"))
-assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta","GUILD"))
-assert(CP:ReceiveVersion("CraftPilotVer","V|0.99.0-beta","GUILD"))
-assert(notices==1 and CP.db.latestSeenVersion=="0.99.0-beta")
-assert(CP:VersionStatus():find("0.99.0",1,true))
+assert(not CP:ReceiveVersion("other","V|1.9.0","GUILD"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|1.9.0","WHISPER"))
+assert(not CP:ReceiveVersion("CraftPilotVer","V|1.9.0|evil","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|1.9.0","GUILD"))
+assert(CP:ReceiveVersion("CraftPilotVer","V|1.9.0","GUILD"))
+assert(notices==1 and CP.db.latestSeenVersion=="1.9.0")
+assert(CP:VersionStatus():find("1.9.0",1,true))
 local sent={}
 C_ChatInfo={RegisterAddonMessagePrefix=function(prefix) assert(prefix=="CraftPilotVer");return true end,
  SendAddonMessage=function(prefix,payload,channel) sent[#sent+1]={prefix,payload,channel} end}

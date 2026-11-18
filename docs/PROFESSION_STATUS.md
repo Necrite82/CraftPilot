@@ -1,6 +1,6 @@
 # Berufsabgleich am 8. November 2026
 
-Alle zwölf unterstützten Berufe wurden auf vorhandene Herstellungs-Farbgrenzen geprüft. Seit 0.2.3-beta stammt der Referenzstand aus CraftPilots eigenem Katalog (Client-Build siehe `Data/Catalog/SOURCES.json`); die Zahlen unten sind der Stand vom 8. November 2026. Gegenüber den Beta-Builds 1.60.1.70425/70450 haben sich bei 25 Rezepten die Farbgrenzen und bei 12 die Lernstufen geändert, u. a. Grober Schleifstein (grau ab 90) und Gerbgestell (Lernstufe 125). Dies ist keine Bestätigung aller Rezepte auf aktuellen Live-Servern.
+Alle zwölf unterstützten Berufe wurden auf vorhandene Herstellungs-Farbgrenzen geprüft. Seit Version 0.2.3 stammt der Referenzstand aus CraftPilots eigenem Katalog (Client-Build siehe `Data/Catalog/SOURCES.json`); die Zahlen unten sind der Stand vom 8. November 2026. Gegenüber den früheren Client-Builds 1.60.1.70425/70450 haben sich bei 25 Rezepten die Farbgrenzen und bei 12 die Lernstufen geändert, u. a. Grober Schleifstein (grau ab 90) und Gerbgestell (Lernstufe 125). Dies ist keine Bestätigung aller Rezepte auf aktuellen Live-Servern.
 
 | Beruf | Rezept-Farbreihen | Widersprüchliche Folgen | Stand der Anzeige |
 |---|---:|---:|---|

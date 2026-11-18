@@ -161,7 +161,7 @@ function CP:UpdateCompanion()
   end
   if rec then
     f.title:SetText(rec.title);put(f.title,4)
-    f.detail:SetText(rec.detail);put(f.detail,8)
+    f.detail:SetText(rec.extra and (rec.detail.."\n"..rec.extra) or rec.detail);put(f.detail,8)
     local count,at,index=self:CraftsToNextColor(key,rec.id)
     if count then
       f.progress:SetText(string.format(L("Noch ca. %d× bis %s (Skill %d)"),count,INKS[index]..COLOR_NAMES[index].."|r",at))

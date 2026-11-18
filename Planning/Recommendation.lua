@@ -60,7 +60,10 @@ function CP:Recommendation(key)
   for _,mat in ipairs(cost.materials) do
     if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
   end
-  if #pickups>0 then detail=detail.."  ·  "..L("Von Twinks: ")..table.concat(pickups,", ") end
+  local extras={}
+  local raw=self.RawMaterialHints and self:RawMaterialHints(cost.materials,1) or {}
+  if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1] end
+  if #pickups>0 then extras[#extras+1]=L("Von Twinks: ")..table.concat(pickups,", ") end
   -- Saving tip: a recipe (perhaps still to learn) that is much cheaper per point right now than the pick,
   -- e.g. a green one the "reliable" setting passes over.
   local tip
@@ -71,24 +74,26 @@ function CP:Recommendation(key)
       if o.id==first.id then break end
     end
   end
+  -- Second line: twink pickups, saving tip and the whole way, so the first line (what is missing) stays readable.
   if tip then
-    detail=detail.."  ·  "..string.format(L("Spartipp: %s%s · ca. %s statt %s je Punkt"),tip.name,tip.learned and "" or L(" (lernen)"),
+    extras[#extras+1]=string.format(L("Spartipp: %s%s · ca. %s statt %s je Punkt"),tip.name,tip.learned and "" or L(" (lernen)"),
       self:CompactMoney(tip.perPoint),self:CompactMoney(path.perPointNow[first.id]))
   end
   if path and #path.segments>0 then
-    detail=detail.."  ·  "..string.format(L("Ganzer Weg bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total))
+    extras[#extras+1]=string.format(L("Ganzer Weg bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total))
   elseif not first then
     for _,offer in ipairs(self:TrainerOffersCached(key)) do
       local saving=offer.comparison and offer.comparison.cashSaving
       if saving and saving>0 then
-        detail=detail.."  ·  "..L("Tipp: ")..offer.name..L(" beim Lehrer ist günstiger")
+        extras[#extras+1]=L("Tipp: ")..offer.name..L(" beim Lehrer ist günstiger")
         break
       end
     end
   end
   local gate=self.RankGate and self:RankGate(key)
   if gate and not gate.levelOk and record.skill>=(record.cap or 0)-10 then detail=gate.text.."  ·  "..detail end
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,tip=tip,
+  local extra=#extras>0 and table.concat(extras,"  ·  ") or nil
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,tip=tip,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

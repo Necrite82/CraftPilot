@@ -1,10 +1,10 @@
 # Datenherkunft / Data sources
 
-**Stand:** 2026-11-18 · WoW Forever Client-Build 1.60.1.70959 · eigener Katalog seit CraftPilot 0.2.3-beta
+**Stand:** 2026-11-18 · WoW Forever Client-Build 1.60.1.70959 · eigener Katalog seit CraftPilot 0.2.3
 
 ## Eigener Rezeptkatalog
 
-Seit 0.2.3-beta baut CraftPilot seinen Rezeptkatalog (`Data/Catalog`) selbst. Werkzeuge und Ablauf: [tools/catalog](tools/catalog/README.md). Quellen, Lizenzhinweise und Prüfsummen: [Data/Catalog/SOURCE.md](Data/Catalog/SOURCE.md) und `Data/Catalog/SOURCES.json`.
+Seit Version 0.2.3 baut CraftPilot seinen Rezeptkatalog (`Data/Catalog`) selbst. Werkzeuge und Ablauf: [tools/catalog](tools/catalog/README.md). Quellen, Lizenzhinweise und Prüfsummen: [Data/Catalog/SOURCE.md](Data/Catalog/SOURCE.md) und `Data/Catalog/SOURCES.json`.
 
 | Quelle | Was CraftPilot daraus liest |
 |---|---|
@@ -15,7 +15,7 @@ Seit 0.2.3-beta baut CraftPilot seinen Rezeptkatalog (`Data/Catalog`) selbst. We
 
 Übernommen werden nur Fakten (IDs, Zahlen, Namen), keine Dateien. Rezepte, die nur noch im Client stehen (z. B. aus Season of Discovery) oder laut AllTheThings noch nicht veröffentlicht sind, bleiben als `unavailable` im Katalog und werden nicht geplant. Lehrerkosten neuer Forever-Rezepte kennt keine Quelle; sie werden aus Rezepten ähnlicher Stufe geschätzt und als Schätzung gekennzeichnet.
 
-Frühere Versionen (auf CurseForge bis 0.1.0-beta) enthielten einen Schnappschuss des GPL-3.0-Projekts [Craft Ladder](https://github.com/saintmodx/craft-ladder). Der Abschlussvergleich vor der Umstellung steht in [docs/CATALOG_COMPARE.md](docs/CATALOG_COMPARE.md): keine Abweichung bei Materialien, Ergebnis, Menge, Rezeptgegenstand und Skillfarben.
+Frühere Versionen (auf CurseForge bis 0.1.0) enthielten einen Schnappschuss des GPL-3.0-Projekts [Craft Ladder](https://github.com/saintmodx/craft-ladder). Der Abschlussvergleich vor der Umstellung steht in [docs/CATALOG_COMPARE.md](docs/CATALOG_COMPARE.md): keine Abweichung bei Materialien, Ergebnis, Menge, Rezeptgegenstand und Skillfarben.
 
 ## Automatische Aktualisierung
 

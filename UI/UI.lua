@@ -331,6 +331,10 @@ side:SetWidth(SIDE)
 side:SetPoint("TOPRIGHT",frame,"TOPLEFT",1,0)
 side:SetPoint("BOTTOMRIGHT",frame,"BOTTOMLEFT",1,0)
 CP:Round(side)
+-- Solid backing under the sidebar: it hangs outside the window, so a skin's see-through panel style (or a
+-- translucent backdrop) would let unit frames and other addons show through. Inset keeps the round corners.
+U.sideBacking=side:CreateTexture(nil,"BACKGROUND",nil,-8)
+U.sideBacking:SetPoint("TOPLEFT",side,"TOPLEFT",4,-4);U.sideBacking:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-4,4)
 side:EnableMouse(true)
 if type(side.RegisterForDrag)=="function" then side:RegisterForDrag("LeftButton") end
 side:SetScript("OnDragStart",function() if type(frame.StartMoving)=="function" then frame:StartMoving() end end)
@@ -473,6 +477,7 @@ U.rec.stripe:SetColorTexture(.88,.69,.31,1)
 U.rec.icon=U.rec:CreateTexture(nil,"ARTWORK");U.rec.icon:SetSize(32,32);U.rec.icon:SetPoint("LEFT",U.rec,"LEFT",12,0)
 U.rec.title=text(U.rec,"GameFontNormal",54,-9,400,"");U.rec.title:SetWordWrap(false)
 U.rec.detail=text(U.rec,"GameFontHighlightSmall",54,-28,400,"");U.rec.detail:SetWordWrap(false)
+U.rec.extra=text(U.rec,"GameFontHighlightSmall",54,-44,400,"");U.rec.extra:SetWordWrap(false)
 U.rec.search=primaryButton(U.rec,150,28,L("Im AH suchen"),function() CP:SearchRecommendation() end)
 U.rec.pick=button(U.rec,110,28,0,0,L("Auswählen"),function()
   local r=CP.currentRecommendation;if not r then return end
@@ -1405,6 +1410,13 @@ local function renderDetail(key,entry)
     pickup:SetText("|cff8fd6a6"..L("Von Twinks holen: ")..RESET..table.concat(pickups,", "))
     put(pickup,12);y=y+8
   end
+  -- Raw materials one step back: ore for missing bars, cloth for bolts, ...
+  local raw=CP.RawMaterialHints and CP:RawMaterialHints(cost.materials,3) or {}
+  if #raw>0 then
+    local rawLine=detailLabel("rawHint","GameFontHighlightSmall");rawLine:SetWidth(inner)
+    rawLine:SetText("|cff8fd6a6"..L("Selbst herstellen: ")..RESET..table.concat(raw,"\n"))
+    put(rawLine,12);y=y+8
+  end
   -- Made for a later step: say clearly to keep it (or that enough is already there).
   local output=CP:RecipeMarketOutput(key,entry.id)
   local keep=output and CP:KeepEntry(key,output)
@@ -1540,10 +1552,14 @@ function CP:ApplyTheme()
   else
     PALETTE.window={.078,.090,.110};PALETTE.panel={.098,.114,.137};PALETTE.raised={.122,.141,.172};PALETTE.border={.17,.196,.227}
   end
+  local sideColor={PALETTE.window[1]*.8,PALETTE.window[2]*.8,PALETTE.window[3]*.8}
+  if U.sideBacking and type(U.sideBacking.SetColorTexture)=="function" then
+    U.sideBacking:SetColorTexture(sideColor[1],sideColor[2],sideColor[3],1)
+  end
   -- Leave Ellesmere surfaces alone in Auto; it manages its own theme.
   if not hasEUI then
-    paint(frame,PALETTE.window,.98)
-    paint(U.side,{PALETTE.window[1]*.8,PALETTE.window[2]*.8,PALETTE.window[3]*.8},.98)
+    paint(frame,PALETTE.window,1)
+    paint(U.side,sideColor,1)
     if type(header.SetBackdrop)=="function" then header:SetBackdrop(nil) end
     paint(U.listPanel,PALETTE.panel)
     paint(U.detailPanel,PALETTE.panel)
@@ -1856,7 +1872,8 @@ local function renderNow(self,key,prof,record,inner)
   local leftW=math.floor((inner-12)*.53)
   local rightW=inner-12-leftW
   local top=106
-  if CP:RenderRecommendation(key,inner) then top=top+62 end
+  local recHeight=CP:RenderRecommendation(key,inner)
+  if recHeight then top=top+recHeight+8 end
   U.listPanel:ClearAllPoints();U.listPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-top);U.listPanel:SetSize(leftW,h-top-44);U.listPanel:Show()
   U.detailPanel:ClearAllPoints();U.detailPanel:SetPoint("TOPLEFT",frame,"TOPLEFT",30+leftW,-top);U.detailPanel:SetSize(rightW,h-top-44);U.detailPanel:Show()
   U.countText:ClearAllPoints();U.countText:SetPoint("TOPRIGHT",U.listPanel,"TOPRIGHT",-12,-15)
@@ -2084,12 +2101,18 @@ function CP:RenderRecommendation(key,inner)
   local rec=self:Recommendation(key)
   self.currentRecommendation=rec
   if not rec then U.rec:Hide();return false end
-  U.rec:ClearAllPoints();U.rec:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-106);U.rec:SetSize(inner,54);U.rec:Show()
+  -- Two text lines below the title when there is a saving tip or a whole-way cost, so nothing gets cut off.
+  local height=rec.extra and 64 or 54
+  U.rec:ClearAllPoints();U.rec:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-106);U.rec:SetSize(inner,height);U.rec:Show()
   if type(U.rec.icon.SetTexture)=="function" then U.rec.icon:SetTexture(self:RecipeIcon(key,rec.id)) end
   local w=inner-54-150-110-30
-  U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w)
+  U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w);U.rec.extra:SetWidth(w)
+  U.rec.title:ClearAllPoints();U.rec.title:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,rec.extra and -8 or -9)
+  U.rec.detail:ClearAllPoints();U.rec.detail:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,rec.extra and -26 or -28)
+  U.rec.extra:ClearAllPoints();U.rec.extra:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-43)
   U.rec.title:SetText(rec.title)
   U.rec.detail:SetText(rec.detail)
+  U.rec.extra:SetText(rec.extra or "");U.rec.extra:SetShown(rec.extra~=nil)
   U.rec.search:ClearAllPoints();U.rec.search:SetPoint("RIGHT",U.rec,"RIGHT",-12,0)
   U.rec.pick:ClearAllPoints();U.rec.pick:SetPoint("RIGHT",U.rec.search,"LEFT",-8,0)
   if rec.learn then
@@ -2117,7 +2140,7 @@ function CP:RenderRecommendation(key,inner)
   if doubtful then
     U.rec.prices:SetText(p.missing>0 and string.format(L("%d ohne Preis"),p.missing) or L("Preise alt"))
     local tw=inner-54-150-30-(U.rec.pick:IsShown() and 118 or 0)-128
-    U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw)
+    U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw);U.rec.extra:SetWidth(tw)
   end
   -- Hover: the whole cheapest path, step by step.
   U.rec:EnableMouse(true)
@@ -2125,7 +2148,7 @@ function CP:RenderRecommendation(key,inner)
     local r=CP.currentRecommendation
     return r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
   end)
-  return true
+  return height
 end
 
 function CP:Render()

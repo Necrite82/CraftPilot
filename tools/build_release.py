@@ -4,7 +4,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ['CraftPilotPro.toc', 'Core/Locale.lua', 'Locales/enUS.lua', 'Features/Camping.lua', 'Features/Economy.lua', 'Features/RecipeActions.lua', 'Core/TrainerRecipes.lua', 'UI/Presentation.lua', 'Features/ManualShopping.lua', 'Planning/CraftSuggestions.lua', 'UI/PlanUX.lua', 'Core/SkillPolicy.lua', 'Planning/ForwardPlanning.lua', 'Planning/CheapestPath.lua', 'Planning/Recommendation.lua', 'Features/Alts.lua', 'Features/Companion.lua', 'Planning/Learning.lua', 'Features/Farming.lua', 'Features/Account.lua', 'Features/Keep.lua', 'Features/Marks.lua', 'Features/Round.lua', 'Features/Endgame.lua', 'Features/Wishlist.lua', 'Features/RaidStock.lua', 'Features/Protection.lua', 'UI/Help.lua', 'Features/VendorBrowser.lua', 'Planning/Costing.lua', 'Planning/Planning.lua', 'Features/Market.lua', 'Features/Shopping.lua', 'Core/Diagnostics.lua', 'Core/QuestieBridge.lua', 'Core/Updates.lua', 'Core/SkillInfo.lua', 'Core/Data.lua', 'Core/Core.lua', 'Core/Catalog.lua',
+FILES = ['CraftPilotPro.toc', 'Core/Locale.lua', 'Locales/enUS.lua', 'Features/Camping.lua', 'Features/Economy.lua', 'Features/RecipeActions.lua', 'Core/TrainerRecipes.lua', 'UI/Presentation.lua', 'Features/ManualShopping.lua', 'Planning/CraftSuggestions.lua', 'UI/PlanUX.lua', 'Core/SkillPolicy.lua', 'Planning/ForwardPlanning.lua', 'Planning/CheapestPath.lua', 'Planning/Recommendation.lua', 'Features/Alts.lua', 'Features/Companion.lua', 'Planning/Learning.lua', 'Features/Farming.lua', 'Features/Account.lua', 'Features/Keep.lua', 'Features/Marks.lua', 'Features/Round.lua', 'Features/Endgame.lua', 'Features/Wishlist.lua', 'Features/RaidStock.lua', 'Features/Protection.lua', 'UI/Help.lua', 'Features/VendorBrowser.lua', 'Planning/Costing.lua', 'Planning/RawMaterials.lua', 'Planning/Planning.lua', 'Features/Market.lua', 'Features/Shopping.lua', 'Core/Diagnostics.lua', 'Core/QuestieBridge.lua', 'Core/Updates.lua', 'Core/SkillInfo.lua', 'Core/Data.lua', 'Core/Core.lua', 'Core/Catalog.lua',
          'Core/PriceHistory.lua', 'Planning/Route.lua', 'UI/UI.lua', 'Core/Settings.lua', 'Media/CraftPilot.tga', 'Media/Round.tga', 'LICENSE',
          'README.md', 'DATA_SOURCES.md', 'docs/PROFESSION_STATUS.md',
          'Data/Catalog/SOURCES.json', 'Data/Catalog/SOURCE.md',
@@ -26,6 +26,12 @@ def main():
     version = next(line.split(':', 1)[1].strip() for line in
                    (ROOT / 'CraftPilotPro.toc').read_text().splitlines()
                    if line.startswith('## Version:'))
+    # Every file the TOC loads must be in the package, or the addon breaks in game.
+    loaded = {line.strip().replace('\\', '/') for line in (ROOT / 'CraftPilotPro.toc').read_text().splitlines()
+              if line.strip() and not line.startswith('#')}
+    missing = sorted(loaded - set(FILES))
+    if missing:
+        raise SystemExit('TOC loads files missing from FILES: ' + ', '.join(missing))
     args.out.mkdir(parents=True, exist_ok=True)
     archive = args.out / f'CraftPilot-{version}.zip'
     if not args.check:
