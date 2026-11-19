@@ -1,8 +1,8 @@
 {
   "questiedb": {
     "source": "https://github.com/Questie/QuestieDB",
-    "tag": "v1.1.2",
-    "commit": "e1652ce62113c152da682baf2d6fb85f1396bcfb",
+    "tag": "v1.1.3",
+    "commit": "8b8df2dc12a34e2eb82bc7105b40405dce1c01f7",
     "files": {
       "data/Forever/foreverNpcDB.lua": {
         "sha256": "a8c4169690726323dac3c6441f74f7a4d9cafcc08ec42231d72ff28c9471f0ee"
