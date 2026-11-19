@@ -518,6 +518,14 @@ U.rec.prices=button(U.rec,120,28,0,0,L("Preise prüfen"),function()
   CP:SearchItems(items,L("Preise"),L("Auctionator scannt die Materialien deines Weges."))
 end)
 U.rec.prices:Hide()
+-- 1.3.0: switch between your plan and the cheapest path; it stays a suggestion.
+U.rec.switch=button(U.rec,140,28,0,0,"",function()
+  local r=CP.currentRecommendation;if not (r and r.alternative) then return end
+  CP.db.ui.recSource=type(CP.db.ui.recSource)=="table" and CP.db.ui.recSource or {}
+  CP.db.ui.recSource[r.key]=r.alternative.source
+  CP:Render()
+end)
+U.rec.switch:Hide()
 U.rec:Hide()
 -- 1.1.0: the budget, visible on "Jetzt" right below the recommendation; a click opens the input.
 U.budget=CreateFrame("Button",nil,frame,"BackdropTemplate")
@@ -2195,6 +2203,15 @@ function CP:RenderRecommendation(key,inner)
     U.rec.prices:SetText(p.missing>0 and string.format(L("%d ohne Preis"),p.missing) or L("Preise alt"))
     local tw=inner-54-150-30-(U.rec.pick:IsShown() and 118 or 0)-128
     U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw);U.rec.extra:SetWidth(tw)
+  end
+  U.rec.switch:ClearAllPoints()
+  U.rec.switch:SetShown(rec.alternative~=nil)
+  if rec.alternative then
+    local left=U.rec.prices:IsShown() and U.rec.prices or (U.rec.pick:IsShown() and U.rec.pick or U.rec.search)
+    U.rec.switch:SetPoint("RIGHT",left,"LEFT",-8,0)
+    U.rec.switch:SetText(rec.alternative.source=="cheapest" and L("Günstigsten nehmen") or L("Meinen Plan nehmen"))
+    local sw=(U.rec.title:GetWidth() or 0)-148
+    if sw>120 then U.rec.title:SetWidth(sw);U.rec.detail:SetWidth(sw);U.rec.extra:SetWidth(sw) end
   end
   -- 1.2.1: only as many hints as fit; the rest stays in the tooltip and the companion.
   local parts=rec.extraParts or {}

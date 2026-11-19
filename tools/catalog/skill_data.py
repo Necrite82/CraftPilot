@@ -10,7 +10,9 @@ files each post as a GitHub issue with the label `skilldaten`. This tool reads t
 
 Code format: CPSKILL1;<client build>;key:spell:skill:crafts:points,...  Identical codes count once.
 
-status: "confirmed"  points were seen up to grey-1 and none in >= 5 crafts at or above the catalog's grey
+Codes are kept apart by client build; the status uses only the newest build that has data for a recipe.
+
+status: "confirmed"  points were seen up to grey-1 and none in >= 20 crafts at or above the catalog's grey
         "conflict"   a point came at or above the catalog's grey (the catalog's grey is too low)
         "open"       not enough crafts around grey yet
 
@@ -26,7 +28,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CODE = re.compile(r'CPSKILL1;([^;\s]*);([a-z]+:\d+:\d+:\d+:\d+(?:,[a-z]+:\d+:\d+:\d+:\d+)*)')
 RECIPE = re.compile(r'\[(\d+)\] = \{ name = "((?:[^"\\]|\\.)*)".*?colors = \{ (\d+), (\d+), (\d+), (\d+) \}')
-MIN_GREY_CRAFTS = 5
+# Five misses in a row happen in about one of four tries even at a 25 % green chance; twenty make a false
+# "confirmed" very unlikely (0.75^20 < 0.4 %).
+MIN_GREY_CRAFTS = 20
 
 
 def codes(texts):
@@ -40,8 +44,16 @@ def codes(texts):
             yield m.group(1), m.group(2)
 
 
+def build_number(build):
+    try:
+        return int(build)
+    except ValueError:
+        return -1
+
+
 def collect(texts):
-    data = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [0, 0])))
+    # data[key][spell][build][skill] = [crafts, points]
+    raw = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: [0, 0]))))
     builds = set()
     for build, body in codes(texts):
         builds.add(build)
@@ -50,10 +62,17 @@ def collect(texts):
             n, u = int(n), int(u)
             if n <= 0 or u < 0 or u > n:
                 continue
-            cell = data[key][int(spell)][int(skill)]
+            cell = raw[key][int(spell)][build][int(skill)]
             cell[0] += n
             cell[1] += u
-    return data, builds
+    data = defaultdict(dict)
+    used_build = {}
+    for key, spells in raw.items():
+        for spell, by_build in spells.items():
+            newest = max(by_build, key=build_number)
+            data[key][spell] = by_build[newest]
+            used_build[(key, spell)] = newest
+    return data, builds, used_build
 
 
 def catalog_colors():
@@ -103,7 +122,8 @@ def write_lua(results, builds, out):
         lines.append('  %s = {' % key)
         for spell in sorted(results[key]):
             r = results[key][spell]
-            fields = ['crafts = %d' % r['crafts'], 'points = %d' % r['points'], 'status = "%s"' % r['status']]
+            fields = ['crafts = %d' % r['crafts'], 'points = %d' % r['points'], 'status = "%s"' % r['status'],
+                      'build = "%s"' % r['build']]
             if r['lastPoint'] is not None:
                 fields.append('lastPoint = %d' % r['lastPoint'])
             if r['greyFrom'] is not None:
@@ -130,7 +150,8 @@ def write_report(results, colors, builds, out):
             'Client-Builds: ' + (', '.join(sorted(builds)) or '–'), '',
             '- bestätigt (confirmed): %d' % count['confirmed'],
             '- widersprüchlich (conflict): %d – ein Punkt kam bei oder über dem Grau des Katalogs' % count['conflict'],
-            '- offen (open): %d – noch zu wenige Herstellungen rund um Grau' % count['open'], '',
+            '- offen (open): %d – noch zu wenige Herstellungen rund um Grau (bestätigt erst ab %d ohne Punkt)' % (count['open'], MIN_GREY_CRAFTS), '',
+            'Je Rezept zählt nur der neueste Client-Build mit Daten.', '',
             '| Status | Rezept | Beruf | Herstellungen | Punkte | letzter Punkt bei | ohne Punkt ab | Katalog o/y/g/grau |',
             '| --- | --- | --- | --- | --- | --- | --- | --- |'] + rows
     out.write_text('\n'.join(text) + '\n', encoding='utf-8')
@@ -147,9 +168,10 @@ def main():
     if args.issues:
         texts += [i.get('body') or '' for i in json.loads(args.issues.read_text(encoding='utf-8'))]
     texts += [t.read_text(encoding='utf-8') for t in args.text]
-    data, builds = collect(texts)
+    data, builds, used_build = collect(texts)
     colors = catalog_colors()
-    results = {key: {spell: judge(skills, (colors.get((key, spell), (None, None))[1] or [None] * 4)[3])
+    results = {key: {spell: dict(judge(skills, (colors.get((key, spell), (None, None))[1] or [None] * 4)[3]),
+                                 build=used_build[(key, spell)])
                      for spell, skills in spells.items()} for key, spells in data.items()}
     write_lua(results, builds, args.lua)
     write_report(results, colors, builds, args.report)

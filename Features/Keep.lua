@@ -346,7 +346,8 @@ function CP:MissingForPlans()
     for id,n in pairs((self:PlanRequirements(owner))) do need[id]=(need[id] or 0)+n end
   end
   local rec=self.currentRecommendation
-  for _,m in ipairs(rec and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.quantity) end
+  -- 1.3.0: the recommendation's whole need (not what is still missing): stock is subtracted exactly once below.
+  for _,m in ipairs(rec and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.required or m.quantity) end
   local out={}
   for id,n in pairs(need) do
     local missing=n-self:ItemAvailability(id)

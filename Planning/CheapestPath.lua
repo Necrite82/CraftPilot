@@ -40,29 +40,47 @@ end
 
 -- Price of one item: AH or vendor, or making it (two levels deep) when that is cheaper by at least 5 %.
 -- Making it on a twink is noted in memo.notes, so the UI can say who should craft what.
+-- 1.3.0: results are cached per depth (memo.byDepth[depth][item]); a price found near the depth limit (where
+-- making it is not looked at any more) no longer replaces the full price of a later, shallower lookup.
+-- memo[item] keeps the price at depth 0 for the price limits below. Cycles are cut with memo.visiting.
 local function unitPrice(self,memo,item,depth)
-  if memo[item]~=nil then return memo[item] or nil end
-  memo[item]=false
+  memo.byDepth=memo.byDepth or {}
+  local cache=memo.byDepth[depth] or {};memo.byDepth[depth]=cache
+  if cache[item]~=nil then return cache[item] or nil end
+  memo.visiting=memo.visiting or {}
+  if memo.visiting[item] then return nil end
+  memo.visiting[item]=true
   local price=self:PriceDetails(item).price
   memo.items[item]=true
   if depth<2 then
     for _,maker in ipairs(self:ItemMakers(item)) do
-      local sum,known=0,true
-      for mat,n in pairs(maker.recipe.mats or {}) do
-        local p=type(n)=="number" and unitPrice(self,memo,mat,depth+1)
-        if not p then known=false;break end
-        sum=sum+p*n
+      -- Only makers that are sure (own recipe, or a twink whose recipe list confirms it) count for the price.
+      if not maker.alt or maker.altSure then
+        local sum,known=0,true
+        for mat,n in pairs(maker.recipe.mats or {}) do
+          local p=type(n)=="number" and unitPrice(self,memo,mat,depth+1)
+          if not p then known=false;break end
+          sum=sum+p*n
+        end
+        local made=maker.recipe.count or maker.recipe.yield or 1
+        if known and sum>0 and (not price or sum/made<price*0.95) then
+          if maker.alt and price then memo.notes[item]={alt=maker.alt,sure=true,id=maker.id,key=maker.key,saving=price-sum/made} end
+          price=sum/made
+        end
       end
-      local made=maker.recipe.count or maker.recipe.yield or 1
-      if known and sum>0 and (not price or sum/made<price*0.95) then
-        if maker.alt and price then memo.notes[item]={alt=maker.alt,sure=maker.altSure,id=maker.id,key=maker.key,saving=price-sum/made} end
-        price=sum/made
+      if maker.alt and not maker.altSure and price then
+        -- Unconfirmed twink recipe: only a hint ("open the profession once on X"), never in the price.
+        memo.maybe=memo.maybe or {}
+        memo.maybe[item]=memo.maybe[item] or {alt=maker.alt,id=maker.id,key=maker.key}
       end
     end
   end
-  memo[item]=price or false
+  memo.visiting[item]=nil
+  cache[item]=price or false
+  if depth==0 then memo[item]=price or false end
   return price
 end
+CP.UnitPriceForTest=unitPrice
 
 -- What a vendor always pays for an item (0 when unknown). The only sale the skill path may count on:
 -- whether the auction house buys 18 blunderbusses is anyone's guess.
@@ -316,7 +334,7 @@ function CP:CheapestPath(key,from,to)
     end
   end
   local path={key=key,from=skill,target=target,reached=reached,segments=segments,total=total+fees,fees=fees,
-    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits,quantities=quantities}
+    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits,quantities=quantities,maybeAlts=memo.maybe}
   self.pathCache=true
   self.pathCaches[token]={at=now(),path=path}
   return path
