@@ -90,7 +90,7 @@ function CP:ExportToAuctionator(owner)
   end
   self:InvalidateReservations()
   local cached
-  if owner~="camping" and owner~="raid" and self:CanDeferRouteBuild() then
+  if owner~="camping" and owner~="raid" and owner~="project" and self:CanDeferRouteBuild() then
     local p=self:PlanFor(owner)
     if p and (p.autoMode or not next(p.crafts)) then
       local current=(self.db.professions[owner] or {}).skill or p.start
@@ -104,7 +104,14 @@ function CP:ExportToAuctionator(owner)
     end
   end
   local missing={};local name="CraftPilot - "
-  if owner=="raid" then
+  if owner=="project" then
+    -- 1.3.0: everything the projects still have to buy (requirements minus stock).
+    for id,n in pairs(self.ProjectRequirements and self:ProjectRequirements() or {}) do
+      local left=n-(self:ItemAvailability(id) or 0)
+      if left>0 then missing[#missing+1]={id=id,quantity=left} end
+    end
+    name=name..L("Projekte")
+  elseif owner=="raid" then
     local list,_,unknown=self:RaidStockShopping()
     if unknown>0 then self:Say(L("Hinweis: Für einige Einträge im Raid-Vorrat fehlen Preis oder Hersteller; sie fehlen in der Liste.")) end
     missing=list

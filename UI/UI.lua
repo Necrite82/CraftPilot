@@ -614,13 +614,13 @@ U.plan.footerLine=frame:CreateTexture(nil,"ARTWORK")
 U.plan.footerLine:SetHeight(1)
 U.plan.footerLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 U.plan.pages={}
-for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")}}) do
+for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")},{key="projects",label=L("Projekte")}}) do
   U.plan.pages[i]=segment(frame,96,24,page.label,function() CP.db.ui.planPage=page.key;CP:Render() end)
   U.plan.pages[i].pageKey=page.key
 end
 U.plan.controls={U.plan.rangeLabel,U.plan.rangeStart,U.plan.targetLabel,U.plan.rangeEnd,U.plan.quantityLabel,U.plan.rangeQty,
   U.plan.build,U.plan.add,U.plan.draft,U.plan.print,U.plan.clear,U.plan.export,U.plan.manual,U.plan.totalLabel,U.plan.total,
-  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4]}
+  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4],U.plan.pages[5]}
 local syncedPlan
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -2016,7 +2016,7 @@ local function renderPlan(self,key,prof,record,inner)
     setVisualCards({{title=L("Sammelberuf · kein Rezept-Einkaufsplan"),detail=L("Die Etappen oben zeigen Sammelgebiete; Lehrer stehen unter Lehrer & Händler."),color="blue"}})
     return
   end
-  if not ({shopping=true,crafts=true,leftovers=true,details=true})[ui.planPage] then ui.planPage="shopping" end
+  if not ({shopping=true,crafts=true,leftovers=true,details=true,projects=true})[ui.planPage] then ui.planPage="shopping" end
   local page=ui.planPage
   syncPlanFields(key)
   local pending=self:RouteBuildPending(key)

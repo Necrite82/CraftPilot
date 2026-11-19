@@ -94,6 +94,8 @@ function CP:Recommendation(key)
   -- 1.3.0: what the last scan changed, for ten minutes.
   local change=self.lastPathChange
   if change and change.key==key and (type(time)=="function" and time() or 0)-(change.at or 0)<600 then extras[#extras+1]=change.text end
+  local projectText=self.ProjectNextText and self:ProjectNextText()
+  if projectText then extras[#extras+1]=projectText end
   if alternative and alternative.source=="cheapest" and (alternative.perPointGap or 0)>0 then
     extras[#extras+1]=string.format(L("Günstiger: %s · spart ca. %s je Punkt"),alternative.name,self:FormatCostMoney(math.floor(alternative.perPointGap)))
   elseif alternative and alternative.source=="plan" then
@@ -139,7 +141,7 @@ function CP:Recommendation(key)
   -- The banner has room for two hints; the companion shows them all (allExtra). Order is priority: twinks,
   -- making it yourself, cheap now, saving tip, whole way (the budget strip names the whole way too).
   local order={}
-  for _,prefix in ipairs({L("Nach dem Scan: neue Route "),L("Günstiger: "),L("Dein Plan: "),L("Von Twinks: "),L("Selbst herstellen: "),L("Zweiter Beruf: "),"|cff8fd6a6"..L("Jetzt günstig: "),L("Spartipp: "),L("Tipp: ")}) do
+  for _,prefix in ipairs({L("Nach dem Scan: neue Route "),L("Projekt „"),L("Günstiger: "),L("Dein Plan: "),L("Von Twinks: "),L("Selbst herstellen: "),L("Zweiter Beruf: "),"|cff8fd6a6"..L("Jetzt günstig: "),L("Spartipp: "),L("Tipp: ")}) do
     for i=#extras,1,-1 do
       if extras[i]:sub(1,#prefix)==prefix then order[#order+1]=table.remove(extras,i) end
     end

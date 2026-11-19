@@ -8,7 +8,11 @@ function CP:InvalidateReservations() self.reservationCache=nil end
 function CP:PlanRequirements(owner)
   local required,recipes={},{}
   local unknown=0
-  if owner=="raid" then
+  if owner=="project" then
+    -- 1.3.0: production projects (Features/Projects.lua).
+    if self.ProjectRequirements then for id,n in pairs(self:ProjectRequirements()) do add(required,id,n) end end
+    return required,unknown,recipes
+  elseif owner=="raid" then
     -- 0.2.1: raid stock (Features/RaidStock.lua) – finished consumables you own plus materials to craft the rest.
     if self.RaidStockRequirements then for id,n in pairs(self:RaidStockRequirements()) do add(required,id,n) end end
     return required,unknown,recipes
@@ -49,11 +53,12 @@ end
 function CP:ReservationOrder()
   local order,seen={},{}
   for _,key in ipairs(type(self.db.reservationOrder)=="table" and self.db.reservationOrder or {}) do
-    if (key=="camping" or key=="raid" or self.Data.professions[key]) and not seen[key] then order[#order+1]=key;seen[key]=true end
+    if (key=="camping" or key=="raid" or key=="project" or self.Data.professions[key]) and not seen[key] then order[#order+1]=key;seen[key]=true end
   end
   for _,key in ipairs(self.Data.order) do if not seen[key] then order[#order+1]=key end end
   if not seen.camping then order[#order+1]="camping" end
   if not seen.raid then order[#order+1]="raid" end
+  if not seen.project then order[#order+1]="project" end
   return order
 end
 function CP:ReservationLedger()
@@ -89,7 +94,7 @@ function CP:PlanFingerprint(owner)
   local parts={"unknown="..unknown,"bank="..tostring(self.db.includeBank),"cut="..tostring(self.db.ui.economyCut),
     "policy="..self:SkillPolicyToken(),"mode="..tostring(self.db.mode),"known="..tostring(self.db.ui.knownRecipesOnly),"reliable="..tostring(self.db.ui.preferReliableSkill)}
   local watched={};for id in pairs(required) do watched[id]=true end
-  if owner~="camping" and owner~="raid" then
+  if owner~="camping" and owner~="raid" and owner~="project" then
     local prof=self.db.professions[owner] or {}
     parts[#parts+1]="skill="..tostring(prof.skill)..":"..tostring(prof.cap)
     local plan=self.db.plans[owner] or {}
@@ -132,7 +137,7 @@ function CP:PlanNeedsReview(owner)
   return previous~=self:PlanFingerprint(owner)
 end
 function CP:ReevaluatePlan(owner,background)
-  if owner~="camping" and owner~="raid" then
+  if owner~="camping" and owner~="raid" and owner~="project" then
     local plan=self:PlanFor(owner)
     if plan and plan.autoMode then
       local current=(self.db.professions[owner] or {}).skill or plan.start
@@ -152,7 +157,7 @@ function CP:ReevaluatePlan(owner,background)
 end
 function CP:PlanReviewCard(owner)
   local changed=self:PlanNeedsReview(owner)
-  local plan=owner~="camping" and owner~="raid" and self.db.plans[owner]
+  local plan=owner~="camping" and owner~="raid" and owner~="project" and self.db.plans[owner]
   local progress=plan and plan.completedCrafts or 0
   return {title=changed and L("Plan geändert · neu bewerten") or L("Planbewertung aktuell"),
     detail=progress>0 and (L("Herstellungen seit letzter Bewertung: ")..progress) or L("Preise, Bestände, Reservierungen und Skill werden berücksichtigt."),
@@ -163,6 +168,7 @@ end
 function CP:OpenReservationPlan(owner)
   if owner=="raid" then self.db.ui.endgamePage="stock";self:OpenTab("endgame")
   elseif owner=="camping" then self.db.ui.campingPage="shopping";self:OpenTab("camping")
+  elseif owner=="project" then self.db.ui.planPage="projects";self:OpenTab("plan")
   elseif self.Data.professions[owner] then self.db.view=owner;self:OpenTab("plan") end
 end
 local function itemIcon(id)
@@ -188,7 +194,7 @@ function CP:ReservationCards()
   end
   for position,owner in ipairs(plans) do
     local key=owner
-    local name=owner=="camping" and L("Camping-Einkauf · alle Berufe") or (owner=="raid" and L("Raid-Vorrat")) or self.Data.professions[owner].name
+    local name=owner=="camping" and L("Camping-Einkauf · alle Berufe") or (owner=="raid" and L("Raid-Vorrat")) or (owner=="project" and L("Projekte")) or self.Data.professions[owner].name
     local needed,reserved,kinds=0,0,0
     for id,n in pairs(ledger.owners[owner]) do
       needed=needed+n

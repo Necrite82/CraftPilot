@@ -2,6 +2,7 @@ local _,CP=...
 local L=CP.L
 function CP:PlanPageCards(key,page)
   if page=="leftovers" then return self:LeftoverCards(key) end
+  if page=="projects" then return self.ProjectCards and self:ProjectCards(key) or {} end
   local plan=self:PlanFor(key);local route=self:AutoRouteShopping(key)
   if self:RouteBuildPending(key) then return {{title=L("Route wird berechnet"),detail=L("Skillfarben, Folgebedarf und Einkauf werden verglichen. Das Spiel bleibt bedienbar."),footer=L("Anklicken: Berechnung abbrechen"),color="blue",action=function() CP:CancelRouteBuild(key);CP:Render() end}} end
   local c=self:CostCalculation("plan",key)

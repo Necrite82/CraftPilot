@@ -74,6 +74,7 @@ Features\Wishlist.lua
 Features\Collection.lua
 Features\ItemDB.lua
 Features\RaidStock.lua
+Features\Projects.lua
 Features\Protection.lua
 Features\SkillLog.lua
 UI\Help.lua

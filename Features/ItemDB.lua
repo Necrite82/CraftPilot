@@ -261,7 +261,14 @@ function CP:ItemDetailCards(item)
       table.sort(mats)
       local who=known(self,pr.key,pr.id) and L("Du kannst es") or (altWith(self,pr.key,pr.recipe.learn) and string.format(L("%s kann es"),altWith(self,pr.key,pr.recipe.learn)) or nil)
       local id,key=pr.id,pr.key
-      cards[#cards+1]={title=self:RecipeName(key,id).." · "..profName(key),detail=table.concat(mats,", "),
+      local buttons={{label=L("Als Vorrat"),action=function() CP:PlanItemFromDB(item,key,id) end},
+        {label=L("Zum Projekt"),action=function()
+          local p=CP:ActiveProject() or CP:CreateProject()
+          CP:AddProjectItem(p,item,5,key,id)
+          CP:Say(string.format(L("%s zum Projekt „%s“ hinzugefügt (Plan & Einkauf › Projekte)."),CP:ItemName(item),p.name))
+          CP:Render()
+        end}}
+      cards[#cards+1]={buttons=buttons,title=self:RecipeName(key,id).." · "..profName(key),detail=table.concat(mats,", "),
         footer=(who and (who.."  ·  ") or "")..L("Klick: als Vorrat planen (Endgame › Raid-Vorrat)"),color=who and "green" or "blue",tooltipSpell=id,icon=itemIcon(item),
         action=function() CP:PlanItemFromDB(item,key,id) end}
     end
