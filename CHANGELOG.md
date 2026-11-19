@@ -16,6 +16,10 @@
 - **Budget mit Puffer**: Bei gelben und grünen Rezepten schwankt der Bedarf; CraftPilot nennt den Weg mit Puffer für Pech
 - **Alter der Twink-Bestände** an der Empfehlung („Stand vor 5 Tagen“); Einstellung, ab welchem Alter Bestände nicht mehr fest eingeplant werden
 - **Nach dem Scan**: Ändert ein AH-Scan den günstigsten Weg, sagt CraftPilot, was sich ändert – Ersparnis, neue oder entfallene Rezepte, zusätzliche Lehrer-/Händlerbesuche
+- **Händlerrezepte mit Besuchsstatus**: Beim Öffnen eines Händlers merkt sich CraftPilot (accountweit), welche Rezepte im Angebot, ausverkauft oder nicht da waren. Lernziel und Lerntour bevorzugen Händler, die nicht ausverkauft gesehen wurden, und zeigen den Stand
+- **Wege vergleichen** (Plan & Einkauf): wenig Gold, wenig Herstellungen oder wenig Wege nebeneinander – Einkauf, Lernkosten, Herstellungen und Lernwege; ein Klick nimmt den Weg
+- **Rezept-Sammlung** (Endgame › Sammlung): alle Rezepte deines Berufs mit Fortschritt, fehlende mit Quelle, Filter nach Quelle und Gebiet, Sammeltour im aktuellen Gebiet
+- **Produktionsprojekte** (Plan & Einkauf › Projekte): Skillziele und Gegenstände zu einem Ablauf verbinden, z. B. „Ingenieur auf 225, dann 20 Bomben“. Zwischenprodukte, die du selbst herstellen kannst, werden mitgeplant (Erz statt Barren); Material wird mit den anderen Plänen gemeinsam reserviert, der nächste Schritt steht auf „Jetzt“. Gegenstände kommen über Gegenstände › Hergestellt durch („Zum Projekt“) dazu. Bestehende Pläne bleiben unverändert
 
 ## 1.2.1
 

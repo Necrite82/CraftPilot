@@ -39,6 +39,8 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - **Bestätigte Skillgrenzen**: CraftPilot schreibt mit, bei welchem Skill es Punkte gab; geteilte Daten machen die Farbgrenzen für alle genauer
 
 **Einkaufen**
+- **Wege vergleichen**: wenig Gold, wenig Herstellungen oder wenig Wege nebeneinander
+- **Produktionsprojekte**: Skillziele und Gegenstände in einem Ablauf, Zwischenprodukte mitgeplant, gemeinsame Reservierung mit den anderen Plänen
 - Einkaufsplan für jeden Skillbereich, Preisgrenze je Material („lohnt sich bis 12s“)
 - **Einkaufsrunde am Auktionshaus** mit Auctionator: Posten für Posten, Gekauftes wird abgezählt
 - **Händler-Helfer** kauft genau die fehlende Menge, Bank-Helfer zeigt, was du mitnehmen musst
@@ -50,6 +52,8 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Lernen**
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
 - Spezialisierungen (Schmied, Ingenieur, Lederer) mit Schritten und Questgeber
+- **Händler-Besuchsstatus**: ausverkaufte Rezepte werden gemerkt, Lernziel und Tour bevorzugen Händler, die es haben
+- **Rezept-Sammlung** mit Fortschritt, Filter nach Quelle und Gebiet und Sammeltour im aktuellen Gebiet
 
 **Endgame**
 - Gewinn je Herstellung für deine erlernten Rezepte: mit gekauften und mit eigenen Materialien (eigene und gefarmte Materialien zählen mit ihrem Verkaufswert)
