@@ -147,10 +147,11 @@ function CP:PrepareMail(name,items)
   if type(_G.SendMailSubjectEditBox)=="table" then pcall(SendMailSubjectEditBox.SetText,SendMailSubjectEditBox,"CraftPilot") end
   -- Let the game re-check whether "Send" may be enabled after text was set by code.
   if type(_G.SendMailFrame_CanSend)=="function" then pcall(SendMailFrame_CanSend) end
-  local started=self:AttachMailItems(items,function(done,failed,short)
+  local started=self:AttachMailItems(items,function(done,failed,short,skipped)
     if done>0 and not failed then
       CP:Say(string.format(L("Brief an %s gepackt (%d Anhänge) · prüfen und auf „Senden“ klicken."),name,done)
-        ..(short and (" "..L("Nicht alles passte in einen Brief – danach erneut packen.")) or ""))
+        ..(short and (" "..L("Nicht alles passte in einen Brief – danach erneut packen.")) or "")
+        ..(skipped and (" "..L("Nicht mehr in der Tasche: ")..skipped) or ""))
     elseif failed then
       CP:Say(string.format(L("Packen abgebrochen (%s) · bitte die Anhänge prüfen."),failed))
     end
@@ -238,11 +239,11 @@ function CP:AttachMailItems(items,done)
   local queue={}
   for _,it in ipairs(items or {}) do if (it.count or 0)>0 then queue[#queue+1]={id=it.id,left=it.count} end end
   if #queue==0 or freeSlots()==0 then return false end
-  local attached,pending=0,nil
+  local attached,pending,skipped=0,nil,{}
   local function finish(reason,short)
     if type(CursorHasItem)=="function" and CursorHasItem() and type(ClearCursor)=="function" then ClearCursor() end
     CP.mailPacking=nil
-    if done then done(attached,reason,short) end
+    if done then done(attached,reason,short,#skipped>0 and table.concat(skipped,", ") or nil) end
   end
   local function later(fn)
     if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(.3,fn) else fn() end
@@ -265,6 +266,7 @@ function CP:AttachMailItems(items,done)
     if not index then return finish(nil,true) end
     local bag,slot,stack=findSlot(entry.id)
     if not bag then
+      skipped[#skipped+1]=CP:ItemName(entry.id)
       entry.left=0                       -- not (or no longer) in the bags: skip this item
       return later(step)
     end

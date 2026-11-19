@@ -170,9 +170,12 @@ function CP:ItemVerdict(item)
   if not self.db or self.db.ui.itemVerdict==false then return nil end
   local uses=self:ItemUses(item)
   if #uses==0 then
-    local vendor=self.CatalogVendorPrice and self:CatalogVendorPrice(item)
     local sell=self.ItemVendorValue and self:ItemVendorValue(item)
     if (self.ItemProducers and #self:ItemProducers(item)>0) then return nil end
+    -- 1.3.0: only for trade goods; gear, quest items and the like get no line.
+    local info=_G.C_Item and C_Item.GetItemInfoInstant or _G.GetItemInfoInstant
+    local classID=type(info)=="function" and select(7,pcall(info,item))  -- ok, itemID, type, subType, equipLoc, icon, classID
+    if classID~=7 then return nil end
     return sell and sell>0 and string.format(L("Wird in keinem Rezept gebraucht · Händler %s"),self:FormatCostMoney(sell)) or nil,{.7,.7,.7}
   end
   local mine,alts,profs,seenProf=0,0,{},{}
