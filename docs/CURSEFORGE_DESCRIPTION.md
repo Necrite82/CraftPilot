@@ -52,8 +52,8 @@ CraftPilot builds its recipe data itself – from the WoW Forever client's table
 
 ## Requirements
 
-- **QuestieDB** (Forever version) – required, installed automatically by the CurseForge app
-- **Auctionator** – recommended, for auction house prices (TradeSkillMaster or Auctioneer work too)
+- **QuestieDB** (Forever version) – recommended: all trainers with their location, vendor places, gathering zones and bosses as recipe source. Without it CraftPilot uses its own trainer list
+- **Auctionator** – recommended, for auction house prices (TradeSkillMaster or Auctioneer work too; CraftPilot uses the one with the newest scan)
 - **TomTom** – optional, for waypoints
 
 Open with `/cpp` or the minimap button. `/cpp hilfe` shows the help, `/cpp discord` the Discord link.

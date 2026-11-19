@@ -3,7 +3,7 @@
 
     CF_API_TOKEN=... python3 tools/upload_curseforge.py v1.0.1 [--dry-run]
 
-The changelog is docs/RELEASE_<version>.md. QuestieDB is attached as a required dependency. The release type is
+The changelog is docs/RELEASE_<version>.md. QuestieDB is attached as an optional dependency (recommended, since 1.3.0). The release type is
 "release" so the CurseForge app offers the file to everyone. Game version: WoW Forever 1.60.1 (CurseForge ID 17053, the same ID QuestieDB uploads with).
 """
 import argparse
@@ -38,7 +38,7 @@ def main():
         'changelog': notes.read_text(encoding='utf-8'),
         'changelogType': 'markdown',
         'gameVersions': [FOREVER_GAME_VERSION],
-        'relations': {'projects': [{'slug': 'questiedb', 'type': 'requiredDependency'}]},
+        'relations': {'projects': [{'slug': 'questiedb', 'type': 'optionalDependency'}]},
     }
     if args.dry_run:
         print(json.dumps({k: v for k, v in metadata.items() if k != 'changelog'}, indent=2))

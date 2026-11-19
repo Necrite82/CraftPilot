@@ -19,6 +19,8 @@
 - **Händlerrezepte mit Besuchsstatus**: Beim Öffnen eines Händlers merkt sich CraftPilot (accountweit), welche Rezepte im Angebot, ausverkauft oder nicht da waren. Lernziel und Lerntour bevorzugen Händler, die nicht ausverkauft gesehen wurden, und zeigen den Stand
 - **Wege vergleichen** (Plan & Einkauf): wenig Gold, wenig Herstellungen oder wenig Wege nebeneinander – Einkauf, Lernkosten, Herstellungen und Lernwege; ein Klick nimmt den Weg
 - **Rezept-Sammlung** (Endgame › Sammlung): alle Rezepte deines Berufs mit Fortschritt, fehlende mit Quelle, Filter nach Quelle und Gebiet, Sammeltour im aktuellen Gebiet
+- **Preisquelle automatisch erkannt**: CraftPilot merkt, ob TradeSkillMaster oder Auctioneer neue Preise haben, schätzt deren Alter und fragt bei „Automatisch“ das Addon mit dem neuesten Scan zuerst. Damit funktionieren AH-Alarm, Merkliste und „Nach dem Scan“ auch ohne Auctionator
+- **QuestieDB optional**: nur noch empfohlen. Ohne QuestieDB nutzt CraftPilot seine eigene Lehrerliste; Sammelgebiete und Bosse als Rezeptquelle fehlen dann
 - **Produktionsprojekte** (Plan & Einkauf › Projekte): Skillziele und Gegenstände zu einem Ablauf verbinden, z. B. „Ingenieur auf 225, dann 20 Bomben“. Zwischenprodukte, die du selbst herstellen kannst, werden mitgeplant (Erz statt Barren); Material wird mit den anderen Plänen gemeinsam reserviert, der nächste Schritt steht auf „Jetzt“. Gegenstände kommen über Gegenstände › Hergestellt durch („Zum Projekt“) dazu. Bestehende Pläne bleiben unverändert
 
 ## 1.2.1

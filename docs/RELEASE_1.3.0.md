@@ -16,6 +16,8 @@
 - **Händlerrezepte mit Besuchsstatus** – CraftPilot merkt sich, ob ein Rezept beim Händler ausverkauft war, und schickt dich zuerst zu einem, der es hat.
 - **Wege vergleichen** – wenig Gold, wenig Herstellungen oder wenig Wege nebeneinander, ein Klick wählt.
 - **Rezept-Sammlung** – alle Rezepte deines Berufs mit Fortschritt, Quelle und Sammeltour im aktuellen Gebiet.
+- **Preisquelle automatisch** – CraftPilot erkennt, ob Auctionator, TSM oder Auctioneer zuletzt gescannt hat, und nimmt dessen Preise zuerst.
+- **QuestieDB optional** – empfohlen, aber nicht mehr nötig.
 - **Produktionsprojekte** – Skillziele und Gegenstände in einem Ablauf, Zwischenprodukte werden mitgeplant, der nächste Schritt steht auf „Jetzt“.
 
 Fragen, Ideen und Fehler: im Spiel über „Fehler melden“ oder im Discord: https://discord.gg/DpsBkHtQS
