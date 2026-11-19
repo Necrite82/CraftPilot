@@ -244,6 +244,9 @@ function CP:SettingsCards()
     check("mailHelper",L("Hinweis am Briefkasten"),L("Zeigt am Briefkasten, was deine Twinks für ihre Pläne brauchen. Schließen blendet ihn aus, bis sich die Liste ändert."),ui.mailHelper~=false,"general","Interface\\Icons\\INV_Letter_15"),
     check("itemVerdict",L("Behalten oder verkaufen im Tooltip"),L("Zeigt bei Gegenständen, ob sie Zutat für deinen Weg, deine Berufe oder deine Twinks sind – oder nur verkauft werden können."),ui.itemVerdict~=false,"general","Interface\\Icons\\INV_Misc_Bag_10"),
     check("itemAltClick",L("Alt-Klick öffnet Gegenstand"),L("Alt-Klick auf einen Gegenstand in Taschen, Bank oder Chat-Links öffnet ihn in CraftPilot › Gegenstände."),ui.itemAltClick~=false,"general","Interface\\Icons\\INV_Misc_Book_09"),
+    choice(L("Twink-Bestände einplanen bis"),(tonumber(ui.altMaxAge) or 14)>0 and string.format(L("%d Tage alt"),tonumber(ui.altMaxAge) or 14) or L("immer"),
+      L("Ältere Bestände von Twinks werden nur noch angezeigt, aber nicht mehr fest eingeplant. Einloggen auf dem Twink aktualisiert sie."),
+      function() ui.altMaxAge=cycle({7,14,30,0},tonumber(ui.altMaxAge) or 14);CP.altIndex=nil;CP.pathCache=nil;CP:Render() end,"general","Interface\\Icons\\INV_Misc_PocketWatch_02"),
     check("skillLog",L("Skilldaten mitschreiben"),L("Merkt sich bei jedem Herstellen Skill und ob ein Punkt kam – für eigene Hinweise und zum Teilen (Hilfe › Skilldaten teilen). Keine Namen."),ui.skillLog~=false,"general","Interface\\Icons\\INV_Misc_Note_02"),
     check("hideMinimap",L("Minimap-Button"),L("Links öffnet CraftPilot, rechts die Einstellungen; ziehen verschiebt ihn."),not ui.hideMinimap,"general"),
     -- Route
@@ -267,7 +270,7 @@ function CP:SettingsCards()
     slider(L("AH-Abzug beim Verkauf "),tonumber(ui.economyCut) or 5,0,30,1,"%",function(value) ui.economyCut=value;CP.pathCache=nil;CP:Render() end),
     {title=L("Merchant's Favor in Gold umrechnen"),detail=L("Was dich 1 Favor beim Füllen der Waylaid Crates kostet. Dann zählen Favor-Rezepte im günstigsten Weg mit. 0 = nicht umrechnen."),footer="",icon=ICON,color="blue",group="advanced"},
     slider(L("Silber je Favor "),math.floor((tonumber(ui.favorRate) or 0)/100),0,200,1,"s",function(value) ui.favorRate=value*100;CP.pathCache=nil;CP:SkillPolicyChanged() end),
-    {title=self:QuestieStatus(),detail=L("Liefert Lehrer, Händlerstandorte und Sammelgebiete. Wird über die CurseForge-App automatisch mitinstalliert."),footer="",icon=ICON,color=self:QuestieProvider() and "green" or "red",group="advanced"},
+    {title=self:QuestieStatus(),detail=L("Empfohlen, nicht nötig: liefert alle Lehrer, Händlerstandorte, Sammelgebiete und Bosse als Rezeptquelle. Ohne QuestieDB nutzt CraftPilot seine eigene Lehrerliste."),footer="",icon=ICON,color=self:QuestieProvider() and "green" or "gold",group="advanced"},
     {title=L("Vorratsreservierungen"),detail=L("Gemeinsame Bestände aller Berufs- und Campingpläne; Priorität ändern."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("reservations") end},
     {title=L("Berufsdaten prüfen"),detail=L("Alle zwölf Berufe, Farbgrenzen und Abweichungen zum Client anzeigen."),footer=L("Anklicken zum Öffnen"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenTab("audit") end},
     {title=CP:VersionStatus(),detail=L("Versionsvergleich mit Gruppe und Gilde; kein direkter GitHub-Abruf."),footer=L("Anklicken: Release-Link kopieren"),icon=ICON,color="blue",group="advanced",action=function() CP:OpenReleaseLink() end},

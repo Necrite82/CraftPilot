@@ -39,7 +39,7 @@ function CP:HelpCards()
   end
 
   if not self:QuestieProvider() then
-    cards[#cards+1]=card(L("QuestieDB fehlt"),L("CraftPilot braucht das Addon QuestieDB (Version für WoW Forever) für Lehrer, Händlerstandorte und Sammelgebiete. Über die CurseForge-App wird es automatisch mitinstalliert, sonst bitte von Hand installieren."),nil,nil,"red")
+    cards[#cards+1]=card(L("QuestieDB empfohlen"),L("CraftPilot läuft auch ohne QuestieDB. Mit QuestieDB (Version für WoW Forever) kennt es alle Lehrer mit Standort, Händlerstandorte, Sammelgebiete und Bosse als Rezeptquelle; ohne nutzt es seine eigene Lehrerliste."),nil,nil,"gold")
   end
   cards[#cards+1]=header(L("DIE REITER"))
   cards[#cards+1]=card(L("Jetzt"),L("Empfehlung oben, Rezeptliste links (Filter, Sortierung über die Spaltenköpfe), Details rechts mit Menge, Materialien, Kosten und „Behalten“-Hinweisen. Nicht erlernte Rezepte haben ein Kartensymbol für den Weg zum Lehrer oder Händler."),

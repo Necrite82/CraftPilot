@@ -10,6 +10,8 @@ CraftPilot only buys, learns or crafts when you click. German and English.
 
 - **Cheapest path to the cap**, point by point, from your Auctionator prices. Choose cheapest, reliable colours, orange/yellow only or fastest.
 - **Honest costs:** what you have to buy now and what the whole path costs. Only what a vendor surely pays can be offset – possible auction house sales are shown, never counted.
+- **Compare ways:** least gold, fewest crafts or fewest trips side by side – one click picks the way.
+- **Production projects:** skill goals and items in one flow ("Engineering to 225, then 20 bombs"); intermediates you can make yourself are planned too, and the next step shows on the main page.
 - **Saving tip** when another recipe (perhaps still to learn) is much cheaper per point.
 - **Recommendation and companion** at the profession window: what to craft next, how many, and what is missing.
 - **Budget** right on the main page: how far your gold gets you, with a warning when a step costs more.
@@ -20,6 +22,7 @@ CraftPilot only buys, learns or crafts when you click. German and English.
 
 - **Plan & shopping list** for any skill range, with price limits and a one-click Auctionator list.
 - **Trainers and vendors** with waypoints, rank and level requirements, and the specialization quests (Weaponsmith, Armorsmith, Gnomish/Goblin Engineering, Leatherworking).
+- **Vendor visit status:** CraftPilot remembers when a vendor's recipe was sold out and sends you to one that has it.
 - **Cheap now:** materials of your path that are clearly below their usual price today, with what buying now saves.
 - **Farm or buy** by your own measured gathering pace.
 - **Alts and bank:** stock across your characters, hints at the bank, and a **mail packer** that fills the mail to your alt with exactly the missing amounts – you just click Send.
@@ -34,6 +37,7 @@ CraftPilot only buys, learns or crafts when you click. German and English.
 ## Endgame – after 300
 
 - **Profit per craft** for your learned recipes – with bought materials and with your own (valued at what they would sell for).
+- **Recipe collection:** every recipe of your profession with progress, missing ones with their source, filters and a collection tour in your current zone.
 - **Recipe wishlist** with sources: trainer, vendor, Merchant's Favor, quest or boss (QuestieDB) – bosses show your wished recipe in their tooltip.
 - **Raid stock:** flasks, potions and food with target amounts; craft (also on alts) or buy, compared and reserved.
 - **Merchant's Favor recipes** with the reputation they need, and an **AH alarm** after a scan.
@@ -48,8 +52,8 @@ CraftPilot builds its recipe data itself – from the WoW Forever client's table
 
 ## Requirements
 
-- **QuestieDB** (Forever version) – required, installed automatically by the CurseForge app
-- **Auctionator** – recommended, for auction house prices (TradeSkillMaster or Auctioneer work too)
+- **QuestieDB** (Forever version) – recommended: all trainers with their location, vendor places, gathering zones and bosses as recipe source. Without it CraftPilot uses its own trainer list
+- **Auctionator** – recommended, for auction house prices (TradeSkillMaster or Auctioneer work too; CraftPilot uses the one with the newest scan)
 - **TomTom** – optional, for waypoints
 
 Open with `/cpp` or the minimap button. `/cpp hilfe` shows the help, `/cpp discord` the Discord link.

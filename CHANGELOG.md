@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.3.0
+
+**Verlässlichere Rechnung**
+- **Post-Packer sicher**: Jeder Taschenplatz wird direkt vor dem Anhängen neu gesucht (Taschen-Addons dürfen dazwischen sortieren), jeder Anhang wird geprüft; bei Unerwartetem bricht er ab. Die Meldung kommt erst, wenn wirklich alles angehängt ist
+- **Mengen richtig**: Händler-Helfer, Einkaufsrunde, Bankhinweis und Twink-Übersicht zogen den Vorrat bei der Empfehlung doppelt ab (10 nötig, 3 da → nur 4 statt 7)
+- **Herstellungspreise unabhängig von der Rechenreihenfolge**: ein unvollständig berechneter Preis wird nicht mehr als fertiger Preis wiederverwendet
+- **Twink-Rezepte nur bestätigt**: Ohne eingelesene Rezeptliste rechnet CraftPilot einen Twink nicht mehr als Hersteller ein (nur noch als Hinweis)
+- **Dein Plan zuerst**: Deckt ein gespeicherter Plan deinen Skill ab, empfiehlt CraftPilot dessen Schritt; ein günstigerer Weg steht daneben. Mit „Günstigsten nehmen“ / „Meinen Plan nehmen“ wechselst du jederzeit
+- **Skilldaten strenger**: „Bestätigt“ erst ab 20 Herstellungen ohne Punkt an der Graugrenze, getrennt nach Client-Build; der Skill wird beim Start des Herstellens gemerkt
+- **Behalten oder verkaufen** nur noch bei Handwerkswaren, nicht bei Ausrüstung
+
+**Neu**
+- **Warum dieses Rezept?** im Tooltip der Empfehlung: Kosten je Punkt, Chance, Lerngebühr und späterer Bedarf – neben den zwei besten Alternativen
+- **Budget mit Puffer**: Bei gelben und grünen Rezepten schwankt der Bedarf; CraftPilot nennt den Weg mit Puffer für Pech
+- **Alter der Twink-Bestände** an der Empfehlung („Stand vor 5 Tagen“); Einstellung, ab welchem Alter Bestände nicht mehr fest eingeplant werden
+- **Nach dem Scan**: Ändert ein AH-Scan den günstigsten Weg, sagt CraftPilot, was sich ändert – Ersparnis, neue oder entfallene Rezepte, zusätzliche Lehrer-/Händlerbesuche
+- **Händlerrezepte mit Besuchsstatus**: Beim Öffnen eines Händlers merkt sich CraftPilot (accountweit), welche Rezepte im Angebot, ausverkauft oder nicht da waren. Lernziel und Lerntour bevorzugen Händler, die nicht ausverkauft gesehen wurden, und zeigen den Stand
+- **Wege vergleichen** (Plan & Einkauf): wenig Gold, wenig Herstellungen oder wenig Wege nebeneinander – Einkauf, Lernkosten, Herstellungen und Lernwege; ein Klick nimmt den Weg
+- **Rezept-Sammlung** (Endgame › Sammlung): alle Rezepte deines Berufs mit Fortschritt, fehlende mit Quelle, Filter nach Quelle und Gebiet, Sammeltour im aktuellen Gebiet
+- **Preisquelle automatisch erkannt**: CraftPilot merkt, ob TradeSkillMaster oder Auctioneer neue Preise haben, schätzt deren Alter und fragt bei „Automatisch“ das Addon mit dem neuesten Scan zuerst. Damit funktionieren AH-Alarm, Merkliste und „Nach dem Scan“ auch ohne Auctionator
+- **QuestieDB optional**: nur noch empfohlen. Ohne QuestieDB nutzt CraftPilot seine eigene Lehrerliste; Sammelgebiete und Bosse als Rezeptquelle fehlen dann
+- **Produktionsprojekte** (Plan & Einkauf › Projekte): Skillziele und Gegenstände zu einem Ablauf verbinden, z. B. „Ingenieur auf 225, dann 20 Bomben“. Zwischenprodukte, die du selbst herstellen kannst, werden mitgeplant (Erz statt Barren); Material wird mit den anderen Plänen gemeinsam reserviert, der nächste Schritt steht auf „Jetzt“. Gegenstände kommen über Gegenstände › Hergestellt durch („Zum Projekt“) dazu. Bestehende Pläne bleiben unverändert
+
 ## 1.2.1
 
 - **Seitenleiste deckend** – auch mit EllesmereUI (dort bekam sie bisher den halbdurchsichtigen Stil für innere Felder)

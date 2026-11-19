@@ -53,23 +53,35 @@ function CP:PriceSourceName(key)
 end
 function CP:PriceSourceDetail()
   local names={}
-  for _,s in ipairs(self:AvailablePriceSources()) do names[#names+1]=s.name end
-  return L("Automatisch: Auctionator, dann TradeSkillMaster, dann Auctioneer – die erste mit Preis zählt. Eine gewählte Quelle wird zuerst gefragt.")
+  for _,s in ipairs(self:AvailablePriceSources()) do
+    local age=self.PriceSourceScanTime and self:PriceSourceScanTime(s.key)
+    local days=age and math.max(0,math.floor(((type(time)=="function" and time() or age)-age)/86400))
+    names[#names+1]=s.name..(days and (days==0 and L(" (Scan heute)") or string.format(L(" (Scan vor %d T.)"),days)) or "")
+  end
+  local active=self.ActivePriceSource and self:ActivePriceSource()
+  return L("Automatisch: Die Quelle mit dem neuesten Scan zählt zuerst, die anderen springen ein, wenn ihr ein Preis fehlt. Eine gewählte Quelle wird immer zuerst gefragt.")
     .."\n"..L("Gefunden: ")..(#names>0 and table.concat(names,", ") or L("keine – Auctionator empfohlen"))
+    ..((active and (self.db.ui.priceSource or "auto")=="auto") and ("\n"..L("Automatisch nimmt jetzt: ")..active.name) or "")
 end
 function CP:AuctionPrice(itemID)
   local pref=self.db and self.db.ui and self.db.ui.priceSource or "auto"
   local order={}
-  for _,s in ipairs(self.PriceSources) do if s.key==pref then order[#order+1]=s end end
-  for _,s in ipairs(self.PriceSources) do if s.key~=pref then order[#order+1]=s end end
+  local base=(pref=="auto" and self.AutoPriceSourceOrder) and self:AutoPriceSourceOrder() or self.PriceSources
+  for _,s in ipairs(base) do if s.key==pref then order[#order+1]=s end end
+  for _,s in ipairs(base) do if s.key~=pref then order[#order+1]=s end end
   for _,s in ipairs(order) do
     local ok,price,age=pcall(s.get,itemID)
-    if ok and price then return price,age,s.name end
+    if ok and price then
+      -- 1.3.0: TSM and Auctioneer give no age; CraftPilot's own scan detection estimates it (Core/PriceScan.lua).
+      local estimated=false
+      if age==nil and self.EstimatedPriceAge then age=self:EstimatedPriceAge(s.key,itemID);estimated=age~=nil end
+      return price,age,s.name,estimated
+    end
   end
   return nil
 end
 function CP:PriceDetails(itemID)
-  local ah,age,provider=self:AuctionPrice(itemID)
+  local ah,age,provider,estimated=self:AuctionPrice(itemID)
   local vendor=self:CatalogVendorPrice(itemID)
   local selected=ah
   -- "Auctionator" stays the source name for Auctionator; other providers are named as themselves.
@@ -85,7 +97,7 @@ function CP:PriceDetails(itemID)
   elseif age>7 then freshness="stale"
   elseif age>3 then freshness="aging"
   else freshness="fresh" end
-  return {price=selected,auction=ah,vendor=vendor,ageDays=age,
+  return {price=selected,auction=ah,vendor=vendor,ageDays=age,ageEstimated=estimated or nil,
     source=source,provider=provider,freshness=freshness}
 end
 
@@ -119,6 +131,15 @@ end
 -- When Auctionator's price database last changed: our own note from its update callback, or Auctionator's
 -- record of its last full scan.
 function CP:LastAuctionScan()
+  -- 1.3.0: the newest data of any price source.
+  local newest
+  if self.PriceSourceScanTime then
+    for _,s in ipairs(self:AvailablePriceSources()) do
+      local at=self:PriceSourceScanTime(s.key)
+      if at and (not newest or at>newest) then newest=at end
+    end
+    if newest then return newest end
+  end
   local own=self.db and self.db.ahUpdated
   local saved=_G.Auctionator and _G.Auctionator.SavedState and _G.Auctionator.SavedState.TimeOfLastGetAllScan
   saved=type(saved)=="number" and saved or nil
@@ -127,7 +148,7 @@ function CP:LastAuctionScan()
 end
 
 function CP:ProfessionPriceStatus(key)
-  if #self:AvailablePriceSources()==0 then return L("AH: Auctionator fehlt"),"missing" end
+  if #self:AvailablePriceSources()==0 then return L("AH: kein Preis-Addon (Auctionator empfohlen)"),"missing" end
   local seen={}
   for _,recipe in pairs(self.db.recipes[key] or {}) do
     if not recipe.disabled then

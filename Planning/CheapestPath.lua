@@ -40,29 +40,47 @@ end
 
 -- Price of one item: AH or vendor, or making it (two levels deep) when that is cheaper by at least 5 %.
 -- Making it on a twink is noted in memo.notes, so the UI can say who should craft what.
+-- 1.3.0: results are cached per depth (memo.byDepth[depth][item]); a price found near the depth limit (where
+-- making it is not looked at any more) no longer replaces the full price of a later, shallower lookup.
+-- memo[item] keeps the price at depth 0 for the price limits below. Cycles are cut with memo.visiting.
 local function unitPrice(self,memo,item,depth)
-  if memo[item]~=nil then return memo[item] or nil end
-  memo[item]=false
+  memo.byDepth=memo.byDepth or {}
+  local cache=memo.byDepth[depth] or {};memo.byDepth[depth]=cache
+  if cache[item]~=nil then return cache[item] or nil end
+  memo.visiting=memo.visiting or {}
+  if memo.visiting[item] then return nil end
+  memo.visiting[item]=true
   local price=self:PriceDetails(item).price
   memo.items[item]=true
   if depth<2 then
     for _,maker in ipairs(self:ItemMakers(item)) do
-      local sum,known=0,true
-      for mat,n in pairs(maker.recipe.mats or {}) do
-        local p=type(n)=="number" and unitPrice(self,memo,mat,depth+1)
-        if not p then known=false;break end
-        sum=sum+p*n
+      -- Only makers that are sure (own recipe, or a twink whose recipe list confirms it) count for the price.
+      if not maker.alt or maker.altSure then
+        local sum,known=0,true
+        for mat,n in pairs(maker.recipe.mats or {}) do
+          local p=type(n)=="number" and unitPrice(self,memo,mat,depth+1)
+          if not p then known=false;break end
+          sum=sum+p*n
+        end
+        local made=maker.recipe.count or maker.recipe.yield or 1
+        if known and sum>0 and (not price or sum/made<price*0.95) then
+          if maker.alt and price then memo.notes[item]={alt=maker.alt,sure=true,id=maker.id,key=maker.key,saving=price-sum/made} end
+          price=sum/made
+        end
       end
-      local made=maker.recipe.count or maker.recipe.yield or 1
-      if known and sum>0 and (not price or sum/made<price*0.95) then
-        if maker.alt and price then memo.notes[item]={alt=maker.alt,sure=maker.altSure,id=maker.id,key=maker.key,saving=price-sum/made} end
-        price=sum/made
+      if maker.alt and not maker.altSure and price then
+        -- Unconfirmed twink recipe: only a hint ("open the profession once on X"), never in the price.
+        memo.maybe=memo.maybe or {}
+        memo.maybe[item]=memo.maybe[item] or {alt=maker.alt,id=maker.id,key=maker.key}
       end
     end
   end
-  memo[item]=price or false
+  memo.visiting[item]=nil
+  cache[item]=price or false
+  if depth==0 then memo[item]=price or false end
   return price
 end
+CP.UnitPriceForTest=unitPrice
 
 -- What a vendor always pays for an item (0 when unknown). The only sale the skill path may count on:
 -- whether the auction house buys 18 blunderbusses is anyone's guess.
@@ -139,13 +157,18 @@ function CP:CheapestPath(key,from,to)
   local ui=self.db.ui
   local token=table.concat({key,skill,target,tostring(self.SkillPolicyToken and self:SkillPolicyToken()),tostring(ui.knownRecipesOnly),
     tostring(ui.preferReliableSkill),tostring(ui.countSales),tostring(ui.economyCut),tostring(ui.includeAlts),
+    tostring(self.pathModeOverride or ""),tostring(ui.fewestTrips),
     tostring(ui.fastestSkill),tostring(ui.favorRate)},":")
   self.pathCaches=self.pathCaches or {}
   local cache=self.pathCaches[token]
   if self.pathCache==nil then self.pathCaches={} ;cache=nil end
   if cache and now()-cache.at<CACHE_SECONDS then return cache.path end
-  local reliable=ui.preferReliableSkill==true
-  local fastest=ui.fastestSkill==true
+  -- 1.3.0: three ways to compare – "cheap", "crafts" (fewest crafts), "trips" (learn only what is needed to go on).
+  -- pathModeOverride is set by CompareRoutes for one calculation; otherwise the settings decide.
+  local mode=self.pathModeOverride
+  local reliable=ui.preferReliableSkill==true and mode==nil
+  local fastest=(mode=="crafts") or (mode==nil and ui.fastestSkill==true)
+  local fewTrips=(mode=="trips") or (mode==nil and ui.fewestTrips==true)
 
   local catalog=self:RecipeVendorCatalog(key)
   local recipes={}
@@ -225,7 +248,8 @@ function CP:CheapestPath(key,from,to)
         local current=pick[k] and pick[k].rank[k]
         if v and current and v<current*0.995 then gain=gain+(current-v);used=true end
       end
-      if c.perPoint[reached] then gain,used=math.huge,true end
+      if c.perPoint[reached] then gain,used=math.huge,true
+      elseif fewTrips then used=false end      -- fewest trips: learn only what is needed to go on
       gain=gain-c.fee
       if used and gain>0 and (not bestGain or gain>bestGain) then bestGain,bestIndex=gain,i end
     end
@@ -316,9 +340,10 @@ function CP:CheapestPath(key,from,to)
     end
   end
   local path={key=key,from=skill,target=target,reached=reached,segments=segments,total=total+fees,fees=fees,
-    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits,quantities=quantities}
+    unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits,quantities=quantities,maybeAlts=memo.maybe}
   self.pathCache=true
   self.pathCaches[token]={at=now(),path=path}
+  self.lastPathByKey=self.lastPathByKey or {};self.lastPathByKey[key]=path
   return path
 end
 
@@ -386,4 +411,160 @@ function CP:NextLearnStep(path)
   for _,s in ipairs(path and path.segments or {}) do
     if not s.learned then return s end
   end
+end
+
+-- 1.3.0: "Why this recipe?" – the chosen one next to the two best alternatives at the current skill:
+-- cost per point (learning fee spread in), skill chance, learning fee, and whether the result is used later.
+function CP:WhyRecipe(key,id)
+  local path=self:CheapestPath(key)
+  if not path or not path.optionsNow then return nil end
+  local list={}
+  for _,o in ipairs(path.optionsNow) do list[#list+1]=o end
+  table.sort(list,function(a,b) return a.perPoint<b.perPoint end)
+  local chosen,others=nil,{}
+  for _,o in ipairs(list) do
+    if o.id==id then chosen=o elseif #others<2 then others[#others+1]=o end
+  end
+  if not chosen then return nil end
+  local function row(o)
+    local recipe=(self:Catalog(key) or {recipes={}}).recipes[o.id]
+    local makes=recipe and recipe.makes
+    return {id=o.id,name=o.name,perPoint=o.perPoint,chance=o.chance or 0,fee=(not o.learned) and (o.fee or 0) or 0,
+      learned=o.learned,usedLater=makes and path.quantities and (path.quantities[makes] or 0)>0 or false}
+  end
+  local out={chosen=row(chosen),others={}}
+  for _,o in ipairs(others) do out.others[#out.others+1]=row(o) end
+  return out
+end
+
+function CP:WhyRecipeLines(key,id)
+  local why=self:WhyRecipe(key,id)
+  if not why then return nil end
+  local function line(r,mark)
+    local parts={string.format(L("%s je Punkt"),self:FormatCostMoney(math.floor(r.perPoint))),string.format(L("Chance %d%%"),math.floor(r.chance*100+.5))}
+    if r.fee>0 then parts[#parts+1]=L("lernen ")..self:FormatCostMoney(r.fee) end
+    if r.usedLater then parts[#parts+1]=L("Ergebnis später gebraucht") end
+    return {left=mark..r.name,right=table.concat(parts," · ")}
+  end
+  local rows={{left=L("Warum dieses Rezept?"),color={1,.82,.30}},line(why.chosen,"> ")}
+  for _,r in ipairs(why.others) do rows[#rows+1]=line(r,"   ") end
+  rows[#rows+1]={left=" "}
+  return rows
+end
+
+-- 1.3.0: budget with a reserve. Yellow and green recipes need a varying number of crafts: per point the crafts
+-- follow a geometric distribution (variance (1-p)/p²). The reserve covers about 9 of 10 runs (1.28 σ).
+function CP:PathReserve(path)
+  if not path or not path.segments then return 0 end
+  local variance=0
+  for _,s in ipairs(path.segments) do
+    local points=math.max(0,(s.last or 0)-(s.first or 0))
+    local expected=s.expected or s.crafts or 0
+    if points>0 and expected>0 and (s.cost or 0)>0 then
+      local p=math.min(1,points/expected)
+      local perCraft=s.cost/expected
+      variance=variance+perCraft*perCraft*points*(1-p)/(p*p)
+    end
+  end
+  return math.floor(1.28*math.sqrt(variance)+.5)
+end
+
+-- 1.3.0: what a scan changed. Before the new prices are used, the current path is remembered; afterwards the new
+-- one is compared: cost difference, recipes swapped, extra or fewer trainer/vendor visits.
+local function snapshot(path)
+  if not path then return nil end
+  local ids,visits={},0
+  for _,s in ipairs(path.segments or {}) do ids[s.id]=s.name;if not s.learned then visits=visits+1 end end
+  return {total=path.total,reached=path.reached,ids=ids,visits=visits}
+end
+function CP:PathChange(before,after)
+  if not before or not after then return nil end
+  local added,removed={},{}
+  for id,name in pairs(after.ids) do if not before.ids[id] then added[#added+1]=name end end
+  for id,name in pairs(before.ids) do if not after.ids[id] then removed[#removed+1]=name end end
+  table.sort(added);table.sort(removed)
+  local diff=(after.total or 0)-(before.total or 0)
+  if #added==0 and #removed==0 and math.abs(diff)<100 then return nil end
+  return {diff=diff,added=added,removed=removed,visits=after.visits-before.visits}
+end
+function CP:PathChangeText(change)
+  if not change then return nil end
+  local parts={}
+  if change.diff<=-100 then parts[#parts+1]=string.format(L("spart ca. %s"),self:FormatCostMoney(-change.diff))
+  elseif change.diff>=100 then parts[#parts+1]=string.format(L("kostet ca. %s mehr"),self:FormatCostMoney(change.diff)) end
+  if #change.added>0 then parts[#parts+1]=L("neu: ")..table.concat(change.added,", ") end
+  if #change.removed>0 then parts[#parts+1]=L("entfällt: ")..table.concat(change.removed,", ") end
+  if change.visits>0 then parts[#parts+1]=string.format(L("%d Lehrer-/Händlerbesuch(e) mehr"),change.visits)
+  elseif change.visits<0 then parts[#parts+1]=string.format(L("%d Lehrer-/Händlerbesuch(e) weniger"),-change.visits) end
+  return L("Nach dem Scan: neue Route ")..table.concat(parts," · ")
+end
+-- Called when the auction data changed (Auctionator scan): remember, recompute, compare, tell.
+function CP:ComparePathAfterScan()
+  local key=self.db and self.db.view
+  if not key or not self.CheapestPath then return nil end
+  -- The last path computed with the old prices (even if its cache has expired meanwhile).
+  local before=snapshot((self.lastPathByKey or {})[key] or self:CheapestPath(key))
+  self.pathCache=nil
+  local after=snapshot(self:CheapestPath(key))
+  local change=self:PathChange(before,after)
+  local text=self:PathChangeText(change)
+  self.lastPathChange=text and {key=key,text=text,at=type(time)=="function" and time() or 0} or nil
+  if text then self:Say(text) end
+  return change
+end
+
+-- 1.3.0: compare three ways side by side. Each: what you buy, learning fees, number of crafts and visits
+-- (the trainer counts once, each vendor once, the AH once).
+local MODES={{key="cheap",label="Wenig Gold"},{key="crafts",label="Wenig Herstellungen"},{key="trips",label="Wenig Wege"}}
+function CP:RouteSummary(key,path)
+  if not path then return nil end
+  local crafts,stops,places=0,0,{}
+  for _,s in ipairs(path.segments or {}) do
+    crafts=crafts+(s.crafts or 0)
+    if not s.learned then
+      local t=self.LearnTarget and self:LearnTarget(key,s.id)
+      local place=t and (t.kind=="trainer" and "trainer" or (t.kind=="ah" and "ah" or (t.name or "?"))) or ("?"..s.id)
+      if not places[place] then places[place]=true;stops=stops+1 end
+    end
+  end
+  return {total=path.total or 0,fees=path.fees or 0,buy=(path.total or 0)-(path.fees or 0),crafts=crafts,stops=stops,reached=path.reached,first=path.segments and path.segments[1]}
+end
+function CP:CompareRoutes(key)
+  local out={}
+  for _,m in ipairs(MODES) do
+    self.pathModeOverride=m.key
+    local ok,path=pcall(self.CheapestPath,self,key)
+    self.pathModeOverride=nil
+    local summary=ok and self:RouteSummary(key,path)
+    if summary then summary.mode=m.key;summary.label=L(m.label);out[#out+1]=summary end
+  end
+  return out
+end
+function CP:CurrentRouteMode()
+  local ui=self.db.ui
+  if ui.fewestTrips then return "trips" elseif ui.fastestSkill then return "crafts" end
+  return "cheap"
+end
+function CP:UseRouteMode(mode)
+  local ui=self.db.ui
+  ui.fastestSkill=mode=="crafts"
+  ui.fewestTrips=mode=="trips"
+  self.pathCache=nil
+  if self.Render then self:Render() end
+end
+function CP:RouteCompareCards(key)
+  local routes=self:CompareRoutes(key)
+  if #routes<2 then return {} end
+  local current=self:CurrentRouteMode()
+  local cards={{sectionHeader=true,title=L("WEGE VERGLEICHEN")}}
+  for _,r in ipairs(routes) do
+    local mode=r.mode
+    local detail=string.format(L("Einkauf %s · Lernen %s · %d Herstellungen · %d Lernwege"),
+      self:FormatCostMoney(math.max(0,r.buy)),self:FormatCostMoney(r.fees),r.crafts,r.stops)
+    if r.reached and r.reached<((self.db.professions[key] or {}).cap or 0) then detail=detail.." · "..string.format(L("reicht bis %d"),r.reached) end
+    cards[#cards+1]={title=r.label..": "..self:FormatCostMoney(r.total),detail=detail,
+      footer=mode==current and L("Aktiv") or L("Klick: diesen Weg nutzen"),color=mode==current and "gold" or "blue",grid=true,
+      action=function() CP:UseRouteMode(mode) end}
+  end
+  return cards
 end

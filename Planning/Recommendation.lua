@@ -16,7 +16,35 @@ function CP:Recommendation(key)
   local path=self.CheapestPath and self:CheapestPath(key)
   local first=path and path.segments[1]
   local best,count,target,learn
-  if first then
+  -- 1.3.0: your active plan (a saved route that covers the current skill) comes first; the cheapest path is
+  -- offered next to it. Either way it is a suggestion: the player switches with one click (ui.recSource[key]).
+  local planStep=self.ForwardRouteStep and self:ForwardRouteStep(key)
+  if planStep then
+    local native=(self.db.recipes[key] or {})[planStep.id]
+    if not (native and native.learned) then planStep=nil end
+  end
+  self.db.ui.recSource=type(self.db.ui.recSource)=="table" and self.db.ui.recSource or {}
+  local choice=self.db.ui.recSource[key]
+  local source="cheapest"
+  local alternative
+  if planStep and first and planStep.id~=first.id then
+    if choice~="cheapest" then
+      source="plan"
+      alternative={source="cheapest",id=first.id,name=first.name}
+    else
+      alternative={source="plan",id=planStep.id,name=planStep.name or self:RecipeName(key,planStep.id)}
+    end
+    local now=path.perPointNow or {}
+    local a,b=now[planStep.id],now[first.id]
+    if a and b then alternative.perPointGap=a-b end   -- > 0: the cheapest path saves this per point
+  elseif planStep and not first then
+    source="plan"
+  end
+  if source=="plan" then
+    best={id=planStep.id,name=planStep.name or self:RecipeName(key,planStep.id)}
+    local advice=self:CraftSuggestion(key,best.id)
+    count,target=math.max(1,advice.count or 1),advice.target or planStep.last
+  elseif first then
     best={id=first.id,name=first.name}
     count,target=first.crafts,first.last
     if not first.learned then learn=first end
@@ -33,7 +61,8 @@ function CP:Recommendation(key)
   local missing,parts={},{}
   for _,mat in ipairs(cost.materials) do
     if (mat.missing or 0)>0 then
-      missing[#missing+1]={id=mat.id,quantity=mat.missing}
+      -- quantity = still missing (after stock); required = the whole need, for callers that subtract stock themselves.
+      missing[#missing+1]={id=mat.id,quantity=mat.missing,required=mat.quantity}
       if #parts<3 then parts[#parts+1]=mat.missing.." "..self:ItemName(mat.id) end
     end
   end
@@ -62,6 +91,16 @@ function CP:Recommendation(key)
     if (mat.alts or 0)>0 and #pickups<2 then pickups[#pickups+1]=self:AltPickupText(mat.id,mat.alts) end
   end
   local extras={}
+  -- 1.3.0: what the last scan changed, for ten minutes.
+  local change=self.lastPathChange
+  if change and change.key==key and (type(time)=="function" and time() or 0)-(change.at or 0)<600 then extras[#extras+1]=change.text end
+  local projectText=self.ProjectNextText and self:ProjectNextText()
+  if projectText then extras[#extras+1]=projectText end
+  if alternative and alternative.source=="cheapest" and (alternative.perPointGap or 0)>0 then
+    extras[#extras+1]=string.format(L("Günstiger: %s · spart ca. %s je Punkt"),alternative.name,self:FormatCostMoney(math.floor(alternative.perPointGap)))
+  elseif alternative and alternative.source=="plan" then
+    extras[#extras+1]=string.format(L("Dein Plan: %s"),alternative.name)
+  end
   local raw=self.RawMaterialHints and self:RawMaterialHints(cost.materials,1) or {}
   if #raw>0 then extras[#extras+1]=L("Selbst herstellen: ")..raw[1]
   else
@@ -102,7 +141,7 @@ function CP:Recommendation(key)
   -- The banner has room for two hints; the companion shows them all (allExtra). Order is priority: twinks,
   -- making it yourself, cheap now, saving tip, whole way (the budget strip names the whole way too).
   local order={}
-  for _,prefix in ipairs({L("Von Twinks: "),L("Selbst herstellen: "),L("Zweiter Beruf: "),"|cff8fd6a6"..L("Jetzt günstig: "),L("Spartipp: "),L("Tipp: ")}) do
+  for _,prefix in ipairs({L("Nach dem Scan: neue Route "),L("Projekt „"),L("Günstiger: "),L("Dein Plan: "),L("Von Twinks: "),L("Selbst herstellen: "),L("Zweiter Beruf: "),"|cff8fd6a6"..L("Jetzt günstig: "),L("Spartipp: "),L("Tipp: ")}) do
     for i=#extras,1,-1 do
       if extras[i]:sub(1,#prefix)==prefix then order[#order+1]=table.remove(extras,i) end
     end
@@ -110,7 +149,7 @@ function CP:Recommendation(key)
   for _,e in ipairs(extras) do order[#order+1]=e end
   local allExtra=#order>0 and table.concat(order,"  ·  ") or nil
   local extra=#order>0 and table.concat({order[1],order[2]},"  ·  ") or nil
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,extraParts=order,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,extraParts=order,tip=tip,source=source,alternative=alternative,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

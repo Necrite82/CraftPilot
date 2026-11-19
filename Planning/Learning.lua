@@ -34,16 +34,22 @@ function CP:LearnTarget(key,id)
     end
     return {kind="trainer",name=location and location.name or L("Lehrer"),location=location,cost=fee,learnAt=recipe.learn}
   end
+  -- 1.3.0: a vendor last seen sold out (or without the recipe) comes after the others and after the AH.
+  local fallback
   for _,vendor in ipairs(self:RecipeVendors(key,id)) do
     if not vendor.restricted and vendor.location then
-      return {kind="vendor",name=vendor.name,location=vendor.location,cost=vendor.cost,learnAt=recipe.learn,limited=vendor.source and vendor.source.limited}
+      local status=recipe.item and self.VendorRecipeStatus and self:VendorRecipeStatus(vendor.id,recipe.item)
+      local target={kind="vendor",name=vendor.name,location=vendor.location,cost=vendor.cost,learnAt=recipe.learn,
+        limited=vendor.source and vendor.source.limited,npc=vendor.id,status=status}
+      if not status or status.state=="offered" then return target end
+      fallback=fallback or target
     end
   end
   if recipe.item then
     local d=self:PriceDetails(recipe.item)
-    if d.auction then return {kind="ah",name=L("Auktionshaus"),item=recipe.item,cost=d.auction,learnAt=recipe.learn} end
+    if d.auction then return {kind="ah",name=L("Auktionshaus"),item=recipe.item,cost=d.auction,learnAt=recipe.learn,alternativeTo=fallback} end
   end
-  return nil
+  return fallback
 end
 
 function CP:LearnTargetLabel(target)
@@ -81,7 +87,7 @@ function CP:LearnTourStops(key)
           byPlace[place]=stop;stops[#stops+1]=stop
         end
         if not stop.seen[s.id] then
-          stop.seen[s.id]=true;stop.recipes[#stop.recipes+1]={id=s.id,name=s.name,at=s.first,cost=target.cost}
+          stop.seen[s.id]=true;stop.recipes[#stop.recipes+1]={id=s.id,name=s.name,at=s.first,cost=target.cost,status=target.status}
           stop.cost=stop.cost+(target.cost or 0)
         end
       end
@@ -290,7 +296,9 @@ function CP:LearnTourCards(key)
     action=function() if CP.tour and CP.tour.key==key then CP:NextTourStop() else CP:StartLearnTour(key) end;CP:Render() end}}
   for i,stop in ipairs(stops) do
     local names={}
-    for _,r in ipairs(stop.recipes) do names[#names+1]=r.name..L(" (ab ")..r.at..")" end
+    for _,r in ipairs(stop.recipes) do
+      names[#names+1]=r.name..L(" (ab ")..r.at..")"..(r.status and (" · "..self:VendorStatusText(r.status)) or "")
+    end
     local place=stop.location and (stop.location.zone and (stop.location.zone..string.format(" %.1f / %.1f",stop.location.x*100,stop.location.y*100)) or "") or ""
     local kind=stop.kind=="trainer" and L("Lehrer") or (stop.kind=="vendor" and L("Händler") or L("Auktionshaus"))
     local who=(stop.kind=="ah" or stop.name==kind) and kind or (kind..": "..stop.name)

@@ -1,6 +1,6 @@
--- Read-only consumer of the QuestieDB addon's public API. QuestieDB is a required dependency since 0.29:
--- trainer names, positions and factions and the gathering nodes are read from it at runtime instead of
--- being bundled with CraftPilot.
+-- Read-only consumer of the QuestieDB addon's public API. QuestieDB is optional (recommended) since 1.3.0:
+-- trainer names, positions and factions, vendor places, boss drops and the gathering nodes are read from it at
+-- runtime. Without it CraftPilot uses its hand-kept trainer list and leaves those extras out.
 local _,CP=...
 local L=CP.L
 local function call(fn,...)
@@ -30,7 +30,7 @@ function CP:QuestieStatus()
   local lib,mode,flavor=self:QuestieProvider()
   if lib then return "QuestieDB: "..(mode=="source" and L("aktiv · Entwicklungsmodus") or L("aktiv · Forever")) end
   if mode=="disabled" then return L("QuestieDB: ausgeschaltet") end
-  if mode=="absent" then return L("QuestieDB: nicht installiert · wird für Lehrer und Sammelgebiete benötigt") end
+  if mode=="absent" then return L("QuestieDB: nicht installiert · empfohlen für alle Lehrer, Sammelgebiete und Boss-Quellen") end
   if mode=="incompatible" then return L("QuestieDB: öffentliche API fehlt oder ist inkompatibel") end
   if mode=="flavor" then return L("QuestieDB: falscher Datenstand · ")..tostring(flavor) end
   return L("QuestieDB: installiert, Forever-Paketkennung fehlt")

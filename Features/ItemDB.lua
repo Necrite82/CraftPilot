@@ -170,9 +170,12 @@ function CP:ItemVerdict(item)
   if not self.db or self.db.ui.itemVerdict==false then return nil end
   local uses=self:ItemUses(item)
   if #uses==0 then
-    local vendor=self.CatalogVendorPrice and self:CatalogVendorPrice(item)
     local sell=self.ItemVendorValue and self:ItemVendorValue(item)
     if (self.ItemProducers and #self:ItemProducers(item)>0) then return nil end
+    -- 1.3.0: only for trade goods; gear, quest items and the like get no line.
+    local info=_G.C_Item and C_Item.GetItemInfoInstant or _G.GetItemInfoInstant
+    local classID=type(info)=="function" and select(7,pcall(info,item))  -- ok, itemID, type, subType, equipLoc, icon, classID
+    if classID~=7 then return nil end
     return sell and sell>0 and string.format(L("Wird in keinem Rezept gebraucht · Händler %s"),self:FormatCostMoney(sell)) or nil,{.7,.7,.7}
   end
   local mine,alts,profs,seenProf=0,0,{},{}
@@ -258,7 +261,14 @@ function CP:ItemDetailCards(item)
       table.sort(mats)
       local who=known(self,pr.key,pr.id) and L("Du kannst es") or (altWith(self,pr.key,pr.recipe.learn) and string.format(L("%s kann es"),altWith(self,pr.key,pr.recipe.learn)) or nil)
       local id,key=pr.id,pr.key
-      cards[#cards+1]={title=self:RecipeName(key,id).." · "..profName(key),detail=table.concat(mats,", "),
+      local buttons={{label=L("Als Vorrat"),action=function() CP:PlanItemFromDB(item,key,id) end},
+        {label=L("Zum Projekt"),action=function()
+          local p=CP:ActiveProject() or CP:CreateProject()
+          CP:AddProjectItem(p,item,5,key,id)
+          CP:Say(string.format(L("%s zum Projekt „%s“ hinzugefügt (Plan & Einkauf › Projekte)."),CP:ItemName(item),p.name))
+          CP:Render()
+        end}}
+      cards[#cards+1]={buttons=buttons,title=self:RecipeName(key,id).." · "..profName(key),detail=table.concat(mats,", "),
         footer=(who and (who.."  ·  ") or "")..L("Klick: als Vorrat planen (Endgame › Raid-Vorrat)"),color=who and "green" or "blue",tooltipSpell=id,icon=itemIcon(item),
         action=function() CP:PlanItemFromDB(item,key,id) end}
     end

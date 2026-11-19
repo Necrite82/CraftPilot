@@ -22,6 +22,12 @@ skill=181;CP:NoteCraftCast(10097);CP:SettleSkillCast()
 assert(CP:SkillLogExport(false):find("mining:10097:181:1:0",1,true),"Only the new craft")
 assert(CP:SkillLogStats().crafts==3 and CP:SkillLogCard().title)
 CP.db.ui.skillLog=false;assert(not CP:NoteCraftCast(10097));CP.db.ui.skillLog=nil
+-- The skill at the start of the cast counts, even if the point is already in when "succeeded" arrives.
+;(CP.account or CP.db).skillLog=nil;skill=190
+CP:NoteCraftStart(10097);skill=191
+CP:NoteCraftCast(10097);CP:SettleSkillCast()
+local r=CP:SkillObservations("mining",10097)
+assert(#r==1 and r[1].skill==190 and r[1].u==1,"Filed at 190 with a point")
 CP.RefreshProfessionSkills,CP.db.professions.mining,_G.C_Timer,CP.pendingSkillCast=saved.refresh,saved.mining,saved.timer,saved.pending
 ;(CP.account or CP.db).skillLog=saved.log
 local priorObserved=CP.ObservedSkill

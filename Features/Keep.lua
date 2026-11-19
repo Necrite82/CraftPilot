@@ -193,7 +193,9 @@ function CP:BudgetLine(key,rec)
   local path=self.CheapestPath and self:CheapestPath(key)
   if gold<=0 then
     if path and path.total and path.reached and path.reached>(path.from or 0) then
-      return {text=string.format(L("Ganzer Weg bis %d: ca. %s · Wie weit reicht dein Gold?"),path.reached,self:FormatCostMoney(path.total)),
+      local reserve=self.PathReserve and self:PathReserve(path) or 0
+      local withReserve=reserve>0 and (" "..string.format(L("(mit Puffer ca. %s)"),self:FormatCostMoney(path.total+reserve))) or ""
+      return {text=string.format(L("Ganzer Weg bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total))..withReserve.." · "..L("Wie weit reicht dein Gold?"),
         short=string.format(L("Bis %d: ca. %s"),path.reached,self:FormatCostMoney(path.total)),action=L("Budget festlegen"),off=true}
     end
     return {text=L("Budget festlegen: CraftPilot zeigt, bis zu welchem Skill dein Gold reicht."),action=L("Budget festlegen"),off=true}
@@ -204,6 +206,12 @@ function CP:BudgetLine(key,rec)
     text=string.format(L("Budget %d Gold · für die Reichweite fehlen Preise (AH scannen)"),gold);short=text
   elseif reach.reached>=reach.target then
     text=string.format(L("Budget %d Gold · reicht für den ganzen Weg bis %d (ca. %s)"),gold,reach.target,self:FormatCostMoney(reach.spent))
+    -- 1.3.0: is there also room for bad luck on yellow/green recipes?
+    local reserve=self.PathReserve and self:PathReserve(path) or 0
+    if reserve>0 then
+      text=text.." · "..((reach.spent+reserve<=gold*10000) and string.format(L("inkl. Puffer %s"),self:FormatCostMoney(reserve))
+        or string.format(L("Puffer für Pech: noch ca. %s mehr einplanen"),self:FormatCostMoney(reach.spent+reserve-gold*10000)))
+    end
     short=string.format(L("Budget %d Gold reicht bis %d"),gold,reach.target)
   else
     text=string.format(L("Budget %d Gold · reicht bis Skill %d von %d"),gold,reach.reached,reach.target)
@@ -346,7 +354,8 @@ function CP:MissingForPlans()
     for id,n in pairs((self:PlanRequirements(owner))) do need[id]=(need[id] or 0)+n end
   end
   local rec=self.currentRecommendation
-  for _,m in ipairs(rec and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.quantity) end
+  -- 1.3.0: the recommendation's whole need (not what is still missing): stock is subtracted exactly once below.
+  for _,m in ipairs(rec and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.required or m.quantity) end
   local out={}
   for id,n in pairs(need) do
     local missing=n-self:ItemAvailability(id)

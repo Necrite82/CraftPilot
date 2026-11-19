@@ -53,12 +53,25 @@ function CP:SettleSkillCast()
   if type(now)=="number" then self:RecordSkillObservation(pending.key,pending.spell,pending.skill,now>pending.skill) end
 end
 
+-- 1.3.0: the skill is taken when the cast starts; at "succeeded" a new point may already be counted, which would
+-- file the craft one skill too high and as "no point".
+function CP:NoteCraftStart(spell)
+  if type(spell)~="number" then return end
+  local key=professionOf(spell)
+  if not key then return end
+  local skill=liveSkill(self,key)
+  self.craftStart={spell=spell,skill=skill}
+end
+
 function CP:NoteCraftCast(spell)
   if not self.db or self.db.ui.skillLog==false or type(spell)~="number" then return false end
   local key=professionOf(spell)
   if not key then return false end
   self:SettleSkillCast()
   local skill,cap=liveSkill(self,key)
+  local start=self.craftStart
+  self.craftStart=nil
+  if start and start.spell==spell and type(start.skill)=="number" then skill=start.skill end
   -- At the cap no point can come; that says nothing about the colour.
   if type(skill)~="number" or (type(cap)=="number" and skill>=cap) then return false end
   local token={}
@@ -162,7 +175,9 @@ function CP:SkillLogCard()
 end
 
 local events=CreateFrame("Frame")
+events:RegisterEvent("UNIT_SPELLCAST_START")
 events:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-events:SetScript("OnEvent",function(_,_,unit,_,spell)
-  if unit=="player" and CP.db then CP:NoteCraftCast(spell) end
+events:SetScript("OnEvent",function(_,event,unit,_,spell)
+  if unit~="player" or not CP.db or CP.db.ui.skillLog==false then return end
+  if event=="UNIT_SPELLCAST_START" then CP:NoteCraftStart(spell) else CP:NoteCraftCast(spell) end
 end)

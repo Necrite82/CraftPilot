@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 1.2.1 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 1.3.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Fragen, Ideen und Fehler:** im Spiel über „Fehler melden“, im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -39,17 +39,21 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 - **Bestätigte Skillgrenzen**: CraftPilot schreibt mit, bei welchem Skill es Punkte gab; geteilte Daten machen die Farbgrenzen für alle genauer
 
 **Einkaufen**
+- **Wege vergleichen**: wenig Gold, wenig Herstellungen oder wenig Wege nebeneinander
+- **Produktionsprojekte**: Skillziele und Gegenstände in einem Ablauf, Zwischenprodukte mitgeplant, gemeinsame Reservierung mit den anderen Plänen
 - Einkaufsplan für jeden Skillbereich, Preisgrenze je Material („lohnt sich bis 12s“)
 - **Einkaufsrunde am Auktionshaus** mit Auctionator: Posten für Posten, Gekauftes wird abgezählt
 - **Händler-Helfer** kauft genau die fehlende Menge, Bank-Helfer zeigt, was du mitnehmen musst
 - Sammelgebiete für Erze, Steine und Kräuter, Verkaufserlös
 - **Jetzt günstig**: Materialien deines Weges, die heute deutlich unter ihrem üblichen Preis liegen, mit Ersparnis
 - **Farmen oder kaufen** nach deinem eigenen Sammeltempo
-- Preise aus **Auctionator, TradeSkillMaster oder Auctioneer**
+- Preise aus **Auctionator, TradeSkillMaster oder Auctioneer** – CraftPilot erkennt, welches Addon zuletzt gescannt hat, und nimmt dessen Preise zuerst
 
 **Lernen**
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
 - Spezialisierungen (Schmied, Ingenieur, Lederer) mit Schritten und Questgeber
+- **Händler-Besuchsstatus**: ausverkaufte Rezepte werden gemerkt, Lernziel und Tour bevorzugen Händler, die es haben
+- **Rezept-Sammlung** mit Fortschritt, Filter nach Quelle und Gebiet und Sammeltour im aktuellen Gebiet
 
 **Endgame**
 - Gewinn je Herstellung für deine erlernten Rezepte: mit gekauften und mit eigenen Materialien (eigene und gefarmte Materialien zählen mit ihrem Verkaufswert)
@@ -73,18 +77,18 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 
 ## Installation
 
-**Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird automatisch mitinstalliert.
+**Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird als empfohlenes Addon angeboten.
 
 **Von Hand:**
-1. [CraftPilot-1.2.1.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.2.1.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-1.3.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.3.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilotPro\CraftPilotPro.toc` muss direkt im Ordner `CraftPilotPro` liegen.
-3. **QuestieDB** (Forever-Fassung) zusätzlich installieren.
+3. Empfohlen: **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 
 | Addon | |
 | --- | --- |
-| QuestieDB | **erforderlich**: Lehrer, Händlerstandorte, Sammelgebiete |
+| QuestieDB | empfohlen: alle Lehrer mit Standort, Händlerstandorte, Sammelgebiete, Bosse als Rezeptquelle (ohne: eigene Lehrerliste) |
 | Auctionator | empfohlen: AH-Preise, Einkaufsrunde |
-| TradeSkillMaster / Auctioneer | optional: weitere Preisquellen |
+| TradeSkillMaster / Auctioneer | optional: weitere Preisquellen – „Automatisch“ nimmt die mit dem neuesten Scan |
 | TomTom | optional: Wegpunkte mit Pfeil |
 | EllesmereUI | optional: passendes Design |
 

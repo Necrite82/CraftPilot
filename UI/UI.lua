@@ -411,7 +411,7 @@ U.reservedText=text(U.reservedChip,"GameFontHighlightSmall",10,-5,132,"")
 U.reservedChip:SetScript("OnClick",function() CP:OpenTab("reservations") end)
 tooltip(U.reservedChip,L("Reservierte Gegenstände"),function() return {L("Markiert in Taschen und Bank, mit Warnung beim Verkaufen, Zerstören, Entzaubern und Verschicken."),L("Anklicken: Vorratsreservierung öffnen")} end)
 -- Endgame: four sub-pages as segment buttons.
-U.endgamePages={{key="profit",label=L("Gewinn")},{key="stock",label=L("Raid-Vorrat")},{key="wish",label=L("Wunschliste")},{key="favor",label=L("Merchant's Favor")}}
+U.endgamePages={{key="profit",label=L("Gewinn")},{key="stock",label=L("Raid-Vorrat")},{key="wish",label=L("Sammlung")},{key="favor",label=L("Merchant's Favor")}}
 U.endgameButtons={}
 for i,p in ipairs(U.endgamePages) do
   local b=segment(frame,128,26,p.label,function() CP.db.ui.endgamePage=p.key;CP:Render() end)
@@ -518,6 +518,14 @@ U.rec.prices=button(U.rec,120,28,0,0,L("Preise prüfen"),function()
   CP:SearchItems(items,L("Preise"),L("Auctionator scannt die Materialien deines Weges."))
 end)
 U.rec.prices:Hide()
+-- 1.3.0: switch between your plan and the cheapest path; it stays a suggestion.
+U.rec.switch=button(U.rec,140,28,0,0,"",function()
+  local r=CP.currentRecommendation;if not (r and r.alternative) then return end
+  CP.db.ui.recSource=type(CP.db.ui.recSource)=="table" and CP.db.ui.recSource or {}
+  CP.db.ui.recSource[r.key]=r.alternative.source
+  CP:Render()
+end)
+U.rec.switch:Hide()
 U.rec:Hide()
 -- 1.1.0: the budget, visible on "Jetzt" right below the recommendation; a click opens the input.
 U.budget=CreateFrame("Button",nil,frame,"BackdropTemplate")
@@ -606,13 +614,13 @@ U.plan.footerLine=frame:CreateTexture(nil,"ARTWORK")
 U.plan.footerLine:SetHeight(1)
 U.plan.footerLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 U.plan.pages={}
-for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")}}) do
+for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")},{key="projects",label=L("Projekte")}}) do
   U.plan.pages[i]=segment(frame,96,24,page.label,function() CP.db.ui.planPage=page.key;CP:Render() end)
   U.plan.pages[i].pageKey=page.key
 end
 U.plan.controls={U.plan.rangeLabel,U.plan.rangeStart,U.plan.targetLabel,U.plan.rangeEnd,U.plan.quantityLabel,U.plan.rangeQty,
   U.plan.build,U.plan.add,U.plan.draft,U.plan.print,U.plan.clear,U.plan.export,U.plan.manual,U.plan.totalLabel,U.plan.total,
-  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4]}
+  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4],U.plan.pages[5]}
 local syncedPlan
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -2008,7 +2016,7 @@ local function renderPlan(self,key,prof,record,inner)
     setVisualCards({{title=L("Sammelberuf · kein Rezept-Einkaufsplan"),detail=L("Die Etappen oben zeigen Sammelgebiete; Lehrer stehen unter Lehrer & Händler."),color="blue"}})
     return
   end
-  if not ({shopping=true,crafts=true,leftovers=true,details=true})[ui.planPage] then ui.planPage="shopping" end
+  if not ({shopping=true,crafts=true,leftovers=true,details=true,projects=true})[ui.planPage] then ui.planPage="shopping" end
   local page=ui.planPage
   syncPlanFields(key)
   local pending=self:RouteBuildPending(key)
@@ -2196,6 +2204,15 @@ function CP:RenderRecommendation(key,inner)
     local tw=inner-54-150-30-(U.rec.pick:IsShown() and 118 or 0)-128
     U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw);U.rec.extra:SetWidth(tw)
   end
+  U.rec.switch:ClearAllPoints()
+  U.rec.switch:SetShown(rec.alternative~=nil)
+  if rec.alternative then
+    local left=U.rec.prices:IsShown() and U.rec.prices or (U.rec.pick:IsShown() and U.rec.pick or U.rec.search)
+    U.rec.switch:SetPoint("RIGHT",left,"LEFT",-8,0)
+    U.rec.switch:SetText(rec.alternative.source=="cheapest" and L("Günstigsten nehmen") or L("Meinen Plan nehmen"))
+    local sw=(U.rec.title:GetWidth() or 0)-148
+    if sw>120 then U.rec.title:SetWidth(sw);U.rec.detail:SetWidth(sw);U.rec.extra:SetWidth(sw) end
+  end
   -- 1.2.1: only as many hints as fit; the rest stays in the tooltip and the companion.
   local parts=rec.extraParts or {}
   if #parts>1 and type(U.rec.extra.GetStringWidth)=="function" then
@@ -2207,6 +2224,9 @@ function CP:RenderRecommendation(key,inner)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
     local r=CP.currentRecommendation
     local lines=r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    -- 1.3.0: why this recipe, compared with the two best alternatives right now.
+    local why=r and CP.WhyRecipeLines and CP:WhyRecipeLines(r.key,r.id)
+    if why then for i=#why,1,-1 do table.insert(lines,1,why[i]) end end
     -- Hints that did not fit into the banner.
     if r and r.allExtra and r.allExtra~=r.extra then
       local all={}

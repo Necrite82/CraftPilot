@@ -87,7 +87,7 @@ function CP:BankPickups()
     for id,n in pairs((self:PlanRequirements(owner))) do need[id]=(need[id] or 0)+n end
   end
   local rec=self.currentRecommendation
-  for _,m in ipairs(rec and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.quantity) end
+  for _,m in ipairs(rec and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.required or m.quantity) end
   local out={}
   for id,n in pairs(need) do
     local bags=self:RawItemCount(id,false)
@@ -145,27 +145,71 @@ function CP:PrepareMail(name,items)
   if type(MailFrameTab_OnClick)=="function" then pcall(MailFrameTab_OnClick,nil,2) end
   pcall(SendMailNameEditBox.SetText,SendMailNameEditBox,name)
   if type(_G.SendMailSubjectEditBox)=="table" then pcall(SendMailSubjectEditBox.SetText,SendMailSubjectEditBox,"CraftPilot") end
-  local queued,short=self:AttachMailItems(items)
-  local list={};for _,it in ipairs(items or {}) do list[#list+1]=it.count.."× "..it.name end
-  if queued>0 then
-    self:Say(string.format(L("Brief an %s gepackt (%d Anhänge) · prüfen und auf „Senden“ klicken."),name,queued)
-      ..(short and (" "..L("Nicht alles passte in einen Brief – danach erneut packen.")) or ""))
-  else
+  -- Let the game re-check whether "Send" may be enabled after text was set by code.
+  if type(_G.SendMailFrame_CanSend)=="function" then pcall(SendMailFrame_CanSend) end
+  local started=self:AttachMailItems(items,function(done,failed,short,skipped)
+    if done>0 and not failed then
+      CP:Say(string.format(L("Brief an %s gepackt (%d Anhänge) · prüfen und auf „Senden“ klicken."),name,done)
+        ..(short and (" "..L("Nicht alles passte in einen Brief – danach erneut packen.")) or "")
+        ..(skipped and (" "..L("Nicht mehr in der Tasche: ")..skipped) or ""))
+    elseif failed then
+      CP:Say(string.format(L("Packen abgebrochen (%s) · bitte die Anhänge prüfen."),failed))
+    end
+    if type(_G.SendMailFrame_CanSend)=="function" then pcall(SendMailFrame_CanSend) end
+  end)
+  if not started then
+    local list={};for _,it in ipairs(items or {}) do list[#list+1]=it.count.."× "..it.name end
     self:Say(string.format(L("Brief an %s vorbereitet · bitte anhängen: %s"),name,table.concat(list,", ")))
   end
   return true
 end
 
--- Bag slots holding the items, exact amounts: whole stacks, the last one split. At most the free attachment slots.
+local function sendMailOpen()
+  local f=_G.SendMailFrame or _G.MailFrame
+  return type(_G.SendMailNameEditBox)=="table" and (not f or type(f.IsShown)~="function" or f:IsShown())
+end
+local function freeSlots()
+  local free,max=0,_G.ATTACHMENTS_MAX_SEND or 12
+  for i=1,max do if not (type(GetSendMailItem)=="function" and GetSendMailItem(i)) then free=free+1 end end
+  return free,max
+end
+local function firstFreeIndex()
+  local max=_G.ATTACHMENTS_MAX_SEND or 12
+  for i=1,max do if not (type(GetSendMailItem)=="function" and GetSendMailItem(i)) then return i end end
+  return nil
+end
+local function attachedID(index)
+  if type(GetSendMailItemLink)=="function" then
+    local link=GetSendMailItemLink(index)
+    local id=type(link)=="string" and tonumber(link:match("item:(%d+)"))
+    if id then return id end
+  end
+  if type(GetSendMailItem)=="function" then
+    local _,id=GetSendMailItem(index)
+    if type(id)=="number" then return id end
+  end
+  return nil
+end
+-- A bag slot that holds the item right now (not locked), or nil.
+local function findSlot(id)
+  local api=_G.C_Container
+  if not (api and type(api.GetContainerItemInfo)=="function" and type(api.GetContainerNumSlots)=="function") then return nil end
+  for bag=0,(_G.NUM_BAG_SLOTS or 4) do
+    for slot=1,(api.GetContainerNumSlots(bag) or 0) do
+      local info=api.GetContainerItemInfo(bag,slot)
+      if type(info)=="table" and info.itemID==id and not info.isLocked and (info.stackCount or 0)>0 then return bag,slot,info.stackCount end
+    end
+  end
+  return nil
+end
+
+-- Still used by the panel to say whether everything fits: whole stacks, the last one split, within free slots.
 function CP:MailAttachmentPlan(items)
   local api=_G.C_Container
   local getInfo=api and api.GetContainerItemInfo
   local numSlots=api and api.GetContainerNumSlots
   local plan,short={},false
-  local free=_G.ATTACHMENTS_MAX_SEND or 12
-  if type(GetSendMailItem)=="function" then
-    for i=1,(_G.ATTACHMENTS_MAX_SEND or 12) do if GetSendMailItem(i) then free=free-1 end end
-  end
+  local free=freeSlots()
   if type(getInfo)~="function" or type(numSlots)~="function" then return plan,false end
   for _,it in ipairs(items or {}) do
     local left=it.count or 0
@@ -186,29 +230,56 @@ function CP:MailAttachmentPlan(items)
   return plan,short
 end
 
--- One attachment every 0.3 s: the client locks a slot for a moment after each move.
-function CP:AttachMailItems(items)
-  local plan,short=self:MailAttachmentPlan(items)
-  if #plan==0 then return 0,short end
+-- 1.3.0: one attachment at a time, each checked: the slot is looked up again right before the move (bags may have
+-- been sorted meanwhile), and after the move the attachment must be the expected item. Anything unexpected stops
+-- the packing and puts the cursor back. done(attached, failedReason, short) is called at the end.
+function CP:AttachMailItems(items,done)
   local api=_G.C_Container
-  local i=0
-  local function nextOne()
-    i=i+1
-    local step=plan[i]
-    if not step or type(_G.SendMailNameEditBox)~="table" then return end
-    if step.split then pcall(api.SplitContainerItem,step.bag,step.slot,step.take) else pcall(api.PickupContainerItem,step.bag,step.slot) end
-    if type(ClickSendMailItemButton)=="function" then
-      local index=1
-      if type(GetSendMailItem)=="function" then while GetSendMailItem(index) do index=index+1 end end
-      pcall(ClickSendMailItemButton,index)
-    end
+  if not (api and type(ClickSendMailItemButton)=="function") then return false end
+  local queue={}
+  for _,it in ipairs(items or {}) do if (it.count or 0)>0 then queue[#queue+1]={id=it.id,left=it.count} end end
+  if #queue==0 or freeSlots()==0 then return false end
+  local attached,pending,skipped=0,nil,{}
+  local function finish(reason,short)
     if type(CursorHasItem)=="function" and CursorHasItem() and type(ClearCursor)=="function" then ClearCursor() end
-    if plan[i+1] then
-      if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(.3,nextOne) else nextOne() end
-    end
+    CP.mailPacking=nil
+    if done then done(attached,reason,short,#skipped>0 and table.concat(skipped,", ") or nil) end
   end
-  nextOne()
-  return #plan,short
+  local function later(fn)
+    if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(.3,fn) else fn() end
+  end
+  local step
+  step=function()
+    -- Check the previous move first.
+    if pending then
+      local got=attachedID(pending.index)
+      if got~=pending.id then return finish(L("unerwarteter Anhang")) end
+      pending.entry.left=pending.entry.left-pending.take
+      attached=attached+1
+      pending=nil
+    end
+    if not sendMailOpen() then return finish(L("Postfenster geschlossen")) end
+    local entry
+    for _,q in ipairs(queue) do if q.left>0 then entry=q;break end end
+    if not entry then return finish(nil,false) end
+    local index=firstFreeIndex()
+    if not index then return finish(nil,true) end
+    local bag,slot,stack=findSlot(entry.id)
+    if not bag then
+      skipped[#skipped+1]=CP:ItemName(entry.id)
+      entry.left=0                       -- not (or no longer) in the bags: skip this item
+      return later(step)
+    end
+    local take=math.min(entry.left,stack)
+    if type(CursorHasItem)=="function" and CursorHasItem() then return finish(L("Cursor belegt")) end
+    if take<stack then pcall(api.SplitContainerItem,bag,slot,take) else pcall(api.PickupContainerItem,bag,slot) end
+    pcall(ClickSendMailItemButton,index)
+    pending={index=index,id=entry.id,take=take,entry=entry}
+    later(step)
+  end
+  self.mailPacking=true
+  step()
+  return true
 end
 
 -- A small panel beside the bank or the mailbox. Lines: {text, action, caption}.
@@ -480,7 +551,7 @@ function CP:TwinkCards(key)
   local need={}
   for id,n in pairs((self:PlanRequirements(key))) do need[id]=n end
   local rec=self.currentRecommendation
-  for _,m in ipairs(rec and rec.key==key and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.quantity) end
+  for _,m in ipairs(rec and rec.key==key and rec.materials or {}) do need[m.id]=math.max(need[m.id] or 0,m.required or m.quantity) end
   local stock={}
   for id,n in pairs(need) do
     for _,a in ipairs(self:AltStock(id)) do
