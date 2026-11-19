@@ -259,7 +259,7 @@ function CP:ItemDetailCards(item)
       local who=known(self,pr.key,pr.id) and L("Du kannst es") or (altWith(self,pr.key,pr.recipe.learn) and string.format(L("%s kann es"),altWith(self,pr.key,pr.recipe.learn)) or nil)
       local id,key=pr.id,pr.key
       cards[#cards+1]={title=self:RecipeName(key,id).." · "..profName(key),detail=table.concat(mats,", "),
-        footer=(who and (who.."  ·  ") or "")..L("Klick: als Vorrat planen (Endgame › Raid-Vorrat)"),color=who and "green" or "blue",tooltipSpell=id,
+        footer=(who and (who.."  ·  ") or "")..L("Klick: als Vorrat planen (Endgame › Raid-Vorrat)"),color=who and "green" or "blue",tooltipSpell=id,icon=itemIcon(item),
         action=function() CP:PlanItemFromDB(item,key,id) end}
     end
   end
@@ -299,7 +299,8 @@ function CP:ItemDetailCards(item)
         footer=alt and string.format(L("Nicht dein Beruf · %s hat %s"),alt,profName(key)) or L("Nicht dein Beruf")
         color="blue"
       end
-      cards[#cards+1]={title=title,detail=string.format(L("%d× pro Herstellung"),u.count),footer=footer,color=color,action=action,tooltipSpell=id}
+      cards[#cards+1]={title=title,detail=string.format(L("%d× pro Herstellung"),u.count),footer=footer,color=color,action=action,tooltipSpell=id,
+        icon=u.recipe.makes and itemIcon(u.recipe.makes) or nil}
     end
   end
   for _,d in ipairs(self.QuestieItemDrops and self:QuestieItemDrops(item) or {}) do
@@ -352,7 +353,7 @@ function CP:BuildableCards()
     if b.chance>0 then parts[#parts+1]=string.format(L("Skillchance ca. %d%%"),math.floor(b.chance*100+.5)) end
     if b.profit then parts[#parts+1]=(b.profit>=0 and L("Gewinn ca. ") or L("Verlust ca. "))..self:FormatCostMoney(math.abs(b.profit)) end
     cards[#cards+1]={title=self:RecipeName(key,id).." · "..profName(key),detail=table.concat(parts," · "),footer=L("Klick: Rezept öffnen"),
-      color=b.chance>0 and "gold" or "green",tooltipSpell=id,grid=true,
+      color=b.chance>0 and "gold" or "green",tooltipSpell=id,grid=true,icon=b.recipe.makes and itemIcon(b.recipe.makes) or nil,
       action=function() CP:ChangeView(key,false);CP.db.ui.selectedRecipes=CP.db.ui.selectedRecipes or {};CP.db.ui.selectedRecipes[key]=id;CP:OpenTab("now") end}
   end
   return cards

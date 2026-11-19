@@ -1,7 +1,7 @@
 -- Exchanges version numbers only; no external network access or remote code.
 local _,CP=...
 local L=CP.L
-CP.version="1.2.0"
+CP.version="1.2.1"
 CP.releaseURL="https://github.com/Necrite82/CraftPilot/releases"
 CP.discordURL="https://discord.gg/DpsBkHtQS"
 local PREFIX="CraftPilotVer"

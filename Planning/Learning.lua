@@ -293,7 +293,8 @@ function CP:LearnTourCards(key)
     for _,r in ipairs(stop.recipes) do names[#names+1]=r.name..L(" (ab ")..r.at..")" end
     local place=stop.location and (stop.location.zone and (stop.location.zone..string.format(" %.1f / %.1f",stop.location.x*100,stop.location.y*100)) or "") or ""
     local kind=stop.kind=="trainer" and L("Lehrer") or (stop.kind=="vendor" and L("Händler") or L("Auktionshaus"))
-    cards[#cards+1]={title=i..". "..kind..": "..stop.name..(stop.cost>0 and (" · "..self:FormatCostMoney(stop.cost)) or ""),
+    local who=(stop.kind=="ah" or stop.name==kind) and kind or (kind..": "..stop.name)
+    cards[#cards+1]={title=i..". "..who..(stop.cost>0 and (" · "..self:FormatCostMoney(stop.cost)) or ""),
       detail=table.concat(names,", ")..(place~="" and ("\n"..place) or ""),
       footer=stop.kind=="ah" and L("Klick: im AH suchen") or L("Klick: Wegpunkt"),
       color=(tour and tour.index==i) and "gold" or "blue",

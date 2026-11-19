@@ -161,7 +161,7 @@ function CP:UpdateCompanion()
   end
   if rec then
     f.title:SetText(rec.title);put(f.title,4)
-    f.detail:SetText((rec.allExtra or rec.extra) and (rec.detail.."\n"..(rec.allExtra or rec.extra)) or rec.detail);put(f.detail,8)
+    f.detail:SetText(rec.extra and (rec.detail.."\n"..rec.extra) or rec.detail);put(f.detail,8)
     local count,at,index=self:CraftsToNextColor(key,rec.id)
     if count then
       f.progress:SetText(string.format(L("Noch ca. %d× bis %s (Skill %d)"),count,INKS[index]..COLOR_NAMES[index].."|r",at))
@@ -204,6 +204,8 @@ function CP:UpdateCompanion()
   if session then extra[#extra+1]=session end
   local budget=self.BudgetLine and self:BudgetLine(key,rec)
   if budget and not budget.off and budget.short then extra[#extra+1]="|cffffd878"..budget.short.."|r" end
+  -- 1.2.1: at most three extra lines; the main window has the rest.
+  for i=#extra,4,-1 do extra[i]=nil end
   if #extra>0 then f.extra:SetText(table.concat(extra,"\n"));put(f.extra,8) end
   local atCap=record.cap and record.cap<300 and (record.skill or 0)>=record.cap
   -- Craft row: the recommended amount, limited by what the bags allow right now.

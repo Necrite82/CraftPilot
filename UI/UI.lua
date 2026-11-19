@@ -335,8 +335,12 @@ side:SetPoint("BOTTOMRIGHT",frame,"BOTTOMLEFT",1,0)
 CP:Round(side)
 -- Solid backing under the sidebar: it hangs outside the window, so a skin's see-through panel style (or a
 -- translucent backdrop) would let unit frames and other addons show through. Inset keeps the round corners.
-U.sideBacking=side:CreateTexture(nil,"BACKGROUND",nil,-8)
-U.sideBacking:SetPoint("TOPLEFT",side,"TOPLEFT",4,-4);U.sideBacking:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-4,4)
+-- 1.2.1: its own frame below the sidebar, so no skin can hide or fade it.
+U.sideBase=CreateFrame("Frame",nil,frame)
+U.sideBase:SetPoint("TOPLEFT",side,"TOPLEFT",3,-3);U.sideBase:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-3,3)
+if type(U.sideBase.SetFrameLevel)=="function" and type(side.GetFrameLevel)=="function" then U.sideBase:SetFrameLevel(math.max(0,(side:GetFrameLevel() or 1)-1)) end
+U.sideBacking=U.sideBase:CreateTexture(nil,"BACKGROUND",nil,-8)
+U.sideBacking:SetAllPoints(U.sideBase)
 side:EnableMouse(true)
 if type(side.RegisterForDrag)=="function" then side:RegisterForDrag("LeftButton") end
 side:SetScript("OnDragStart",function() if type(frame.StartMoving)=="function" then frame:StartMoving() end end)
@@ -523,6 +527,7 @@ if type(U.budget.icon.SetTexture)=="function" then U.budget.icon:SetTexture("Int
 U.budget.text=U.budget:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");U.budget.text:SetPoint("LEFT",U.budget,"LEFT",36,0);U.budget.text:SetJustifyH("LEFT");U.budget.text:SetWordWrap(false)
 U.budget.action=U.budget:CreateFontString(nil,"OVERLAY","GameFontNormalSmall");U.budget.action:SetPoint("RIGHT",U.budget,"RIGHT",-12,0);U.budget.action:SetJustifyH("RIGHT")
 U.budget:SetScript("OnClick",function() CP:OpenBudgetWindow() end)
+CP.budgetStrip=U.budget
 U.budget:Hide()
 
 U.detailPanel=panel(frame,"panel")
@@ -659,7 +664,7 @@ U.campFilter=button(frame,170,26,0,0,L("Nur gewählter Beruf"),function()
 end)
 
 U.segBg={}
-for _,name in ipairs({"plan","trainer","camp"}) do
+for _,name in ipairs({"plan","trainer","camp","items","endgame"}) do
   local bg=panel(frame,"raised")
   bg:SetFrameLevel(math.max(0,(frame:GetFrameLevel() or 1)))
   bg:Hide()
@@ -1556,7 +1561,8 @@ local function registerEllesmereUI()
     CP.ellesmereSkin=S
     useSkin(S,"Shell",frame)
     useSkin(S,"Panel",header)
-    useSkin(S,"Panel",U.side)
+    -- The sidebar hangs outside the window: it needs the opaque window style, not the see-through inner panel.
+    useSkin(S,"Shell",U.side)
     useSkin(S,"Panel",U.listPanel)
     useSkin(S,"Panel",U.detailPanel)
     useSkin(S,"CloseButton",U.close)
@@ -2190,6 +2196,12 @@ function CP:RenderRecommendation(key,inner)
     local tw=inner-54-150-30-(U.rec.pick:IsShown() and 118 or 0)-128
     U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw);U.rec.extra:SetWidth(tw)
   end
+  -- 1.2.1: only as many hints as fit; the rest stays in the tooltip and the companion.
+  local parts=rec.extraParts or {}
+  if #parts>1 and type(U.rec.extra.GetStringWidth)=="function" then
+    local avail=U.rec.extra:GetWidth()
+    if type(avail)=="number" and avail>0 and (U.rec.extra:GetStringWidth() or 0)>avail then U.rec.extra:SetText(parts[1]) end
+  end
   -- Hover: the whole cheapest path, step by step.
   U.rec:EnableMouse(true)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
@@ -2263,6 +2275,7 @@ function CP:Render()
       b:Show()
       if b.selectionMarker then b.selectionMarker:SetShown(U.itemPages[i].key==page) end
     end
+    segmentGroup("items",U.itemButtons)
     if page=="search" then
       if self.RequestItemNames then self:RequestItemNames() end
       U.itemSearch:Show()
@@ -2277,6 +2290,7 @@ function CP:Render()
       b:Show()
       if b.selectionMarker then b.selectionMarker:SetShown(U.endgamePages[i].key==page) end
     end
+    segmentGroup("endgame",U.endgameButtons)
     showContent(140)
     setVisualCards(self:EndgameCards(key,page))
   else

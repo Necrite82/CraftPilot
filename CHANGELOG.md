@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.1
+
+- **Seitenleiste deckend** – auch mit EllesmereUI (dort bekam sie bisher den halbdurchsichtigen Stil für innere Felder)
+- **Empfehlung**: Die zweite Zeile zeigt nur so viele Hinweise, wie hineinpassen; der Rest steht im Tooltip
+- **Budget-Fenster** im CraftPilot-Stil und direkt unter der Budget-Zeile
+- **Gegenstände**: Symbole der hergestellten Gegenstände statt einer Schriftrolle; Reiter auf dem dunklen Balken wie auf den anderen Seiten (auch Endgame)
+- **Begleitfenster** kürzer: die zwei wichtigsten Hinweise und höchstens drei Zusatzzeilen
+- **Lerntour**: „Auktionshaus“ nicht mehr doppelt
+- **Preisfelder** zeigen „—“ statt „0“, wenn es keinen Preis gibt (z. B. Händler bei Camping)
+- **Plan & Einkauf**: keine doppelt wirkenden Trennlinien mehr
+
 ## 1.2.0
 
 - **Neue Seite „Gegenstände“**: jeden Gegenstand suchen (oder Alt-Klick in der Tasche, `/cpp item <Name>`) und sehen, in welchen Rezepten aller Berufe er Zutat ist und wodurch er hergestellt wird – mit Farbbereich, Menge, Preis, Vorrat und Drops
