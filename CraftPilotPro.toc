@@ -56,6 +56,7 @@ Features\ManualShopping.lua
 Planning\CraftSuggestions.lua
 UI\PlanUX.lua
 Features\VendorBrowser.lua
+Features\VendorStatus.lua
 Planning\ForwardPlanning.lua
 Planning\CheapestPath.lua
 Planning\Recommendation.lua
