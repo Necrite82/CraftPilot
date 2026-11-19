@@ -56,4 +56,35 @@ do
   CP.CheapestPath,CP.ForwardRouteStep,CP.db.lastCapture,CP.db.professions.engineering,CP.db.recipes.engineering,CP.db.ui.recSource,CP.CraftSuggestion=
     saved.path,saved.step,saved.cap,saved.eng,saved.rec,saved.src,saved.sugg
 end
+-- 1.3.0 features: why this recipe, budget reserve, twink stock age, path change after a scan
+do
+  local path={segments={{id=1,name="A",first=200,last=210,expected=20,cost=20000,learned=true},{id=2,name="B",first=210,last=220,expected=10,cost=10000,learned=false}},
+    total=30000,reached=220,optionsNow={{id=1,name="A",perPoint=1000,chance=.5,learned=true},{id=3,name="C",perPoint=1500,chance=1,learned=false,fee=5000},{id=4,name="D",perPoint=900,chance=.25,learned=true}},quantities={}}
+  local saved=CP.CheapestPath
+  CP.CheapestPath=function() return path end
+  local why=CP:WhyRecipe("engineering",1)
+  assert(why and why.chosen.id==1 and #why.others==2 and why.others[1].id==4,"Two best alternatives by cost per point")
+  assert(CP:WhyRecipeLines("engineering",1)[1].left:find("Warum",1,true))
+  assert(CP:PathReserve(path)>0,"Yellow/green steps need a reserve")
+  assert(CP:PathReserve({segments={{first=1,last=11,expected=10,cost=1000}}})==0,"Orange needs none")
+  local before={total=30000,ids={[1]="A"},visits=0}
+  local after={total=28000,ids={[1]="A",[5]="E"},visits=1}
+  local text=CP:PathChangeText(CP:PathChange(before,after))
+  assert(text and text:find("spart",1,true) and text:find("E",1,true) and text:find("1 Lehrer",1,true))
+  assert(CP:PathChange(before,{total=30050,ids={[1]="A"},visits=0})==nil,"Tiny price moves are no news")
+  CP.CheapestPath=saved
+  -- twink stock age
+  local acct=CP.account;local savedChars=acct and acct.characters
+  local savedAge=CP.db.ui.altMaxAge
+  if acct then
+    local me=CP:CurrentCharacter()
+    acct.characters={[CP.characterKey]=me,["old-x"]={name="Alt",realm=me and me.realm,faction=me and me.faction,bags={[2770]=5},updated=(time and time() or 0)-40*86400}}
+    CP.altIndex=nil;CP.db.ui.altMaxAge=14
+    assert(CP:AltReachable(2770)==0,"40-day-old stock is not planned with")
+    assert(CP:AltStock(2770)[1].tooOld,"…but still shown")
+    CP.db.ui.altMaxAge=0;CP.altIndex=nil
+    assert(CP:AltReachable(2770)==5,"0 = always")
+    acct.characters=savedChars;CP.altIndex=nil;CP.db.ui.altMaxAge=savedAge
+  end
+end
 print("PASS: 1.3.0 review fixes: stock subtracted once, depth-safe cost cache, unconfirmed twink recipes only as a hint, plan first with a switch")

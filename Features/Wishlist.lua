@@ -290,6 +290,7 @@ frame:SetScript("OnEvent",function(_,event)
         CP.tooltipCache=nil
         if CP.db then CP.db.ahUpdated=type(time)=="function" and time() or nil end
         CP:CheckAuctionAlarms()
+        if CP.ComparePathAfterScan then pcall(CP.ComparePathAfterScan,CP) end
         if CP.frame and type(CP.frame.IsShown)=="function" and CP.frame:IsShown() and CP.Render then CP:Render() end
       end)
     end

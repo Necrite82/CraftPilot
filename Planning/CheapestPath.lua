@@ -337,6 +337,7 @@ function CP:CheapestPath(key,from,to)
     unpriced=unpriced,perPointNow=perPointNow,optionsNow=optionsNow,priceItems=priceItems,altCrafts=altCrafts,priceLimits=priceLimits,quantities=quantities,maybeAlts=memo.maybe}
   self.pathCache=true
   self.pathCaches[token]={at=now(),path=path}
+  self.lastPathByKey=self.lastPathByKey or {};self.lastPathByKey[key]=path
   return path
 end
 
@@ -404,4 +405,104 @@ function CP:NextLearnStep(path)
   for _,s in ipairs(path and path.segments or {}) do
     if not s.learned then return s end
   end
+end
+
+-- 1.3.0: "Why this recipe?" – the chosen one next to the two best alternatives at the current skill:
+-- cost per point (learning fee spread in), skill chance, learning fee, and whether the result is used later.
+function CP:WhyRecipe(key,id)
+  local path=self:CheapestPath(key)
+  if not path or not path.optionsNow then return nil end
+  local list={}
+  for _,o in ipairs(path.optionsNow) do list[#list+1]=o end
+  table.sort(list,function(a,b) return a.perPoint<b.perPoint end)
+  local chosen,others=nil,{}
+  for _,o in ipairs(list) do
+    if o.id==id then chosen=o elseif #others<2 then others[#others+1]=o end
+  end
+  if not chosen then return nil end
+  local function row(o)
+    local recipe=(self:Catalog(key) or {recipes={}}).recipes[o.id]
+    local makes=recipe and recipe.makes
+    return {id=o.id,name=o.name,perPoint=o.perPoint,chance=o.chance or 0,fee=(not o.learned) and (o.fee or 0) or 0,
+      learned=o.learned,usedLater=makes and path.quantities and (path.quantities[makes] or 0)>0 or false}
+  end
+  local out={chosen=row(chosen),others={}}
+  for _,o in ipairs(others) do out.others[#out.others+1]=row(o) end
+  return out
+end
+
+function CP:WhyRecipeLines(key,id)
+  local why=self:WhyRecipe(key,id)
+  if not why then return nil end
+  local function line(r,mark)
+    local parts={string.format(L("%s je Punkt"),self:FormatCostMoney(math.floor(r.perPoint))),string.format(L("Chance %d%%"),math.floor(r.chance*100+.5))}
+    if r.fee>0 then parts[#parts+1]=L("lernen ")..self:FormatCostMoney(r.fee) end
+    if r.usedLater then parts[#parts+1]=L("Ergebnis später gebraucht") end
+    return {left=mark..r.name,right=table.concat(parts," · ")}
+  end
+  local rows={{left=L("Warum dieses Rezept?"),color={1,.82,.30}},line(why.chosen,"> ")}
+  for _,r in ipairs(why.others) do rows[#rows+1]=line(r,"   ") end
+  rows[#rows+1]={left=" "}
+  return rows
+end
+
+-- 1.3.0: budget with a reserve. Yellow and green recipes need a varying number of crafts: per point the crafts
+-- follow a geometric distribution (variance (1-p)/p²). The reserve covers about 9 of 10 runs (1.28 σ).
+function CP:PathReserve(path)
+  if not path or not path.segments then return 0 end
+  local variance=0
+  for _,s in ipairs(path.segments) do
+    local points=math.max(0,(s.last or 0)-(s.first or 0))
+    local expected=s.expected or s.crafts or 0
+    if points>0 and expected>0 and (s.cost or 0)>0 then
+      local p=math.min(1,points/expected)
+      local perCraft=s.cost/expected
+      variance=variance+perCraft*perCraft*points*(1-p)/(p*p)
+    end
+  end
+  return math.floor(1.28*math.sqrt(variance)+.5)
+end
+
+-- 1.3.0: what a scan changed. Before the new prices are used, the current path is remembered; afterwards the new
+-- one is compared: cost difference, recipes swapped, extra or fewer trainer/vendor visits.
+local function snapshot(path)
+  if not path then return nil end
+  local ids,visits={},0
+  for _,s in ipairs(path.segments or {}) do ids[s.id]=s.name;if not s.learned then visits=visits+1 end end
+  return {total=path.total,reached=path.reached,ids=ids,visits=visits}
+end
+function CP:PathChange(before,after)
+  if not before or not after then return nil end
+  local added,removed={},{}
+  for id,name in pairs(after.ids) do if not before.ids[id] then added[#added+1]=name end end
+  for id,name in pairs(before.ids) do if not after.ids[id] then removed[#removed+1]=name end end
+  table.sort(added);table.sort(removed)
+  local diff=(after.total or 0)-(before.total or 0)
+  if #added==0 and #removed==0 and math.abs(diff)<100 then return nil end
+  return {diff=diff,added=added,removed=removed,visits=after.visits-before.visits}
+end
+function CP:PathChangeText(change)
+  if not change then return nil end
+  local parts={}
+  if change.diff<=-100 then parts[#parts+1]=string.format(L("spart ca. %s"),self:FormatCostMoney(-change.diff))
+  elseif change.diff>=100 then parts[#parts+1]=string.format(L("kostet ca. %s mehr"),self:FormatCostMoney(change.diff)) end
+  if #change.added>0 then parts[#parts+1]=L("neu: ")..table.concat(change.added,", ") end
+  if #change.removed>0 then parts[#parts+1]=L("entfällt: ")..table.concat(change.removed,", ") end
+  if change.visits>0 then parts[#parts+1]=string.format(L("%d Lehrer-/Händlerbesuch(e) mehr"),change.visits)
+  elseif change.visits<0 then parts[#parts+1]=string.format(L("%d Lehrer-/Händlerbesuch(e) weniger"),-change.visits) end
+  return L("Nach dem Scan: neue Route ")..table.concat(parts," · ")
+end
+-- Called when the auction data changed (Auctionator scan): remember, recompute, compare, tell.
+function CP:ComparePathAfterScan()
+  local key=self.db and self.db.view
+  if not key or not self.CheapestPath then return nil end
+  -- The last path computed with the old prices (even if its cache has expired meanwhile).
+  local before=snapshot((self.lastPathByKey or {})[key] or self:CheapestPath(key))
+  self.pathCache=nil
+  local after=snapshot(self:CheapestPath(key))
+  local change=self:PathChange(before,after)
+  local text=self:PathChangeText(change)
+  self.lastPathChange=text and {key=key,text=text,at=type(time)=="function" and time() or 0} or nil
+  if text then self:Say(text) end
+  return change
 end

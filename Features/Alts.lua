@@ -107,6 +107,18 @@ function CP:SnapshotCharacterBank()
 end
 
 -- Other characters holding an item: {name, realm, faction, bags, bank, count, reachable}.
+-- 1.3.0: how old a twink's stock is, and whether it still counts for planning (Settings: "Twink-Bestände
+-- einplanen bis"; 0 = always). Older stock is still shown, only no longer planned with.
+local function ageDays(c)
+  local t=type(time)=="function" and time() or 0
+  return c.updated and math.max(0,math.floor((t-c.updated)/86400)) or nil
+end
+function CP:AltStockCounts(c)
+  local limit=tonumber(self.db and self.db.ui.altMaxAge) or 14
+  if limit<=0 then return true end
+  local age=ageDays(c)
+  return age==nil or age<=limit
+end
 function CP:AltStock(itemID)
   local out={}
   local me=self:CurrentCharacter()
@@ -116,8 +128,9 @@ function CP:AltStock(itemID)
       local bank=(c.bank or {})[itemID] or 0
       local mail=(c.mail or {})[itemID] or 0
       if bags+bank+mail>0 then
+        local counts=self:AltStockCounts(c)
         out[#out+1]={name=c.name or key,realm=c.realm,faction=c.faction,bags=bags,bank=bank,mail=mail,count=bags+bank+mail,
-          reachable=me~=nil and c.realm==me.realm and c.faction==me.faction}
+          reachable=me~=nil and c.realm==me.realm and c.faction==me.faction and counts,tooOld=not counts,ageDays=ageDays(c)}
       end
     end
   end
@@ -137,7 +150,7 @@ function CP:AltReachable(itemID)
     local index={}
     local me=self:CurrentCharacter()
     for key,c in pairs(self.account.characters) do
-      if key~=self.characterKey and me and c.realm==me.realm and c.faction==me.faction then
+      if key~=self.characterKey and me and c.realm==me.realm and c.faction==me.faction and self:AltStockCounts(c) then
         for _,store in ipairs({c.bags or {},c.bank or {},c.mail or {}}) do
           for id,n in pairs(store) do index[id]=(index[id] or 0)+n end
         end
@@ -155,7 +168,9 @@ function CP:AltPickupText(itemID,needed)
     if left<=0 then break end
     if alt.reachable then
       local take=math.min(left,alt.count)
-      parts[#parts+1]=take.." "..self:ItemName(itemID).." ("..alt.name..")"
+      -- 1.3.0: how old that stock is, from two days on.
+      local age=(alt.ageDays or 0)>=2 and (", "..string.format(L("Stand vor %d Tagen"),alt.ageDays)) or ""
+      parts[#parts+1]=take.." "..self:ItemName(itemID).." ("..alt.name..age..")"
       left=left-take
     end
   end

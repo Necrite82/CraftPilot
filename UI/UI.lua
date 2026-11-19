@@ -2224,6 +2224,9 @@ function CP:RenderRecommendation(key,inner)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
     local r=CP.currentRecommendation
     local lines=r and r.path and CP:PathTooltip(r.path) or {L("Keine Preise für einen Wegvergleich · AH scannen.")}
+    -- 1.3.0: why this recipe, compared with the two best alternatives right now.
+    local why=r and CP.WhyRecipeLines and CP:WhyRecipeLines(r.key,r.id)
+    if why then for i=#why,1,-1 do table.insert(lines,1,why[i]) end end
     -- Hints that did not fit into the banner.
     if r and r.allExtra and r.allExtra~=r.extra then
       local all={}
