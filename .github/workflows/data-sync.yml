@@ -1,0 +1,82 @@
+name: Trainer and gathering data sync
+
+# Twice-weekly check for new QuestieDB and CMaNGOS data behind the trainer list and the gathering zones.
+# A change becomes a pull request with a summary; nothing is merged automatically. The recipe catalog has its
+# own workflows (catalog-inputs.yml, catalog-build.yml).
+on:
+  schedule:
+    - cron: '17 4 * * 1,4'   # Monday and Thursday, 04:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: data-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Lua 5.1 and 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+
+      - name: Pull newest QuestieDB and CMaNGOS data
+        id: sync
+        run: |
+          python3 tools/sync_data.py --update --report "$RUNNER_TEMP/report.md" --github-output "$GITHUB_OUTPUT"
+
+      - name: Run the full checks on the new data
+        if: steps.sync.outputs.changed == 'true'
+        id: checks
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          {
+            set -e
+            for version in 5.1 5.4; do
+              for file in Core/*.lua Planning/*.lua Features/*.lua UI/*.lua Locales/*.lua Data/Catalog/*.lua ThirdParty/Trainers/*.lua ThirdParty/Gathering/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+              "lua$version" tests/test.lua
+            done
+            python3 tools/sync_data.py --check
+            python3 tools/build_release.py --out "$RUNNER_TEMP/dist"
+          } 2>&1 | tail -40 | tee "$RUNNER_TEMP/checks.txt"
+
+      - name: Open or update the pull request
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHECKS: ${{ steps.checks.outcome }}
+        run: |
+          tag=$(python3 -c "import json;print(json.load(open('ThirdParty/Trainers/SOURCES.json'))['questiedb']['tag'])")
+          branch="data/trainers-$tag"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A ThirdParty/Trainers ThirdParty/Gathering
+          git commit -m "Daten: Lehrerliste und Sammelgebiete (QuestieDB $tag)"
+          git push --force -u origin "$branch"
+          {
+            cat "$RUNNER_TEMP/report.md"
+            echo
+            if [ "$CHECKS" = "success" ]; then
+              echo "✅ Syntax, Tests (Lua 5.1/5.4), Herkunftsprüfung und ZIP-Bau bestanden."
+            else
+              echo "❌ Prüfungen fehlgeschlagen – vermutlich hängen Tests an festen Datenzahlen. Letzte Ausgabe:"
+              echo; echo '```'; cat "$RUNNER_TEMP/checks.txt"; echo '```'
+            fi
+            echo
+            echo "Automatisch erzeugt von \`.github/workflows/data-sync.yml\`. Vor dem Mergen im Spiel stichprobenartig prüfen."
+          } > "$RUNNER_TEMP/body.md"
+          if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --head "$branch" --base "${{ github.event.repository.default_branch }}" \
+              --title "Daten: Lehrer und Sammelgebiete (QuestieDB $tag)" --body-file "$RUNNER_TEMP/body.md"
+          fi

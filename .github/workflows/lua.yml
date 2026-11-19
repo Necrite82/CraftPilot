@@ -1,0 +1,29 @@
+name: Lua checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lua:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lua 5.1 and 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+      - name: Check Lua 5.1 and 5.4 syntax
+        run: |
+          for version in 5.1 5.4; do
+            for file in Core/*.lua Planning/*.lua Features/*.lua UI/*.lua Locales/*.lua ThirdParty/Trainers/*.lua ThirdParty/Gathering/*.lua Data/Catalog/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+          done
+      - name: Run Lua 5.1 and 5.4 regressions
+        run: for version in 5.1 5.4; do "lua$version" tests/test.lua; done
+      - name: Check the catalog tools
+        run: python3 -m py_compile tools/catalog/*.py tools/sync_data.py tools/build_release.py
+      - name: Verify the trainer list and gathering zones match their pinned inputs
+        run: python3 tools/sync_data.py --check
+      - name: Build install archive from the allowlist
+        # The committed dist/ archive is compared with the source when a release tag is pushed
+        # (release.yml); between releases main may carry newer files than the last archive.
+        run: python3 tools/build_release.py --out "$RUNNER_TEMP/dist"

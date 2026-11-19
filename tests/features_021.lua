@@ -1,0 +1,192 @@
+-- 0.2.1: Endgame tab name, recipe wishlist with sources and tooltips, AH alarm, raid stock with reservation
+-- and Auctionator export.
+local CP,createdFrames=...
+
+-- Tab name ----------------------------------------------------------------------------------------------------------
+CP:OpenTab("endgame");assert(CP.db.ui.tab=="endgame")
+CP:OpenTab("now")
+
+-- Wishlist and sources ------------------------------------------------------------------------------------------------
+local savedDrops=CP.QuestieItemDrops
+CP.QuestieItemDrops=function(_,item)
+  if item==13491 then return {{id=10001,name="Testboss",zone="Testdungeon"},{id=10002,name="Zweiter Boss"}} end
+  return {}
+end
+local key,id=("alchemy"),17571 -- Elixir of the Mongoose, a drop recipe
+CP.db.wishlist=nil;CP.wishIndex=nil;CP.wishItems=nil
+assert(not CP:IsWished(key,id))
+assert(CP:ToggleWish(key,id)==true and CP:IsWished(key,id))
+local text=CP:RecipeSourceText(key,id)
+assert(text:find("Testboss · Testdungeon",1,true) and text:find("Zweiter Boss",1,true),"Bosses from QuestieDB")
+local cards=CP:WishlistCards(key)
+local wished=false
+for _,c in ipairs(cards) do if c.title and c.title:find("ReadyCheck-Ready",1,true) then wished=true;assert(c.detail:find("Testboss",1,true)) end end
+assert(wished,"Wished recipe listed with its sources")
+-- Tooltips
+assert(CP:NpcIDFromGUID("Creature-0-3299-0-12-10001-0000ABCDEF")==10001)
+assert(CP:NpcIDFromGUID("Player-123-ABC")==nil)
+local lines=CP:WishUnitLines(10001)
+assert(lines and lines[1]:find("Droppt dein Wunschrezept",1,true),"Boss tooltip names the wished recipe")
+assert(CP:WishUnitLines(99999)==nil)
+CP.tooltipCache=nil
+local itemLines=CP:TooltipLines(13491)
+local starred=false
+for _,l in ipairs(itemLines or {}) do if l[1]:find("Rezept-Wunschliste",1,true) then starred=true end end
+assert(starred,"Recipe item tooltip says it is on the wishlist")
+-- Suggestions exclude wished and learned recipes.
+for _,s in ipairs(CP:WishSuggestions(key,20)) do assert(s.id~=id) end
+-- AH alarm: once per day
+local savedApi=Auctionator.API.v1
+Auctionator.API.v1={GetAuctionPriceByItemID=function(_,item) if item==13491 then return 50000 end end,GetAuctionAgeByItemID=function() return 0 end}
+local said={}
+local savedSay,savedNotice=CP.Say,CP.CompanionNotice
+CP.Say=function(_,t) said[#said+1]=t end;CP.CompanionNotice=function() end
+CP.db.alarmSeen=nil;CP.db.ui.ahAlarm=nil
+local alarms=CP:AuctionAlarms()
+assert(#alarms>=1 and alarms[1].text:find("Wunschrezept im AH",1,true))
+assert(CP:CheckAuctionAlarms()>=1 and CP:CheckAuctionAlarms()==0,"Each find once per day")
+CP.db.ui.ahAlarm=false
+assert(#CP:AuctionAlarms()==0,"Alarm can be switched off")
+CP.db.ui.ahAlarm=nil
+Auctionator.API.v1=savedApi
+CP:ToggleWish(key,id);assert(not CP:IsWished(key,id))
+CP.QuestieItemDrops=savedDrops;CP.Say,CP.CompanionNotice=savedSay,savedNotice
+-- Favor recipes: tooltip, waypoint to the vendor on click, wishlist on right-click.
+local favorCard
+for _,c in ipairs(CP:EndgameCards("cooking")) do if c.recipeID==1249963 then favorCard=c end end
+assert(favorCard and favorCard.tooltipItem==249885 and favorCard.showMarket==false,"Favor card opens the recipe tooltip")
+assert(type(favorCard.action)=="function" and type(favorCard.rightAction)=="function")
+local go=CP:RecipeGoTo("cooking",1249963)
+assert(go,"Favor vendor has a place");if go then
+  local savedWay=CP.SetWaypoint;local target
+  CP.SetWaypoint=function(_,loc) target=loc end
+  favorCard.action();assert(target and target.map==go.location.map and target.x==go.location.x,"Click sets a waypoint to the Favor vendor")
+  CP.SetWaypoint=savedWay
+  -- 0.2.2: visible buttons: waypoint and wishlist
+  assert(favorCard.buttons and favorCard.buttons[1].label=="Wegpunkt" and favorCard.buttons[2].label=="Auf die Wunschliste")
+  CP.SetWaypoint=function(_,loc) target=loc end;target=nil
+  favorCard.buttons[1].action();assert(target and target.map==go.location.map,"Waypoint button")
+  CP.SetWaypoint=savedWay
+  assert(favorCard.detail:find(go.label,1,true),"Vendor named on the card")
+end
+favorCard.rightAction();assert(CP:IsWished("cooking",1249963),"Right-click puts it on the wishlist")
+CP:ToggleWish("cooking",1249963)
+print("PASS: 0.2.1 recipe wishlist with boss sources, tooltips and AH alarm")
+
+-- Raid stock ----------------------------------------------------------------------------------------------------------
+local P={[990201]=100,[990202]=50,[990300]=400}
+Auctionator.API.v1={GetAuctionPriceByItemID=function(_,item) return P[item] end,GetAuctionAgeByItemID=function() return 0 end}
+local savedInstant=C_Item.GetItemInfoInstant
+C_Item.GetItemInfoInstant=function(item) if item==990300 or item==990301 then return item,"x","x","x",1,0 end return item,"x","x","x",1,7 end
+CP.db.recipes.alchemy=CP.db.recipes.alchemy or {}
+CP.db.recipes.alchemy[990400]={learned=true,name="Testtrank",outputItemID=990300,mats={{990201,2},{990202,1}}}
+CP.db.recipes.alchemy[990401]={learned=true,name="Teurer Trank",outputItemID=990301,mats={{990201,10}}}
+assert(CP:IsConsumable(990300) and not CP:IsConsumable(990201))
+local found=false
+for _,c in ipairs(CP:RaidStockCandidates("alchemy")) do if c.item==990300 then found=true end end
+assert(found,"Learned consumable offered for the raid stock")
+CP.db.raidStock=nil
+CP:SetRaidStock(990300,"alchemy",990400,5)
+CP:SetRaidStock(990301,"alchemy",990401,3)
+P[990301]=300
+local rows=CP:RaidStockRows()
+assert(#rows==2)
+local cheap,dear
+for _,r in ipairs(rows) do if r.item==990300 then cheap=r else dear=r end end
+assert(cheap.craft==250 and cheap.how=="craft" and cheap.missing==5,"Crafting is cheaper than the AH (250 < 400)")
+assert(dear.craft==1000 and dear.how=="buy","Buying is cheaper than crafting (300 < 1000)")
+local req=CP:RaidStockRequirements()
+assert(req[990201]==10 and req[990202]==5,"Materials for five crafts are reserved")
+assert(req[990300]==nil,"Nothing owned yet")
+CP:InvalidateReservations();CP.reservedCache=nil
+local order=CP:ReservationOrder()
+assert(order[#order]=="raid" or order[#order-1]=="raid","Raid stock takes part in the shared reservation")
+assert(CP:ReservedItems()[990201] and CP:ReservedItems()[990201].raid,"Materials marked as reserved for the raid")
+local missing,total=CP:RaidStockShopping()
+assert(missing[990201]==10 and missing[990202]==5 and missing[990301]==3,"Craft materials plus the items to buy")
+assert(total==10*100+5*50+3*300)
+local stockCards=CP:RaidStockCards("alchemy")
+-- 0.2.2: plus/minus and a progress bar instead of a slider.
+local stepper=false
+for _,c in ipairs(stockCards) do if c.stepper then stepper=true;assert(c.progress~=nil and not c.slider) end end
+assert(stepper,"One stepper per stocked item")
+CP.db.view="alchemy";CP.db.ui.endgamePage="stock";CP:OpenTab("endgame")
+local savedTip=CP.ShowCraftTooltip
+local shownItem
+CP.ShowCraftTooltip=function(_,_,_,_,item) shownItem=item end
+local stepCard
+for _,b in ipairs(createdFrames) do
+  local minus=rawget(b,"stepMinus")
+  if minus and b:IsShown() and minus:IsShown() and b.stepSpec and b.stepSpec.value==3 then stepCard=b end
+end
+assert(stepCard,"Rendered raid stock card with plus and minus")
+stepCard:GetScript("OnEnter")()
+assert(shownItem==990301,"Raid stock card opens the item tooltip")
+stepCard.stepPlus:GetScript("OnClick")(stepCard.stepPlus)
+assert(CP:RaidStock()[990301].count==4,"Plus raises the amount")
+CP:SetRaidStock(990301,"alchemy",990401,3)
+-- Candidate cards: tooltip and a visible button.
+local cardEntry
+CP:SetRaidStock(990300,"alchemy",990400,0)
+for _,c in ipairs(CP:RaidStockCards("alchemy")) do if c.title=="Testtrank" then cardEntry=c end end
+assert(cardEntry and cardEntry.tooltipItem==990300 and cardEntry.showMarket==false,"Candidate card carries its item for the tooltip")
+assert(cardEntry.buttons and cardEntry.buttons[1].label=="Auf den Raid-Vorrat")
+CP:OpenTab("endgame")
+local seen={}
+CP.ShowCraftTooltip=function(_,_,_,_,item) seen[item or 0]=true end
+local addButton
+for _,b in ipairs(createdFrames) do
+  local enter=b:IsShown() and type(b.GetScript)=="function" and b:GetScript("OnEnter")
+  if enter then pcall(enter) end
+  for _,cb in ipairs(rawget(b,"cardButtons") or {}) do if cb:IsShown() and cb.spec and cb.spec.label=="Auf den Raid-Vorrat" and b:IsShown() then addButton=cb end end
+end
+CP.ShowCraftTooltip=savedTip
+assert(seen[990300],"Candidate card opens the potion tooltip")
+assert(addButton,"Button drawn on the candidate card")
+addButton:GetScript("OnClick")(addButton)
+assert(CP:RaidStock()[990300] and CP:RaidStock()[990300].count==5,"Button puts it on the raid stock")
+-- Endgame sub-pages
+CP.db.ui.endgamePage="profit";CP:OpenTab("endgame")
+local pages={}
+for _,c in ipairs(CP:EndgameCards("alchemy","stock")) do if c.stepper then pages.stock=true end end
+for _,c in ipairs(CP:EndgameCards("alchemy","profit")) do if c.stepper then pages.wrong=true end end
+assert(pages.stock and not pages.wrong,"Each sub-page shows its own cards")
+CP.db.ui.endgamePage=nil
+CP:OpenTab("now")
+-- Export to Auctionator
+local created
+Auctionator.API.v1.ConvertToSearchString=function(_,t) return t.searchString..";"..t.quantity end
+Auctionator.API.v1.CreateShoppingList=function(_,name,terms) created={name=name,terms=terms} end
+CP.Say=function() end
+local savedName=CP.ItemName
+CP.ItemName=function(_,item) return "Item "..item end
+local ok=CP:ExportToAuctionator("raid")
+assert(ok and created and created.name:find("Raid-Vorrat",1,true) and #created.terms==3,"Raid stock list handed to Auctionator")
+CP.ItemName=savedName;CP.Say=savedSay
+-- Removing an entry
+CP:SetRaidStock(990301,"alchemy",990401,0)
+assert(#CP:RaidStockRows()==1)
+CP.db.raidStock=nil;CP:InvalidateReservations();CP.reservedCache=nil
+CP.db.recipes.alchemy[990400]=nil;CP.db.recipes.alchemy[990401]=nil
+C_Item.GetItemInfoInstant=savedInstant;Auctionator.API.v1=savedApi
+print("PASS: 0.2.1 raid stock: craft or buy, shared reservation and Auctionator export")
+
+-- The game font has no glyphs for these characters; they show up as boxes. Keep them out of in-game text.
+local toc=io.open("CraftPilotPro.toc","r")
+for line in toc:lines() do
+  local path=line:gsub("\\","/"):gsub("%s+$","")
+  if path:match("%.lua$") and not path:match("^ThirdParty") then
+    local f=assert(io.open(path,"r"))
+    local n=0
+    for code in f:lines() do
+      n=n+1
+      local text=code:gsub("%-%-.*$","")
+      for _,glyph in ipairs({"≈","★","✓","✔","→","←"}) do
+        assert(not text:find(glyph,1,true),path..":"..n.." uses "..glyph.." (no glyph in the game font)")
+      end
+    end
+    f:close()
+  end
+end
+toc:close()
+print("PASS: 0.2.1 tooltips on raid stock and wishlist cards, no box glyphs in game text")

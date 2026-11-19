@@ -1,0 +1,60 @@
+name: Skill data (player notes)
+
+# Collects the skill codes players share (Hilfe > Skilldaten teilen -> Discord -> issue with label `skilldaten`, filed
+# by the CraftPilot bot), turns them into Data/Catalog/Observed.lua and docs/SKILL_DATA.md and proposes the result as
+# one pull request into dev (branch data/skill-data). Nothing is merged automatically.
+on:
+  schedule:
+    - cron: '41 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: read
+
+concurrency:
+  group: skill-data
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Lua 5.1 and 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+      - name: Collect and build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          gh issue list --label skilldaten --state all --limit 2000 --json number,body > "$RUNNER_TEMP/issues.json"
+          python3 tools/catalog/skill_data.py --issues "$RUNNER_TEMP/issues.json"
+          for version in 5.1 5.4; do "luac$version" -p Data/Catalog/Observed.lua; "lua$version" tests/test.lua > /dev/null; done
+      - name: Open or update the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          if git diff --quiet -- Data/Catalog/Observed.lua docs/SKILL_DATA.md && [ -z "$(git ls-files --others --exclude-standard docs/SKILL_DATA.md)" ]; then
+            echo "Skill data unchanged"; exit 0
+          fi
+          branch="data/skill-data"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add Data/Catalog/Observed.lua docs/SKILL_DATA.md
+          git commit -qm "Skilldaten aus der Community"
+          git push -q --force -u origin "$branch"
+          body="Neue Skilldaten aus den geteilten CraftPilot-Codes (Issues mit Label \`skilldaten\`). Bericht: \`docs/SKILL_DATA.md\`. Automatisch erzeugt von \`.github/workflows/skill-data.yml\`."
+          if gh pr view "$branch" --json state -q .state 2>/dev/null | grep -q OPEN; then
+            gh pr edit "$branch" --body "$body"
+          else
+            gh pr create --head "$branch" --base dev --title "Skilldaten aus der Community" --body "$body"
+          fi

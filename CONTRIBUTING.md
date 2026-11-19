@@ -1,0 +1,52 @@
+# Mitwirken / Contributing
+
+CraftPilot wird als öffentliches Community-Projekt entwickelt. Hinweise, Fehlerberichte und Verbesserungsvorschläge sind willkommen.
+
+## Fehler melden / Reporting bugs
+
+Bitte möglichst folgende Angaben in einem GitHub-Issue nennen:
+
+- Verwendete WoW-Forever-Version und CraftPilot-Version
+- Betroffener Beruf und ungefährer Skillstand
+- Erwartetes und tatsächlich beobachtetes Verhalten
+- Schritte, mit denen sich der Fehler reproduzieren lässt
+- Gegebenenfalls der genaue Lua-Fehlertext oder ein Screenshot
+
+Bei falschen Lehrer- oder Rezeptdaten bitte den NPC-Namen, die Fraktion und möglichst eine nachvollziehbare Quelle angeben.
+
+**Keine Passwörter, Zugangstoken, privaten Kontaktdaten oder internen Systeminformationen veröffentlichen.**
+
+## Vorschläge / Feature requests
+
+Neue Funktionen am besten als Issue mit einem kurzen Anwendungsfall vorschlagen: Welches Problem soll gelöst werden? Wie würde eine gute Ingame-Bedienung aussehen?
+
+## Codebeiträge / Pull requests
+
+Änderungen bitte möglichst klein und nachvollziehbar halten, bestehende Funktionen nicht unbeabsichtigt verändern und die getestete Forever-Version nennen. Neue Rezept- und NPC-Daten sollten nachvollziehbare Quellen haben. Ein Test im echten Spielclient ist besonders hilfreich.
+
+Vor jeder Veröffentlichung müssen Syntaxprüfung und vollständige Tests sowohl unter Lua 5.1 als auch unter Lua 5.4 bestehen. Die ältere Version prüft insbesondere die vom Client benötigten Grenzen für lokale Variablen und erfasste Funktionswerte.
+
+Rezept-, Händler- und Camping-Daten (`Data/Catalog`) werden nicht von Hand bearbeitet, sondern mit `tools/catalog` aus ihren Quellen gebaut (siehe [tools/catalog/README.md](tools/catalog/README.md)). Fehler in den Daten bitte an der Regel im Builder beheben. Die Workflows `catalog-inputs.yml` und `catalog-build.yml` aktualisieren den Katalog täglich per Pull Request; `data-sync.yml` (mit `tools/sync_data.py`) hält Lehrerliste und Sammelgebiete aktuell.
+
+Vor größeren Änderungen empfiehlt sich ein kurzes Issue, damit keine doppelte Arbeit entsteht.
+
+---
+
+# English
+
+CraftPilot welcomes bug reports, feature ideas and contributions.
+
+For bug reports, include the WoW Forever and CraftPilot versions, affected profession and skill range, expected versus actual behavior, reproduction steps, and any relevant Lua error. For trainer or recipe corrections, include the NPC, faction and a verifiable source.
+
+Before release, syntax checks and the full suite must pass under both Lua 5.1 and Lua 5.4. The older interpreter checks client-relevant limits on locals and captured values.
+
+Keep pull requests focused, document the tested client version, and avoid unrelated changes. Please open an issue before starting larger features.
+
+Never publish credentials, tokens, private contact information or internal system details.
+
+## Release
+
+1. Version in `Updates.lua` and `CraftPilotPro.toc` raise (bug fixes and small changes `1.0.1`, `1.0.2` …; real new features `1.1.0`, `1.2.0` …), add `docs/RELEASE_<version>.md` and a `CHANGELOG.md` entry.
+2. `python3 tools/build_release.py` builds `dist/CraftPilot-<version>.zip`; keep only the current zip in `dist/`.
+3. After the merge start Actions > Release > Run workflow on `main` (or push the tag, e.g. `git tag v1.0.1 && git push origin v1.0.1`).
+4. The `Release` workflow tests, creates the GitHub release and uploads the zip to CurseForge (project 1812811, WoW Forever, QuestieDB as required dependency). It needs the repository secret `CF_API_TOKEN`. `python3 tools/upload_curseforge.py <tag> --dry-run` shows what would be sent.

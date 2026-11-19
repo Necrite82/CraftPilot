@@ -1,0 +1,57 @@
+name: Release
+# Push a tag such as v1.0.1, or start it by hand (Actions > Release > Run workflow on main): tests, archive
+# check, GitHub release (the manual start creates the tag v<version from the TOC> itself) and CurseForge upload.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    # a manual start only releases main
+    if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.1 lua5.4
+      - name: Validate runtime
+        run: |
+          for version in 5.1 5.4; do
+            for file in Core/*.lua Planning/*.lua Features/*.lua UI/*.lua Locales/*.lua ThirdParty/*/*.lua tests/*.lua; do "luac$version" -p "$file"; done
+            "lua$version" tests/test.lua
+          done
+      - name: Verify install archive
+        run: python tools/build_release.py --check
+      - name: Release tag
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION=$(sed -n 's/^## Version: *//p' CraftPilotPro.toc | tr -d '\r')
+            echo "TAG=v$VERSION" >> "$GITHUB_ENV"
+          else
+            echo "TAG=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+          fi
+      - name: Check version
+        run: |
+          VERSION="${TAG#v}"
+          grep -q "## Version: $VERSION" CraftPilotPro.toc
+          test -f "dist/CraftPilot-$VERSION.zip" && test -f "docs/RELEASE_$VERSION.md"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="${TAG#v}"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            if gh release view "$TAG" >/dev/null 2>&1; then echo "Release $TAG exists already"; exit 1; fi
+            gh release create "$TAG" "dist/CraftPilot-$VERSION.zip" --target "$GITHUB_SHA" --title "CraftPilot $VERSION" --notes-file "docs/RELEASE_$VERSION.md"
+          else
+            gh release create "$TAG" "dist/CraftPilot-$VERSION.zip" --verify-tag --title "CraftPilot $VERSION" --notes-file "docs/RELEASE_$VERSION.md"
+          fi
+      - name: Upload to CurseForge
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: python tools/upload_curseforge.py "$TAG"
