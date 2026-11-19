@@ -17,7 +17,8 @@
 - **Alter der Twink-Bestände** an der Empfehlung („Stand vor 5 Tagen“); Einstellung, ab welchem Alter Bestände nicht mehr fest eingeplant werden
 - **Nach dem Scan**: Ändert ein AH-Scan den günstigsten Weg, sagt CraftPilot, was sich ändert – Ersparnis, neue oder entfallene Rezepte, zusätzliche Lehrer-/Händlerbesuche
 
-**Feinschliff**
+## 1.2.1
+
 - **Seitenleiste deckend** – auch mit EllesmereUI (dort bekam sie bisher den halbdurchsichtigen Stil für innere Felder)
 - **Empfehlung**: Die zweite Zeile zeigt nur so viele Hinweise, wie hineinpassen; der Rest steht im Tooltip
 - **Budget-Fenster** im CraftPilot-Stil und direkt unter der Budget-Zeile

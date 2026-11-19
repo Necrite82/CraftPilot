@@ -14,7 +14,4 @@
 - **Alter der Twink-Bestände** an der Empfehlung, sehr alte Bestände werden nicht mehr fest eingeplant.
 - **Nach dem Scan** sagt CraftPilot, was sich am Weg geändert hat.
 
-## Feinschliff
-- Seitenleiste deckend (auch mit EllesmereUI), Empfehlung ohne abgeschnittenen Text, Budget-Fenster im CraftPilot-Stil, Symbole bei „Jetzt herstellbar“, kürzeres Begleitfenster und weitere Kleinigkeiten.
-
 Fragen, Ideen und Fehler: im Spiel über „Fehler melden“ oder im Discord: https://discord.gg/DpsBkHtQS
