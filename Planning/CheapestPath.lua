@@ -157,13 +157,18 @@ function CP:CheapestPath(key,from,to)
   local ui=self.db.ui
   local token=table.concat({key,skill,target,tostring(self.SkillPolicyToken and self:SkillPolicyToken()),tostring(ui.knownRecipesOnly),
     tostring(ui.preferReliableSkill),tostring(ui.countSales),tostring(ui.economyCut),tostring(ui.includeAlts),
+    tostring(self.pathModeOverride or ""),tostring(ui.fewestTrips),
     tostring(ui.fastestSkill),tostring(ui.favorRate)},":")
   self.pathCaches=self.pathCaches or {}
   local cache=self.pathCaches[token]
   if self.pathCache==nil then self.pathCaches={} ;cache=nil end
   if cache and now()-cache.at<CACHE_SECONDS then return cache.path end
-  local reliable=ui.preferReliableSkill==true
-  local fastest=ui.fastestSkill==true
+  -- 1.3.0: three ways to compare – "cheap", "crafts" (fewest crafts), "trips" (learn only what is needed to go on).
+  -- pathModeOverride is set by CompareRoutes for one calculation; otherwise the settings decide.
+  local mode=self.pathModeOverride
+  local reliable=ui.preferReliableSkill==true and mode==nil
+  local fastest=(mode=="crafts") or (mode==nil and ui.fastestSkill==true)
+  local fewTrips=(mode=="trips") or (mode==nil and ui.fewestTrips==true)
 
   local catalog=self:RecipeVendorCatalog(key)
   local recipes={}
@@ -243,7 +248,8 @@ function CP:CheapestPath(key,from,to)
         local current=pick[k] and pick[k].rank[k]
         if v and current and v<current*0.995 then gain=gain+(current-v);used=true end
       end
-      if c.perPoint[reached] then gain,used=math.huge,true end
+      if c.perPoint[reached] then gain,used=math.huge,true
+      elseif fewTrips then used=false end      -- fewest trips: learn only what is needed to go on
       gain=gain-c.fee
       if used and gain>0 and (not bestGain or gain>bestGain) then bestGain,bestIndex=gain,i end
     end
@@ -505,4 +511,60 @@ function CP:ComparePathAfterScan()
   self.lastPathChange=text and {key=key,text=text,at=type(time)=="function" and time() or 0} or nil
   if text then self:Say(text) end
   return change
+end
+
+-- 1.3.0: compare three ways side by side. Each: what you buy, learning fees, number of crafts and visits
+-- (the trainer counts once, each vendor once, the AH once).
+local MODES={{key="cheap",label="Wenig Gold"},{key="crafts",label="Wenig Herstellungen"},{key="trips",label="Wenig Wege"}}
+function CP:RouteSummary(key,path)
+  if not path then return nil end
+  local crafts,stops,places=0,0,{}
+  for _,s in ipairs(path.segments or {}) do
+    crafts=crafts+(s.crafts or 0)
+    if not s.learned then
+      local t=self.LearnTarget and self:LearnTarget(key,s.id)
+      local place=t and (t.kind=="trainer" and "trainer" or (t.kind=="ah" and "ah" or (t.name or "?"))) or ("?"..s.id)
+      if not places[place] then places[place]=true;stops=stops+1 end
+    end
+  end
+  return {total=path.total or 0,fees=path.fees or 0,buy=(path.total or 0)-(path.fees or 0),crafts=crafts,stops=stops,reached=path.reached,first=path.segments and path.segments[1]}
+end
+function CP:CompareRoutes(key)
+  local out={}
+  for _,m in ipairs(MODES) do
+    self.pathModeOverride=m.key
+    local ok,path=pcall(self.CheapestPath,self,key)
+    self.pathModeOverride=nil
+    local summary=ok and self:RouteSummary(key,path)
+    if summary then summary.mode=m.key;summary.label=L(m.label);out[#out+1]=summary end
+  end
+  return out
+end
+function CP:CurrentRouteMode()
+  local ui=self.db.ui
+  if ui.fewestTrips then return "trips" elseif ui.fastestSkill then return "crafts" end
+  return "cheap"
+end
+function CP:UseRouteMode(mode)
+  local ui=self.db.ui
+  ui.fastestSkill=mode=="crafts"
+  ui.fewestTrips=mode=="trips"
+  self.pathCache=nil
+  if self.Render then self:Render() end
+end
+function CP:RouteCompareCards(key)
+  local routes=self:CompareRoutes(key)
+  if #routes<2 then return {} end
+  local current=self:CurrentRouteMode()
+  local cards={{sectionHeader=true,title=L("WEGE VERGLEICHEN")}}
+  for _,r in ipairs(routes) do
+    local mode=r.mode
+    local detail=string.format(L("Einkauf %s · Lernen %s · %d Herstellungen · %d Lernwege"),
+      self:FormatCostMoney(math.max(0,r.buy)),self:FormatCostMoney(r.fees),r.crafts,r.stops)
+    if r.reached and r.reached<((self.db.professions[key] or {}).cap or 0) then detail=detail.." · "..string.format(L("reicht bis %d"),r.reached) end
+    cards[#cards+1]={title=r.label..": "..self:FormatCostMoney(r.total),detail=detail,
+      footer=mode==current and L("Aktiv") or L("Klick: diesen Weg nutzen"),color=mode==current and "gold" or "blue",grid=true,
+      action=function() CP:UseRouteMode(mode) end}
+  end
+  return cards
 end

@@ -26,6 +26,7 @@ function CP:PlanPageCards(key,page)
           CP:SearchItems(list,L("Preise"),L("Auctionator scannt die Materialien deines Plans."))
         end}
     end
+    for _,card in ipairs(self:RouteCompareCards(key)) do cards[#cards+1]=card end
     for _,card in ipairs(self:SecondProfessionCards(key)) do cards[#cards+1]=card end
     for _,card in ipairs(self:BuyTimingCards(key)) do cards[#cards+1]=card end
     for _,card in ipairs(self:BudgetCards(key)) do cards[#cards+1]=card end
