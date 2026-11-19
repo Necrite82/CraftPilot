@@ -71,6 +71,7 @@ Features\Marks.lua
 Features\Round.lua
 Features\Endgame.lua
 Features\Wishlist.lua
+Features\Collection.lua
 Features\ItemDB.lua
 Features\RaidStock.lua
 Features\Protection.lua

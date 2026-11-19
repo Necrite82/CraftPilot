@@ -411,7 +411,7 @@ U.reservedText=text(U.reservedChip,"GameFontHighlightSmall",10,-5,132,"")
 U.reservedChip:SetScript("OnClick",function() CP:OpenTab("reservations") end)
 tooltip(U.reservedChip,L("Reservierte Gegenstände"),function() return {L("Markiert in Taschen und Bank, mit Warnung beim Verkaufen, Zerstören, Entzaubern und Verschicken."),L("Anklicken: Vorratsreservierung öffnen")} end)
 -- Endgame: four sub-pages as segment buttons.
-U.endgamePages={{key="profit",label=L("Gewinn")},{key="stock",label=L("Raid-Vorrat")},{key="wish",label=L("Wunschliste")},{key="favor",label=L("Merchant's Favor")}}
+U.endgamePages={{key="profit",label=L("Gewinn")},{key="stock",label=L("Raid-Vorrat")},{key="wish",label=L("Sammlung")},{key="favor",label=L("Merchant's Favor")}}
 U.endgameButtons={}
 for i,p in ipairs(U.endgamePages) do
   local b=segment(frame,128,26,p.label,function() CP.db.ui.endgamePage=p.key;CP:Render() end)

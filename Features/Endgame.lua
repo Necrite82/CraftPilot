@@ -118,6 +118,8 @@ function CP:EndgameCards(key,page)
     end
   end
   if not page or page=="stock" then append(self.RaidStockCards and self:RaidStockCards(key)) end
+  -- 1.3.0: the wishlist is part of the recipe collection (page "Sammlung").
+  if crafting and page=="wish" and self.CollectionCards then append(self:CollectionCards(key)) end
   if crafting and (not page or page=="wish") then append(self.WishlistCards and self:WishlistCards(key)) end
   if not page or page=="favor" then
     local favor=crafting and self:FavorCards(key) or {}
