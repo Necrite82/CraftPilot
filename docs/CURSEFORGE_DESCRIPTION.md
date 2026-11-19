@@ -44,7 +44,7 @@ Campfires, camp features and their buffs by level, upgrades and a shared shoppin
 
 ## Data
 
-CraftPilot builds its recipe data itself – from the WoW Forever client's tables, QuestieDB, CMaNGOS and AllTheThings – and updates it daily. Prices are your own saved Auctionator scans, not live offers.
+CraftPilot builds its recipe data itself – from the WoW Forever client's tables, QuestieDB, CMaNGOS and AllTheThings – and updates it daily. Prices are your own saved auction house scans (Auctionator, TradeSkillMaster or Auctioneer), not live offers.
 
 ## Requirements
 
@@ -58,7 +58,7 @@ Open with `/cpp` or the minimap button. `/cpp hilfe` shows the help, `/cpp disco
 
 ## Deutsch
 
-**Berufe am günstigsten skillen – und danach weiter nutzen.** CraftPilot plant jeden Skillpunkt mit deinen eigenen AH-Preisen, zeigt, wo du Rezepte lernst, erstellt die Einkaufsliste und sagt dir nach dem Skillen, was sich lohnt: Gewinn je Herstellung, Rezept-Wunschliste mit Bossen, Raid-Vorrat, Merchant's Favor und Camping. Es kauft, lernt und stellt nur her, wenn du klickst.
+**Berufe am günstigsten skillen – und danach weiter nutzen.** CraftPilot plant jeden Skillpunkt mit deinen eigenen AH-Preisen, zeigt, wo du Rezepte lernst, erstellt die Einkaufsliste und sagt dir nach dem Skillen, was sich lohnt: Gewinn je Herstellung, Rezept-Wunschliste mit Bossen, Raid-Vorrat, Merchant's Favor und Camping. Dazu eine Gegenstands-Datenbank: wofür jeder Gegenstand gebraucht wird und was du jetzt herstellen kannst. Es kauft, lernt und stellt nur her, wenn du klickst.
 
 Fragen, Ideen und Fehler: [Discord](https://discord.gg/DpsBkHtQS) – auch ohne GitHub-Konto.
 
