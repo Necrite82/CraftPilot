@@ -1,0 +1,20 @@
+# CraftPilot 1.3.0
+
+## Verlässlicher
+- **Post-Packer** prüft jeden Anhang und sucht jeden Gegenstand direkt vor dem Anhängen neu – auch wenn ein Taschen-Addon dazwischen sortiert.
+- **Richtige Mengen** beim Händler-Helfer und in der Einkaufsrunde (vorher wurde der Vorrat doppelt abgezogen).
+- **Herstellungspreise** sind jetzt unabhängig von der Rechenreihenfolge.
+- **Twinks** zählen als Hersteller nur, wenn ihr Rezept bestätigt ist.
+- **Dein Plan zuerst** – der günstigere Weg steht daneben, ein Klick wechselt.
+- **Skilldaten** werden strenger bewertet.
+
+## Neu
+- **Warum dieses Rezept?** – Vergleich mit den zwei besten Alternativen im Tooltip der Empfehlung.
+- **Budget mit Puffer** für gelbe und grüne Rezepte.
+- **Alter der Twink-Bestände** an der Empfehlung, sehr alte Bestände werden nicht mehr fest eingeplant.
+- **Nach dem Scan** sagt CraftPilot, was sich am Weg geändert hat.
+
+## Feinschliff
+- Seitenleiste deckend (auch mit EllesmereUI), Empfehlung ohne abgeschnittenen Text, Budget-Fenster im CraftPilot-Stil, Symbole bei „Jetzt herstellbar“, kürzeres Begleitfenster und weitere Kleinigkeiten.
+
+Fragen, Ideen und Fehler: im Spiel über „Fehler melden“ oder im Discord: https://discord.gg/DpsBkHtQS
