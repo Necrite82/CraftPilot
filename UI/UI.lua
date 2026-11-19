@@ -335,8 +335,12 @@ side:SetPoint("BOTTOMRIGHT",frame,"BOTTOMLEFT",1,0)
 CP:Round(side)
 -- Solid backing under the sidebar: it hangs outside the window, so a skin's see-through panel style (or a
 -- translucent backdrop) would let unit frames and other addons show through. Inset keeps the round corners.
-U.sideBacking=side:CreateTexture(nil,"BACKGROUND",nil,-8)
-U.sideBacking:SetPoint("TOPLEFT",side,"TOPLEFT",4,-4);U.sideBacking:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-4,4)
+-- 1.2.1: its own frame below the sidebar, so no skin can hide or fade it.
+U.sideBase=CreateFrame("Frame",nil,frame)
+U.sideBase:SetPoint("TOPLEFT",side,"TOPLEFT",3,-3);U.sideBase:SetPoint("BOTTOMRIGHT",side,"BOTTOMRIGHT",-3,3)
+if type(U.sideBase.SetFrameLevel)=="function" and type(side.GetFrameLevel)=="function" then U.sideBase:SetFrameLevel(math.max(0,(side:GetFrameLevel() or 1)-1)) end
+U.sideBacking=U.sideBase:CreateTexture(nil,"BACKGROUND",nil,-8)
+U.sideBacking:SetAllPoints(U.sideBase)
 side:EnableMouse(true)
 if type(side.RegisterForDrag)=="function" then side:RegisterForDrag("LeftButton") end
 side:SetScript("OnDragStart",function() if type(frame.StartMoving)=="function" then frame:StartMoving() end end)
@@ -1556,7 +1560,8 @@ local function registerEllesmereUI()
     CP.ellesmereSkin=S
     useSkin(S,"Shell",frame)
     useSkin(S,"Panel",header)
-    useSkin(S,"Panel",U.side)
+    -- The sidebar hangs outside the window: it needs the opaque window style, not the see-through inner panel.
+    useSkin(S,"Shell",U.side)
     useSkin(S,"Panel",U.listPanel)
     useSkin(S,"Panel",U.detailPanel)
     useSkin(S,"CloseButton",U.close)
