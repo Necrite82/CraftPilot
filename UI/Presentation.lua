@@ -93,7 +93,7 @@ end
 local function height(text,fallback)
   local n=text:GetStringHeight();return type(n)=="number" and n>0 and n or fallback
 end
-function CP:DisplayMoney(n) return n~=nil and self:FormatCostMoney(n) or "—" end
+function CP:DisplayMoney(n) return (type(n)=="number" and n>0) and self:FormatCostMoney(n) or "—" end
 function CP:MetricStrip(parent,values,x,y,width)
   parent.metricPanels=rawget(parent,"metricPanels") or {}
   local w=(width-16)/3
@@ -189,11 +189,12 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
     end
     for j=#columns+1,#r.cells do r.cells[j]:Hide() end
     local titleHeight=height(r.cells[1],16)
-    local noteY=math.max(32,14+titleHeight)
+    local noteY=math.floor(math.max(32,14+titleHeight)+.5)
     r.note:ClearAllPoints();r.note:SetPoint("TOPLEFT",r,"TOPLEFT",8,-noteY);r.note:SetWidth(width-16)
     local reserved=(mat.reserved or 0)>0 and (L("Reserviert für andere Pläne: ")..mat.reserved.." · ") or ""
     r.note:SetText(reserved..m.advice)
-    local h=noteY+height(r.note,16)+10
+    -- Whole pixels: fractional heights made some row borders look doubled.
+    local h=math.floor(noteY+height(r.note,16)+10+.5)
     r:ClearAllPoints();r:SetPoint("TOPLEFT",parent,"TOPLEFT",0,-y);r:SetSize(width,h);r:SetBackdropColor(i%2==0 and .065 or .045,.085,.11,.9);r:Show();y=y+h+4
   end
   parent:SetSize(width,math.max(30,y));return y

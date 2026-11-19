@@ -110,7 +110,7 @@ function CP:Recommendation(key)
   for _,e in ipairs(extras) do order[#order+1]=e end
   local allExtra=#order>0 and table.concat(order,"  ·  ") or nil
   local extra=#order>0 and table.concat({order[1],order[2]},"  ·  ") or nil
-  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
+  return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,extraParts=order,tip=tip,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
     missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 

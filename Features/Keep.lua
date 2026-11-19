@@ -227,36 +227,42 @@ end
 function CP:OpenBudgetWindow()
   local f=self.budgetWindow
   if not f then
+    -- CraftPilot look: rounded dark panel, flat buttons, gold primary action.
     f=CreateFrame("Frame","CraftPilotProBudgetWindow",UIParent,"BackdropTemplate")
-    f:SetSize(340,150);f:SetPoint("CENTER");f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true)
-    if type(f.SetBackdrop)=="function" then
-      f:SetBackdrop({bgFile="Interface\\Buttons\\WHITE8X8",edgeFile="Interface\\Buttons\\WHITE8X8",edgeSize=1})
-      f:SetBackdropColor(.07,.08,.10,.97);f:SetBackdropBorderColor(.88,.69,.31,.9)
-    end
-    f.title=f:CreateFontString(nil,"OVERLAY","GameFontNormal");f.title:SetPoint("TOPLEFT",f,"TOPLEFT",12,-10);f.title:SetText(L("Budget"))
-    f.hint=f:CreateFontString(nil,"OVERLAY","GameFontDisableSmall");f.hint:SetPoint("TOPLEFT",f,"TOPLEFT",12,-30);f.hint:SetWidth(316);f.hint:SetJustifyH("LEFT")
+    f:SetSize(380,132);f:SetFrameStrata("DIALOG");f:SetClampedToScreen(true);f:EnableMouse(true)
+    self:Round(f)
+    if type(f.SetBackdropColor)=="function" then f:SetBackdropColor(.078,.090,.110,1);f:SetBackdropBorderColor(.88,.69,.31,.9) end
+    f.title=f:CreateFontString(nil,"OVERLAY","GameFontNormal");f.title:SetPoint("TOPLEFT",f,"TOPLEFT",14,-12);f.title:SetText(L("Budget"))
+    f.hint=f:CreateFontString(nil,"OVERLAY","GameFontDisableSmall");f.hint:SetPoint("TOPLEFT",f,"TOPLEFT",14,-32);f.hint:SetWidth(352);f.hint:SetJustifyH("LEFT")
     f.hint:SetText(L("Wie viel Gold willst du fürs Skillen ausgeben? 0 schaltet das Budget aus."))
-    f.box=CreateFrame("EditBox",nil,f,"InputBoxTemplate");f.box:SetSize(70,24);f.box:SetPoint("TOPLEFT",f,"TOPLEFT",132,-66);f.box:SetAutoFocus(false)
+    local function flat(w,caption,fn,primary)
+      local b=CreateFrame("Button",nil,f,"BackdropTemplate")
+      b:SetSize(w,24)
+      if primary then CP:StylePrimaryButton(b) else CP:StyleActionButton(b) end
+      b:SetText(caption);b:SetScript("OnClick",fn)
+      return b
+    end
+    f.box=CreateFrame("EditBox",nil,f,"InputBoxTemplate");f.box:SetSize(64,22);f.box:SetPoint("TOPLEFT",f,"TOPLEFT",120,-60);f.box:SetAutoFocus(false)
     if type(f.box.SetNumeric)=="function" then f.box:SetNumeric(true) end
     if type(f.box.SetMaxLetters)=="function" then f.box:SetMaxLetters(6) end
     f.unit=f:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");f.unit:SetPoint("LEFT",f.box,"RIGHT",6,0);f.unit:SetText(L("Gold"))
     local function step(d,x)
-      local b=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");b:SetSize(36,22);b:SetPoint("TOPLEFT",f,"TOPLEFT",x,-67)
-      b:SetText((d>0 and "+" or "−")..math.abs(d))
-      b:SetScript("OnClick",function() f.box:SetText(tostring(math.max(0,(tonumber(f.box:GetText()) or 0)+d))) end)
-      return b
+      local b=flat(38,(d>0 and "+" or "-")..math.abs(d),function() f.box:SetText(tostring(math.max(0,(tonumber(f.box:GetText()) or 0)+d))) end)
+      b:SetPoint("TOPLEFT",f,"TOPLEFT",x,-59)
     end
-    step(-5,12);step(-1,52);step(1,250);step(5,290)
+    step(-5,14);step(-1,58);step(1,232);step(5,276)
     local function apply() CP:SetBudget(f.box:GetText());f:Hide() end
     f.box:SetScript("OnEnterPressed",apply);f.box:SetScript("OnEscapePressed",function() f:Hide() end)
-    f.apply=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");f.apply:SetSize(120,24);f.apply:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",12,12)
-    f.apply:SetText(L("Übernehmen"));f.apply:SetScript("OnClick",apply)
-    f.off=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");f.off:SetSize(90,24);f.off:SetPoint("BOTTOM",f,"BOTTOM",30,12)
-    f.off:SetText(L("Aus"));f.off:SetScript("OnClick",function() CP:SetBudget(0);f:Hide() end)
-    f.close=CreateFrame("Button",nil,f,"UIPanelButtonTemplate");f.close:SetSize(80,24);f.close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-12,12)
-    f.close:SetText(L("Schließen"));f.close:SetScript("OnClick",function() f:Hide() end)
+    f.apply=flat(130,L("Übernehmen"),apply,true);f.apply:SetPoint("BOTTOMLEFT",f,"BOTTOMLEFT",14,12)
+    f.off=flat(90,L("Aus"),function() CP:SetBudget(0);f:Hide() end);f.off:SetPoint("LEFT",f.apply,"RIGHT",8,0)
+    f.close=flat(100,L("Schließen"),function() f:Hide() end);f.close:SetPoint("BOTTOMRIGHT",f,"BOTTOMRIGHT",-14,12)
     self.budgetWindow=f
   end
+  -- Right below the budget line on "Jetzt", else centred.
+  f:ClearAllPoints()
+  local strip=self.budgetStrip
+  if strip and type(strip.IsShown)=="function" and strip:IsShown() then f:SetPoint("TOPRIGHT",strip,"BOTTOMRIGHT",0,-4)
+  else f:SetPoint("CENTER") end
   f.box:SetText(tostring(tonumber(self.db.ui.budgetGold) or 0))
   f:Show()
   if type(f.box.SetFocus)=="function" then f.box:SetFocus() end
