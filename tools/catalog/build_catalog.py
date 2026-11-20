@@ -52,6 +52,9 @@ CREATE_ITEM, ENCHANT_ITEM, LEARN_SPELL = 24, 53, 36
 TEACHES = 6                      # ItemEffect.TriggerType: on use, learn ItemEffect.SpellID
 ACQUIRE_ON_LEARN = 1             # SkillLineAbility.AcquireMethod: known as soon as the profession is learned
 GUESS_BELOW_YELLOW = 15          # a recipe nothing is known to teach: assumed learnable this far below yellow
+# Vendors that only appear during a holiday: their recipes stay in the catalog but are not planned.
+EVENT_VENDORS = {13420: 'winterveil', 13429: 'winterveil', 13432: 'winterveil', 13433: 'winterveil',
+                 13435: 'winterveil'}
 COOLDOWN_MIN = 3600              # seconds; shorter cooldowns don't matter for planning
 TRAINERS_LISTED = 3              # a recipe only this many trainers teach names them
 CLASS_RECIPE = 9                 # Item.ClassID of recipe items
@@ -235,7 +238,8 @@ def build_profession(ctx, key):
             q = ctx.questie
             known = any(q.item(i, 'vendors') or q.item(i, 'npcDrops') or q.item(i, 'questRewards')
                         or ctx.att_sources.get(i) for i in set(ctx.teaches.get(spell, ())) | {att['unknown'][spell]} if i)
-            if not known and not ctx.spell_quests.get(spell):
+            # Recipes the client gives with the profession (AcquireMethod "on learn") need no teacher: available.
+            if not known and not ctx.spell_quests.get(spell) and not start:
                 recipe['unavailable'] = True
         if spell in att['unreleased'] or unconfirmed:
             recipe['unavailable'] = True
@@ -400,6 +404,8 @@ def item_sources(ctx, item, sparse, vendor_items):
         if not q.has('Npc', npc):
             continue
         source = {'kind': 'vendor', 'npc': npc, 'npcName': q.npc(npc, 'name'), 'faction': q.npc_side(npc) or 'AH'}
+        if npc in EVENT_VENDORS:
+            source['event'] = EVENT_VENDORS[npc]
         # a recipe item sold for Merchant's Favor is sold for it everywhere (the supply camps of both factions;
         # AllTheThings may list only one side's quartermaster)
         if favor:
