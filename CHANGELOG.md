@@ -3,6 +3,7 @@
 ## 1.4.1
 
 - **Karte**: Schließen (x), Weltkarte, Ganze Karte / Nur erkundet und Zoom (+/−) reagieren wieder auf Klicks – die Ziehleiste oben im Fenster lag über diesen Knöpfen
+- **Rezeptkatalog** aktualisiert: 37 Rezepte, die es bisher in WoW Forever nicht gab, sind jetzt erhältlich und werden mit Quelle geplant – u. a. Holzschlundfeste, Argentumdämmerung, Dunkeleisen und Geschmolzener Kern (z. B. Teufelsstoffbeutel, Lavagürtel, Flammenkernrobe)
 
 ## 1.4.0
 

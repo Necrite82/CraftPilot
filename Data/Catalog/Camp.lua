@@ -6,7 +6,7 @@
 -- mats = what that takes. items = the names of every item named here.
 local _, CP = ...
 CP.CAMP = {
-  built = "2026-11-19",
+  built = "2026-11-20",
   build = "1.60.1.70959",
   fires = {
     { item = 279981, spell = 1307227, name = "Basic Campfire", maker = 1229737, prof = "cooking", mats = { [4470] = 1 }, slots = 3 },
