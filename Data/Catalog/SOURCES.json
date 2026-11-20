@@ -1,8 +1,8 @@
 {
   "allthethings": {
-    "commit": "b453f34c9c0912407b1fac06fc0709ae624af494",
+    "commit": "6276795630de0e3a10d618fe49532a1642ac5fd4",
     "files": 197,
-    "sha256": "7735cec64ff4bd32aae7efe04166da933eddcad4b072ce2b3c90939bd7d89ef4"
+    "sha256": "b73ef7920aaac2cb476f4a581d22412ca0cf5d6a7a1d658851a72129f715e935"
   },
   "classicdb": {
     "sha256": "4f92db520868ab4e566726f68b5b2e380ae781209beaf22237b4f7f04600d0c0",
@@ -63,7 +63,7 @@
         "start": 3,
         "trainer": 28,
         "trainer?": 16,
-        "vendor": 107
+        "vendor": 108
       }
     },
     "blacksmithing": {
@@ -75,7 +75,7 @@
         "start": 5,
         "trainer": 77,
         "trainer?": 23,
-        "vendor": 196
+        "vendor": 209
       }
     },
     "cooking": {
@@ -86,6 +86,7 @@
         "quest": 32,
         "start": 4,
         "trainer": 7,
+        "trainer?": 1,
         "vendor": 225
       }
     },
@@ -98,7 +99,7 @@
         "start": 5,
         "trainer": 61,
         "trainer?": 3,
-        "vendor": 147
+        "vendor": 149
       }
     },
     "engineering": {
@@ -109,7 +110,7 @@
         "quest": 21,
         "start": 3,
         "trainer": 72,
-        "trainer?": 17,
+        "trainer?": 18,
         "vendor": 109
       }
     },
@@ -122,7 +123,7 @@
         "start": 1,
         "trainer": 8,
         "trainer?": 6,
-        "vendor": 5
+        "vendor": 8
       }
     },
     "fishing": {
@@ -149,8 +150,8 @@
         "quest": 23,
         "start": 6,
         "trainer": 68,
-        "trainer?": 7,
-        "vendor": 324
+        "trainer?": 11,
+        "vendor": 339
       }
     },
     "mining": {
@@ -180,8 +181,8 @@
         "quest": 8,
         "start": 5,
         "trainer": 76,
-        "trainer?": 17,
-        "vendor": 339
+        "trainer?": 18,
+        "vendor": 349
       }
     }
   }
