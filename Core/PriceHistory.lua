@@ -80,7 +80,22 @@ function CP:AuctionPrice(itemID)
   end
   return nil
 end
+-- 1.4.4: the details of an item are kept until data changes (each redraw, new prices); planning asked for the same
+-- items thousands of times a minute and built a new table each time. Callers only read the result.
 function CP:PriceDetails(itemID)
+  -- Only within one frame (GetTime() stays the same while a redraw or a path calculation runs) and until data changes.
+  local now=type(GetTime)=="function" and GetTime() or nil
+  if not now then return self:PriceDetailsUncached(itemID) end
+  local cache=self.priceDetailCache
+  if not cache or cache.at~=now then cache={at=now,items={}};self.priceDetailCache=cache end
+  cache=cache.items
+  local hit=cache[itemID]
+  if hit then return hit end
+  hit=self:PriceDetailsUncached(itemID)
+  if itemID~=nil then cache[itemID]=hit end
+  return hit
+end
+function CP:PriceDetailsUncached(itemID)
   local ah,age,provider,estimated=self:AuctionPrice(itemID)
   local vendor=self:CatalogVendorPrice(itemID)
   local selected=ah

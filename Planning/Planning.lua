@@ -5,7 +5,9 @@ local function add(t,id,n)
   if type(id)=="number" and type(n)=="number" and n>0 then t[id]=(t[id] or 0)+n end
 end
 -- 1.4.3: the bag marks and item tooltips build on the reservations, so they are rebuilt with them – not on a timer.
-function CP:InvalidateReservations() self.reservationCache=nil;self.reservedCache=nil;self.tooltipCache=nil;self.keepCache=nil end
+function CP:InvalidateReservations()
+  self.reservationCache=nil;self.reservedCache=nil;self.tooltipCache=nil;self.keepCache=nil;self.priceDetailCache=nil
+end
 function CP:PlanRequirements(owner)
   local required,recipes={},{}
   local unknown=0

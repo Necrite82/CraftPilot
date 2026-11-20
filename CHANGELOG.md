@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.4
+
+- **Speicher, zweiter Schritt**: Die Suche nach Taschen-Knöpfen (für die Markierungen reservierter Gegenstände) legte für jedes Fenster der Spieloberfläche neue Hilfsfunktionen an – mehrere MB Datenmüll pro Durchlauf. Jetzt entsteht dabei praktisch keiner mehr, und sie läuft alle 30 statt 15 Sekunden
+- Preisangaben und die Behalten-Liste werden zwischengespeichert, statt bei jeder Wegberechnung tausendfach neu erstellt zu werden
+- Ein geschlossenes CraftPilot-Fenster wird nicht mehr bei jeder Zauber- oder Fertigkeitsänderung neu gezeichnet, sondern erst beim Öffnen
+- **/cpp speicher**: misst 60 Sekunden lang, welche Teile von CraftPilot wie viel Speicher anlegen – hilft bei Fehlermeldungen
+
 ## 1.4.3
 
 - **Weniger Speicher**: CraftPilot erzeugt deutlich weniger Datenmüll (im Test rund 60 % weniger pro Spielminute), die Speicheranzeige im Spiel bleibt dadurch niedriger

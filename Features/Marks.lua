@@ -81,32 +81,42 @@ end
 
 -- Only what an item button offers is read: no sizes or positions of foreign frames (those can be secret).
 -- CraftPilot's own rows (material lists, cards) show items too, but already say what they are for.
+-- 1.4.4: no closures here. This runs over every frame of the UI (tens of thousands); a new function per frame and
+-- two per parent made several MB of garbage on each scan.
+local function frameName(node) return node:GetName() end
+local function frameParent(node) return node:GetParent() end
+local function isButton(f) return f:IsObjectType("Button") end
 local function ownFrame(f)
   local node=f
   for _=1,25 do
     if type(node)~="table" then return false end
-    local ok,name=pcall(function() return node:GetName() end)
+    local ok,name=pcall(frameName,node)
     if ok and type(name)=="string" and not secret(name) and name:sub(1,13)=="CraftPilotPro" then return true end
-    local okParent,parent=pcall(function() return node:GetParent() end)
+    local okParent,parent=pcall(frameParent,node)
     if not okParent or parent==nil or parent==node then return false end
     node=parent
   end
   return false
 end
-local function looksLikeItemButton(f)
-  if type(f)~="table" then return false end
-  local ok,isButton=pcall(function() return f:IsObjectType("Button") end)
-  if not ok or isButton~=true then return false end
-  if ownFrame(f) then return false end
+local function offersItem(f)
   return type(f.GetBagID)=="function" or type(f.GetSlotAndBagID)=="function" or rawget(f,"bagID")~=nil or rawget(f,"bag")~=nil
     or type(f.GetItemID)=="function" or rawget(f,"itemID")~=nil or rawget(f,"itemLink")~=nil
+end
+local function looksLikeItemButton(f)
+  if type(f)~="table" then return false end
+  -- Cheap field checks first; only real candidates are asked for their type and walked up to the top.
+  local okOffers,offers=pcall(offersItem,f)
+  if not okOffers or not offers then return false end
+  local ok,button=pcall(isButton,f)
+  if not ok or button~=true then return false end
+  return not ownFrame(f)
 end
 
 local buttons=setmetatable({},{__mode="k"})
 local lastScan=0
 -- Collect item buttons once in a while; bag addons create theirs lazily.
 function CP:FindItemButtons(force)
-  if not force and clock()-lastScan<15 then return buttons end
+  if not force and clock()-lastScan<30 then return buttons end
   lastScan=clock()
   if type(EnumerateFrames)~="function" then return buttons end
   local f=EnumerateFrames()

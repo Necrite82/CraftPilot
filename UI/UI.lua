@@ -1707,6 +1707,10 @@ local function layout()
   content:SetWidth(inner-26)
   for _,r in ipairs(U.rows) do if type(r.SetWidth)=="function" then r:SetWidth(inner-36) end end
 end
+-- 1.4.4: catch up on what changed while the window was closed.
+frame:HookScript("OnShow",function()
+  if CP.renderStale and CP.db then CP.renderStale=false;CP:Render() end
+end)
 -- Re-render once after resizing settles instead of on every size step.
 local resizeToken=0
 frame:SetScript("OnSizeChanged",function()

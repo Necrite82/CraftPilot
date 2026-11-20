@@ -125,7 +125,7 @@ end
 -- New prices from any source: alarms, "after the scan" and caches, the same for every addon.
 function CP:OnPriceDataUpdated(key)
   if not self.db then return end
-  self.tooltipCache=nil;self.pathCache=nil;self.priceOrderCache=nil
+  self.tooltipCache=nil;self.pathCache=nil;self.priceOrderCache=nil;self.priceDetailCache=nil
   self.db.ahUpdated=now()
   if key=="auctionator" then self.db.auctionatorUpdated=self.db.ahUpdated end
   if self.CheckAuctionAlarms then pcall(self.CheckAuctionAlarms,self) end

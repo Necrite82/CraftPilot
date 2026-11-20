@@ -758,7 +758,12 @@ function CP:Refresh(capture)
     if self.SnapshotCharacterBags then self:SnapshotCharacterBags() end
     if self.CheckLearnTour then self:CheckLearnTour() end
   end
-  if self.Render then self:Render() end
+  -- 1.4.4: a closed window is not redrawn (it made a lot of garbage on every spell or skill change); it is
+  -- redrawn when it opens again (UI.lua, OnShow).
+  if self.Render then
+    if self.frame and type(self.frame.IsShown)=="function" and not self.frame:IsShown() then self.renderStale=true
+    else self:Render() end
+  end
   if self.UpdateCompanion then self:UpdateCompanion() end
   self:RefreshCostWindow()
   if self.RefreshPersonalShopping then self:RefreshPersonalShopping() end
