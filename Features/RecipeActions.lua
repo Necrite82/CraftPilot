@@ -141,6 +141,13 @@ function CP:VendorSkillComparison(key,entry)
     cashSaving=cost.cashComplete and cost.stale==0 and cost.unknownAge==0 and cost.unknownBank==0 and cashBest and cashBest-cost.cash/points or nil}
 end
 function CP:ActivateRecipeRow(key,entry)
+  -- 1.4.3: a merchant recipe card opens the map with every vendor that sells it ("Klick: alle Angebote").
+  if entry.merchantBrowse then
+    self.db.ui.selectedVendorRecipe=entry.id;self.db.ui.selectedVendorKey=key
+    self:Render()
+    if self.ShowRecipeVendorMap then self:ShowRecipeVendorMap(key,entry) end
+    return
+  end
   if entry.vendorRecipe then
     self.db.ui.selectedVendorRecipe=(self.db.ui.selectedVendorKey~=key or self.db.ui.selectedVendorRecipe~=entry.id) and entry.id or nil
     self.db.ui.selectedVendorKey=key

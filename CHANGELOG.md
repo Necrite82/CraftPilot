@@ -6,6 +6,8 @@
   - Tooltips merken sich ihre Zeilen, bis sich Taschen, Preise oder Pläne ändern – nicht nur 3 Sekunden
   - Die Markierungen in den Taschen berechnen die reservierten Gegenstände nur noch nach Änderungen, nicht alle 2 Sekunden
   - Bei offenem Fenster prüft CraftPilot Pläne und Vorrat nach Taschen-, Bank-, Post-, AH- und Berufs-Ereignissen statt blind alle 5 Sekunden
+- **Händlerrezepte**: Ein Klick auf eine Rezeptkarte öffnet die Karte mit allen Händlern, die das Rezept verkaufen, samt Preis – bisher passierte bei „Klick: alle Angebote“ nichts
+- **TomTom-Pfeil**: Der Pfeil zeigt jetzt auf den neu gesetzten Wegpunkt, auch wenn noch andere Wegpunkte (z. B. von anderen Addons) gesetzt sind. Ohne TomTom weist CraftPilot einmal darauf hin, dass WoW Forever nur eine Kartenmarkierung zeigt
 
 ## 1.4.2
 

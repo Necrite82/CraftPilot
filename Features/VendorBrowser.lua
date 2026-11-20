@@ -85,7 +85,7 @@ function CP:LayoutVendorRecipeCard(b,key,entry,width)
   b.merchantLocation:SetText(v.name.." · "..place.." · "..self:VendorOfferPrice(v));b.merchantLocation:Show();y=y+measured(b.merchantLocation,18)+6
   b.merchantRequirements:ClearAllPoints();b.merchantRequirements:SetPoint("TOPLEFT",b,"TOPLEFT",48,-y);b.merchantRequirements:SetWidth(width-65)
   local extra=self:VendorOfferNotes(v)
-  b.merchantRequirements:SetText(entry.requirements..(extra~="" and ("\n"..extra) or "")..(#entry.vendors>1 and string.format(L(" · %d Händler · Klick: alle Angebote"),#entry.vendors) or ""));b.merchantRequirements:Show()
+  b.merchantRequirements:SetText(entry.requirements..(extra~="" and ("\n"..extra) or "")..(#entry.vendors>1 and string.format(L(" · %d Händler · Klick: alle auf der Karte"),#entry.vendors) or L(" · Klick: auf der Karte")));b.merchantRequirements:Show()
   b.merchantWaypoint:SetEnabled(location~=nil);b.merchantWaypoint:SetShown(true)
   b.merchantWaypoint:SetScript("OnClick",function() CP:SetWaypoint(location) end)
   b:SetScript("OnEnter",function() CP:ShowCraftTooltip(b,key,nil,entry.recipeItem or entry.outputItemID) end)

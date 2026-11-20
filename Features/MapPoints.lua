@@ -114,3 +114,15 @@ end
 function CP:ShowCollectionMap(key)
   return self:ShowMap(string.format(L("Fehlende Rezepte · %s"),profName(self,key)),self:CollectionMapPoints(key))
 end
+
+-- 1.4.3: one recipe, every vendor that sells it (merchant recipe cards).
+function CP:ShowRecipeVendorMap(key,entry)
+  local points={}
+  for _,v in ipairs(entry and entry.vendors or {}) do
+    local note=self:VendorOfferPrice(v)
+    if v.restricted then note=note.." · "..L("nicht für dich (Fraktion, Stufe oder Ruf)") end
+    local p=point(v.location,"vendor",v.name,note)
+    if p then points[#points+1]=p end
+  end
+  return self:ShowMap(string.format(L("%s · Händler"),entry and entry.name or profName(self,key)),points)
+end
