@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+- **Karte**: Schließen (x), Weltkarte, Ganze Karte / Nur erkundet und Zoom (+/−) reagieren wieder auf Klicks – die Ziehleiste oben im Fenster lag über diesen Knöpfen
+
 ## 1.4.0
 
 - **Karte**: Lehrer & Händler, Händlerrezepte, Lerntour und Rezept-Sammlung haben eine Karte im CraftPilot-Stil – zoombar, verschiebbar, ganze Karte oder nur Erkundetes, Filter Lehrer/Händler, Gebiet für Gebiet. Klick auf einen Punkt setzt den Wegpunkt (TomTom oder die Spielmarkierung)

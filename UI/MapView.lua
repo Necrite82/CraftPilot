@@ -269,21 +269,24 @@ local function build()
   header:SetScript("OnDragStart",function() frame:StartMoving() end)
   header:SetScript("OnDragStop",function() frame:StopMovingOrSizing();save() end)
   title=frame:CreateFontString(nil,"OVERLAY","GameFontNormal");title:SetPoint("TOPLEFT",frame,"TOPLEFT",14,-14);title:SetJustifyH("LEFT");title:SetWordWrap(false)
-  local function flat(w,caption,fn)
-    local b=CreateFrame("Button",nil,frame,"BackdropTemplate");b:SetSize(w,24);CP:StyleActionButton(b);b:SetText(caption);b:SetScript("OnClick",fn);return b
+  -- 1.4.1: buttons in the top row are children of the drag strip, otherwise the strip lies over them and takes
+  -- their clicks (close, world map, zoom, whole map did nothing).
+  local function flat(w,caption,fn,parent)
+    local b=CreateFrame("Button",nil,parent or frame,"BackdropTemplate");b:SetSize(w,24);CP:StyleActionButton(b);b:SetText(caption);b:SetScript("OnClick",fn)
+    return b
   end
-  local close=flat(26,"x",function() frame:Hide() end);close:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-10,-10)
+  local close=flat(26,"x",function() frame:Hide() end,header);close:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-10,-10)
   worldButton=flat(110,L("Weltkarte"),function()
     if not state.map then return end
     if WorldMapFrame and WorldMapFrame.SetMapID then
       if not WorldMapFrame:IsShown() and ToggleWorldMap then ToggleWorldMap() end
       WorldMapFrame:SetMapID(state.map)
     elseif OpenWorldMap then OpenWorldMap(state.map) end
-  end)
+  end,header)
   worldButton:SetPoint("RIGHT",close,"LEFT",-8,0)
-  local zoomIn=flat(26,"+",function() Map.Zoom(1.25) end);zoomIn:SetPoint("RIGHT",worldButton,"LEFT",-8,0)
-  local zoomOut=flat(26,"-",function() Map.Zoom(.8) end);zoomOut:SetPoint("RIGHT",zoomIn,"LEFT",-4,0)
-  revealButton=flat(110,"",function() if CP.db then CP.db.ui.mapReveal=CP.db.ui.mapReveal==false;Map.Layout() end end)
+  local zoomIn=flat(26,"+",function() Map.Zoom(1.25) end,header);zoomIn:SetPoint("RIGHT",worldButton,"LEFT",-8,0)
+  local zoomOut=flat(26,"-",function() Map.Zoom(.8) end,header);zoomOut:SetPoint("RIGHT",zoomIn,"LEFT",-4,0)
+  revealButton=flat(110,"",function() if CP.db then CP.db.ui.mapReveal=CP.db.ui.mapReveal==false;Map.Layout() end end,header)
   revealButton:SetPoint("RIGHT",zoomOut,"LEFT",-8,0)
   title:SetPoint("RIGHT",revealButton,"LEFT",-10,0)
   -- Second row: filter and zone switch.
