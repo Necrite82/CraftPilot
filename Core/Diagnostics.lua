@@ -172,7 +172,7 @@ local unpack=unpack or table.unpack
 function CP:StartMemoryWatch(seconds)
   if self.memoryWatch then return self:Say(L("Speichermessung läuft bereits.")) end
   seconds=seconds or 60
-  local stats,originals,depth={},{},0
+  local stats,originals,depth,callers={},{},0,{}
   for _,name in ipairs(MEMORY_WATCH) do
     local fn=self[name]
     if type(fn)=="function" then
@@ -180,6 +180,19 @@ function CP:StartMemoryWatch(seconds)
       local entry={name=name,calls=0,kb=0}
       stats[#stats+1]=entry
       self[name]=function(...)
+        -- Who asked for a redraw: the calling line, so the cause of frequent redraws shows up.
+        if name=="Render" and type(debugstack)=="function" then
+          local ok,stack=pcall(debugstack,2,3,0)
+          if ok and type(stack)=="string" then
+            local where
+            for line in stack:gmatch("[^\n]+") do
+              local file,num=line:match("([%w_]+%.lua)%D+(%d+)")
+              if file and file~="Diagnostics.lua" then where=file..":"..num;break end
+            end
+            where=where or "?"
+            callers[where]=(callers[where] or 0)+1
+          end
+        end
         depth=depth+1
         local before=collectgarbage("count")
         local r=pack(fn(...))
@@ -192,7 +205,8 @@ function CP:StartMemoryWatch(seconds)
     end
   end
   local start=collectgarbage("count")
-  self.memoryWatch={stats=stats,originals=originals}
+  self.memoryWatch={stats=stats,originals=originals,events={}}
+  local events=self.memoryWatch.events
   self:Say(string.format(L("Speichermessung läuft %d Sekunden – spiel ganz normal weiter."),seconds))
   local function finish()
     for name,fn in pairs(originals) do self[name]=fn end
@@ -204,6 +218,16 @@ function CP:StartMemoryWatch(seconds)
       local s=stats[i]
       if s.calls>0 then self:Say(string.format("  %s: %.1f MB, %d Aufrufe",s.name,s.kb/1024,s.calls)) end
     end
+    local function top(map,label)
+      local list={}
+      for k,n in pairs(map) do list[#list+1]={k,n} end
+      table.sort(list,function(a,b) return a[2]>b[2] end)
+      local parts={}
+      for i=1,math.min(6,#list) do parts[#parts+1]=list[i][1].." "..list[i][2].."×" end
+      if #parts>0 then self:Say(label..table.concat(parts,", ")) end
+    end
+    top(callers,L("Neuzeichnen ausgelöst von: "))
+    top(events,L("Ereignisse: "))
   end
   if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(seconds,finish) else finish() end
   return true

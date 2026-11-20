@@ -866,6 +866,8 @@ local function schedule(capture)
 end
 CP.SlashCommand=command
 events:SetScript("OnEvent",function(_,event,...)
+  local watch=CP.memoryWatch
+  if watch then watch.events[event]=(watch.events[event] or 0)+1 end
   if event=="PLAYER_LOGIN" then
     CP:Initialize()
     -- /cpp and /craftpilotpro: another addon also calls itself CraftPilot and takes /cpp and /craftpilot.
