@@ -7,6 +7,7 @@ end
 -- 1.4.3: the bag marks and item tooltips build on the reservations, so they are rebuilt with them – not on a timer.
 function CP:InvalidateReservations()
   self.reservationCache=nil;self.reservedCache=nil;self.tooltipCache=nil;self.keepCache=nil;self.priceDetailCache=nil
+  self.availabilityCache=nil
 end
 function CP:PlanRequirements(owner)
   local required,recipes={},{}

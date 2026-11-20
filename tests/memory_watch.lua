@@ -50,4 +50,18 @@ do
   EnumerateFrames=saved
   assert(used<50,"frame scan allocates "..used.." KB")
 end
-print("PASS: 1.4.4 no redraw while closed, frame scan without garbage")
+-- 1.4.4: stock counts are kept within one frame and passed through unchanged, nils included.
+do
+local t=100;GetTime=function() return t end
+local calls=0;local real=CP.ItemAvailabilityUncached
+CP.ItemAvailabilityUncached=function(self,id) calls=calls+1;return 5,3,2,true,true,0 end
+local a,b,c,d,e,f=CP:ItemAvailability(2589);local a2=CP:ItemAvailability(2589)
+assert(a==5 and b==3 and c==2 and d==true and f==0 and a2==5 and calls==1,"cached within a frame")
+t=101;CP:ItemAvailability(2589);assert(calls==2,"new frame, new count")
+CP:InvalidateReservations();CP:ItemAvailability(2589);assert(calls==3,"invalidated")
+CP.ItemAvailabilityUncached=function() return 1,nil,nil,false end
+t=102;local x,y,z,w=CP:ItemAvailability(1);assert(x==1 and y==nil and w==false,"nil values pass through")
+CP.ItemAvailabilityUncached=real;GetTime=nil;CP.availabilityCache=nil
+end
+
+print("PASS: 1.4.4 no redraw while closed, frame scan without garbage, stock cache per frame")

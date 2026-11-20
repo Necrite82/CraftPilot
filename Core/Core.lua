@@ -76,7 +76,25 @@ function CP:BankCount(itemID)
     type(cached)=="number"
 end
 
+local unpackValues=unpack or table.unpack
+local function packValues(...) return {n=select("#",...),...} end
+-- 1.4.4: within one frame (a redraw or a path calculation) the stock of an item does not change; it was counted
+-- tens of thousands of times a minute. The game time stays the same during a frame; without it nothing is kept.
 function CP:ItemAvailability(itemID)
+  local now=type(GetTime)=="function" and GetTime() or nil
+  if not now then return self:ItemAvailabilityUncached(itemID) end
+  local cache=self.availabilityCache
+  if not cache or cache.at~=now or cache.bank~=(self.db and self.db.includeBank) then
+    cache={at=now,bank=self.db and self.db.includeBank,items={}};self.availabilityCache=cache
+  end
+  local hit=cache.items[itemID]
+  if not hit then
+    hit=packValues(self:ItemAvailabilityUncached(itemID))
+    if itemID~=nil then cache.items[itemID]=hit end
+  end
+  return unpackValues(hit,1,hit.n)
+end
+function CP:ItemAvailabilityUncached(itemID)
   local bags=self:RawItemCount(itemID,false)
   -- Twinks on the same realm and faction can mail their stock; counted unless switched off.
   local alts=self.AltReachable and self:AltReachable(itemID) or 0

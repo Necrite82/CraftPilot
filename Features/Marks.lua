@@ -275,7 +275,7 @@ frame:SetScript("OnEvent",function(_,event,a,b)
   elseif event=="MERCHANT_CLOSED" then
     CP.merchantCounts=nil
   elseif event=="BAG_UPDATE_DELAYED" then
-    CP.reservedCache=nil;CP.tooltipCache=nil
+    CP.reservedCache=nil;CP.tooltipCache=nil;CP.availabilityCache=nil
     if CP.merchantCounts then CP:CheckSoldReserved() end
     soon(false)
   elseif event=="ITEM_LOCK_CHANGED" then
