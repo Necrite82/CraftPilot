@@ -376,9 +376,18 @@ function CP:NextRank(key)
   local p=self.db.professions[key] or {}
   local cap=p.cap or 0
   for _,rank in ipairs(D.ranks) do
-    if rank.cap > cap then return rank end
+    if rank.cap > cap then
+      local min=D.rankMinOverrides and D.rankMinOverrides[key] and D.rankMinOverrides[key][rank.cap]
+      if min then return {cap=rank.cap,min=min,level=rank.level,name=rank.name} end
+      return rank
+    end
   end
   return nil
+end
+-- 1.4.0: who teaches the next rank when it is not a normal trainer (secondary professions: book or quest).
+function CP:RankSources(key,rank)
+  rank=rank or self:NextRank(key)
+  return rank and D.rankSources and D.rankSources[key] and D.rankSources[key][rank.cap] or nil
 end
 
 local function playerMap()
@@ -404,7 +413,15 @@ function CP:TrainerChoices(key)
   end
   local entries={}
   local nearest,nearDist
-  for _,npc in ipairs(D.trainers) do
+  local list=D.trainers
+  local sources=self:RankSources(key,rank)
+  if sources then
+    -- Book vendors, quest givers and world trainers for this rank first; the usual trainers follow.
+    list={}
+    for _,npc in ipairs(sources) do list[#list+1]=npc end
+    for _,npc in ipairs(D.trainers) do list[#list+1]=npc end
+  end
+  for _,npc in ipairs(list) do
     if npc.profession==key and (npc.faction==faction or npc.faction=="B") then
       local inZone=(npc.map==map)
       local distance

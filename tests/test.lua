@@ -405,7 +405,12 @@ CP:RefreshProfessionSkills()
 for _,key in ipairs({"skinning","fishing","cooking","firstaid"}) do
   assert(CP:OwnsProfession(key),"Profession not detected: "..key)
   assert(CP.db.professions[key].cap==150)
-  assert(CP:NextRank(key)==nil,"Do not invent rank requirements")
+  if key=="skinning" then assert(CP:NextRank(key)==nil,"Do not invent rank requirements")
+  else
+    -- 1.4.0: Expert of the secondary professions is a book from a vendor, with a place.
+    local rank=CP:NextRank(key);assert(rank and rank.cap==225,"Expert rank for "..key)
+    local sources=CP:RankSources(key);assert(sources and sources[1].how=="book" and sources[1].map,"Expert book vendor for "..key)
+  end
   observedID=CP.Data.professions[key].id
   assert(CP:CaptureProfession())
   assert(#CP:Options(key)>0,"Native crafting recipes should work: "..key)
@@ -1084,6 +1089,7 @@ assert(loadfile("tests/route_compare.lua"))(CP)
 assert(loadfile("tests/collection.lua"))(CP)
 assert(loadfile("tests/projects.lua"))(CP)
 assert(loadfile("tests/price_scan.lua"))(CP)
+assert(loadfile("tests/map_view.lua"))(CP)
 assert(loadfile("tests/recommendation.lua"))(CP)
 assert(loadfile("tests/companion_alts.lua"))(CP)
 assert(loadfile("tests/features_025.lua"))(CP,createdFrames)

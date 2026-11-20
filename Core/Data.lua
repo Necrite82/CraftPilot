@@ -15,9 +15,9 @@ D.professions = {
   herbalism = {id=182, name=L("Kräuterkunde"), short=L("Kräuter"), gathering=true},
   alchemy = {id=171, name=L("Alchemie"), short=L("Alchemie")},
   skinning = {id=393, name=L("Kürschnerei"), short=L("Kürschner"), gathering=true, crafting=true, ranksUnverified=true},
-  cooking = {id=185, name=L("Kochen"), short=L("Kochen"), secondary=true, ranksUnverified=true},
-  firstaid = {id=129, name=L("Erste Hilfe"), short=L("Erste Hilfe"), secondary=true, ranksUnverified=true},
-  fishing = {id=356, name=L("Angeln"), short=L("Angeln"), secondary=true, gathering=true, crafting=true, ranksUnverified=true},
+  cooking = {id=185, name=L("Kochen"), short=L("Kochen"), secondary=true},
+  firstaid = {id=129, name=L("Erste Hilfe"), short=L("Erste Hilfe"), secondary=true},
+  fishing = {id=356, name=L("Angeln"), short=L("Angeln"), secondary=true, gathering=true, crafting=true},
 }
 D.professionIcons = {
   engineering="Interface\\Icons\\Trade_Engineering",
@@ -259,7 +259,87 @@ local manualTrainers = {
   T("leatherworking","Karolek","Orgrimmar",1454,62.8,44.4,"Horde",150),
   T("leatherworking","Una",L("Donnerfels"),1456,41.4,42.6,"Horde",225),
   T("leatherworking","Hahrana Ironhide","Feralas",1444,74.4,43.0,"Horde",300),
+
+  -- Cooking, first aid, fishing: Apprentice/Journeyman trainers (QuestieDB Forever positions, CMaNGOS ranks), so
+  -- these professions have trainers without QuestieDB too. Expert and Artisan come from D.rankSources below.
+  T("cooking","Alegorn","",1457,49.03,21.24,"Alliance",150),
+  T("cooking","Cook Ghilm","",1426,68.38,54.49,"Alliance",150),
+  T("cooking","Crystal Boughman","",1433,17.69,43.47,"Alliance",150),
+  T("cooking","Daryl Riknussun","",1455,60.08,36.43,"Alliance",150),
+  T("cooking","Gremlock Pilsnor","",1426,47.67,52.31,"Alliance",150),
+  T("cooking","Stephen Ryback","",1453,78.17,53.10,"Alliance",150),
+  T("cooking","Tomas","",1429,44.37,65.99,"Alliance",150),
+  T("cooking","Zarrin","",1438,57.12,61.30,"Alliance",150),
+  T("cooking","Aska Mistrunner","",1456,50.72,53.11,"Horde",150),
+  T("cooking","Duhng","",1413,55.29,31.78,"Horde",150),
+  T("cooking","Eunice Burch","",1458,62.14,44.91,"Horde",150),
+  T("cooking","Mudduk","",1434,31.34,27.97,"Horde",150),
+  T("cooking","Pyall Silentstride","",1412,44.92,61.67,"Horde",150),
+  T("cooking","Zamja","",1454,57.40,53.96,"Horde",150),
+  T("firstaid","Byancie","",1438,55.29,56.82,"Alliance",150),
+  T("firstaid","Dannelor","",1457,51.71,12.22,"Alliance",150),
+  T("firstaid","Fremal Doohickey","",1437,10.83,61.40,"Alliance",150),
+  T("firstaid","Michelle Belle","",1429,43.39,65.55,"Alliance",150),
+  T("firstaid","Nissa Firestone","",1455,55.09,58.26,"Alliance",150),
+  T("firstaid","Shaina Fuller","",1453,53.00,44.68,"Alliance",150),
+  T("firstaid","Thamner Pol","",1426,47.18,52.61,"Alliance",150),
+  T("firstaid","Arnok","",1454,34.18,84.58,"Horde",150),
+  T("firstaid","Mary Edras","",1458,73.16,55.15,"Horde",150),
+  T("firstaid","Nurse Neela","",1420,61.82,52.83,"Horde",150),
+  T("firstaid","Pand Stonebinder","",1456,29.69,21.18,"Horde",150),
+  T("firstaid","Rawrk","",1411,54.17,41.93,"Horde",150),
+  T("firstaid","Vira Younghoof","",1412,46.08,63.96,"Horde",150),
+  T("fishing","Androl Oakhand","",1438,55.88,93.51,"Alliance",150),
+  T("fishing","Arnold Leland","",1453,54.99,69.65,"Alliance",150),
+  T("fishing","Astaia","",1457,47.89,56.65,"Alliance",150),
+  T("fishing","Brannock","",1444,32.25,41.61,"Alliance",150),
+  T("fishing","Donald Rabonne","",1424,50.78,61.03,"Alliance",150),
+  T("fishing","Grimnur Stonebrand","",1455,48.07,6.91,"Alliance",150),
+  T("fishing","Harold Riggs","",1437,8.08,58.59,"Alliance",150),
+  T("fishing","Lee Brown","",1429,47.61,62.32,"Alliance",150),
+  T("fishing","Matthew Hooper","",1433,21.90,51.13,"Alliance",150),
+  T("fishing","Paxton Ganter","",1426,35.48,40.22,"Alliance",150),
+  T("fishing","Warg Deepwater","",1432,40.55,39.70,"Alliance",150),
+  T("fishing","Myizz Luckycatch","",1434,27.46,77.11,"B",150),
+  T("fishing","Katoom the Angler","",1425,80.33,81.54,"Horde",300),
+  T("fishing","Armand Cromwell","",1458,80.70,31.26,"Horde",150),
+  T("fishing","Clyde Kellen","",1420,67.17,50.99,"Horde",150),
+  T("fishing","Kah Mistrunner","",1456,56.13,46.38,"Horde",150),
+  T("fishing","Kil'Hiwana","",1440,10.83,33.66,"Horde",150),
+  T("fishing","Lau'Tiki","",1411,53.25,81.59,"Horde",150),
+  T("fishing","Lui'Mala","",1443,22.70,72.42,"Horde",150),
+  T("fishing","Lumak","",1454,69.80,29.21,"Horde",150),
+  T("fishing","Uthan Stillwater","",1412,44.16,63.80,"Horde",150),
 }
+
+-- 1.4.0: Expert and Artisan of the secondary professions are not taught by the usual trainers: Expert is a book
+-- bought from a vendor, Artisan a trainer in the world or a quest. NPCs and books: CMaNGOS classic-db (npc_vendor,
+-- quest_template), positions: QuestieDB Forever. Each source is shown like a trainer, with how it teaches the rank.
+local function S(prof,name,map,x,y,side,cap,how,extra)
+  local entry=T(prof,name,"",map,x,y,side,cap)
+  entry.how=how
+  for k,v in pairs(extra or {}) do entry[k]=v end
+  return entry
+end
+D.rankSources = {
+  cooking = {
+    [225] = {S("cooking","Shandrina",1440,49.48,67.09,"Alliance",225,"book",{book=16072,npcID=3955}),
+             S("cooking","Wulan",1443,26.17,69.65,"Horde",225,"book",{book=16072,npcID=12033})},
+    [300] = {S("cooking","Dirge Quikcleave",1446,52.63,28.11,"B",300,"trainer",{npcID=8125})},
+  },
+  firstaid = {
+    [225] = {S("firstaid","Deneb Walker",1417,26.97,58.83,"Alliance",225,"book",{book=16084,npcID=2805}),
+             S("firstaid","Balai Lok'Wein",1445,36.49,30.36,"Horde",225,"book",{book=16084,npcID=13476})},
+    [300] = {S("firstaid","Doctor Gustaf VanHowzen",1445,67.76,48.97,"Alliance",300,"quest",{quest=6624,questName="Triage",npcID=12939}),
+             S("firstaid","Doctor Gregory Victor",1417,73.41,36.89,"Horde",300,"quest",{quest=6622,questName="Triage",npcID=12920})},
+  },
+  fishing = {
+    [225] = {S("fishing","Old Man Heming",1434,27.42,77.16,"B",225,"book",{book=16083,npcID=2626})},
+    [300] = {S("fishing","Nat Pagle",1445,58.61,60.06,"B",300,"quest",{quest=6607,questName="Nat Pagle, Angler Extreme",npcID=12919})},
+  },
+}
+-- Artisan of a secondary profession needs the full Expert skill (225), not 200 as the main professions.
+D.rankMinOverrides = {cooking={[300]=225}, firstaid={[300]=225}, fishing={[300]=225}}
 
 -- Trainer list: CP.TrainerRanks (NPC id, profession, highest rank; CMaNGOS) completed at runtime with name,
 -- position, faction and title from the QuestieDB addon. The hand-kept list fills in trainers that are

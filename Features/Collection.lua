@@ -109,6 +109,8 @@ function CP:CollectionCards(key)
   cards[#cards+1]={title=L("Sammeltour in diesem Gebiet"),detail=#stops>0 and string.format(L("%d Halte · Wegpunkt zum ersten, danach weiter wie bei der Lerntour"),#stops) or L("Hier fehlt dir kein Rezept mit bekanntem Ort."),
     footer=#stops>0 and L("Klick: Tour starten") or "",color=#stops>0 and "green" or "blue",grid=true,
     action=#stops>0 and function() CP:StartCollectionTour(key) end or nil}
+  cards[#cards+1]={title=L("Fehlende Rezepte auf der Karte"),detail=L("Alle Händler und Bosse mit Rezepten, die dir fehlen – Gebiet für Gebiet, Klick setzt den Wegpunkt."),
+    footer=L("Klick: Karte öffnen"),color="blue",grid=true,action=function() CP:ShowCollectionMap(key) end}
   cards[#cards+1]={sectionHeader=true,title=L("FEHLENDE REZEPTE")}
   local shown=0
   for _,row in ipairs(c.missing) do

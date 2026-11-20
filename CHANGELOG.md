@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+- **Karte**: Lehrer & Händler, Händlerrezepte, Lerntour und Rezept-Sammlung haben eine Karte im CraftPilot-Stil – zoombar, verschiebbar, ganze Karte oder nur Erkundetes, Filter Lehrer/Händler, Gebiet für Gebiet. Klick auf einen Punkt setzt den Wegpunkt (TomTom oder die Spielmarkierung)
+- **Kochen, Erste Hilfe, Angeln über 150**: Experte gibt es nicht beim Lehrer, sondern als Buch beim Händler (Kochbuch: Shandrina/Wulan, Erste Hilfe: Deneb Walker/Balai Lok'Wein, Angeln: Old Man Heming). Fachmann bei Dirge Quikcleave (Kochen) bzw. über die Quests „Triage“ (Erste Hilfe) und „Nat Pagle, Angler Extreme“ (Angeln). CraftPilot zeigt diese Orte jetzt wie Lehrer, mit Wegpunkt und auf der Karte; Fachmann braucht Skill 225
+- **Lehrer für Kochen, Erste Hilfe und Angeln auch ohne QuestieDB**
+
 ## 1.3.0
 
 **Verlässlichere Rechnung**

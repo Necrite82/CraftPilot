@@ -1,8 +1,8 @@
 {
   "allthethings": {
-    "commit": "f2c9335ec4eeafc87c83d0e525ad84f6c4d5491f",
+    "commit": "b453f34c9c0912407b1fac06fc0709ae624af494",
     "files": 197,
-    "sha256": "11c07d4d5d2dc6c53eebb467fa44315014191be5041081ef27e09805c6f62d4d"
+    "sha256": "7735cec64ff4bd32aae7efe04166da933eddcad4b072ce2b3c90939bd7d89ef4"
   },
   "classicdb": {
     "sha256": "4f92db520868ab4e566726f68b5b2e380ae781209beaf22237b4f7f04600d0c0",
@@ -37,12 +37,12 @@
     }
   },
   "questiedb": {
-    "asset": "QuestieDB-1.1.2-Forever.zip",
+    "asset": "QuestieDB-1.1.3-Forever.zip",
     "files": {
       "questiedb-Forever.toc.gz": {
-        "bytes": 17969328,
+        "bytes": 18453049,
         "from": "QuestieDB/QuestieDB_Forever.toc",
-        "sha256": "02020e6789efdcdcd032d9388ff2fe14586363ea94a5fca847db9360f2015d49"
+        "sha256": "ace910659975d6bf089372c96535dda44b2ec1c4281bb9efb4b9f188b7321f26"
       },
       "questiedb-areaIdToUiMapId.lua.gz": {
         "bytes": 59485,
@@ -50,19 +50,19 @@
         "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
       }
     },
-    "sha256": "157eb57e624b92f0340c04bfdf2263c6d803335883fad930f1bb8179f0343786",
-    "tag": "v1.1.2"
+    "sha256": "98201b11bf9854895f2c966d3924b9fb10d18d10dcad7540465e7d761c1f624d",
+    "tag": "v1.1.3"
   },
   "summary": {
     "alchemy": {
       "recipes": 185,
       "skipped": 16,
       "sources": {
-        "drop": 80,
-        "quest": 12,
+        "drop": 81,
+        "quest": 13,
         "start": 3,
         "trainer": 28,
-        "trainer?": 17,
+        "trainer?": 16,
         "vendor": 107
       }
     },
@@ -70,8 +70,8 @@
       "recipes": 463,
       "skipped": 20,
       "sources": {
-        "drop": 202,
-        "quest": 34,
+        "drop": 192,
+        "quest": 35,
         "start": 5,
         "trainer": 77,
         "trainer?": 23,
@@ -82,7 +82,7 @@
       "recipes": 131,
       "skipped": 10,
       "sources": {
-        "drop": 25,
+        "drop": 29,
         "quest": 32,
         "start": 4,
         "trainer": 7,
@@ -93,7 +93,7 @@
       "recipes": 238,
       "skipped": 11,
       "sources": {
-        "drop": 88,
+        "drop": 91,
         "quest": 3,
         "start": 5,
         "trainer": 61,
@@ -105,7 +105,7 @@
       "recipes": 259,
       "skipped": 21,
       "sources": {
-        "drop": 76,
+        "drop": 81,
         "quest": 21,
         "start": 3,
         "trainer": 72,
@@ -117,11 +117,11 @@
       "recipes": 31,
       "skipped": 8,
       "sources": {
-        "drop": 10,
-        "quest": 1,
+        "drop": 11,
+        "quest": 2,
         "start": 1,
         "trainer": 8,
-        "trainer?": 7,
+        "trainer?": 6,
         "vendor": 5
       }
     },
@@ -137,7 +137,7 @@
       "recipes": 3,
       "skipped": 14,
       "sources": {
-        "drop": 1,
+        "drop": 2,
         "trainer?": 1
       }
     },
@@ -145,7 +145,7 @@
       "recipes": 545,
       "skipped": 25,
       "sources": {
-        "drop": 200,
+        "drop": 192,
         "quest": 23,
         "start": 6,
         "trainer": 68,
@@ -176,7 +176,7 @@
       "recipes": 441,
       "skipped": 15,
       "sources": {
-        "drop": 174,
+        "drop": 176,
         "quest": 8,
         "start": 5,
         "trainer": 76,

@@ -15,7 +15,7 @@ nach deinen eigenen Auktionshauspreisen, mit Einkauf, Lehrern, Twinks und Herste
 
 ---
 
-**Stand:** 1.3.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
+**Stand:** 1.4.0 · WoW Forever 1.60.x (Interface 16001) · Deutsch und Englisch
 
 > **Fragen, Ideen und Fehler:** im Spiel über „Fehler melden“, im [Discord](https://discord.gg/DpsBkHtQS) oder als [GitHub-Issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -52,6 +52,8 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Lernen**
 - Weg zu jedem Lehrer und Händler mit einem Klick, Lerntour entlang des günstigsten Weges
 - Spezialisierungen (Schmied, Ingenieur, Lederer) mit Schritten und Questgeber
+- **Karte**: Lehrer, Rezepthändler, Lerntour und fehlende Rezepte auf einer zoombaren Karte, Klick setzt den Wegpunkt
+- **Kochen, Erste Hilfe, Angeln**: Experte (Buch beim Händler) und Fachmann (Lehrer in der Welt oder Quest) mit Ort
 - **Händler-Besuchsstatus**: ausverkaufte Rezepte werden gemerkt, Lernziel und Tour bevorzugen Händler, die es haben
 - **Rezept-Sammlung** mit Fortschritt, Filter nach Quelle und Gebiet und Sammeltour im aktuellen Gebiet
 
@@ -80,7 +82,7 @@ Daraus entsteht eine klare Empfehlung: **was du jetzt herstellen, kaufen oder le
 **Über die CurseForge-App (empfohlen):** CraftPilot suchen und installieren. **QuestieDB** wird als empfohlenes Addon angeboten.
 
 **Von Hand:**
-1. [CraftPilot-1.3.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.3.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
+1. [CraftPilot-1.4.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.4.0.zip) herunterladen (nicht das GitHub-Quellcode-Archiv).
 2. Nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. `CraftPilotPro\CraftPilotPro.toc` muss direkt im Ordner `CraftPilotPro` liegen.
 3. Empfohlen: **QuestieDB** (Forever-Fassung) zusätzlich installieren.
 

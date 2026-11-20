@@ -15,7 +15,7 @@ by your own auction house prices, with shopping, trainers, alts and crafting in 
 
 ---
 
-**Status:** 1.3.0 · WoW Forever 1.60.x (Interface 16001) · English and German
+**Status:** 1.4.0 · WoW Forever 1.60.x (Interface 16001) · English and German
 
 > **Questions, ideas and bugs:** in-game via "Report bug", on [Discord](https://discord.gg/DpsBkHtQS) or as a [GitHub issue](https://github.com/Necrite82/CraftPilot/issues).
 
@@ -50,6 +50,8 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **Learning**
 - One click to every trainer and vendor, a learning tour along the cheapest path
 - Specializations (blacksmith, engineer, leatherworker) with steps and quest givers
+- **Map**: trainers, recipe vendors, the learning tour and missing recipes on a zoomable map; a click sets the waypoint
+- **Cooking, first aid, fishing**: Expert (book from a vendor) and Artisan (world trainer or quest) with their place
 
 **Endgame**
 - Profit per craft for your learned recipes: with bought and with own materials (own and farmed materials count at their sale value)
@@ -76,7 +78,7 @@ The result is a clear recommendation of **what to craft, buy or learn next**, in
 **CurseForge app (recommended):** search for CraftPilot and install it. **QuestieDB** is installed automatically.
 
 **Manually:**
-1. Download [CraftPilot-1.3.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.3.0.zip) (not the GitHub source archive).
+1. Download [CraftPilot-1.4.0.zip](https://github.com/Necrite82/CraftPilot/raw/main/dist/CraftPilot-1.4.0.zip) (not the GitHub source archive).
 2. Extract it to `World of Warcraft\_forever_\Interface\AddOns`; `CraftPilotPro\CraftPilotPro.toc` must sit directly in the `CraftPilotPro` folder.
 3. Also install **QuestieDB** (Forever version).
 

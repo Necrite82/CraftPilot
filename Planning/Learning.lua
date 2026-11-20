@@ -175,6 +175,19 @@ function CP:RankGate(key)
   else
     gate.text=string.format(L("%s (bis %d) jetzt beim Lehrer lernbar."),gate.name,gate.cap)
   end
+  -- 1.4.0: secondary professions learn Expert from a book and Artisan in the world or by a quest.
+  local source=self.RankSources and (self:RankSources(key,rank) or {})[1]
+  if source and source.how=="book" then
+    gate.how=string.format(L("Buch „%s“ beim Händler kaufen und lesen"),self:ItemName(source.book))
+  elseif source and source.how=="quest" then
+    gate.how=string.format(L("Quest „%s“ abschließen"),self:RankQuestName(source))
+  elseif source then
+    gate.how=string.format(L("bei %s lernen"),source.name)
+  end
+  if gate.how then
+    if gate.ok then gate.text=string.format(L("%s (bis %d): %s."),gate.name,gate.cap,gate.how)
+    else gate.text=gate.text.." "..string.format(L("Danach: %s."),gate.how) end
+  end
   return gate
 end
 
@@ -293,7 +306,8 @@ function CP:LearnTourCards(key)
   local cards={{title=tour and string.format(L("Lerntour läuft · Halt %d von %d"),tour.index,#tour.stops) or string.format(L("Lerntour starten · %d Halte · %s"),#stops,self:FormatCostMoney(total)),
     detail=tour and L("Nach dem Lernen springt der Wegpunkt beim nächsten Öffnen des Berufsfensters weiter.") or L("Setzt den Wegpunkt zum ersten Halt; nach dem Lernen geht es automatisch weiter."),
     footer=tour and L("Klick: nächster Halt") or L("Klick: Tour starten"),color="gold",emphasis=true,
-    action=function() if CP.tour and CP.tour.key==key then CP:NextTourStop() else CP:StartLearnTour(key) end;CP:Render() end}}
+    action=function() if CP.tour and CP.tour.key==key then CP:NextTourStop() else CP:StartLearnTour(key) end;CP:Render() end,
+    buttons={{label=L("Auf der Karte"),action=function() CP:ShowLearnTourMap(key) end}}}}
   for i,stop in ipairs(stops) do
     local names={}
     for _,r in ipairs(stop.recipes) do
@@ -309,4 +323,14 @@ function CP:LearnTourCards(key)
       action=function() CP.tour={key=key,stops=stops,index=i};CP:GoTourStop();CP:Render() end}
   end
   return cards
+end
+
+-- Quest title in the game language when the client knows it, else the English name.
+function CP:RankQuestName(source)
+  local id=source and source.quest
+  if id and C_QuestLog and type(C_QuestLog.GetTitleForQuestID)=="function" then
+    local ok,name=pcall(C_QuestLog.GetTitleForQuestID,id)
+    if ok and type(name)=="string" and name~="" then return name end
+  end
+  return source and source.questName or "?"
 end
