@@ -160,3 +160,89 @@ function CP:InitializeDiagnostics()
     EventRegistry:RegisterCallback("BugGrabber.BugGrabbed",function() CP:ImportBugGrabberDiagnostics() end,self)
   end
 end
+
+-- 1.4.4: "/cpp speicher" – which CraftPilot functions create the most garbage. For 60 seconds the main functions
+-- are wrapped and the memory they allocate is summed (only CraftPilot's own work; nothing is changed or sent).
+local MEMORY_WATCH={"Render","Refresh","UpdateItemMarks","ReservedItems","PlanningTick","AddTooltipLines","TooltipLines",
+  "UpdateCompanion","RefreshCostWindow","RefreshPersonalShopping","CheapestPath","PlanRequirements","Recommendation",
+  "InvalidateReservations","ItemAvailability","PriceDetails","CheckPriceScans","RecordMerchantRecipes","SnapshotCharacterBags",
+  "SnapshotBankMaterials","CaptureProfession","RenderRecommendation","KeepList","ShowMap","SetWaypoint"}
+local function pack(...) return {n=select("#",...),...} end
+local unpack=unpack or table.unpack
+function CP:StartMemoryWatch(seconds)
+  if self.memoryWatch then return self:Say(L("Speichermessung läuft bereits.")) end
+  seconds=seconds or 60
+  local stats,originals,depth,callers={},{},0,{}
+  for _,name in ipairs(MEMORY_WATCH) do
+    local fn=self[name]
+    if type(fn)=="function" then
+      originals[name]=fn
+      local entry={name=name,calls=0,kb=0}
+      stats[#stats+1]=entry
+      self[name]=function(...)
+        -- Who asked for a redraw: the calling line, so the cause of frequent redraws shows up.
+        if name=="Render" and type(debugstack)=="function" then
+          local ok,stack=pcall(debugstack,2,3,0)
+          if ok and type(stack)=="string" then
+            local where
+            for line in stack:gmatch("[^\n]+") do
+              local file,num=line:match("([%w_]+%.lua)%D+(%d+)")
+              if file and file~="Diagnostics.lua" then where=file..":"..num;break end
+            end
+            where=where or "?"
+            callers[where]=(callers[where] or 0)+1
+          end
+        end
+        depth=depth+1
+        local before=collectgarbage("count")
+        local r=pack(fn(...))
+        local used=collectgarbage("count")-before
+        depth=depth-1
+        entry.calls=entry.calls+1
+        if used>0 then entry.kb=entry.kb+used end
+        return unpack(r,1,r.n)
+      end
+    end
+  end
+  -- CraftPilot's own memory as the game shows it (collectgarbage counts every addon together).
+  local function own()
+    local update=(C_AddOns and C_AddOns.UpdateAddOnMemoryUsage) or UpdateAddOnMemoryUsage
+    local get=(C_AddOns and C_AddOns.GetAddOnMemoryUsage) or GetAddOnMemoryUsage
+    if type(update)~="function" or type(get)~="function" then return nil end
+    pcall(update)
+    local ok,kb=pcall(get,"CraftPilotPro")
+    return ok and type(kb)=="number" and kb or nil
+  end
+  local start=own()
+  self.memoryWatch={stats=stats,originals=originals,events={}}
+  local events=self.memoryWatch.events
+  self:Say(string.format(L("Speichermessung läuft %d Sekunden – spiel ganz normal weiter."),seconds))
+  local function finish()
+    for name,fn in pairs(originals) do self[name]=fn end
+    self.memoryWatch=nil
+    table.sort(stats,function(a,b) return a.kb>b.kb end)
+    local now=own()
+    if start and now then
+      self:Say(string.format(L("Speichermessung: CraftPilot von %.1f auf %.1f MB in %d Sekunden (WoW räumt zwischendurch auf). Größte Verursacher (inkl. Unteraufrufe):"),
+        start/1024,now/1024,seconds))
+    else
+      self:Say(string.format(L("Speichermessung über %d Sekunden. Größte Verursacher (inkl. Unteraufrufe):"),seconds))
+    end
+    for i=1,math.min(8,#stats) do
+      local s=stats[i]
+      if s.calls>0 then self:Say(string.format("  %s: %.1f MB, %d Aufrufe",s.name,s.kb/1024,s.calls)) end
+    end
+    local function top(map,label)
+      local list={}
+      for k,n in pairs(map) do list[#list+1]={k,n} end
+      table.sort(list,function(a,b) return a[2]>b[2] end)
+      local parts={}
+      for i=1,math.min(6,#list) do parts[#parts+1]=list[i][1].." "..list[i][2].."×" end
+      if #parts>0 then self:Say(label..table.concat(parts,", ")) end
+    end
+    top(callers,L("Neuzeichnen ausgelöst von: "))
+    top(events,L("Ereignisse: "))
+  end
+  if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(seconds,finish) else finish() end
+  return true
+end

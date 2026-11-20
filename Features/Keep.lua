@@ -45,9 +45,11 @@ end
 
 -- Items a plan makes and needs again later: {item, keep, need, have, made, uses={{name,at}}, maker}.
 function CP:KeepList(key)
-  local cache=self.keepCache
-  -- 1.4.3: like the reservations, valid until plans or bags change (InvalidateReservations clears it), max a minute.
-  if cache and cache.key==key and clock()-cache.at<60 then return cache.list end
+  -- 1.4.4: one entry per profession; with a single entry every plan in turn threw out the previous one.
+  local caches=self.keepCache
+  if not caches then caches={};self.keepCache=caches end
+  local cache=caches[key]
+  if cache and clock()-cache.at<60 then return cache.list end
   local crafts=planCrafts(self,key)
   local byItem,list={},{}
   for i,c in ipairs(crafts) do
@@ -82,7 +84,7 @@ function CP:KeepList(key)
     table.sort(e.uses,function(a,b) return a.at<b.at end)
   end
   table.sort(list,function(a,b) return a.at<b.at end)
-  self.keepCache={key=key,at=clock(),list=list}
+  caches[key]={at=clock(),list=list}
   return list
 end
 

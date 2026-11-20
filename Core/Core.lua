@@ -76,7 +76,25 @@ function CP:BankCount(itemID)
     type(cached)=="number"
 end
 
+local unpackValues=unpack or table.unpack
+local function packValues(...) return {n=select("#",...),...} end
+-- 1.4.4: within one frame (a redraw or a path calculation) the stock of an item does not change; it was counted
+-- tens of thousands of times a minute. The game time stays the same during a frame; without it nothing is kept.
 function CP:ItemAvailability(itemID)
+  local now=type(GetTime)=="function" and GetTime() or nil
+  if not now then return self:ItemAvailabilityUncached(itemID) end
+  local cache=self.availabilityCache
+  if not cache or cache.at~=now or cache.bank~=(self.db and self.db.includeBank) then
+    cache={at=now,bank=self.db and self.db.includeBank,items={}};self.availabilityCache=cache
+  end
+  local hit=cache.items[itemID]
+  if not hit then
+    hit=packValues(self:ItemAvailabilityUncached(itemID))
+    if itemID~=nil then cache.items[itemID]=hit end
+  end
+  return unpackValues(hit,1,hit.n)
+end
+function CP:ItemAvailabilityUncached(itemID)
   local bags=self:RawItemCount(itemID,false)
   -- Twinks on the same realm and faction can mail their stock; counted unless switched off.
   local alts=self.AltReachable and self:AltReachable(itemID) or 0
@@ -758,7 +776,12 @@ function CP:Refresh(capture)
     if self.SnapshotCharacterBags then self:SnapshotCharacterBags() end
     if self.CheckLearnTour then self:CheckLearnTour() end
   end
-  if self.Render then self:Render() end
+  -- 1.4.4: a closed window is not redrawn (it made a lot of garbage on every spell or skill change); it is
+  -- redrawn when it opens again (UI.lua, OnShow).
+  if self.Render then
+    if self.frame and type(self.frame.IsShown)=="function" and not self.frame:IsShown() then self.renderStale=true
+    else self:Render() end
+  end
   if self.UpdateCompanion then self:UpdateCompanion() end
   self:RefreshCostWindow()
   if self.RefreshPersonalShopping then self:RefreshPersonalShopping() end
@@ -815,6 +838,8 @@ local function command(input)
     CP.db.ui.itemPage="search"
     if id then CP:OpenItemInDB(id) else CP.db.ui.itemQuery=rest;CP.db.ui.itemSelected=nil;CP:OpenTab("items") end
     CP:Say(L("Discord: ")..CP.discordURL)
+  elseif text=="speicher" or text=="memory" then
+    CP:StartMemoryWatch(60)
   elseif text=="hilfe" or text=="help" then
     if CP.OpenTab then CP:OpenTab("help") end
   elseif text=="resetpos" then
@@ -859,6 +884,8 @@ local function schedule(capture)
 end
 CP.SlashCommand=command
 events:SetScript("OnEvent",function(_,event,...)
+  local watch=CP.memoryWatch
+  if watch then watch.events[event]=(watch.events[event] or 0)+1 end
   if event=="PLAYER_LOGIN" then
     CP:Initialize()
     -- /cpp and /craftpilotpro: another addon also calls itself CraftPilot and takes /cpp and /craftpilot.
