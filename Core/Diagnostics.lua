@@ -160,3 +160,51 @@ function CP:InitializeDiagnostics()
     EventRegistry:RegisterCallback("BugGrabber.BugGrabbed",function() CP:ImportBugGrabberDiagnostics() end,self)
   end
 end
+
+-- 1.4.4: "/cpp speicher" – which CraftPilot functions create the most garbage. For 60 seconds the main functions
+-- are wrapped and the memory they allocate is summed (only CraftPilot's own work; nothing is changed or sent).
+local MEMORY_WATCH={"Render","Refresh","UpdateItemMarks","ReservedItems","PlanningTick","AddTooltipLines","TooltipLines",
+  "UpdateCompanion","RefreshCostWindow","RefreshPersonalShopping","CheapestPath","PlanRequirements","Recommendation",
+  "InvalidateReservations","ItemAvailability","PriceDetails","CheckPriceScans","RecordMerchantRecipes","SnapshotCharacterBags",
+  "SnapshotBankMaterials","CaptureProfession","RenderRecommendation","KeepList","ShowMap","SetWaypoint"}
+local function pack(...) return {n=select("#",...),...} end
+local unpack=unpack or table.unpack
+function CP:StartMemoryWatch(seconds)
+  if self.memoryWatch then return self:Say(L("Speichermessung läuft bereits.")) end
+  seconds=seconds or 60
+  local stats,originals,depth={},{},0
+  for _,name in ipairs(MEMORY_WATCH) do
+    local fn=self[name]
+    if type(fn)=="function" then
+      originals[name]=fn
+      local entry={name=name,calls=0,kb=0}
+      stats[#stats+1]=entry
+      self[name]=function(...)
+        depth=depth+1
+        local before=collectgarbage("count")
+        local r=pack(fn(...))
+        local used=collectgarbage("count")-before
+        depth=depth-1
+        entry.calls=entry.calls+1
+        if used>0 then entry.kb=entry.kb+used end
+        return unpack(r,1,r.n)
+      end
+    end
+  end
+  local start=collectgarbage("count")
+  self.memoryWatch={stats=stats,originals=originals}
+  self:Say(string.format(L("Speichermessung läuft %d Sekunden – spiel ganz normal weiter."),seconds))
+  local function finish()
+    for name,fn in pairs(originals) do self[name]=fn end
+    self.memoryWatch=nil
+    table.sort(stats,function(a,b) return a.kb>b.kb end)
+    self:Say(string.format(L("Speichermessung: CraftPilot insgesamt %+.1f MB in %d Sekunden. Größte Verursacher (inkl. Unteraufrufe):"),
+      (collectgarbage("count")-start)/1024,seconds))
+    for i=1,math.min(8,#stats) do
+      local s=stats[i]
+      if s.calls>0 then self:Say(string.format("  %s: %.1f MB, %d Aufrufe",s.name,s.kb/1024,s.calls)) end
+    end
+  end
+  if C_Timer and type(C_Timer.After)=="function" then C_Timer.After(seconds,finish) else finish() end
+  return true
+end

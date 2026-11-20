@@ -815,6 +815,8 @@ local function command(input)
     CP.db.ui.itemPage="search"
     if id then CP:OpenItemInDB(id) else CP.db.ui.itemQuery=rest;CP.db.ui.itemSelected=nil;CP:OpenTab("items") end
     CP:Say(L("Discord: ")..CP.discordURL)
+  elseif text=="speicher" or text=="memory" then
+    CP:StartMemoryWatch(60)
   elseif text=="hilfe" or text=="help" then
     if CP.OpenTab then CP:OpenTab("help") end
   elseif text=="resetpos" then
