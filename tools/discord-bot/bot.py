@@ -214,9 +214,12 @@ class GitHub:
                 raise RuntimeError(f"GitHub {r.status}: {await r.text()}")
             return await r.json()
 
-    async def get_issue(self, repo: str, number: int) -> dict:
+    async def get_issue(self, repo: str, number: int) -> dict | None:
+        """The issue, or None if it was deleted (410) or no longer exists (404)."""
         s = await self._session()
         async with s.get(f"{GITHUB_API}/repos/{repo}/issues/{number}") as r:
+            if r.status in (404, 410):
+                return None
             if r.status != 200:
                 raise RuntimeError(f"GitHub {r.status}: {await r.text()}")
             return await r.json()
@@ -324,7 +327,11 @@ class BugBridge(discord.Client):
             for thread_id, entry in self.state.open_entries():
                 try:
                     issue = await self.github.get_issue(entry.get("repo") or self.cfg.fallback_repo, entry["issue"])
-                    if issue.get("state") == "closed":
+                    if issue is None:
+                        # Deleted on GitHub: stop asking every few minutes.
+                        log.warning("Issue #%s gibt es nicht mehr – Thread %s wird nicht mehr verfolgt", entry["issue"], thread_id)
+                        self.state.mark_closed(thread_id)
+                    elif issue.get("state") == "closed":
                         await self._report_closed(thread_id, issue)
                 except Exception:
                     log.exception("Abfrage von Issue #%s fehlgeschlagen", entry.get("issue"))
