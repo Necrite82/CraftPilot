@@ -46,7 +46,8 @@ end
 -- Items a plan makes and needs again later: {item, keep, need, have, made, uses={{name,at}}, maker}.
 function CP:KeepList(key)
   local cache=self.keepCache
-  if cache and cache.key==key and clock()-cache.at<2 then return cache.list end
+  -- 1.4.3: like the reservations, valid until plans or bags change (InvalidateReservations clears it), max a minute.
+  if cache and cache.key==key and clock()-cache.at<60 then return cache.list end
   local crafts=planCrafts(self,key)
   local byItem,list={},{}
   for i,c in ipairs(crafts) do
@@ -456,12 +457,20 @@ end
 function CP:TooltipLines(item)
   if not self.db or self.db.ui.tooltips==false or type(item)~="number" then return nil end
   local cache=self.tooltipCache
-  if not cache or clock()-cache.at>3 then cache={at=clock(),lines={}};self.tooltipCache=cache end
+  -- 1.4.3: kept until bags, prices or plans change (they clear it), at most a minute; 3 seconds made hovering over
+  -- bag items rebuild every line again and again.
+  if not cache or clock()-cache.at>60 then cache={at=clock(),lines={}};self.tooltipCache=cache end
   if cache.lines[item]~=nil then return cache.lines[item] or nil end
   local lines={}
   local key=self.db.view
-  local need=0
-  for owner in pairs(self.db.plans) do need=need+((self:PlanRequirements(owner))[item] or 0) end
+  -- 1.4.3: what all plans need is the same for every item: summed once per cache, not again for each tooltip.
+  if not cache.need then
+    cache.need={}
+    for owner in pairs(self.db.plans) do
+      for id,n in pairs((self:PlanRequirements(owner))) do cache.need[id]=(cache.need[id] or 0)+n end
+    end
+  end
+  local need=cache.need[item] or 0
   local keep=self:KeepEntry(key,item)
   if keep and not keep.enough then lines[#lines+1]={"|cffffd200"..L("Nicht verkaufen")..":|r "..string.format(L("%d für deinen Plan (ab Skill %d)"),keep.need,keep.uses[1] and keep.uses[1].at or 0),1,1,1} end
   if need>0 then

@@ -914,9 +914,11 @@ for _,control in ipairs(createdFrames) do if type(rawget(control,"vendorTarget")
 assert(targetButton)
 local tomTarget,savedTomTom
 savedTomTom=TomTom
-TomTom={AddWaypoint=function(_,map,x,y) tomTarget={map,x,y};return "uid" end}
+local arrowTarget
+TomTom={AddWaypoint=function(_,map,x,y) tomTarget={map,x,y};return "uid" end,SetCrazyArrow=function(_,uid) arrowTarget=uid end}
 targetButton:GetScript("OnClick")(targetButton)
 assert(tomTarget[1]==1453 and tomTarget[2]==.5 and tomTarget[3]==.75)
+assert(arrowTarget=="uid","TomTom arrow points at the new waypoint, not the closest one")
 TomTom=savedTomTom
 -- Protected recipe opening stays in the direct user-click path.
 local originalOpenRecipe=C_TradeSkillUI.OpenRecipe

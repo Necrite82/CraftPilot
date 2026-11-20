@@ -34,6 +34,17 @@ local stops={{kind="vendor",name="V",location={name="V",zone="Z",map=1453,x=.4,y
 local sp=CP:StopMapPoints(stops)
 assert(#sp==1 and sp[1].label=="1" and sp[1].sub:find("R1",1,true))
 assert(type(CP:CollectionMapPoints("cooking"))=="table" and type(CP:VendorMapPoints("cooking"))=="table")
+-- 1.4.4: a merchant recipe card opens the map with all its vendors
+local browse=CP:VendorRecipeBrowseOptions("cooking","","skill")
+local many
+for _,e in ipairs(browse) do if #e.vendors>1 then many=e;break end end
+assert(many,"a cooking recipe sold by several vendors")
+local shownTitle,shownPoints
+local realShow=CP.ShowMap;CP.ShowMap=function(_,title,points) shownTitle,shownPoints=title,points;return true end
+CP:ActivateRecipeRow("cooking",many)
+assert(shownTitle and shownTitle:find(many.name,1,true) and #shownPoints>=1,"click on a merchant card shows its vendors on the map")
+assert(CP.db.ui.selectedVendorRecipe==many.id)
+CP.ShowMap=realShow;CP.db.ui.selectedVendorRecipe=nil;CP.db.ui.selectedVendorKey=nil
 CP.db.professions.cooking=saved
 UnitFactionGroup=savedFaction
 print("PASS: 1.4.0 map: trainers, rank books and quests, vendors, tour stops; secondary professions Expert/Artisan")

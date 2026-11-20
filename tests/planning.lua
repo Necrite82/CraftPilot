@@ -72,8 +72,10 @@ local tick,renders
 renders=0;C_Timer.NewTicker=function(_,callback) tick=callback;return {} end
 CP.frame={IsShown=function() return true end};CP.Render=function() renders=renders+1 end;CP.RefreshCostWindow=function() end
 CP.planningTicker=nil;CP:InitializePlanning();assert(type(tick)=="function")
-tick();local priorRenders=renders;tick();assert(renders==priorRenders,"Unchanged polling must preserve active UI edits")
-price=333;tick();assert(renders==priorRenders+1)
+CP.planningDirty=true;tick();local priorRenders=renders;CP.planningDirty=true;tick();assert(renders==priorRenders,"Unchanged polling must preserve active UI edits")
+-- 1.4.3: without an event (bags, auction house …) the check does not recompute at all
+price=333;tick();assert(renders==priorRenders,"no recompute without a change event")
+CP.planningDirty=true;tick();assert(renders==priorRenders+1)
 C_Timer.NewTicker,CP.frame,CP.Render,CP.RefreshCostWindow=oldTicker,oldFrame,oldRender,oldRefresh
 CP.planningTicker=oldPlanningTicker;CP.planningSignature=nil
 AddLuaErrorHandler,CP.diagnosticsReady=oldHandler,oldReady;CP.nativeDiagnostics=nil

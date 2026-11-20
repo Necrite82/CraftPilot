@@ -4,7 +4,8 @@ local L=CP.L
 local function add(t,id,n)
   if type(id)=="number" and type(n)=="number" and n>0 then t[id]=(t[id] or 0)+n end
 end
-function CP:InvalidateReservations() self.reservationCache=nil end
+-- 1.4.3: the bag marks and item tooltips build on the reservations, so they are rebuilt with them – not on a timer.
+function CP:InvalidateReservations() self.reservationCache=nil;self.reservedCache=nil;self.tooltipCache=nil;self.keepCache=nil end
 function CP:PlanRequirements(owner)
   local required,recipes={},{}
   local unknown=0
@@ -257,17 +258,32 @@ function CP:RecordPlannedCraft(unit,guid,spell)
 end
 function CP:InitializePlanning()
   if self.planningTicker or not C_Timer or type(C_Timer.NewTicker)~="function" then return end
-  self.planningTicker=C_Timer.NewTicker(5,function()
-    if not self.db or not ((self.frame and self.frame:IsShown()) or (self.costWindow and self.costWindow:IsShown())) then return end
-    self:InvalidateReservations()
-    local current={}
-    for _,owner in ipairs(self:ReservationOrder()) do
-      local required=self:PlanRequirements(owner)
-      if next(required) then current[#current+1]=owner..self:PlanFingerprint(owner) end
-    end
-    local signature=table.concat(current,"|")
-    if self.planningSignature~=signature then
-      self.planningSignature=signature;self:Render();self:RefreshCostWindow()
-    end
-  end)
+  self.planningTicker=C_Timer.NewTicker(5,function() self:PlanningTick() end)
+end
+-- 1.4.3: the check runs after something changed (bags, bank, mail, auction house, profession) or once a minute,
+-- not every 5 seconds: rebuilding all reservations each time made a lot of garbage while the window was open.
+function CP:PlanningTick()
+  if not self.db or not ((self.frame and self.frame:IsShown()) or (self.costWindow and self.costWindow:IsShown())) then return end
+  local now=type(GetTime)=="function" and GetTime() or 0
+  if not self.planningDirty and self.planningCheckedAt and now-self.planningCheckedAt<60 then return end
+  self.planningDirty=false;self.planningCheckedAt=now
+  self:InvalidateReservations()
+  local current={}
+  for _,owner in ipairs(self:ReservationOrder()) do
+    local required=self:PlanRequirements(owner)
+    if next(required) then current[#current+1]=owner..self:PlanFingerprint(owner) end
+  end
+  local signature=table.concat(current,"|")
+  if self.planningSignature~=signature then
+    self.planningSignature=signature;self:Render();self:RefreshCostWindow()
+  end
+end
+
+if type(CreateFrame)=="function" then
+  local watch=CreateFrame("Frame")
+  for _,event in ipairs({"BAG_UPDATE_DELAYED","PLAYERBANKSLOTS_CHANGED","BANKFRAME_OPENED","MAIL_INBOX_UPDATE",
+    "AUCTION_HOUSE_CLOSED","TRADE_SKILL_LIST_UPDATE","SKILL_LINES_CHANGED","NEW_RECIPE_LEARNED"}) do
+    pcall(watch.RegisterEvent,watch,event)
+  end
+  watch:SetScript("OnEvent",function() CP.planningDirty=true end)
 end

@@ -471,8 +471,13 @@ function CP:SetWaypoint(npc)
   local t=_G.TomTom
   if t and type(t.AddWaypoint)=="function" then
     local ok,uid=pcall(t.AddWaypoint,t,npc.map,npc.x,npc.y,
-      {title=title,crazy=true,persistent=false})
+      {title=title,crazy=true,persistent=false,minimap=true,world=true})
     if ok and uid~=false and uid~=nil then
+      -- 1.4.3: TomTom's arrow follows the closest waypoint; point it at this one, even when others are set.
+      if type(t.SetCrazyArrow)=="function" then
+        local arrival=type(t.profile)=="table" and type(t.profile.arrow)=="table" and t.profile.arrow.arrival or 15
+        pcall(t.SetCrazyArrow,t,uid,arrival,title)
+      end
       self:Say(L("Wegpunkt: ")..title)
       if npc.indoor then self:Say(L("Achtung: Zielmarkierung ist nur der Instanzeingang.")) end
       return true
@@ -486,6 +491,11 @@ function CP:SetWaypoint(npc)
       if ok then
         if C_SuperTrack then safe(C_SuperTrack.SetSuperTrackedUserWaypoint,true) end
         self:Say(L("Kartenmarkierung: ")..title)
+        -- 1.4.3: without TomTom the classic client shows the mark on the map only, no arrow on screen.
+        if not self.tomtomHintShown then
+          self.tomtomHintShown=true
+          self:Say(L("Für einen Richtungspfeil auf dem Bildschirm TomTom installieren – ohne TomTom zeigt WoW Forever die Markierung nur auf der Weltkarte."))
+        end
         if npc.indoor then self:Say(L("Achtung: Zielmarkierung ist nur der Instanzeingang.")) end
         return true
       end
