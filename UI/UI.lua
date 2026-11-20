@@ -655,8 +655,11 @@ U.merchant.search:SetScript("OnEnterPressed",function(box) box:ClearFocus() end)
 U.merchant.clear=button(frame,70,26,0,0,L("Leeren"),function() CP.db.ui.vendorQuery="";CP:Render() end)
 U.merchant.bySkill=button(frame,100,26,0,0,L("Nach Skill"),function() CP.db.ui.vendorSort="skill";CP:Render() end)
 U.merchant.byName=button(frame,100,26,0,0,L("Nach Name"),function() CP.db.ui.vendorSort="name";CP:Render() end)
-U.merchant.controls={U.merchant.searchLabel,U.merchant.search,U.merchant.clear,U.merchant.bySkill,U.merchant.byName}
-U.trainer.controls={U.trainer.info,U.trainer.recommend,U.trainer.nearest,U.trainer.pages[1],U.trainer.pages[2],U.trainer.pages[3],U.trainer.pages[4]}
+U.merchant.map=button(frame,90,26,0,0,L("Karte"),function() CP:ShowTrainerMap(CP.db.view) end)
+U.merchant.controls={U.merchant.searchLabel,U.merchant.search,U.merchant.clear,U.merchant.bySkill,U.merchant.byName,U.merchant.map}
+-- 1.4.0: trainers, rank books and recipe vendors on the map.
+U.trainer.map=button(frame,90,26,0,0,L("Karte"),function() CP:ShowTrainerMap(CP.db.view) end)
+U.trainer.controls={U.trainer.map,U.trainer.info,U.trainer.recommend,U.trainer.nearest,U.trainer.pages[1],U.trainer.pages[2],U.trainer.pages[3],U.trainer.pages[4]}
 
 -- Camping controls --------------------------------------------------------------------------------------------
 U.camp={}
@@ -809,9 +812,12 @@ local function setTrainerRows(choices,recommended,nearest,selected,offers,key)
     b.nameLabel:SetWidth(w-170);b.nameLabel:SetText(npc.name..flags)
     local metric=entry.distance and string.format(L(" · Kartenabstand %.1f"),entry.distance)
       or (entry.inZone and L(" · gleiche Zone") or "")
-    b.infoLabel:SetWidth(w-170);b.infoLabel:SetText(npc.zone..string.format(" · %.1f / %.1f",npc.x*100,npc.y*100)..metric)
+    -- 1.4.0: rank books and quests of the secondary professions say how they teach.
+    local how=npc.how=="book" and string.format(L("Buch „%s“ kaufen"),CP:ItemName(npc.book))
+      or npc.how=="quest" and string.format(L("Quest „%s“"),CP:RankQuestName(npc)) or nil
+    b.infoLabel:SetWidth(w-170);b.infoLabel:SetText((how and (GOLD..how..RESET.." · ") or "")..npc.zone..string.format(" · %.1f / %.1f",npc.x*100,npc.y*100)..metric)
     b.capLabel:ClearAllPoints();b.capLabel:SetPoint("RIGHT",b,"RIGHT",-12,0)
-    b.capLabel:SetText(entry.canTeach and (L("lehrt bis ")..npc.cap) or (MUTED..L("nur bis ")..npc.cap..RESET))
+    b.capLabel:SetText(entry.canTeach and ((npc.how=="book" and L("Buch bis ") or npc.how=="quest" and L("Quest bis ") or L("lehrt bis "))..npc.cap) or (MUTED..L("nur bis ")..npc.cap..RESET))
     b:Show()
     offset=offset+44
   end
@@ -2093,7 +2099,7 @@ local function renderTrainers(self,key,prof,inner)
   end
   if merchants then
     y=y+36
-    place(U.merchant.searchLabel,18,y+7);place(U.merchant.search,70,y+1,220);place(U.merchant.clear,300,y,70)
+    place(U.merchant.searchLabel,18,y+7);place(U.merchant.search,70,y+1,220);place(U.merchant.clear,300,y,70);place(U.merchant.map,378,y,90)
     place(U.merchant.bySkill,18+inner-208,y,100);place(U.merchant.byName,18+inner-100,y,100)
     for _,c in ipairs(U.merchant.controls) do c:Show() end
     if not U.merchant.search:HasFocus() then U.merchant.search.craftSync=true;U.merchant.search:SetText(ui.vendorQuery or "");U.merchant.search.craftSync=nil end
@@ -2111,7 +2117,8 @@ local function renderTrainers(self,key,prof,inner)
   y=y+36
   place(U.trainer.nearest,18+inner-150,y,150);U.trainer.nearest:Show();U.trainer.nearest:SetEnabled(nearest~=nil)
   place(U.trainer.recommend,18+inner-150-8-190,y,190);U.trainer.recommend:Show();setPrimaryEnabled(U.trainer.recommend,recommended~=nil)
-  place(U.trainer.info,18,y+6,inner-360);U.trainer.info:Show()
+  place(U.trainer.map,18+inner-150-8-190-8-90,y,90);U.trainer.map:Show()
+  place(U.trainer.info,18,y+6,inner-460);U.trainer.info:Show()
   local gate=self.RankGate and self:RankGate(key)
   U.trainer.info:SetText(gate and gate.text or (U.rankText or ""))
   y=y+34
