@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs or updates the CraftPilot Discord bot on Debian/Ubuntu (e.g. a Proxmox LXC).
+# Installs or updates the Discord bug bot (CraftPilot, GearPilot) on Debian/Ubuntu (e.g. a Proxmox LXC).
 # Run as root from this folder:  bash install.sh
 set -euo pipefail
 
