@@ -23,7 +23,9 @@ local COLORS={keep={.98,.76,.22},plan={.40,.68,1}}
 -- Reserved items: kept for a later step (gold) or needed by a plan now (blue).
 function CP:ReservedItems()
   local cache=self.reservedCache
-  if cache and clock()-cache.at<2 then return cache.items end
+  -- 1.4.3: valid until bags or plans change (InvalidateReservations, BAG_UPDATE_DELAYED), at most a minute; it was
+  -- rebuilt every 2 seconds for the bag marks, around the clock.
+  if cache and clock()-cache.at<60 then return cache.items end
   local items={}
   for owner in pairs(self.db and self.db.plans or {}) do
     for id,n in pairs((self:PlanRequirements(owner))) do
@@ -263,7 +265,7 @@ frame:SetScript("OnEvent",function(_,event,a,b)
   elseif event=="MERCHANT_CLOSED" then
     CP.merchantCounts=nil
   elseif event=="BAG_UPDATE_DELAYED" then
-    CP.reservedCache=nil
+    CP.reservedCache=nil;CP.tooltipCache=nil
     if CP.merchantCounts then CP:CheckSoldReserved() end
     soon(false)
   elseif event=="ITEM_LOCK_CHANGED" then

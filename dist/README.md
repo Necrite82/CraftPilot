@@ -1,6 +1,6 @@
 # CraftPilot – Installationspaket / Install package
 
-[CraftPilot 1.4.2 herunterladen / Download](CraftPilot-1.4.2.zip)
+[CraftPilot 1.4.3 herunterladen / Download](CraftPilot-1.4.3.zip)
 
 Den Ordner `CraftPilotPro/` aus dem Zip nach `World of Warcraft\_forever_\Interface\AddOns` entpacken. Empfohlen: zusätzlich **QuestieDB** (Forever-Fassung) für alle Lehrer, Sammelgebiete und Boss-Quellen. Einfacher geht es über die CurseForge-App. Ein alter Ordner `CraftPilot` von CraftPilot bis 0.2.3 kann gelöscht werden.
 
