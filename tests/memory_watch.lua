@@ -13,7 +13,7 @@ assert(type(x)=="table","results pass through")
 finish()
 assert(CP.Render==realRender and not CP.memoryWatch,"restored after the measurement")
 local report=table.concat(said,"\n")
-assert(report:find("Render",1,true) and report:find("2 Aufrufe",1,true),report)
+assert(report:find("Render",1,true) and report:find("2 Aufrufe",1,true) and report:find("Speichermessung",1,true),report)
 C_Timer.After=oldAfter;CP.Say=oldSay
 print("PASS: 1.4.4 /cpp speicher measures and restores the functions")
 -- 1.4.4: a closed window is not redrawn on Refresh; it is marked and redrawn when shown.

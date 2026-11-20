@@ -204,7 +204,16 @@ function CP:StartMemoryWatch(seconds)
       end
     end
   end
-  local start=collectgarbage("count")
+  -- CraftPilot's own memory as the game shows it (collectgarbage counts every addon together).
+  local function own()
+    local update=(C_AddOns and C_AddOns.UpdateAddOnMemoryUsage) or UpdateAddOnMemoryUsage
+    local get=(C_AddOns and C_AddOns.GetAddOnMemoryUsage) or GetAddOnMemoryUsage
+    if type(update)~="function" or type(get)~="function" then return nil end
+    pcall(update)
+    local ok,kb=pcall(get,"CraftPilotPro")
+    return ok and type(kb)=="number" and kb or nil
+  end
+  local start=own()
   self.memoryWatch={stats=stats,originals=originals,events={}}
   local events=self.memoryWatch.events
   self:Say(string.format(L("Speichermessung läuft %d Sekunden – spiel ganz normal weiter."),seconds))
@@ -212,8 +221,13 @@ function CP:StartMemoryWatch(seconds)
     for name,fn in pairs(originals) do self[name]=fn end
     self.memoryWatch=nil
     table.sort(stats,function(a,b) return a.kb>b.kb end)
-    self:Say(string.format(L("Speichermessung: CraftPilot insgesamt %+.1f MB in %d Sekunden. Größte Verursacher (inkl. Unteraufrufe):"),
-      (collectgarbage("count")-start)/1024,seconds))
+    local now=own()
+    if start and now then
+      self:Say(string.format(L("Speichermessung: CraftPilot von %.1f auf %.1f MB in %d Sekunden (WoW räumt zwischendurch auf). Größte Verursacher (inkl. Unteraufrufe):"),
+        start/1024,now/1024,seconds))
+    else
+      self:Say(string.format(L("Speichermessung über %d Sekunden. Größte Verursacher (inkl. Unteraufrufe):"),seconds))
+    end
     for i=1,math.min(8,#stats) do
       local s=stats[i]
       if s.calls>0 then self:Say(string.format("  %s: %.1f MB, %d Aufrufe",s.name,s.kb/1024,s.calls)) end
