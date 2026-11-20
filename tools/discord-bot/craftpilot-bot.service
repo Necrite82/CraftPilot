@@ -1,5 +1,5 @@
 [Unit]
-Description=CraftPilot Discord bug bridge
+Description=Discord bug bridge (CraftPilot, GearPilot)
 After=network-online.target
 Wants=network-online.target
 
