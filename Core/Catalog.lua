@@ -4,17 +4,30 @@
 local _, CP = ...
 local L=CP.L
 local D=CP.Data
--- professions whose full catalog drives planning; cooking and first aid use the client's own list
--- plus the derived tables below
+-- professions whose full catalog drives planning (1.4.2: cooking and first aid too, so a plan from 1 to 300 works)
 local ids={
   engineering=true, mining=true, blacksmithing=true, enchanting=true,
-  tailoring=true, leatherworking=true, alchemy=true,
+  tailoring=true, leatherworking=true, alchemy=true, cooking=true, firstaid=true,
 }
 local sourceKeys={
   engineering=true,blacksmithing=true,enchanting=true,
-  tailoring=true,leatherworking=true,alchemy=true
+  tailoring=true,leatherworking=true,alchemy=true,cooking=true,firstaid=true,
 }
 CP.CatalogData=CP.CatalogData or {}
+-- 1.4.2: recipes learned with the profession (Charred Wolf Meat, Herb Baked Egg …) were marked unavailable by
+-- catalogs built before the builder fix, because nothing teaches them. The client gives them on learning.
+-- Holiday vendors (Winter Veil) only appear during the event: their recipes are listed but not planned.
+local EVENT_VENDORS={[13420]="winterveil",[13429]="winterveil",[13432]="winterveil",[13433]="winterveil",[13435]="winterveil"}
+for _,data in pairs(CP.CatalogData) do
+  for _,recipe in pairs(type(data)=="table" and type(data.recipes)=="table" and data.recipes or {}) do
+    if recipe.unavailable then
+      for _,source in ipairs(recipe.get or {}) do if source.kind=="start" then recipe.unavailable=nil;break end end
+    end
+    for _,source in ipairs(recipe.get or {}) do
+      if source.kind=="vendor" and EVENT_VENDORS[source.npc] then source.event=source.event or EVENT_VENDORS[source.npc] end
+    end
+  end
+end
 do
   local any=CP.CatalogData.alchemy
   CP.catalogBuild=any and ("Forever "..tostring(any.build).." ("..tostring(any.built)..")") or "?"
@@ -103,6 +116,13 @@ function CP:CatalogSource(key,recipeID,skill)
     end
   end
   if knownTrainer then return "trainer",recipe end
+  -- 1.4.2: recipes sold by a vendor you can use (Mageweave Bandage, most cooking recipes). The cheapest path and the
+  -- recommendation already took them; without them the plan stopped where only vendors teach on (First Aid 210).
+  if self.RecipeVendors then
+    for _,vendor in ipairs(self:RecipeVendors(key,recipeID)) do
+      if not vendor.restricted and vendor.cost then return "vendor",recipe end
+    end
+  end
   return nil
 end
 

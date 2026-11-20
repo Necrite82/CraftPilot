@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.2
+
+- **Kochen und Erste Hilfe planen**: „Plan erstellen“ funktioniert jetzt auch für diese beiden Berufe, z. B. von 1 bis 300 in einem Rutsch – mit Einkauf, Lehrern und Rezepthändlern. Bisher fehlte ihnen der vollständige Rezeptkatalog für die Planung
+- **Händlerrezepte im Plan**: Der Plan nutzt jetzt auch Rezepte vom Händler (z. B. die Verbands-Handbücher für Erste Hilfe 180–240), wie es die Empfehlung schon tat
+- **Start-Rezepte beim Kochen** (Charred Wolf Meat, Roasted Boar Meat, Herb Baked Egg) galten fälschlich als nicht erhältlich
+- Rezepte der Winterhauch-Händler werden weiter angezeigt, aber nicht mehr eingeplant – die Händler gibt es nur während des Fests
+
 ## 1.4.1
 
 - **Karte**: Schließen (x), Weltkarte, Ganze Karte / Nur erkundet und Zoom (+/−) reagieren wieder auf Klicks – die Ziehleiste oben im Fenster lag über diesen Knöpfen
