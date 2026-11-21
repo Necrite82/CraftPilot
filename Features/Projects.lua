@@ -60,25 +60,42 @@ end
 
 local function recipeMats(self,key,id)
   local native=(self.db.recipes[key] or {})[id]
-  if native and native.mats then
-    local m={};for _,mat in ipairs(native.mats) do m[mat[1]]=(m[mat[1]] or 0)+mat[2] end
-    return m,math.max(1,native.made or 1)
-  end
   local catalog=self:RecipeVendorCatalog(key)
   local recipe=catalog and catalog.recipes[id]
-  return recipe and recipe.mats or {},math.max(1,recipe and (recipe.count or recipe.yield) or 1)
+  local yield=math.max(1,(native and native.outputMin) or (recipe and (recipe.count or recipe.yield)) or 1)
+  if native and native.mats then
+    local m={};for _,mat in ipairs(native.mats) do m[mat[1]]=(m[mat[1]] or 0)+mat[2] end
+    return m,yield
+  end
+  return recipe and recipe.mats or {},yield
 end
 -- An own learned recipe that makes this item (for intermediates), or nil.
 local function ownMaker(self,item)
   for _,p in ipairs(self.ItemProducers and self:ItemProducers(item) or {}) do
     local native=(self.db.recipes[p.key] or {})[p.id]
-    if native and native.learned then return p end
+    if native and native.learned and not native.disabled then return p end
   end
   return nil
 end
 
--- Status of each step and the materials still to plan: steps get done/progress, intermediates are listed.
-function CP:ProjectStatus(project)
+-- Projects share the stock left by higher-priority plans. Do not ask the reservation ledger here: it calls
+-- ProjectRequirements itself. The earlier owners' gross requirements give the same remaining stock.
+local function projectPool(self)
+  local pool={blocked={}}
+  for _,owner in ipairs(self:ReservationOrder()) do
+    if owner=="project" then break end
+    for id,n in pairs(self:PlanRequirements(owner)) do pool.blocked[id]=(pool.blocked[id] or 0)+n end
+  end
+  return pool
+end
+local function takeStock(self,pool,id,n)
+  if pool[id]==nil then pool[id]=math.max(0,(self:ItemAvailability(id) or 0)-(pool.blocked[id] or 0)) end
+  local used=math.min(n,pool[id]);pool[id]=pool[id]-used
+  return used
+end
+
+-- Status of each step; one stock pool is consumed in project/step order, including intermediate ingredients.
+local function projectStatus(self,project,pool)
   local out={steps={},required={},intermediates={}}
   local function need(id,n) if n>0 then out.required[id]=(out.required[id] or 0)+n end end
   for i,s in ipairs(project.steps) do
@@ -90,12 +107,13 @@ function CP:ProjectStatus(project)
       st.text=string.format(L("%s auf %d (jetzt %d)"),profName(s.key),s.target,st.current)
       if not st.done and not self.db.plans[s.key] then
         local path=self.CheapestPath and self:CheapestPath(s.key,nil,s.target)
-        for id,q in pairs(path and path.quantities or {}) do need(id,math.ceil(q)) end
+        for id,q in pairs(path and path.quantities or {}) do
+          local n=math.ceil(q);takeStock(self,pool,id,n);need(id,n)
+        end
       end
     else
-      local have=self:ItemAvailability(s.item) or 0
-      st.have=math.min(have,s.count)
-      st.done=have>=s.count
+      st.have=takeStock(self,pool,s.item,s.count)
+      st.done=st.have>=s.count
       st.text=string.format(L("%d× %s herstellen (%d/%d)"),s.count,self:ItemName(s.item),st.have,s.count)
       -- The finished items you already own stay reserved, so they are not sold.
       need(s.item,st.have)
@@ -105,7 +123,7 @@ function CP:ProjectStatus(project)
         local crafts=math.ceil(left/yield)
         for mat,n in pairs(mats) do
           local total=n*crafts
-          local stock=self:ItemAvailability(mat) or 0
+          local stock=takeStock(self,pool,mat,total)
           local maker=total>stock and ownMaker(self,mat)
           if maker then
             -- Intermediate: make the missing part yourself, plan its materials instead.
@@ -113,7 +131,9 @@ function CP:ProjectStatus(project)
             need(mat,stock)
             local subMats,subYield=recipeMats(self,maker.key,maker.id)
             local subCrafts=math.ceil(missing/subYield)
-            for sub,m in pairs(subMats) do need(sub,m*subCrafts) end
+            for sub,m in pairs(subMats) do
+              local n=m*subCrafts;takeStock(self,pool,sub,n);need(sub,n)
+            end
             out.intermediates[#out.intermediates+1]={item=mat,count=missing,key=maker.key,id=maker.id,for_=s.item}
           else
             need(mat,total)
@@ -128,11 +148,20 @@ function CP:ProjectStatus(project)
   return out
 end
 
+function CP:ProjectStatus(project)
+  local pool=projectPool(self)
+  for _,p in ipairs(self:Projects()) do
+    local status=projectStatus(self,p,pool)
+    if p==project then return status end
+  end
+  return projectStatus(self,project,projectPool(self))
+end
+
 -- Requirements for the shared reservation (Planning.lua, owner "project"): all projects together.
 function CP:ProjectRequirements()
-  local req={}
+  local req,pool={},projectPool(self)
   for _,p in ipairs(self:Projects()) do
-    for id,n in pairs(self:ProjectStatus(p).required) do req[id]=(req[id] or 0)+n end
+    for id,n in pairs(projectStatus(self,p,pool).required) do req[id]=(req[id] or 0)+n end
   end
   return req
 end

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.5
+
+- Projekt-Einkaufslisten werden mit den korrekten Gegenstands-IDs und Fehlmengen an Auctionator übergeben; der Lua-Fehler beim Export entfällt.
+- Projekte berücksichtigen die vom Spielclient erfasste Ausbeute einer Herstellung, etwa fünf Silberkontakte aus einem Silberbarren. Ohne Mengenangabe des Clients gilt die Katalogausbeute.
+- Mehrere Schritte und Projekte teilen sich einen Vorrat. Fehlende Zwischenprodukte werden aus den verbleibenden Rohstoffen geplant; dieselben Bestände schließen nicht mehrere Projekte zugleich ab.
+- Vorräte für höher priorisierte Berufs-, Camping- und Raid-Pläne bleiben auch beim Projekt-Einkauf reserviert.
+
 ## 1.4.4
 
 - **Speicher, zweiter Schritt**: Die Suche nach Taschen-Knöpfen (für die Markierungen reservierter Gegenstände) legte für jedes Fenster der Spieloberfläche neue Hilfsfunktionen an – mehrere MB Datenmüll pro Durchlauf. Jetzt entsteht dabei praktisch keiner mehr, und sie läuft alle 30 statt 15 Sekunden
