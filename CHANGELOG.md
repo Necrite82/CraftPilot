@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.0
+
+- „Jetzt skillen“ stellt den nächsten Klick und die benötigte Herstellungsmenge über die Rezeptliste. Die Liste zeigt Rezept-Icons und Skillchancen. Im gewählten Rezept stehen geschätzter Zukauf, genutzter Vorrat und Fehlmenge zusammen.
+- „Plan & Einkauf“ zeigt den Skillbereich und den Arbeitsablauf. Die Materialtabelle trennt den Bedarf nach Tasche, Bank, Twink und Zukauf. Gespeicherte Bestände und unvollständige Preise bleiben erkennbar.
+- Navigation und Farben entsprechen dem neuen CraftPilot-Entwurf. Die WoW-Tooltips sind an der Rezeptzeile und am Detail-Icon verfügbar.
+
 ## 1.4.5
 
 - „Jetzt skillen“ hebt die passende nächste Aktion hervor. Im Plan stehen Zielbereich und Reihenfolge der Schritte über Einkauf und Herstellung.

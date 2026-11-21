@@ -12,6 +12,7 @@ local SKILL_COLORS = {orange={1,.5,.25},yellow={1,.82,0},green={.25,.75,.25},gre
 -- The game font has no arrow glyphs; use client textures instead.
 local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:12:12:0:-3|t"
 local ARROW_UP = "|TInterface\\Buttons\\Arrow-Up-Up:12:12:0:3|t"
+local ARROW_RIGHT = "|TInterface\\Buttons\\UI-SpellbookIcon-NextPage-Up:12:12:0:0|t"
 local EXPAND = "|TInterface\\Buttons\\UI-PlusButton-Up:12:12:0:0|t "
 local COLLAPSE = "|TInterface\\Buttons\\UI-MinusButton-Up:12:12:0:0|t "
 local DOT = "Interface\\CharacterFrame\\TempPortraitAlphaMask"
@@ -21,8 +22,8 @@ local U = {buttons={}, rows={}, trainerRows={}, recipeRows={}, vendorRows={}, ca
 
 local flat = {bgFile="Interface\\Buttons\\WHITE8X8", edgeFile="Interface\\Buttons\\WHITE8X8", edgeSize=1}
 local PALETTE = {
-  window={.078,.090,.110}, panel={.098,.114,.137}, raised={.122,.141,.172},
-  border={.17,.196,.227}, gold={.88,.69,.31}, text={.91,.90,.87}, muted={.60,.64,.68},
+  window={.082,.094,.114}, sidebar={.071,.082,.102}, panel={.102,.122,.153}, raised={.137,.165,.200},
+  border={.188,.216,.255}, gold={.937,.816,.541}, text={.922,.910,.882}, muted={.663,.678,.714},
 }
 
 local function text(parent, font, x, y, width, value)
@@ -312,7 +313,7 @@ end)
 
 -- Tabs ------------------------------------------------------------------------------------------------------
 U.tabs={
-  {key="now", label=L("Jetzt")},
+  {key="now", label=L("Jetzt skillen")},
   {key="plan", label=L("Plan & Einkauf")},
   {key="trainers", label=L("Lehrer & Händler")},
   {key="camping", label=L("Camping")},
@@ -354,22 +355,26 @@ U.sideBrand=CreateFrame("Frame",nil,side);U.sideBrand:SetSize(30,30);U.sideBrand
 local sideLogo=U.sideBrand:CreateTexture(nil,"ARTWORK");sideLogo:SetAllPoints(U.sideBrand)
 sideLogo:SetTexture("Interface\\AddOns\\CraftPilotPro\\Media\\CraftPilot")
 U.sideTitle=text(side,"GameFontNormalLarge",52,-14,SIDE-60,"CraftPilot")
+U.sideTitle:SetTextColor(PALETTE.gold[1],PALETTE.gold[2],PALETTE.gold[3])
 U.sideSub=text(side,"GameFontDisableSmall",52,-33,SIDE-60,L("Berufsbegleiter"))
 local function navButton(key,caption,callback)
   local b=CreateFrame("Button",nil,side)
   b:SetSize(SIDE-16,34)
   b.bg=b:CreateTexture(nil,"BACKGROUND");b.bg:SetAllPoints(b);b.bg:SetColorTexture(1,1,1,0)
   b.hl=b:CreateTexture(nil,"HIGHLIGHT");b.hl:SetAllPoints(b);b.hl:SetColorTexture(1,1,1,.05)
-  b.iconBox=b:CreateTexture(nil,"BORDER");b.iconBox:SetSize(26,26);b.iconBox:SetPoint("LEFT",b,"LEFT",6,0);b.iconBox:SetColorTexture(.91,.68,.31,1)
-  b.icon=b:CreateTexture(nil,"ARTWORK");b.icon:SetSize(20,20);b.icon:SetPoint("CENTER",b.iconBox,"CENTER",0,0)
+  b.selectionMarker=b:CreateTexture(nil,"BORDER")
+  b.selectionMarker:SetWidth(2)
+  b.selectionMarker:SetPoint("TOPLEFT",b,"TOPLEFT",0,-3)
+  b.selectionMarker:SetPoint("BOTTOMLEFT",b,"BOTTOMLEFT",0,3)
+  b.selectionMarker:SetColorTexture(.902,.741,.412,1)
+  b.icon=b:CreateTexture(nil,"ARTWORK");b.icon:SetSize(20,20);b.icon:SetPoint("LEFT",b,"LEFT",9,0)
   b.icon:SetTexture(U.tabIcons[key]);if type(b.icon.SetTexCoord)=="function" then b.icon:SetTexCoord(.08,.92,.08,.92) end
   local label=b:CreateFontString(nil,"OVERLAY","GameFontNormal")
-  label:SetPoint("LEFT",b,"LEFT",40,0);label:SetPoint("RIGHT",b,"RIGHT",-30,0);label:SetJustifyH("LEFT")
+  label:SetPoint("LEFT",b,"LEFT",36,0);label:SetPoint("RIGHT",b,"RIGHT",key=="endgame" and -25 or -5,0);label:SetJustifyH("LEFT")
   if type(b.SetFontString)=="function" then b:SetFontString(label) end
   b.label=label;b:SetText(caption)
   b.badge=b:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall");b.badge:SetPoint("RIGHT",b,"RIGHT",-8,0)
   b.badge:SetTextColor(.94,.82,.54)
-  b.selectionMarker=b.iconBox
   b:SetScript("OnClick",callback)
   return b
 end
@@ -402,8 +407,15 @@ U.tabLine:SetHeight(1)
 U.tabLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
 -- On the header itself: text on the main frame would sit beneath the header's own background.
 U.pageTitle=text(header,"GameFontNormalLarge",19,-60,W-200,"")
+U.pageTitle:SetTextColor(PALETTE.gold[1],PALETTE.gold[2],PALETTE.gold[3])
 U.pageSub=text(header,"GameFontHighlightSmall",19,-80,W-200,"")
-if type(U.pageSub.SetTextColor)=="function" then U.pageSub:SetTextColor(.72,.70,.66) end
+U.pageSub:SetTextColor(PALETTE.muted[1],PALETTE.muted[2],PALETTE.muted[3])
+U.rangeChip=panel(header,"raised")
+U.rangeChip:SetSize(140,22)
+U.rangeChip:SetPoint("TOPRIGHT",header,"TOPRIGHT",-46,-12)
+U.rangeChip.label=text(U.rangeChip,"GameFontHighlightSmall",8,-5,124,"")
+U.rangeChip.label:SetJustifyH("CENTER")
+U.rangeChip:Hide()
 -- 0.2.3: how many items are reserved for plans, keep-for-later and the raid stock; a click opens the list.
 U.reservedChip=CreateFrame("Button",nil,header,"BackdropTemplate")
 CP:Round(U.reservedChip,true);U.reservedChip:SetSize(150,22)
@@ -500,11 +512,12 @@ U.listScroll:SetScrollChild(U.listContent)
 U.rec=panel(frame,"raised")
 U.rec.stripe=U.rec:CreateTexture(nil,"OVERLAY");U.rec.stripe:SetWidth(3)
 U.rec.stripe:SetPoint("TOPLEFT",U.rec,"TOPLEFT",0,0);U.rec.stripe:SetPoint("BOTTOMLEFT",U.rec,"BOTTOMLEFT",0,0)
-U.rec.stripe:SetColorTexture(.88,.69,.31,1)
-U.rec.icon=U.rec:CreateTexture(nil,"ARTWORK");U.rec.icon:SetSize(32,32);U.rec.icon:SetPoint("LEFT",U.rec,"LEFT",12,0)
-U.rec.title=text(U.rec,"GameFontNormal",54,-9,400,"");U.rec.title:SetWordWrap(true)
-U.rec.detail=text(U.rec,"GameFontHighlightSmall",54,-28,400,"");U.rec.detail:SetWordWrap(true)
-U.rec.search=primaryButton(U.rec,172,28,L("Rezept öffnen"),function() end)
+U.rec.stripe:SetColorTexture(.902,.741,.412,1)
+U.rec.icon=U.rec:CreateTexture(nil,"ARTWORK");U.rec.icon:SetSize(30,30);U.rec.icon:SetPoint("TOPLEFT",U.rec,"TOPLEFT",12,-21)
+U.rec.kicker=text(U.rec,"GameFontDisableSmall",54,-9,400,L("Nächster Schritt"))
+U.rec.title=text(U.rec,"GameFontHighlight",54,-26,400,"");U.rec.title:SetWordWrap(true)
+U.rec.detail=text(U.rec,"GameFontHighlightSmall",54,-44,400,"");U.rec.detail:SetWordWrap(true)
+U.rec.search=primaryButton(U.rec,184,30,L("Rezept öffnen"),function() end)
 U.rec.auction=button(U.rec,92,24,0,0,L("AH-Suche"),function() CP:SearchRecommendation() end)
 U.rec.pick=button(U.rec,110,28,0,0,L("Auswählen"),function()
   local r=CP.currentRecommendation;if not r then return end
@@ -613,7 +626,8 @@ U.plan.total=text(frame,"GameFontNormalLarge",0,0,220,"")
 U.plan.footerLine=frame:CreateTexture(nil,"ARTWORK")
 U.plan.footerLine:SetHeight(1)
 U.plan.footerLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
-U.plan.workflow=text(frame,"GameFontHighlightSmall",0,0,400,"")
+U.plan.flowPanel=panel(frame,"panel")
+U.plan.workflow=text(U.plan.flowPanel,"GameFontNormalSmall",10,-8,400,"")
 U.plan.workflow:SetWordWrap(true)
 U.plan.pages={}
 for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")},{key="projects",label=L("Projekte")}}) do
@@ -622,7 +636,7 @@ for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=
 end
 U.plan.controls={U.plan.rangeLabel,U.plan.rangeStart,U.plan.targetLabel,U.plan.rangeEnd,U.plan.quantityLabel,U.plan.rangeQty,
   U.plan.build,U.plan.add,U.plan.draft,U.plan.print,U.plan.clear,U.plan.export,U.plan.manual,U.plan.totalLabel,U.plan.total,
-  U.plan.footerLine,U.plan.workflow,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4],U.plan.pages[5]}
+  U.plan.footerLine,U.plan.flowPanel,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4],U.plan.pages[5]}
 local syncedPlan
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -1167,20 +1181,23 @@ local function setVisualCards(entries)
 end
 
 -- Recipe list rows ----------------------------------------------------------------------------------------------
+local RECIPE_ROW_HEIGHT=44
+local RECIPE_ROW_STEP=46
 local function listRow(i)
   local r=U.listRows[i]
   if r then return r end
   r=CreateFrame("Button",nil,U.listContent,"BackdropTemplate")
   CP:Round(r,true)
-  r:SetHeight(38)
+  r:SetHeight(RECIPE_ROW_HEIGHT)
   r.stripe=r:CreateTexture(nil,"OVERLAY");r.stripe:SetWidth(2)
-  r.stripe:SetPoint("TOPLEFT",r,"TOPLEFT",0,0);r.stripe:SetPoint("BOTTOMLEFT",r,"BOTTOMLEFT",0,0)
-  r.stripe:SetColorTexture(.91,.68,.31,1)
-  r.dot=r:CreateTexture(nil,"OVERLAY");r.dot:SetSize(8,8);r.dot:SetPoint("TOPLEFT",r,"TOPLEFT",10,-10)
-  r.nameLabel=text(r,"GameFontHighlight",24,-5,200,"");r.nameLabel:SetWordWrap(false)
-  r.subLabel=text(r,"GameFontDisableSmall",24,-21,200,"");r.subLabel:SetWordWrap(false)
-  r.chanceLabel=text(r,"GameFontHighlightSmall",0,-12,54,"");r.chanceLabel:SetJustifyH("RIGHT")
-  r.costLabel=text(r,"GameFontHighlightSmall",0,-12,80,"");r.costLabel:SetJustifyH("RIGHT")
+  r.stripe:SetPoint("TOPLEFT",r,"TOPLEFT",0,-3);r.stripe:SetPoint("BOTTOMLEFT",r,"BOTTOMLEFT",0,3)
+  r.stripe:SetColorTexture(.902,.741,.412,1)
+  r.recipeIcon=r:CreateTexture(nil,"ARTWORK");r.recipeIcon:SetSize(24,24);r.recipeIcon:SetPoint("LEFT",r,"LEFT",10,0)
+  r.dot=r:CreateTexture(nil,"OVERLAY");r.dot:SetSize(8,8);r.dot:SetPoint("BOTTOMRIGHT",r.recipeIcon,"BOTTOMRIGHT",2,-2)
+  r.nameLabel=text(r,"GameFontHighlight",43,-7,200,"");r.nameLabel:SetWordWrap(false)
+  r.subLabel=text(r,"GameFontDisableSmall",43,-25,200,"");r.subLabel:SetWordWrap(false)
+  r.chanceLabel=text(r,"GameFontHighlightSmall",0,-15,54,"");r.chanceLabel:SetJustifyH("RIGHT")
+  r.costLabel=text(r,"GameFontHighlightSmall",0,-15,80,"");r.costLabel:SetJustifyH("RIGHT")
   -- Unlearned trainer, vendor or AH recipe: one click to the way there.
   r.go=CreateFrame("Button",nil,r)
   r.go:SetSize(20,20)
@@ -1217,7 +1234,7 @@ end
 
 local function setRecipeList(key,entries,chosen)
   local offset=tonumber((U.listScroll:GetVerticalScroll())) or 0
-  local anchor=not resetContentScroll and U.listRows[math.floor(offset/40)+1]
+  local anchor=not resetContentScroll and U.listRows[math.floor(offset/RECIPE_ROW_STEP)+1]
   local previous=anchor and anchor:IsShown() and anchor.craftRecipe
   local nextOffset
   for _,r in ipairs(U.listRows) do r:Hide() end
@@ -1228,20 +1245,23 @@ local function setRecipeList(key,entries,chosen)
   for i,entry in ipairs(entries) do
     local r=listRow(i)
     if type(previous)=="table" and entry.id==previous.id and entry.vendorRecipe==previous.vendorRecipe then
-      nextOffset=(i-1)*40+offset%40
+      nextOffset=(i-1)*RECIPE_ROW_STEP+offset%RECIPE_ROW_STEP
     end
     r.craftRecipe=entry
-    r:ClearAllPoints();r:SetPoint("TOPLEFT",U.listContent,"TOPLEFT",0,-(i-1)*40);r:SetWidth(w)
+    r:ClearAllPoints();r:SetPoint("TOPLEFT",U.listContent,"TOPLEFT",0,-(i-1)*RECIPE_ROW_STEP);r:SetWidth(w)
     local on=isActive(key,entry,chosen)
     if on then active=entry end
     entry.active=on
-    r:SetBackdropColor(on and .16 or 0,on and .18 or 0,on and .22 or 0,on and 1 or 0)
+    local selected=PALETTE.raised
+    r:SetBackdropColor(on and selected[1] or 0,on and selected[2] or 0,on and selected[3] or 0,on and 1 or 0)
     r:SetBackdropBorderColor(0,0,0,0)
     r.stripe:SetShown(on)
+    r.recipeIcon:SetTexture(CP:RecipeIcon(key,entry.id));r.recipeIcon:Show()
     dot(r.dot,SKILL_COLORS[colorOf(entry)]);r.dot:Show()
     local learnable=(entry.vendorRecipe or entry.trainerRecipe) and not entry.referenceOnly
-    r.nameLabel:SetWidth(w-(learnable and 196 or 170));r.subLabel:SetWidth(w-(learnable and 196 or 170))
-    r.go:ClearAllPoints();r.go:SetPoint("TOPRIGHT",r,"TOPRIGHT",-150,-9);r.go:SetShown(learnable==true)
+    local nameWidth=w-(learnable and 219 or 196)
+    r.nameLabel:SetWidth(nameWidth);r.subLabel:SetWidth(nameWidth)
+    r.go:ClearAllPoints();r.go:SetPoint("TOPRIGHT",r,"TOPRIGHT",-150,-12);r.go:SetShown(learnable==true)
     r.nameLabel:SetText(entry.name)
     r.nameLabel:SetTextColor(entry.vendorRecipe and .78 or .93,entry.vendorRecipe and .76 or .92,entry.vendorRecipe and .72 or .88)
     local sub
@@ -1256,16 +1276,19 @@ local function setRecipeList(key,entries,chosen)
     elseif entry.fromStorage then sub=L("vorrätig · erst aus Bank/von Twinks holen")
     else sub=L("Sofort machbar") end
     r.subLabel:SetText(sub)
-    r.chanceLabel:ClearAllPoints();r.chanceLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-92,-12)
-    r.chanceLabel:SetText((entry.chance or 0)>0 and string.format("%.0f%%",entry.chance*100) or "—")
-    r.costLabel:ClearAllPoints();r.costLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-8,-12)
+    local chance=(entry.chance or 0)>0
+    r.chanceLabel:ClearAllPoints();r.chanceLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-92,-15)
+    r.chanceLabel:SetText(chance and string.format("%.0f %%",entry.chance*100) or "—")
+    r.chanceLabel:SetTextColor(chance and .553 or .663,chance and .847 or .678,chance and .667 or .714)
+    r.costLabel:ClearAllPoints();r.costLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-8,-15)
     r.costLabel:SetText(CP:ListCostText(entry))
     r:SetAlpha(entry.dimmed and .55 or 1)
     r:Show()
   end
-  U.listContent:SetHeight(math.max(40,#entries*40))
+  local height=#entries*RECIPE_ROW_STEP
+  U.listContent:SetHeight(math.max(RECIPE_ROW_STEP,height))
   if type(U.listScroll.SetVerticalScroll)=="function" then
-    local max=math.max(0,#entries*40-(tonumber((U.listScroll:GetHeight())) or 0))
+    local max=math.max(0,height-(tonumber((U.listScroll:GetHeight())) or 0))
     U.listScroll:SetVerticalScroll(resetContentScroll and 0 or math.min(nextOffset or offset,max))
   end
   return active
@@ -1287,6 +1310,7 @@ local function textHeight(node,fallback)
 end
 
 local function hideDetail()
+  U.detail.entry=nil
   for _,v in pairs(U.detail) do if type(v)=="table" and type(v.Hide)=="function" then v:Hide() end end
   for _,r in ipairs(U.detail.matRows or {}) do r:Hide() end
   for _,r in ipairs(U.detail.costRows or {}) do r:Hide() end
@@ -1318,9 +1342,20 @@ local function renderDetail(key,entry)
     return
   end
   d.entry=entry
-  local name=detailLabel("name","GameFontNormalLarge");name:SetWidth(inner)
+  if not d.iconButton then
+    d.iconButton=CreateFrame("Button",nil,U.detailContent)
+    d.iconButton:SetSize(30,30)
+    d.iconButton:SetPoint("TOPLEFT",U.detailContent,"TOPLEFT",12,-12)
+    d.iconButton:SetScript("OnEnter",function(owner)
+      if d.entry then CP:ShowCraftTooltip(owner,CP.db.view,d.entry.id) end
+    end)
+    d.iconButton:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
+  end
+  d.iconButton:SetNormalTexture(CP:RecipeIcon(key,entry.id))
+  d.iconButton:Show()
+  local name=detailLabel("name","GameFontNormalLarge");name:SetWidth(inner-40)
   name:SetText((entry.trainerRecipe and L("Lehrerrezept: ") or (entry.vendorRecipe and not entry.referenceOnly and L("Kaufrezept: ") or ""))..entry.name)
-  put(name,12);y=y+4
+  put(name,52,math.max(30,textHeight(name,18)));y=y+6
   local colorLine=detailLabel("color","GameFontHighlightSmall");colorLine:SetWidth(inner)
   local chance=(entry.chance or 0)>0 and string.format(L(" · Skillchance ca. %.0f%%"),entry.chance*100) or ""
   colorLine:SetText((entry.referenceOnly and (entry.referenceStatus or "") or CP:RecipeColorLabel(key,entry.id))..chance)
@@ -1386,6 +1421,11 @@ local function renderDetail(key,entry)
   -- Learned recipe: quantity, materials, actions, cost details.
   local qty=CP:RequestedRecipeQuantity(key,entry.id)
   local advice=CP:CraftSuggestion(key,entry.id)
+  local cost=CP:CostCalculation("recipe",key,entry.id,qty)
+  d.overview=d.overview or panel(U.detailContent,"raised")
+  local overviewHeight=CP:DrawRecipeOverview(d.overview,cost,inner,qty)
+  d.overview:SetSize(inner,overviewHeight)
+  put(d.overview,12,overviewHeight+8)
   local qtyBox=d.qtyBox or panel(U.detailContent,"raised");d.qtyBox=qtyBox
   local qtyHint=d.qtyHint or text(qtyBox,"GameFontHighlightSmall",10,-8,inner-20,"");d.qtyHint=qtyHint
   qtyHint:SetWidth(inner-20)
@@ -1427,7 +1467,20 @@ local function renderDetail(key,entry)
   for _,c in ipairs({qtyHint,qtyInput,d.qtyMinus,d.qtyPlus,d.qtyReset}) do c:Show() end
   put(qtyBox,12,hintHeight+52)
 
-  local cost=CP:CostCalculation("recipe",key,entry.id,qty)
+  local openNative=detailButton("open",160,32,L("Berufsfenster öffnen"),function()
+    local e=U.detail.entry;if e then CP:OpenLearnedRecipe(CP.db.view,e.id) end
+  end,true)
+  local addList=detailButton("addList",160,32,L("Auf Einkaufsliste"),function()
+    local e=U.detail.entry;if not e then return end
+    CP:AddCostDeficits({kind="recipe",key=CP.db.view,id=e.id,quantity=CP:RequestedRecipeQuantity(CP.db.view,e.id)})
+    CP:Render()
+  end)
+  local half=(inner-8)/2
+  openNative:SetWidth(half);addList:SetWidth(half)
+  openNative:ClearAllPoints();openNative:SetPoint("TOPLEFT",U.detailContent,"TOPLEFT",12,-y);openNative:Show()
+  addList:ClearAllPoints();addList:SetPoint("TOPLEFT",U.detailContent,"TOPLEFT",20+half,-y);addList:Show()
+  y=y+42
+
   local cols={{L("Material"),.46,"LEFT"},{L("Bedarf"),.18,"RIGHT"},{L("Vorrat"),.18,"RIGHT"},{L("Kaufen"),.18,"RIGHT"}}
   d.matHeaders=d.matHeaders or {}
   local x=12
@@ -1497,20 +1550,6 @@ local function renderDetail(key,entry)
     put(nextLine,12);y=y+8
   end
   y=y+2
-
-  local openNative=detailButton("open",160,32,L("Berufsfenster öffnen"),function()
-    local e=U.detail.entry;if e then CP:OpenLearnedRecipe(CP.db.view,e.id) end
-  end,true)
-  local addList=detailButton("addList",160,32,L("Auf Einkaufsliste"),function()
-    local e=U.detail.entry;if not e then return end
-    CP:AddCostDeficits({kind="recipe",key=CP.db.view,id=e.id,quantity=CP:RequestedRecipeQuantity(CP.db.view,e.id)})
-    CP:Render()
-  end)
-  local half=(inner-8)/2
-  openNative:SetWidth(half);addList:SetWidth(half)
-  openNative:ClearAllPoints();openNative:SetPoint("TOPLEFT",U.detailContent,"TOPLEFT",12,-y);openNative:Show()
-  addList:ClearAllPoints();addList:SetPoint("TOPLEFT",U.detailContent,"TOPLEFT",20+half,-y);addList:Show()
-  y=y+42
 
   local open=CP.db.ui.detailsOpen==true
   local toggle=detailButton("detailsToggle",inner,22,"",function() CP.db.ui.detailsOpen=not CP.db.ui.detailsOpen;CP:Render() end)
@@ -1619,9 +1658,13 @@ function CP:ApplyTheme()
   if pref=="classic" then
     PALETTE.window={.16,.115,.07};PALETTE.panel={.20,.145,.085};PALETTE.raised={.24,.175,.10};PALETTE.border={.45,.33,.19}
   else
-    PALETTE.window={.078,.090,.110};PALETTE.panel={.098,.114,.137};PALETTE.raised={.122,.141,.172};PALETTE.border={.17,.196,.227}
+    PALETTE.window={.082,.094,.114};PALETTE.panel={.102,.122,.153};PALETTE.raised={.137,.165,.200};PALETTE.border={.188,.216,.255}
   end
-  local sideColor={PALETTE.window[1]*.8,PALETTE.window[2]*.8,PALETTE.window[3]*.8}
+  local sideColor=pref=="classic" and {.128,.092,.056} or PALETTE.sidebar
+  paint(U.rangeChip,PALETTE.raised)
+  paint(U.rec,PALETTE.raised)
+  paint(U.plan.flowPanel,PALETTE.panel)
+  paint(U.detail.overview,PALETTE.raised)
   if U.sideBacking and type(U.sideBacking.SetColorTexture)=="function" then
     U.sideBacking:SetColorTexture(sideColor[1],sideColor[2],sideColor[3],1)
   end
@@ -1694,7 +1737,6 @@ local function layout()
   -- 0.2.3: brand, profession and skill in the sidebar; page title and status fields in the header.
   if U.title then U.title:Hide() end
   if brandFrame then brandFrame:Hide() end
-  header:SetHeight(92)
   U.profButton:ClearAllPoints();U.profButton:SetPoint("TOPLEFT",side,"TOPLEFT",8,-54);U.profButton:SetSize(SIDE-16,30)
   U.profMenu:ClearAllPoints();U.profMenu:SetPoint("TOPLEFT",U.profButton,"TOPRIGHT",6,0)
   if type(U.profMenu.SetFrameLevel)=="function" and type(side.GetFrameLevel)=="function" then
@@ -1703,16 +1745,12 @@ local function layout()
   U.skillBar:ClearAllPoints();U.skillBar:SetPoint("TOPLEFT",side,"TOPLEFT",12,-92);U.skillBar:SetPoint("TOPRIGHT",side,"TOPRIGHT",-12,-92)
   U.skillText:ClearAllPoints();U.skillText:SetPoint("TOPRIGHT",side,"TOPRIGHT",-12,-100);U.skillText:SetWidth(SIDE-24)
   U.skillHover:ClearAllPoints();U.skillHover:SetPoint("TOPLEFT",U.skillBar,"TOPLEFT",0,6);U.skillHover:SetPoint("BOTTOMRIGHT",U.skillText,"BOTTOMRIGHT",0,-2)
-  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-48,-30)
   U.reservedChip:ClearAllPoints();U.reservedChip:SetPoint("RIGHT",U.priceChip,"LEFT",-8,0)
-  U.pageTitle:ClearAllPoints();U.pageTitle:SetPoint("TOPLEFT",frame,"TOPLEFT",19,-26)
-  U.pageSub:ClearAllPoints();U.pageSub:SetPoint("TOPLEFT",frame,"TOPLEFT",19,-50)
-  U.pageTitle:SetWidth(inner-290);U.pageSub:SetWidth(inner-60)
+  U.pageTitle:SetWidth(inner-290)
   for i,b in ipairs(U.endgameButtons) do b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*134,-104) end
   for i,b in ipairs(U.itemButtons) do b:ClearAllPoints();b:SetPoint("TOPLEFT",frame,"TOPLEFT",18+(i-1)*134,-104) end
   U.itemSearch:ClearAllPoints();U.itemSearch:SetPoint("TOPLEFT",frame,"TOPLEFT",432,-105)
   U.itemResults:ClearAllPoints();U.itemResults:SetPoint("TOPLEFT",frame,"TOPLEFT",704,-104)
-  U.tabLine:ClearAllPoints();U.tabLine:SetPoint("TOPLEFT",frame,"TOPLEFT",1,-94);U.tabLine:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-1,-94)
   U.back:ClearAllPoints();U.back:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-18,-62)
   U.footerLine:ClearAllPoints();U.footerLine:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",1,32);U.footerLine:SetPoint("BOTTOMRIGHT",frame,"BOTTOMRIGHT",-1,32)
   U.footer:ClearAllPoints();U.footer:SetPoint("BOTTOMLEFT",frame,"BOTTOMLEFT",18,12);U.footer:SetWidth(inner-140)
@@ -1868,8 +1906,6 @@ end
 
 -- 0.2.2: sidebar navigation, page title and subtitle.
 local PAGE_SUB={
-  now=L("Empfehlung und Rezepte für deinen nächsten Skillschritt"),
-  plan=L("Skillbereich planen, Einkaufsliste und Herstellungsschritte"),
   trainers=L("Lehrer, Händlerrezepte, Lerntour und Spezialisierung"),
   camping=L("Lagerfeuer, Buffs und Camp-Objekte aller Berufe"),
   twinks=L("Bestände, Cooldowns und Hersteller deiner Charaktere"),
@@ -1886,12 +1922,29 @@ local function navState(b,on)
   if b.bg and type(b.bg.SetColorTexture)=="function" then
     if on then b.bg:SetColorTexture(PALETTE.raised[1],PALETTE.raised[2],PALETTE.raised[3],1) else b.bg:SetColorTexture(1,1,1,0) end
   end
-  b.iconBox:SetShown(on)
+  b.selectionMarker:SetShown(on)
   if b.label and type(b.label.SetTextColor)=="function" then
     if on then b.label:SetTextColor(.95,.94,.91) else b.label:SetTextColor(.72,.74,.76) end
   end
 end
-local function renderTabs(self,tab)
+local function renderTabs(self,tab,prof,inner)
+  local compact=tab=="now" or tab=="plan"
+  local headerHeight=compact and 72 or 94
+  U.pageTop=headerHeight+11
+  header:SetHeight(headerHeight-1)
+  U.tabLine:ClearAllPoints()
+  U.tabLine:SetPoint("TOPLEFT",frame,"TOPLEFT",1,-headerHeight)
+  U.tabLine:SetPoint("TOPRIGHT",frame,"TOPRIGHT",-1,-headerHeight)
+  U.pageTitle:ClearAllPoints();U.pageTitle:SetPoint("TOPLEFT",header,"TOPLEFT",18,compact and -13 or -25)
+  U.pageSub:ClearAllPoints();U.pageSub:SetPoint("TOPLEFT",header,"TOPLEFT",18,compact and -39 or -49)
+  U.pageSub:SetWidth(compact and inner-300 or inner-60)
+  U.priceChip:ClearAllPoints();U.priceChip:SetPoint("TOPRIGHT",header,"TOPRIGHT",-46,compact and -41 or -29)
+  local planRange=tab=="plan" and not (prof.gathering and not prof.crafting)
+  if planRange then
+    local plan=self:PlanFor(self.db.view)
+    U.rangeChip.label:SetText(string.format(L("Skill %d %s %d"),plan.start,ARROW_RIGHT,plan.target))
+  end
+  U.rangeChip:SetShown(planRange)
   local mainTab=MAIN[tab] and tab or nil
   local alarms=self.AuctionAlarms and #self:AuctionAlarms() or 0
   for i,b in ipairs(U.tabButtons) do
@@ -1907,13 +1960,12 @@ local function renderTabs(self,tab)
   for _,b in ipairs(U.endgameButtons) do b:Hide() end
   for _,b in ipairs(U.itemButtons) do b:Hide() end
   U.itemSearch:Hide();U.itemResults:Hide()
-  local titles={items=L("Gegenstände"),now=L("Jetzt"),plan=L("Plan & Einkauf"),trainers=L("Lehrer & Händler"),camping=L("Camping"),twinks=L("Twinks"),
+  local titles={items=L("Gegenstände"),now=L("Jetzt skillen"),plan=L("Plan & Einkauf"),trainers=L("Lehrer & Händler"),camping=L("Camping"),twinks=L("Twinks"),
     endgame=L("Endgame"),help=L("Hilfe"),economy=L("Clever skillen"),audit=L("Berufsdaten"),reservations=L("Vorratsreservierung")}
-  local sub=PAGE_SUB[tab]
+  local sub=compact and prof.name or PAGE_SUB[tab]
   if tab=="endgame" then sub=ENDGAME_SUB[self.db.ui.endgamePage or "profit"] or ENDGAME_SUB.profit end
   U.pageTitle:SetText(titles[tab] or "");U.pageSub:SetText(sub or "")
   U.pageTitle:SetShown(tab~="settings");U.pageSub:SetShown(tab~="settings")
-  local status=self.ProfessionPriceStatus and select(2,self:ProfessionPriceStatus(self.db.view))
   U.sideFoot:SetText("CraftPilot "..tostring(self.version or ""))
 end
 
@@ -1933,7 +1985,8 @@ end
 local function renderNow(self,key,prof,record,inner)
   local gatheringOnly=prof.gathering and not prof.crafting
   if gatheringOnly then
-    showContent(108)
+    showContent(U.pageTop)
+    self.currentRecommendation=nil
     local skill=record and record.skill or 0
     local current=self:CurrentStage(key)
     setVisualCards({
@@ -1950,9 +2003,20 @@ local function renderNow(self,key,prof,record,inner)
   local h=type(frame.GetHeight)=="function" and frame:GetHeight() or H
   local leftW=math.floor((inner-12)*.53)
   local rightW=inner-12-leftW
-  local top=106
-  local recHeight=CP:RenderRecommendation(key,inner)
+  local top=U.pageTop
+  local recHeight=self:RenderRecommendation(key,inner)
   if recHeight then top=top+recHeight+8 end
+  local skill=record and tonumber(record.skill)
+  if skill then
+    local plan=self.db.plans[key]
+    local target=plan and tonumber(plan.target)
+    if not target or target<=skill then
+      target=math.min(tonumber(record.cap) or 300,skill+25)
+    end
+    U.rangeChip.label:SetText(target>skill and string.format(L("Skill %d %s %d"),skill,ARROW_RIGHT,target)
+      or string.format(L("Skill %d"),skill))
+    U.rangeChip:Show()
+  end
   local budgetLine=CP:BudgetLine(key,CP.currentRecommendation)
   if budgetLine then
     U.budget:ClearAllPoints();U.budget:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-top);U.budget:SetSize(inner,28);U.budget:Show()
@@ -1965,8 +2029,8 @@ local function renderNow(self,key,prof,record,inner)
   U.countText:ClearAllPoints();U.countText:SetPoint("TOPRIGHT",U.listPanel,"TOPRIGHT",-12,-15)
   U.filterMenu:ClearAllPoints();U.filterMenu:SetPoint("TOPLEFT",U.filterButton,"BOTTOMLEFT",0,-4)
   -- Header columns line up with the row labels: rows sit 4 px into the panel and are leftW-30 wide.
-  local colX={28,leftW-172,leftW-114}
-  local colW={leftW-210,54,80}
+  local colX={47,leftW-172,leftW-114}
+  local colW={leftW-224,54,80}
   for i,b in ipairs(U.sortCols) do
     b:ClearAllPoints();b:SetPoint("TOPLEFT",U.listPanel,"TOPLEFT",colX[i],-42);b:SetWidth(colW[i])
     local on=self.db.ui.recipeSort==b.sortKey
@@ -1994,10 +2058,11 @@ local function renderNow(self,key,prof,record,inner)
     local row=listRow(1)
     row.craftRecipe=nil
     row:ClearAllPoints();row:SetPoint("TOPLEFT",U.listContent,"TOPLEFT",0,0);row:SetWidth(leftW-30)
+    row.nameLabel:SetWidth(leftW-82);row.subLabel:SetWidth(leftW-82)
     row.nameLabel:SetText(not record and L("Beruf noch nicht auf diesem Charakter erfasst.")
       or (not current and L("Berufsfenster öffnen und aktualisieren.") or L("Keine passenden Rezepte.")))
     row.subLabel:SetText(not current and L("Nur aktuelle Skillfarben lassen sich sinnvoll vergleichen.") or L("Filter oben ändern oder alle Rezepte anzeigen."))
-    row.chanceLabel:SetText("");row.costLabel:SetText("");row.stripe:Hide();row.dot:Hide()
+    row.chanceLabel:SetText("");row.costLabel:SetText("");row.stripe:Hide();row.dot:Hide();row.recipeIcon:Hide();row.go:Hide()
     row:SetBackdropColor(0,0,0,0);row:SetBackdropBorderColor(0,0,0,0)
     row:Show()
   end
@@ -2008,7 +2073,7 @@ local function renderPlan(self,key,prof,record,inner)
   local ui=self.db.ui
   local gatheringOnly=prof.gathering and not prof.crafting
   local skill=record and record.skill or 0
-  local y=106
+  local y=U.pageTop
   local stages=D.stages[key]
   if stages then
     local n=#stages
@@ -2052,15 +2117,19 @@ local function renderPlan(self,key,prof,record,inner)
   U.plan.build:SetText(pending and L("Berechne…") or (self:AutoRouteShopping(key) and L("Neu berechnen") or L("Plan erstellen")))
   setPrimaryEnabled(U.plan.build,self:Catalog(key)~=nil and not pending)
   local segW=92
+  local tabsStart=18+inner-#U.plan.pages*segW-3
+  local stacked=tabsStart<324
+  local tabsY=y+(stacked and 36 or 0)
+  if stacked then tabsStart=21 end
   for i,b in ipairs(U.plan.pages) do
-    place(b,18+inner-#U.plan.pages*segW-3+(i-1)*segW,y+1,segW);b:Show()
+    place(b,tabsStart+(i-1)*segW,tabsY+1,segW);b:Show()
     b.selectionMarker:SetShown(b.pageKey==page)
   end
   segmentGroup("plan",U.plan.pages)
-  y=y+38
+  y=tabsY+38
   local plan=self:PlanFor(key)
   local route=self:AutoRouteShopping(key)
-  local workflow=L("1 Bereich planen  ·  2 Materialien holen oder kaufen  ·  3 Herstellen")
+  local workflow=string.format(L("Bereich planen %s Material holen oder kaufen %s Herstellen"),ARROW_RIGHT,ARROW_RIGHT)
   if route then
     local seen, learn={},0
     for _,steps in ipairs({route.steps or {},route.intermediates or {}}) do
@@ -2071,14 +2140,16 @@ local function renderPlan(self,key,prof,record,inner)
         end
       end
     end
-    workflow=learn>0 and string.format(L("1 %d Rezepte lernen  ·  2 Materialien holen oder kaufen  ·  3 Herstellen"),learn)
-      or L("1 Materialien holen oder kaufen  ·  2 Herstellen")
+    workflow=learn>0 and string.format(L("%d Rezepte lernen %s Material holen oder kaufen %s Herstellen"),learn,ARROW_RIGHT,ARROW_RIGHT)
+      or string.format(L("Material holen oder kaufen %s Herstellen %s Neu bewerten"),ARROW_RIGHT,ARROW_RIGHT)
   elseif next(plan.crafts) then
-    workflow=L("1 Materialien holen oder kaufen  ·  2 Herstellen")
+    workflow=string.format(L("Material holen oder kaufen %s Herstellen %s Neu bewerten"),ARROW_RIGHT,ARROW_RIGHT)
   end
-  U.plan.workflow:SetText(string.format(L("Skill %d–%d  ·  %s"),plan.start,plan.target,workflow))
-  place(U.plan.workflow,18,y,inner);U.plan.workflow:Show()
-  y=y+textHeight(U.plan.workflow,16)+10
+  U.plan.workflow:SetWidth(inner-20)
+  U.plan.workflow:SetText(workflow)
+  local flowHeight=textHeight(U.plan.workflow,16)+16
+  place(U.plan.flowPanel,18,y,inner,flowHeight);U.plan.flowPanel:Show()
+  y=y+flowHeight+10
   if page=="crafts" then
     local p=self:PlanFor(key);local choice=self:SelectedOption(key)
     place(U.plan.quantityLabel,18,y+7);U.plan.quantityLabel:Show()
@@ -2099,14 +2170,16 @@ local function renderPlan(self,key,prof,record,inner)
   if page=="shopping" then
     local manual=self:PersonalShopping()
     local rows={}
-    table.insert(cards,1,{sectionHeader=true,title=L("BERECHNETER BEDARF")})
     for id,n in pairs(manual) do
       local _,bag,bank,live,known=self:ItemAvailability(id);local price=self:PriceDetails(id)
       rows[#rows+1]={id=id,quantity=n,bag=bag,bank=bank,bankKnown=known,missing=n,buy=price.price and price.price*n}
     end
     if #rows>0 then
-      cards[#cards+1]={sectionHeader=true,title=L("SELBST HINZUGEFÜGT")}
+      cards[#cards+1]={sectionHeader=true,title=L("Persönliche Einkaufsliste")}
       cards[#cards+1]={materialTable=rows}
+    else
+      cards[#cards+1]={title=L("Persönliche Einkaufsliste"),detail=L("Noch nichts hinzugefügt"),color="blue",
+        action=function() CP:OpenPersonalShopping() end}
     end
   end
   setVisualCards(cards)
@@ -2116,7 +2189,8 @@ local function renderPlan(self,key,prof,record,inner)
     local c=self:CostCalculation("plan",key)
     place(U.plan.totalLabel,18,h-80);U.plan.totalLabel:Show()
     place(U.plan.total,18,h-66,260);U.plan.total:Show()
-    U.plan.total:SetText(pending and L("Berechne…") or ((c.cashComplete and "" or L("Ab "))..self:FormatCostMoney(c.cash)))
+    U.plan.totalLabel:SetText((c.fee>0 or c.feeUnknown) and L("Gesamt inkl. Lernen") or L("Geschätzter Zukauf"))
+    U.plan.total:SetText(pending and L("Berechne…") or self:PurchaseEstimate(c.cash,c.cashComplete))
     place(U.plan.export,18+inner-150,h-80,150);U.plan.export:Show();setPrimaryEnabled(U.plan.export,not pending)
     place(U.plan.print,18+inner-150-8-140,h-80,140);U.plan.print:Show()
     place(U.plan.manual,18+inner-150-8-140-8-150,h-80,150);U.plan.manual:Show()
@@ -2210,18 +2284,21 @@ function CP:RenderRecommendation(key,inner)
   local rec=self:Recommendation(key)
   self.currentRecommendation=rec
   if not rec then U.rec:Hide();return false end
-  local height=54
-  U.rec:ClearAllPoints();U.rec:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-106);U.rec:SetSize(inner,height);U.rec:Show()
+  U.rec:ClearAllPoints();U.rec:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-(U.pageTop or 83));U.rec:SetWidth(inner);U.rec:Show()
   if type(U.rec.icon.SetTexture)=="function" then U.rec.icon:SetTexture(self:RecipeIcon(key,rec.id)) end
-  local w=inner-54-172-28
-  U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w)
-  U.rec.title:ClearAllPoints();U.rec.title:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-9)
-  U.rec.title:SetText(rec.title)
+  local w=inner-54-U.rec.search:GetWidth()-28
+  U.rec.kicker:SetWidth(w);U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w)
+  local title,detail=rec.title,rec.detail
+  if not rec.learn and rec.target and rec.target>(self.db.professions[key].skill or 0) then
+    title=string.format(L("%d× %s herstellen"),rec.count,rec.name)
+    detail=string.format(L("Etwa bis Skill %d"),rec.target).." · "..detail
+  end
+  U.rec.title:SetText(title)
   local titleHeight=textHeight(U.rec.title,16)
-  U.rec.detail:ClearAllPoints();U.rec.detail:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-(13+titleHeight))
-  U.rec.detail:SetText(rec.detail)
-  height=math.max(height,23+titleHeight+textHeight(U.rec.detail,13))
-  U.rec.search:ClearAllPoints();U.rec.search:SetPoint("TOPRIGHT",U.rec,"TOPRIGHT",-12,-13)
+  U.rec.detail:ClearAllPoints();U.rec.detail:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-(30+titleHeight))
+  U.rec.detail:SetText(detail)
+  local height=math.max(64,40+titleHeight+textHeight(U.rec.detail,13))
+  U.rec.search:ClearAllPoints();U.rec.search:SetPoint("TOPRIGHT",U.rec,"TOPRIGHT",-12,-(height-30)/2)
   if rec.learn then
     U.rec.search:SetText(rec.learn.source=="ah" and L("Rezept im AH suchen") or (rec.learn.source=="vendor" and L("Zum Händler") or L("Zum Lehrer")))
     U.rec.search:SetScript("OnClick",function()
@@ -2231,7 +2308,9 @@ function CP:RenderRecommendation(key,inner)
       else CP:TrainerWaypoint() end
     end)
   elseif rec.missing>0 then
-    U.rec.search:SetText(L("Fehlmengen zur Liste"))
+    local missing=0
+    for _,material in ipairs(rec.materials) do missing=missing+material.quantity end
+    U.rec.search:SetText(missing==1 and L("1 fehlendes Teil zur Liste") or string.format(L("%d fehlende Teile zur Liste"),missing))
     U.rec.search:SetScript("OnClick",function()
       local r=CP.currentRecommendation
       if r then CP:AddCostDeficits({kind="recipe",key=r.key,id=r.id,quantity=r.count}) end
@@ -2265,11 +2344,11 @@ function CP:RenderRecommendation(key,inner)
   local x=54
   for _,b in ipairs({U.rec.pick,U.rec.auction,U.rec.prices,U.rec.switch}) do
     if b:IsShown() then
-      b:ClearAllPoints();b:SetPoint("TOPLEFT",U.rec,"TOPLEFT",x,-(height-2))
+      b:ClearAllPoints();b:SetPoint("TOPLEFT",U.rec,"TOPLEFT",x,-height)
       x=x+b:GetWidth()+6
     end
   end
-  if x>54 then height=height+32 end
+  if x>54 then height=height+36 end
   U.rec:SetHeight(height)
   -- Hover: the whole cheapest path, step by step.
   U.rec:EnableMouse(true)
@@ -2310,7 +2389,7 @@ function CP:Render()
   local inner=width()-36
 
   renderHeader(self,key,prof,record)
-  renderTabs(self,tab)
+  renderTabs(self,tab,prof,inner)
   hideAll()
   clearRows()
 
