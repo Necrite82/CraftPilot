@@ -20,7 +20,9 @@ function CP:CalculateMaterialCosts(requirements,fee,feeUnknown,owner)
     if owner then available,bag,bank,live,known,reserved=self:AvailableForPlan(id,owner)
     else available,bag,bank,live,known=self:ItemAvailability(id) end
     local used=math.min(quantity,available)
-    local fromAlts=math.max(0,used-(bag or 0)-(self.db.includeBank and known and (bank or 0) or 0))
+    local fromBags=math.min(used,bag or 0)
+    local fromBank=math.min(used-fromBags,self.db.includeBank and known and (bank or 0) or 0)
+    local fromAlts=used-fromBags-fromBank
     local missing=quantity-used
     local price=self:PriceDetails(id)
     local net=price.auction and math.floor(price.auction*(1-cut))
@@ -37,7 +39,8 @@ function CP:CalculateMaterialCosts(requirements,fee,feeUnknown,owner)
     end
     if self.db.includeBank and not known then result.unknownBank=result.unknownBank+1 end
     result.materials[#result.materials+1]={id=id,quantity=quantity,used=used,missing=missing,bag=bag,bank=bank,
-      reserved=reserved or 0,bankKnown=known,buy=price.price and missing*price.price,stock=net and used*net,alts=fromAlts}
+      reserved=reserved or 0,bankKnown=known,buy=price.price and missing*price.price,stock=net and used*net,alts=fromAlts,
+      fromBags=fromBags,fromBank=fromBank,bankLive=live}
   end
   table.sort(result.materials,function(a,b) return a.id<b.id end)
   result.cash=result.buy+result.fee

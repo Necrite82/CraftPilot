@@ -3,7 +3,7 @@ local CP=...
 local saved={path=CP.CheapestPath,lt=CP.LearnTarget,ui1=CP.db.ui.fastestSkill,ui2=CP.db.ui.fewestTrips,eng=CP.db.professions.engineering}
 CP.db.professions.engineering={skill=200,cap=225}
 local modes={}
-CP.CheapestPath=function(self) local m=self.pathModeOverride;modes[#modes+1]=m
+CP.CheapestPath=function(self,_,first,last) local m=self.pathModeOverride;modes[#modes+1]={m,first,last}
   if m=="cheap" then return {total=50000,fees=10000,reached=225,segments={{id=1,crafts=30,learned=true},{id=2,crafts=10,learned=false},{id=3,crafts=5,learned=false}}} end
   if m=="crafts" then return {total=80000,fees=10000,reached=225,segments={{id=1,crafts=20,learned=true},{id=2,crafts=5,learned=false}}} end
   return {total=60000,fees=0,reached=225,segments={{id=1,crafts=40,learned=true}}}
@@ -12,8 +12,11 @@ CP.LearnTarget=function(_,_,id) return id==2 and {kind="trainer",name="T"} or {k
 local r=CP:CompareRoutes("engineering")
 assert(#r==3 and r[1].mode=="cheap" and r[1].stops==2 and r[1].crafts==45 and r[3].stops==0 and r[2].crafts==25)
 assert(CP.pathModeOverride==nil,"Override is cleared")
-local cards=CP:RouteCompareCards("engineering")
-assert(#cards==4)
+CP.db.ui.fastestSkill=false;CP.db.ui.fewestTrips=false
+local cards=CP:RouteCompareCards("engineering",205,225)
+assert(#cards==4 and cards[1].title:find("205",1,true))
+assert(modes[4][2]==205 and modes[4][3]==225,"The actual plan range is used for each mode")
+assert(cards[3].detail:find("-20",1,true) and cards[3].detail:find("-1",1,true),"Compare crafts and visits with the active path")
 cards[4].action()
 assert(CP.db.ui.fewestTrips==true and CP:CurrentRouteMode()=="trips")
 cards[2].action()

@@ -2,6 +2,8 @@
 
 ## 1.4.5
 
+- „Jetzt skillen“ zeigt den nächsten Schritt am Rezept und hält beim Aktualisieren die Position. Der Vergleich der Skillwege nutzt den gewählten Bereich und zeigt die Abweichung zum aktiven Weg.
+- Der Plan-Einkauf trennt die benötigten Mengen nach Tasche, Bank, Twink und Zukauf und kennzeichnet gespeicherte Bestände.
 - Projekt-Einkaufslisten werden mit den korrekten Gegenstands-IDs und Fehlmengen an Auctionator übergeben; der Lua-Fehler beim Export entfällt.
 - Projekte berücksichtigen die vom Spielclient erfasste Ausbeute einer Herstellung, etwa fünf Silberkontakte aus einem Silberbarren. Ohne Mengenangabe des Clients gilt die Katalogausbeute.
 - Mehrere Schritte und Projekte teilen sich einen Vorrat. Fehlende Zwischenprodukte werden aus den verbleibenden Rohstoffen geplant; dieselben Bestände schließen nicht mehrere Projekte zugleich ab.

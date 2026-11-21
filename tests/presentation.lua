@@ -21,6 +21,14 @@ assert(actions[1]=="clear" and actions[2]=="native","Native tooltip must be popu
 assert(actions[#actions]=="show")
 local tableFrame=CreateFrame("Frame")
 local h=CP:DrawMaterialTable(tableFrame,fixture.materials,730)
+do
+  local availability=CP.AvailableForPlan
+  CP.AvailableForPlan=function() return 12,4,6,false,true,0 end
+  local c=CP:CalculateMaterialCosts({[2589]=15},0,false,"tailoring")
+  local row=c.materials[1]
+  assert(row.fromBags==4 and row.fromBank==6 and row.alts==2 and row.missing==3 and not row.bankLive)
+  CP.AvailableForPlan=availability
+end
 assert(tableFrame.tableHeaders[5].displayText=="Kaufen" and tableFrame.tableRows[1].cells[5].displayText=="5")
 assert(tableFrame.tableRows[1].cells[3].displayText=="2" and tableFrame.tableRows[1].cells[4].displayText=="1")
 assert(h>tableFrame.tableRows[1].height)

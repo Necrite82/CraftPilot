@@ -529,11 +529,11 @@ function CP:RouteSummary(key,path)
   end
   return {total=path.total or 0,fees=path.fees or 0,buy=(path.total or 0)-(path.fees or 0),crafts=crafts,stops=stops,reached=path.reached,first=path.segments and path.segments[1]}
 end
-function CP:CompareRoutes(key)
+function CP:CompareRoutes(key,first,last)
   local out={}
   for _,m in ipairs(MODES) do
     self.pathModeOverride=m.key
-    local ok,path=pcall(self.CheapestPath,self,key)
+    local ok,path=pcall(self.CheapestPath,self,key,first,last)
     self.pathModeOverride=nil
     local summary=ok and self:RouteSummary(key,path)
     if summary then summary.mode=m.key;summary.label=L(m.label);out[#out+1]=summary end
@@ -552,16 +552,26 @@ function CP:UseRouteMode(mode)
   self.pathCache=nil
   if self.Render then self:Render() end
 end
-function CP:RouteCompareCards(key)
-  local routes=self:CompareRoutes(key)
+function CP:RouteCompareCards(key,first,last)
+  local record=self.db.professions[key] or {}
+  first,last=first or record.skill or 0,last or record.cap or 0
+  local routes=self:CompareRoutes(key,first,last)
   if #routes<2 then return {} end
   local current=self:CurrentRouteMode()
-  local cards={{sectionHeader=true,title=L("WEGE VERGLEICHEN")}}
+  local baseline
+  for _,r in ipairs(routes) do if r.mode==current and r.reached==last then baseline=r;break end end
+  local cards={{sectionHeader=true,title=string.format(L("WEGE VERGLEICHEN · SKILL %d–%d"),first,last)}}
   for _,r in ipairs(routes) do
     local mode=r.mode
-    local detail=string.format(L("Einkauf %s · Lernen %s · %d Herstellungen · %d Lernwege"),
+    local detail=string.format(L("Materialwert %s · Lernen %s · %d Herstellungen · %d Lernwege"),
       self:FormatCostMoney(math.max(0,r.buy)),self:FormatCostMoney(r.fees),r.crafts,r.stops)
-    if r.reached and r.reached<((self.db.professions[key] or {}).cap or 0) then detail=detail.." · "..string.format(L("reicht bis %d"),r.reached) end
+    if (r.reached or 0)<last then
+      detail=detail.."\n"..string.format(L("reicht bis %d"),r.reached or first)
+    elseif baseline and baseline~=r then
+      local cost=r.total-baseline.total
+      detail=detail.."\n"..string.format(L("Gegenüber aktiv: %s · %+d Herstellungen · %+d Lernwege"),
+        (cost<0 and "−" or "+")..self:FormatCostMoney(math.abs(cost)),r.crafts-baseline.crafts,r.stops-baseline.stops)
+    end
     cards[#cards+1]={title=r.label..": "..self:FormatCostMoney(r.total),detail=detail,
       footer=mode==current and L("Aktiv") or L("Klick: diesen Weg nutzen"),color=mode==current and "gold" or "blue",grid=true,
       action=function() CP:UseRouteMode(mode) end}

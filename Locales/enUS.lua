@@ -1704,4 +1704,11 @@ CP.English = {
   ["Anklicken: Vorratsreservierung öffnen"]="Click: open the stock reservation",
   ["Markiert in Taschen und Bank, mit Warnung beim Verkaufen, Zerstören, Entzaubern und Verschicken."]="Marked in bags and bank, with a warning when selling, destroying, disenchanting or mailing.",
   ["Reservierte Gegenstände"]="Reserved items",
+  ["WEGE VERGLEICHEN · SKILL %d–%d"]="COMPARE PATHS · SKILL %d–%d",
+  ["Materialwert %s · Lernen %s · %d Herstellungen · %d Lernwege"]="Material value %s · learn %s · %d crafts · %d learning trips",
+  ["Gegenüber aktiv: %s · %+d Herstellungen · %+d Lernwege"]="Versus active: %s · %+d crafts · %+d learning trips",
+  ["%d aus Tasche · %d von Bank · %d vom Twink · %d kaufen"]="%d from bags · %d from bank · %d from alts · buy %d",
+  [" · Bankstand gespeichert"]=" · saved bank snapshot",
+  ["Beim Lehrer lernbar"]="Learn from trainer",
+  ["Sofort machbar"]="Ready to craft",
 }
