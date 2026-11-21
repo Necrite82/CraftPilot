@@ -27,7 +27,7 @@ function CP:PlanPageCards(key,page)
           CP:SearchItems(list,L("Preise"),L("Auctionator scannt die Materialien deines Plans."))
         end}
     end
-    for _,card in ipairs(self:RouteCompareCards(key)) do cards[#cards+1]=card end
+    for _,card in ipairs(self:RouteCompareCards(key,plan.start,plan.target)) do cards[#cards+1]=card end
     for _,card in ipairs(self:SecondProfessionCards(key)) do cards[#cards+1]=card end
     for _,card in ipairs(self:BuyTimingCards(key)) do cards[#cards+1]=card end
     for _,card in ipairs(self:BudgetCards(key)) do cards[#cards+1]=card end
@@ -71,15 +71,22 @@ function CP:PlanPageCards(key,page)
   end
   if not route and not next(plan.crafts) then return {{title=L("1. Bereich wählen · 2. Plan erstellen · 3. Einkaufen"),
     detail=L("Die Route und alle fehlenden Zutaten werden für den gewählten Skillbereich berechnet."),footer=L("Unter Herstellen kannst du die Rezeptschritte anschließend austauschen."),color="blue"}} end
-  local rows={};for _,m in ipairs(c.materials) do if m.missing>0 then rows[#rows+1]=m end end
+  local rows,missingRows={},{}
+  for _,m in ipairs(c.materials) do
+    if m.missing>0 then missingRows[#missingRows+1]=m end
+    if m.missing>0 or m.fromBank>0 or m.alts>0 then
+      m.showPickup=true
+      rows[#rows+1]=m
+    end
+  end
   if #rows==0 then cards[#cards+1]={title=L("Alles für diesen Plan vorhanden"),detail=L("Keine zusätzlichen Materialkäufe erkannt. Unbekannte Angaben unter Details beachten."),color="green"}
   else cards[#cards+1]={materialTable=rows} end
   if not c.cashComplete then cards[#cards+1]={title=L("Kalkulation unvollständig"),detail=L("Fehlende Preise oder Rezeptangaben unter Details prüfen."),color="gold"} end
-  if self.FarmCards then
+  if self.FarmCards and #missingRows>0 then
     local priced={}
-    for _,m in ipairs(rows) do local p=self:PriceDetails(m.id).price;priced[#priced+1]={id=m.id,missing=m.missing,cost=p and p*m.missing} end
+    for _,m in ipairs(missingRows) do local p=self:PriceDetails(m.id).price;priced[#priced+1]={id=m.id,missing=m.missing,cost=p and p*m.missing} end
     for _,card in ipairs(self:FarmCards(priced)) do cards[#cards+1]=card end
-    local ids={};for _,m in ipairs(rows) do ids[#ids+1]=m.id end
+    local ids={};for _,m in ipairs(missingRows) do ids[#ids+1]=m.id end
     for _,card in ipairs(self:PriceLimitCards(key,ids)) do cards[#cards+1]=card end
   end
   return cards

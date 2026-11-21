@@ -1214,6 +1214,10 @@ local function isActive(key,entry,chosen)
 end
 
 local function setRecipeList(key,entries,chosen)
+  local offset=tonumber((U.listScroll:GetVerticalScroll())) or 0
+  local anchor=not resetContentScroll and U.listRows[math.floor(offset/40)+1]
+  local previous=anchor and anchor:IsShown() and anchor.craftRecipe
+  local nextOffset
   for _,r in ipairs(U.listRows) do r:Hide() end
   local w=(U.listScroll:GetWidth() or 300)
   if type(w)~="number" or w<=0 then w=300 end
@@ -1221,6 +1225,9 @@ local function setRecipeList(key,entries,chosen)
   local active
   for i,entry in ipairs(entries) do
     local r=listRow(i)
+    if type(previous)=="table" and entry.id==previous.id and entry.vendorRecipe==previous.vendorRecipe then
+      nextOffset=(i-1)*40+offset%40
+    end
     r.craftRecipe=entry
     r:ClearAllPoints();r:SetPoint("TOPLEFT",U.listContent,"TOPLEFT",0,-(i-1)*40);r:SetWidth(w)
     local on=isActive(key,entry,chosen)
@@ -1237,13 +1244,15 @@ local function setRecipeList(key,entries,chosen)
     r.nameLabel:SetTextColor(entry.vendorRecipe and .78 or .93,entry.vendorRecipe and .76 or .92,entry.vendorRecipe and .72 or .88)
     local sub
     if entry.referenceOnly then sub=entry.referenceStatus or ""
-    elseif entry.trainerRecipe then sub=L("Lehrerrezept · noch lernen")
+    elseif entry.trainerRecipe then
+      local at=entry.requiredSkill or entry.learnAt
+      sub=at and at>((CP.db.professions[key] or {}).skill or 0) and (L("Noch nicht gelernt")..L(" · ab Skill ")..at) or L("Beim Lehrer lernbar")
     elseif entry.vendorRecipe then sub=L("Kaufrezept · ab ")..(entry.recipeCost and CP:CompactMoney(entry.recipeCost) or L("Preis unbekannt"))
     elseif colorOf(entry)=="grey" then sub=L("gibt keine Punkte mehr")
     elseif (entry.missing or 0)==1 then sub=L("1 Teil fehlt")
     elseif (entry.missing or 0)>1 then sub=string.format(L("%d Teile fehlen"),entry.missing)
     elseif entry.fromStorage then sub=L("vorrätig · erst aus Bank/von Twinks holen")
-    else sub=L("alles in der Tasche") end
+    else sub=L("Sofort machbar") end
     r.subLabel:SetText(sub)
     r.chanceLabel:ClearAllPoints();r.chanceLabel:SetPoint("TOPRIGHT",r,"TOPRIGHT",-92,-12)
     r.chanceLabel:SetText((entry.chance or 0)>0 and string.format("%.0f%%",entry.chance*100) or "—")
@@ -1253,7 +1262,10 @@ local function setRecipeList(key,entries,chosen)
     r:Show()
   end
   U.listContent:SetHeight(math.max(40,#entries*40))
-  if resetContentScroll and type(U.listScroll.SetVerticalScroll)=="function" then U.listScroll:SetVerticalScroll(0) end
+  if type(U.listScroll.SetVerticalScroll)=="function" then
+    local max=math.max(0,#entries*40-(tonumber((U.listScroll:GetHeight())) or 0))
+    U.listScroll:SetVerticalScroll(resetContentScroll and 0 or math.min(nextOffset or offset,max))
+  end
   return active
 end
 
@@ -2261,7 +2273,7 @@ function CP:Render()
   local tab=ui.tab or "now"
   if tab=="stages" then tab="plan" elseif tab=="mats" then tab="now" end
   ui.tab=tab
-  local context=key..":"..tab..":"..tostring(ui.campingPage)..":"..tostring(ui.campingAll)..":"..tostring(ui.vendorOnly)..":"..tostring(ui.allRecipes)..":"..tostring(ui.planPage)..":"..tostring(ui.vendorBrowser)..":"..tostring(ui.vendorQuery)..":"..tostring(ui.vendorSort)..":"..tostring(ui.trainerPage)
+  local context=key..":"..tab..":"..tostring(ui.campingPage)..":"..tostring(ui.campingAll)..":"..tostring(ui.vendorOnly)..":"..tostring(ui.allRecipes)..":"..tostring(ui.planPage)..":"..tostring(ui.vendorBrowser)..":"..tostring(ui.vendorQuery)..":"..tostring(ui.vendorSort)..":"..tostring(ui.trainerPage)..":"..tostring(ui.recipeSort)
   resetContentScroll=context~=lastContentContext
   lastContentContext=context
   if tab~="plan" then self.pendingPlanClear=nil end

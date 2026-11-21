@@ -192,7 +192,18 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
     local noteY=math.floor(math.max(32,14+titleHeight)+.5)
     r.note:ClearAllPoints();r.note:SetPoint("TOPLEFT",r,"TOPLEFT",8,-noteY);r.note:SetWidth(width-16)
     local reserved=(mat.reserved or 0)>0 and (L("Reserviert für andere Pläne: ")..mat.reserved.." · ") or ""
-    r.note:SetText(reserved..m.advice)
+    local pickup=""
+    if mat.showPickup then
+      local bank=mat.fromBank>0 and not mat.bankLive and L(" · Bankstand gespeichert") or ""
+      pickup=string.format(L("%d aus Tasche · %d von Bank · %d vom Twink · %d kaufen"),
+        mat.fromBags,mat.fromBank,mat.alts,mat.missing)..bank
+      if mat.alts>0 then
+        local alt=self:AltPickupText(mat.id,mat.alts)
+        if alt~="" then pickup=pickup.." · "..alt end
+      end
+      pickup=pickup.."\n"
+    end
+    r.note:SetText(pickup..reserved..m.advice)
     -- Whole pixels: fractional heights made some row borders look doubled.
     local h=math.floor(noteY+height(r.note,16)+10+.5)
     r:ClearAllPoints();r:SetPoint("TOPLEFT",parent,"TOPLEFT",0,-y);r:SetSize(width,h);r:SetBackdropColor(i%2==0 and .065 or .045,.085,.11,.9);r:Show();y=y+h+4
