@@ -2,6 +2,7 @@
 
 ## 1.4.5
 
+- „Jetzt skillen“ hebt die passende nächste Aktion hervor. Im Plan stehen Zielbereich und Reihenfolge der Schritte über Einkauf und Herstellung.
 - „Jetzt skillen“ zeigt den nächsten Schritt am Rezept und hält beim Aktualisieren die Position. Der Vergleich der Skillwege nutzt den gewählten Bereich und zeigt die Abweichung zum aktiven Weg.
 - Der Plan-Einkauf trennt die benötigten Mengen nach Tasche, Bank, Twink und Zukauf und kennzeichnet gespeicherte Bestände.
 - Projekt-Einkaufslisten werden mit den korrekten Gegenstands-IDs und Fehlmengen an Auctionator übergeben; der Lua-Fehler beim Export entfällt.
