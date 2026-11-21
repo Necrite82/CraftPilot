@@ -78,4 +78,17 @@ for _,b in ipairs(frames) do local t=rawget(b,"displayText");if t=="Plan erstell
 local frameHeight=CP.frame.height or 676
 -- 0.21: "Plan erstellen" sits above the scroll area, "An Auctionator" in the fixed bar below it.
 assert(create and export and create.point[5]>-200 and export.point[5]<=-(frameHeight-90),"Primary plan actions must stay outside the scroll area")
+local originalWidth=CP.frame:GetWidth()
+for _,width in ipairs({750,1000}) do
+  CP.frame:SetWidth(width)
+  CP:Render()
+  for _,b in ipairs(frames) do
+    if rawget(b,"pageKey")=="shopping" and b:IsShown() then
+      assert(b.point[5]<=create.point[5]-create:GetHeight()
+        or b.point[4]>=create.point[4]+create:GetWidth(),"Plan navigation must leave room for the build button")
+    end
+  end
+end
+CP.frame:SetWidth(originalWidth)
+CP:Render()
 print("PASS: editable route constraints, intermediate buy preference, learning-fee lookahead, batch quantities/follow-up stock and pinned actions")

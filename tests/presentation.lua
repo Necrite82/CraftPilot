@@ -27,6 +27,20 @@ do
   local c=CP:CalculateMaterialCosts({[2589]=15},0,false,"tailoring")
   local row=c.materials[1]
   assert(row.fromBags==4 and row.fromBank==6 and row.alts==2 and row.missing==3 and not row.bankLive)
+  local planTable=CreateFrame("Frame")
+  local label="Geschätzter Zukauf"
+  CP:DrawMaterialTable(planTable,c.materials,680,nil,{title="Berechneter Bedarf",label=label,total=CP:PurchaseEstimate(c.cash,true)})
+  local shown=planTable.tableRows[1]
+  assert(planTable.tableHeaders[4].displayText=="Twink")
+  assert(shown.cells[2].displayText=="4" and shown.cells[3].displayText=="6"
+    and shown.cells[4].displayText=="2" and shown.cells[5].displayText=="3",
+    "The plan displays allocations, including the amount from alts")
+  assert(shown.note.displayText:find("Bankstand gespeichert",1,true))
+  assert(planTable.planTotalLabel.displayText==label and planTable.planTotal.displayText==CP:FormatCostMoney(300))
+  CP:DrawMaterialTable(planTable,fixture.materials,680)
+  assert(not planTable.planTitle:IsShown() and not planTable.planTotal:IsShown(),
+    "Recycled tables hide the plan summary on the personal list")
+  assert(CP:PurchaseEstimate(0,false)=="Preis unvollständig" and CP:PurchaseEstimate(300,false):find("^Ab "))
   CP.AvailableForPlan=availability
 end
 assert(tableFrame.tableHeaders[5].displayText=="Kaufen" and tableFrame.tableRows[1].cells[5].displayText=="5")

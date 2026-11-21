@@ -80,7 +80,13 @@ function CP:PlanPageCards(key,page)
     end
   end
   if #rows==0 then cards[#cards+1]={title=L("Alles für diesen Plan vorhanden"),detail=L("Keine zusätzlichen Materialkäufe erkannt. Unbekannte Angaben unter Details beachten."),color="green"}
-  else cards[#cards+1]={materialTable=rows} end
+  else
+    cards[#cards+1]={materialTable=rows,planSummary={
+      title=L("Berechneter Bedarf"),
+      label=(c.fee>0 or c.feeUnknown) and L("Gesamt inkl. Lernen") or L("Geschätzter Zukauf"),
+      total=self:PurchaseEstimate(c.cash,c.cashComplete),
+    }}
+  end
   if not c.cashComplete then cards[#cards+1]={title=L("Kalkulation unvollständig"),detail=L("Fehlende Preise oder Rezeptangaben unter Details prüfen."),color="gold"} end
   if self.FarmCards and #missingRows>0 then
     local priced={}

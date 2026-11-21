@@ -34,7 +34,7 @@ function CP:StyleActionButton(b)
 end
 local primaryFont
 function CP:StylePrimaryButton(b)
-  b:SetBackdropColor(.88,.69,.31,1);b:SetBackdropBorderColor(.88,.69,.31,1)
+  b:SetBackdropColor(.902,.741,.412,1);b:SetBackdropBorderColor(.902,.741,.412,1)
   -- A dedicated font object keeps the dark label when the button is enabled again.
   if not primaryFont and type(CreateFont)=="function" then
     primaryFont=CreateFont("CraftPilotProPrimaryButtonFont")
@@ -94,6 +94,64 @@ local function height(text,fallback)
   local n=text:GetStringHeight();return type(n)=="number" and n>0 and n or fallback
 end
 function CP:DisplayMoney(n) return (type(n)=="number" and n>0) and self:FormatCostMoney(n) or "—" end
+function CP:PurchaseEstimate(amount,complete)
+  if complete then return self:FormatCostMoney(amount) end
+  if amount>0 then return L("Ab ")..self:FormatCostMoney(amount) end
+  return L("Preis unvollständig")
+end
+
+function CP:DrawRecipeOverview(parent,cost,width,quantity)
+  local bag,bank,twink,missing=0,0,0,0
+  local savedBank=false
+  for _,mat in ipairs(cost.materials) do
+    bag=bag+(mat.fromBags or 0)
+    bank=bank+(mat.fromBank or 0)
+    twink=twink+(mat.alts or 0)
+    missing=missing+(mat.missing or 0)
+    savedBank=savedBank or ((mat.fromBank or 0)>0 and not mat.bankLive)
+  end
+  local rows={
+    {L("Geschätzter Zukauf"),self:PurchaseEstimate(cost.buy,cost.cashComplete)},
+    {L("Tasche / Bank / Twink"),string.format("%d / %d / %d",bag,bank,twink)},
+    {L("Zu kaufen"),missing==1 and L("1 Einheit") or string.format(L("%d Einheiten"),missing)},
+  }
+  if not rawget(parent,"readouts") then
+    parent.caption=self:DisplayLabel(parent,"GameFontDisableSmall",10,8,width-20,"")
+    parent.note=self:DisplayLabel(parent,"GameFontDisableSmall",10,0,width-20,"")
+    parent.readouts={}
+    for i=1,#rows do
+      local line=parent:CreateTexture(nil,"ARTWORK")
+      line:SetHeight(1);line:SetColorTexture(.188,.216,.255,1)
+      parent.readouts[i]={line=line,
+        label=self:DisplayLabel(parent,"GameFontHighlightSmall",0,0,100,""),
+        value=self:DisplayLabel(parent,i==1 and "GameFontNormal" or "GameFontHighlightSmall",0,0,100,"","RIGHT")}
+    end
+  end
+  parent.caption:SetWidth(width-20)
+  parent.caption:SetText(string.format(L("Material für %d Herstellungen"),cost.quantity or quantity))
+  local y=height(parent.caption,13)+14
+  local labelWidth=math.floor((width-20)*.53)
+  for i,row in ipairs(parent.readouts) do
+    row.line:ClearAllPoints()
+    row.line:SetPoint("TOPLEFT",parent,"TOPLEFT",10,-y)
+    row.line:SetPoint("TOPRIGHT",parent,"TOPRIGHT",-10,-y)
+    row.label:ClearAllPoints();row.label:SetPoint("TOPLEFT",parent,"TOPLEFT",10,-(y+5));row.label:SetWidth(labelWidth)
+    row.value:ClearAllPoints();row.value:SetPoint("TOPRIGHT",parent,"TOPRIGHT",-10,-(y+5));row.value:SetWidth(width-26-labelWidth)
+    row.label:SetText(rows[i][1]);row.value:SetText(rows[i][2])
+    y=y+math.max(height(row.label,14),height(row.value,14))+11
+  end
+  local notes={}
+  if savedBank then notes[#notes+1]=L("Bankstand gespeichert") end
+  if twink>0 then notes[#notes+1]=L("Twink-Stand gespeichert") end
+  if (cost.stale or 0)>0 or (cost.unknownAge or 0)>0 then notes[#notes+1]=L("AH prüfen") end
+  parent.note:SetShown(#notes>0)
+  if #notes>0 then
+    parent.note:ClearAllPoints();parent.note:SetPoint("TOPLEFT",parent,"TOPLEFT",10,-y);parent.note:SetWidth(width-20)
+    parent.note:SetText(table.concat(notes," · "))
+    y=y+height(parent.note,13)+6
+  end
+  return y
+end
 function CP:MetricStrip(parent,values,x,y,width)
   parent.metricPanels=rawget(parent,"metricPanels") or {}
   local w=(width-16)/3
@@ -143,7 +201,7 @@ function CP:ShowCraftTooltip(owner,key,id,item)
   end
   tip:Show()
 end
-function CP:DrawMaterialTable(parent,rows,width,outputs)
+function CP:DrawMaterialTable(parent,rows,width,outputs,planSummary)
   local ordered={};for _,row in ipairs(rows) do ordered[#ordered+1]=row end
   table.sort(ordered,function(a,b)
     if not outputs and ((a.missing or 0)>0)~=((b.missing or 0)>0) then return (a.missing or 0)>0 end
@@ -152,16 +210,28 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
   end)
   rows=ordered;parent.displayRows=ordered
   parent.tableHeaders=rawget(parent,"tableHeaders") or {};parent.tableRows=rawget(parent,"tableRows") or {}
-  local columns=outputs and {{L("Ergebnis"),.43},{L("AH / Stück"),.19},{L("AH netto / Stück"),.19},{L("Händler / Stück"),.19}}
-    or {{L("Material"),.37},{L("Bedarf"),.09},{L("Tasche"),.09},{L("Bank"),.09},{L("Kaufen"),.09},{L("AH/St."),.135},{L("Zukauf"),.135}}
+  local columns
+  if outputs then columns={{L("Ergebnis"),.43},{L("AH / Stück"),.19},{L("AH netto / Stück"),.19},{L("Händler / Stück"),.19}}
+  elseif planSummary then columns={{L("Material"),.44},{L("Tasche"),.14},{L("Bank"),.14},{L("Twink"),.14},{L("Kaufen"),.14}}
+  else columns={{L("Material"),.37},{L("Bedarf"),.09},{L("Tasche"),.09},{L("Bank"),.09},{L("Kaufen"),.09},{L("AH/St."),.135},{L("Zukauf"),.135}} end
+  local headerY=4
+  if planSummary then
+    parent.planTitle=rawget(parent,"planTitle") or self:DisplayLabel(parent,"GameFontNormal",10,8,width-20,"")
+    parent.planTitle:SetWidth(width-20);parent.planTitle:SetText(planSummary.title);parent.planTitle:Show()
+    headerY=height(parent.planTitle,16)+16
+  elseif rawget(parent,"planTitle") then
+    parent.planTitle:Hide()
+    parent.planTotalLabel:Hide()
+    parent.planTotal:Hide()
+  end
   for _,h in ipairs(parent.tableHeaders) do h:Hide() end
   local x=8
   for i,c in ipairs(columns) do
     local h=parent.tableHeaders[i] or self:DisplayLabel(parent,"GameFontNormalSmall",0,0,50,"");parent.tableHeaders[i]=h
-    h:ClearAllPoints();h:SetPoint("TOPLEFT",parent,"TOPLEFT",x,-4);h:SetWidth(width*c[2]-8);h:SetJustifyH(i==1 and "LEFT" or "RIGHT");h:SetText(c[1]);h:Show();x=x+width*c[2]
+    h:ClearAllPoints();h:SetPoint("TOPLEFT",parent,"TOPLEFT",x,-headerY);h:SetWidth(width*c[2]-8);h:SetJustifyH(i==1 and "LEFT" or "RIGHT");h:SetText(c[1]);h:Show();x=x+width*c[2]
   end
   for _,r in ipairs(parent.tableRows) do r:Hide() end
-  local y=28
+  local y=headerY+24
   for i,mat in ipairs(rows) do
     local r=parent.tableRows[i]
     if not r then
@@ -175,6 +245,9 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
     local m=self:ItemMarket(mat.id)
     local values=outputs and {mat.name or self:ItemName(mat.id),self:DisplayMoney(m.auction),self:DisplayMoney(not m.bound and m.net or nil),self:DisplayMoney(m.vendor)}
       or {mat.name or self:ItemName(mat.id),mat.quantity or mat.required or 0,mat.bag or 0,mat.bankKnown and mat.bank or "?",mat.missing or 0,self:DisplayMoney(m.auction),mat.missing==0 and self:DisplayMoney(0) or self:DisplayMoney(mat.buy or mat.cost)}
+    if planSummary then
+      values={values[1],mat.fromBags,mat.fromBank,mat.alts,mat.missing}
+    end
     if C_Item and type(C_Item.GetItemIconByID)=="function" then
       local ok,icon=pcall(C_Item.GetItemIconByID,mat.id)
       if ok and icon then values[1]="|T"..icon..":18|t "..values[1] end
@@ -183,7 +256,10 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
     for j,c in ipairs(columns) do
       local t=r.cells[j] or self:DisplayLabel(r,"GameFontHighlightSmall",0,0,50,"");r.cells[j]=t
       t:ClearAllPoints();t:SetPoint("TOPLEFT",r,"TOPLEFT",x,-9);t:SetWidth(width*c[2]-8);t:SetJustifyH(j==1 and "LEFT" or "RIGHT");t:SetText(tostring(values[j]))
-      t:SetTextColor(1,1,1);if not outputs and j==5 then t:SetTextColor(mat.missing>0 and 1 or .4,mat.missing>0 and .55 or .9,.5) end
+      t:SetTextColor(1,1,1)
+      if not outputs and j==5 then
+        if mat.missing>0 then t:SetTextColor(.937,.816,.541) else t:SetTextColor(.553,.847,.667) end
+      end
       if ((not outputs and j==6) or (outputs and j==2)) and m.auction and not m.fresh then t:SetTextColor(1,.65,.3) end
       t:Show();x=x+width*c[2]
     end
@@ -193,7 +269,14 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
     r.note:ClearAllPoints();r.note:SetPoint("TOPLEFT",r,"TOPLEFT",8,-noteY);r.note:SetWidth(width-16)
     local reserved=(mat.reserved or 0)>0 and (L("Reserviert für andere Pläne: ")..mat.reserved.." · ") or ""
     local pickup=""
-    if mat.showPickup then
+    if planSummary then
+      local notes={}
+      if mat.fromBank>0 and not mat.bankLive then notes[#notes+1]=L("Bankstand gespeichert") end
+      if mat.alts>0 then notes[#notes+1]=self:AltPickupText(mat.id,mat.alts) end
+      if m.auction then notes[#notes+1]=L("AH / Stück").." "..self:DisplayMoney(m.auction) end
+      if mat.missing>0 then notes[#notes+1]=L("Zukauf").." "..self:PurchaseEstimate(mat.buy or 0,mat.buy~=nil) end
+      if #notes>0 then pickup=table.concat(notes," · ").."\n" end
+    elseif mat.showPickup then
       local bank=mat.fromBank>0 and not mat.bankLive and L(" · Bankstand gespeichert") or ""
       pickup=string.format(L("%d aus Tasche · %d von Bank · %d vom Twink · %d kaufen"),
         mat.fromBags,mat.fromBank,mat.alts,mat.missing)..bank
@@ -206,7 +289,24 @@ function CP:DrawMaterialTable(parent,rows,width,outputs)
     r.note:SetText(pickup..reserved..m.advice)
     -- Whole pixels: fractional heights made some row borders look doubled.
     local h=math.floor(noteY+height(r.note,16)+10+.5)
-    r:ClearAllPoints();r:SetPoint("TOPLEFT",parent,"TOPLEFT",0,-y);r:SetSize(width,h);r:SetBackdropColor(i%2==0 and .065 or .045,.085,.11,.9);r:Show();y=y+h+4
+    r:ClearAllPoints();r:SetPoint("TOPLEFT",parent,"TOPLEFT",0,-y);r:SetSize(width,h)
+    if planSummary then
+      r:SetBackdropColor(i%2==0 and .137 or .102,i%2==0 and .165 or .122,i%2==0 and .200 or .153,1)
+      r:SetBackdropBorderColor(.188,.216,.255,1)
+    else
+      r:SetBackdropColor(i%2==0 and .065 or .045,.085,.11,.9)
+      r:SetBackdropBorderColor(.12,.18,.23,1)
+    end
+    r:Show();y=y+h+4
+  end
+  if planSummary then
+    parent.planTotalLabel=rawget(parent,"planTotalLabel") or self:DisplayLabel(parent,"GameFontDisableSmall",10,0,width*.47,"")
+    parent.planTotal=rawget(parent,"planTotal") or self:DisplayLabel(parent,"GameFontNormalLarge",0,0,width*.48,"","RIGHT")
+    parent.planTotalLabel:ClearAllPoints();parent.planTotalLabel:SetPoint("TOPLEFT",parent,"TOPLEFT",10,-(y+8))
+    parent.planTotalLabel:SetWidth(width*.47);parent.planTotalLabel:SetText(planSummary.label);parent.planTotalLabel:Show()
+    parent.planTotal:ClearAllPoints();parent.planTotal:SetPoint("TOPRIGHT",parent,"TOPRIGHT",-10,-(y+6))
+    parent.planTotal:SetWidth(width*.48);parent.planTotal:SetText(planSummary.total);parent.planTotal:Show()
+    y=y+math.max(height(parent.planTotalLabel,14),height(parent.planTotal,18))+16
   end
   parent:SetSize(width,math.max(30,y));return y
 end
@@ -262,8 +362,9 @@ function CP:LayoutVisualCard(b,entry,width)
     b.dataTable=rawget(b,"dataTable") or CreateFrame("Frame",nil,b)
     b.dataTable:ClearAllPoints();b.dataTable:SetPoint("TOPLEFT",b,"TOPLEFT",0,-2);b.dataTable:Show()
     for _,name in ipairs({"tableHeaders","tableRows","productionHeaders","productionRows"}) do for _,part in ipairs(rawget(b.dataTable,name) or {}) do part:Hide() end end
+    for _,name in ipairs({"planTitle","planTotalLabel","planTotal"}) do if rawget(b.dataTable,name) then b.dataTable[name]:Hide() end end
     if entry.productionRows then return self:DrawProductionTable(b.dataTable,entry.productionRows,entry.recipeKey,width),true end
-    return self:DrawMaterialTable(b.dataTable,entry.materialTable,width),true
+    return self:DrawMaterialTable(b.dataTable,entry.materialTable,width,nil,entry.planSummary),true
   end
   for _,name in ipairs({"titleLabel","detailLabel","footLabel","craftIcon","craftStripe","craftDot"}) do if rawget(b,name) then b[name]:Show() end end
   if entry.grid and rawget(b,"craftStripe") then b.craftStripe:Hide() end

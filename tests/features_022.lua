@@ -5,7 +5,7 @@ for _,f in ipairs(createdFrames) do if f.frameName=="CraftPilotProSidebar" then 
 assert(side and side.parent==CP.frame,"Sidebar is part of the window")
 local nav={}
 for _,b in ipairs(createdFrames) do
-  if b.parent==side and rawget(b,"iconBox") then nav[#nav+1]=b end
+  if b.parent==side and rawget(b,"selectionMarker") then nav[#nav+1]=b end
 end
 assert(#nav==9,"Seven pages plus settings and help in the sidebar")
 -- Clicking a sidebar entry opens its page and marks it.
@@ -13,7 +13,7 @@ local endgame
 for _,b in ipairs(nav) do if b.displayText=="Endgame" then endgame=b end end
 assert(endgame,"Endgame entry")
 endgame:GetScript("OnClick")(endgame)
-assert(CP.db.ui.tab=="endgame" and endgame.iconBox.visible==true,"Endgame opened and marked")
+assert(CP.db.ui.tab=="endgame" and endgame.selectionMarker.visible==true,"Endgame opened and marked")
 -- Settings and help keep a single entry each.
 local settings,help=0,0
 for _,b in ipairs(createdFrames) do
@@ -22,7 +22,7 @@ for _,b in ipairs(createdFrames) do
 end
 assert(settings==1 and help==1)
 CP:OpenTab("now")
-assert(endgame.iconBox.visible==false,"Only the open page is marked")
+assert(endgame.selectionMarker.visible==false,"Only the open page is marked")
 print("PASS: 0.2.2 sidebar navigation")
 
 -- 0.2.3: rounded surfaces, profession in the sidebar, reserved chip, profit cards side by side with value bars.
