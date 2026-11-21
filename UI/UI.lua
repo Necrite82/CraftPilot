@@ -502,10 +502,10 @@ U.rec.stripe=U.rec:CreateTexture(nil,"OVERLAY");U.rec.stripe:SetWidth(3)
 U.rec.stripe:SetPoint("TOPLEFT",U.rec,"TOPLEFT",0,0);U.rec.stripe:SetPoint("BOTTOMLEFT",U.rec,"BOTTOMLEFT",0,0)
 U.rec.stripe:SetColorTexture(.88,.69,.31,1)
 U.rec.icon=U.rec:CreateTexture(nil,"ARTWORK");U.rec.icon:SetSize(32,32);U.rec.icon:SetPoint("LEFT",U.rec,"LEFT",12,0)
-U.rec.title=text(U.rec,"GameFontNormal",54,-9,400,"");U.rec.title:SetWordWrap(false)
-U.rec.detail=text(U.rec,"GameFontHighlightSmall",54,-28,400,"");U.rec.detail:SetWordWrap(false)
-U.rec.extra=text(U.rec,"GameFontHighlightSmall",54,-44,400,"");U.rec.extra:SetWordWrap(false)
-U.rec.search=primaryButton(U.rec,150,28,L("Im AH suchen"),function() CP:SearchRecommendation() end)
+U.rec.title=text(U.rec,"GameFontNormal",54,-9,400,"");U.rec.title:SetWordWrap(true)
+U.rec.detail=text(U.rec,"GameFontHighlightSmall",54,-28,400,"");U.rec.detail:SetWordWrap(true)
+U.rec.search=primaryButton(U.rec,172,28,L("Rezept öffnen"),function() end)
+U.rec.auction=button(U.rec,92,24,0,0,L("AH-Suche"),function() CP:SearchRecommendation() end)
 U.rec.pick=button(U.rec,110,28,0,0,L("Auswählen"),function()
   local r=CP.currentRecommendation;if not r then return end
   CP.db.ui.selectedVendorRecipe=nil;CP.db.ui.selectedVendorKey=nil
@@ -613,6 +613,8 @@ U.plan.total=text(frame,"GameFontNormalLarge",0,0,220,"")
 U.plan.footerLine=frame:CreateTexture(nil,"ARTWORK")
 U.plan.footerLine:SetHeight(1)
 U.plan.footerLine:SetColorTexture(PALETTE.border[1],PALETTE.border[2],PALETTE.border[3],1)
+U.plan.workflow=text(frame,"GameFontHighlightSmall",0,0,400,"")
+U.plan.workflow:SetWordWrap(true)
 U.plan.pages={}
 for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=L("Herstellen")},{key="leftovers",label=L("Verwerten")},{key="details",label=L("Details")},{key="projects",label=L("Projekte")}}) do
   U.plan.pages[i]=segment(frame,96,24,page.label,function() CP.db.ui.planPage=page.key;CP:Render() end)
@@ -620,7 +622,7 @@ for i,page in ipairs({{key="shopping",label=L("Einkaufen")},{key="crafts",label=
 end
 U.plan.controls={U.plan.rangeLabel,U.plan.rangeStart,U.plan.targetLabel,U.plan.rangeEnd,U.plan.quantityLabel,U.plan.rangeQty,
   U.plan.build,U.plan.add,U.plan.draft,U.plan.print,U.plan.clear,U.plan.export,U.plan.manual,U.plan.totalLabel,U.plan.total,
-  U.plan.footerLine,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4],U.plan.pages[5]}
+  U.plan.footerLine,U.plan.workflow,U.plan.pages[1],U.plan.pages[2],U.plan.pages[3],U.plan.pages[4],U.plan.pages[5]}
 local syncedPlan
 local function syncPlanFields(key)
   local p=CP:PlanFor(key)
@@ -2056,6 +2058,27 @@ local function renderPlan(self,key,prof,record,inner)
   end
   segmentGroup("plan",U.plan.pages)
   y=y+38
+  local plan=self:PlanFor(key)
+  local route=self:AutoRouteShopping(key)
+  local workflow=L("1 Bereich planen  ·  2 Materialien holen oder kaufen  ·  3 Herstellen")
+  if route then
+    local seen, learn={},0
+    for _,steps in ipairs({route.steps or {},route.intermediates or {}}) do
+      for _,step in ipairs(steps) do
+        local recipe=(self.db.recipes[step.key or key] or {})[step.id]
+        if not seen[step.id] and step.source~="start" and not (recipe and recipe.learned) then
+          seen[step.id]=true;learn=learn+1
+        end
+      end
+    end
+    workflow=learn>0 and string.format(L("1 %d Rezepte lernen  ·  2 Materialien holen oder kaufen  ·  3 Herstellen"),learn)
+      or L("1 Materialien holen oder kaufen  ·  2 Herstellen")
+  elseif next(plan.crafts) then
+    workflow=L("1 Materialien holen oder kaufen  ·  2 Herstellen")
+  end
+  U.plan.workflow:SetText(string.format(L("Skill %d–%d  ·  %s"),plan.start,plan.target,workflow))
+  place(U.plan.workflow,18,y,inner);U.plan.workflow:Show()
+  y=y+textHeight(U.plan.workflow,16)+10
   if page=="crafts" then
     local p=self:PlanFor(key);local choice=self:SelectedOption(key)
     place(U.plan.quantityLabel,18,y+7);U.plan.quantityLabel:Show()
@@ -2076,6 +2099,7 @@ local function renderPlan(self,key,prof,record,inner)
   if page=="shopping" then
     local manual=self:PersonalShopping()
     local rows={}
+    table.insert(cards,1,{sectionHeader=true,title=L("BERECHNETER BEDARF")})
     for id,n in pairs(manual) do
       local _,bag,bank,live,known=self:ItemAvailability(id);local price=self:PriceDetails(id)
       rows[#rows+1]={id=id,quantity=n,bag=bag,bank=bank,bankKnown=known,missing=n,buy=price.price and price.price*n}
@@ -2186,32 +2210,44 @@ function CP:RenderRecommendation(key,inner)
   local rec=self:Recommendation(key)
   self.currentRecommendation=rec
   if not rec then U.rec:Hide();return false end
-  -- Two text lines below the title when there is a saving tip or a whole-way cost, so nothing gets cut off.
-  local height=rec.extra and 64 or 54
+  local height=54
   U.rec:ClearAllPoints();U.rec:SetPoint("TOPLEFT",frame,"TOPLEFT",18,-106);U.rec:SetSize(inner,height);U.rec:Show()
   if type(U.rec.icon.SetTexture)=="function" then U.rec.icon:SetTexture(self:RecipeIcon(key,rec.id)) end
-  local w=inner-54-150-110-30
-  U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w);U.rec.extra:SetWidth(w)
-  U.rec.title:ClearAllPoints();U.rec.title:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,rec.extra and -8 or -9)
-  U.rec.detail:ClearAllPoints();U.rec.detail:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,rec.extra and -26 or -28)
-  U.rec.extra:ClearAllPoints();U.rec.extra:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-43)
+  local w=inner-54-172-28
+  U.rec.title:SetWidth(w);U.rec.detail:SetWidth(w)
+  U.rec.title:ClearAllPoints();U.rec.title:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-9)
   U.rec.title:SetText(rec.title)
+  local titleHeight=textHeight(U.rec.title,16)
+  U.rec.detail:ClearAllPoints();U.rec.detail:SetPoint("TOPLEFT",U.rec,"TOPLEFT",54,-(13+titleHeight))
   U.rec.detail:SetText(rec.detail)
-  U.rec.extra:SetText(rec.extra or "");U.rec.extra:SetShown(rec.extra~=nil)
-  U.rec.search:ClearAllPoints();U.rec.search:SetPoint("RIGHT",U.rec,"RIGHT",-12,0)
-  U.rec.pick:ClearAllPoints();U.rec.pick:SetPoint("RIGHT",U.rec.search,"LEFT",-8,0)
+  height=math.max(height,23+titleHeight+textHeight(U.rec.detail,13))
+  U.rec.search:ClearAllPoints();U.rec.search:SetPoint("TOPRIGHT",U.rec,"TOPRIGHT",-12,-13)
   if rec.learn then
-    U.rec.search:SetText(rec.learn.source=="ah" and L("Rezept im AH suchen") or L("Wegpunkt zum Lernen"))
+    U.rec.search:SetText(rec.learn.source=="ah" and L("Rezept im AH suchen") or (rec.learn.source=="vendor" and L("Zum Händler") or L("Zum Lehrer")))
     U.rec.search:SetScript("OnClick",function()
       local r=CP.currentRecommendation;if not r or not r.learn then return end
       if r.learn.source=="vendor" and r.learn.vendor and r.learn.vendor.location then CP:SetWaypoint(r.learn.vendor.location)
-      elseif r.learn.source=="ah" then CP:GoLearn(r.key,r.id)
+      elseif r.learn.source=="ah" or r.learn.source=="vendor" then CP:GoLearn(r.key,r.id)
       else CP:TrainerWaypoint() end
     end)
+  elseif rec.missing>0 then
+    U.rec.search:SetText(L("Fehlmengen zur Liste"))
+    U.rec.search:SetScript("OnClick",function()
+      local r=CP.currentRecommendation
+      if r then CP:AddCostDeficits({kind="recipe",key=r.key,id=r.id,quantity=r.count}) end
+    end)
+  elseif not rec.inBags then
+    U.rec.search:SetText(L("Vorräte ansehen"))
+    U.rec.search:SetScript("OnClick",function()
+      local r=CP.currentRecommendation
+      if r then CP:OpenCostCalculation("recipe",r.key,r.id,r.count) end
+    end)
   else
-    U.rec.search:SetText(rec.missing>0 and L("Im AH suchen") or L("Berufsfenster öffnen"))
-    U.rec.search:SetScript("OnClick",rec.missing>0 and function() CP:SearchRecommendation() end
-      or function() local r=CP.currentRecommendation;if r then CP:OpenLearnedRecipe(r.key,r.id) end end)
+    U.rec.search:SetText(L("Rezept öffnen"))
+    U.rec.search:SetScript("OnClick",function()
+      local r=CP.currentRecommendation
+      if r then CP:OpenLearnedRecipe(r.key,r.id) end
+    end)
   end
   primary(U.rec.search)
   local chosen=self:SelectedOption(key)
@@ -2219,29 +2255,22 @@ function CP:RenderRecommendation(key,inner)
   -- Old or missing prices on the way: offer a targeted Auctionator scan of exactly those materials.
   local p=rec.prices
   local doubtful=p and (p.stale+p.missing+p.unknown)>0
-  U.rec.prices:ClearAllPoints()
-  U.rec.prices:SetPoint("RIGHT",U.rec.pick:IsShown() and U.rec.pick or U.rec.search,"LEFT",-8,0)
   U.rec.prices:SetShown(doubtful==true)
-  if doubtful then
-    U.rec.prices:SetText(p.missing>0 and string.format(L("%d ohne Preis"),p.missing) or L("Preise alt"))
-    local tw=inner-54-150-30-(U.rec.pick:IsShown() and 118 or 0)-128
-    U.rec.title:SetWidth(tw);U.rec.detail:SetWidth(tw);U.rec.extra:SetWidth(tw)
-  end
-  U.rec.switch:ClearAllPoints()
+  if doubtful then U.rec.prices:SetText(p.missing>0 and string.format(L("%d ohne Preis"),p.missing) or L("Preise alt")) end
   U.rec.switch:SetShown(rec.alternative~=nil)
   if rec.alternative then
-    local left=U.rec.prices:IsShown() and U.rec.prices or (U.rec.pick:IsShown() and U.rec.pick or U.rec.search)
-    U.rec.switch:SetPoint("RIGHT",left,"LEFT",-8,0)
     U.rec.switch:SetText(rec.alternative.source=="cheapest" and L("Günstigsten nehmen") or L("Meinen Plan nehmen"))
-    local sw=(U.rec.title:GetWidth() or 0)-148
-    if sw>120 then U.rec.title:SetWidth(sw);U.rec.detail:SetWidth(sw);U.rec.extra:SetWidth(sw) end
   end
-  -- 1.2.1: only as many hints as fit; the rest stays in the tooltip and the companion.
-  local parts=rec.extraParts or {}
-  if #parts>1 and type(U.rec.extra.GetStringWidth)=="function" then
-    local avail=U.rec.extra:GetWidth()
-    if type(avail)=="number" and avail>0 and (U.rec.extra:GetStringWidth() or 0)>avail then U.rec.extra:SetText(parts[1]) end
+  U.rec.auction:SetShown(not rec.learn and rec.missing>0)
+  local x=54
+  for _,b in ipairs({U.rec.pick,U.rec.auction,U.rec.prices,U.rec.switch}) do
+    if b:IsShown() then
+      b:ClearAllPoints();b:SetPoint("TOPLEFT",U.rec,"TOPLEFT",x,-(height-2))
+      x=x+b:GetWidth()+6
+    end
   end
+  if x>54 then height=height+32 end
+  U.rec:SetHeight(height)
   -- Hover: the whole cheapest path, step by step.
   U.rec:EnableMouse(true)
   tooltip(U.rec,L("Günstigster Weg nach AH-Preisen"),function()
@@ -2251,7 +2280,7 @@ function CP:RenderRecommendation(key,inner)
     local why=r and CP.WhyRecipeLines and CP:WhyRecipeLines(r.key,r.id)
     if why then for i=#why,1,-1 do table.insert(lines,1,why[i]) end end
     -- Hints that did not fit into the banner.
-    if r and r.allExtra and r.allExtra~=r.extra then
+    if r and r.allExtra then
       local all={}
       for part in (r.allExtra.."  ·  "):gmatch("(.-)  ·  ") do all[#all+1]=part end
       for i=#all,1,-1 do table.insert(lines,1,all[i]) end

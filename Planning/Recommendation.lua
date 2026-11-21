@@ -68,7 +68,7 @@ function CP:Recommendation(key)
   end
   if #missing>3 then parts[#parts+1]=string.format(L("+%d weitere"),#missing-3) end
   local title=(target or 0)>record.skill
-    and string.format(L("Empfehlung: %d× %s bis Skill %d"),count,best.name,target)
+    and string.format(L("Empfehlung: %d× %s · etwa bis Skill %d"),count,best.name,target)
     or (L("Empfehlung: ")..best.name)
   if learn then
     title=(learn.source=="ah" and L("Erst im AH kaufen: ") or L("Erst lernen: "))..best.name..(learn.fee>0 and (" ("..self:FormatCostMoney(learn.fee)..")") or "")
@@ -150,7 +150,7 @@ function CP:Recommendation(key)
   local allExtra=#order>0 and table.concat(order,"  ·  ") or nil
   local extra=#order>0 and table.concat({order[1],order[2]},"  ·  ") or nil
   return {key=key,id=best.id,name=best.name,count=count,title=title,detail=detail,extra=extra,allExtra=allExtra,extraParts=order,tip=tip,source=source,alternative=alternative,buy=cost.buy,buyComplete=cost.cashComplete,fromAlts=fromAlts,
-    missing=#missing,materials=missing,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
+    missing=#missing,materials=missing,inBags=inBags,path=path,learn=learn,prices=path and self:PriceSummary(path.priceItems or {})}
 end
 
 -- Trainer offers compare costs per recipe; compute them once per render.
