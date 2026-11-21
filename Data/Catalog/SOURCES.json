@@ -1,33 +1,33 @@
 {
   "allthethings": {
-    "commit": "6276795630de0e3a10d618fe49532a1642ac5fd4",
-    "files": 197,
-    "sha256": "b73ef7920aaac2cb476f4a581d22412ca0cf5d6a7a1d658851a72129f715e935"
+    "commit": "61be486e0ce7ffacc0a09aa236c5d05210417347",
+    "files": 198,
+    "sha256": "7a4dbeda3353577e7a85f93c5b8295681bf73ab85a7457557bce4c6c8cb0b8e1"
   },
   "classicdb": {
     "sha256": "4f92db520868ab4e566726f68b5b2e380ae781209beaf22237b4f7f04600d0c0",
     "source": "https://github.com/cmangos/classic-db"
   },
   "client": {
-    "build": "1.60.1.70959",
+    "build": "1.60.1.71037",
     "eraBuild": "1.15.9.70576",
     "source": "https://wago.tools",
     "tables": {
       "AreaTable.csv.gz": "9aac5960ef4b8f3c01d9f46f399628ce7bb633ff865709d59fb59d9ce4cb43df",
       "Faction.csv.gz": "8d83f21f58cd2835a49085d58fab481305220d1d26c5e99d148583a48a137d6c",
-      "Item.csv.gz": "32ee11866ddee06477a4830105b084f68e972644fd6b067d77c859168cbf9df3",
-      "ItemEffect.csv.gz": "4e6090e887ab2e82d2aac7e5526a5b8aea6366aeaebfc10a272e2c513eaa7bc4",
-      "ItemSparse.csv.gz": "0e194578bca2289558a133fe6d4184b1baba848327c0fa0442ba2846b9b39a55",
-      "ItemXItemEffect.csv.gz": "4a0604e047f72390991e3a7914fe3e309829fb8773c36f5e4aff5628b7913f88",
+      "Item.csv.gz": "4dc3125995aeda05fe20b4c4b97def50e8444fd2e47bdbfeab97e5ee09533bb7",
+      "ItemEffect.csv.gz": "0272d47d6bed698febbe29a4b58882adcf6c2bf43d211f926bfd96be47ae8a23",
+      "ItemSparse.csv.gz": "40a846d609a35d6fa4df63dfe0fed4166a96e753d2fe8f7f87fb0023ab50a1b0",
+      "ItemXItemEffect.csv.gz": "dd612cf4d32a4287861f57b9a19421f6bf111531b084197a3033a4f8c794c397",
       "SkillLine.csv.gz": "f3867d43ab42d1f5278e6e5028d0151bc06e4ef8e5cbd790a20df6ee57aa654d",
       "SkillLineAbility.csv.gz": "6696abd03ef90ad250a12ac23778616c292c46f6a0082130fbe187c96ead0aa0",
-      "Spell.csv.gz": "1bbb3dbe51236c2f431efe2d6c7168b462819e4a63bcf2776e584ced440bdce1",
-      "SpellCooldowns.csv.gz": "f9ee0b38458f23cfd38aa0605b8015853276b1401aa3e5bcb46a34b8732b4fc4",
+      "Spell.csv.gz": "a5878d2a6a49d562818cd1b4d2f8e7e861bc9a023900648b7ec8ec3ccc5ed20d",
+      "SpellCooldowns.csv.gz": "1414d75e7d8b4575a93ddcdf667d60bf02d6d87a0cd410d814d06bccf0794314",
       "SpellDuration.csv.gz": "4787f303fe8487cd67e5f9e8574fdc6fa2a03516dcfaabba23d9944f937223f5",
-      "SpellEffect.csv.gz": "c872f27d9103aa73736c8e46a0d82b14fa86416cb3493f0088e726956f9a9c8d",
-      "SpellLevels.csv.gz": "8bb6142b47be66c5110c7f64e53bbc27223a1d2bde739dafde1eec5c92a42649",
-      "SpellMisc.csv.gz": "e2032d651fba6a21cd15a07cd6d33147636a9dc294c10712aa639ace3e096b10",
-      "SpellName.csv.gz": "820691f35767955e96f929a5f66782d3825aeea8169644dbbbb5fa4d8578452f",
+      "SpellEffect.csv.gz": "a0afcd6a6bfd078e6eaf77df82922c435a9a4558593cf78dfb483631a7b9bfd3",
+      "SpellLevels.csv.gz": "32bee963f239af222f384e58abf65e646ea9de2f21b74b9f069847ec0fccbe44",
+      "SpellMisc.csv.gz": "e9dde757951dc20e5118c5dde0a9c52c5c0b29467a254da97bc5c375aa8879f3",
+      "SpellName.csv.gz": "092602f9436e921ad62ea083f153028279a172bdf94c74f0c51f489c8f00bfc5",
       "SpellReagents.csv.gz": "be6e987755f7097348eb072073ae3175b3d56016f43f90615a081d33d6affff6",
       "SpellTotems.csv.gz": "43be02451227ce8a588e95ce9f8804b818a4e02cb7c5b9db0126266e65227471",
       "TotemCategory.csv.gz": "ba854281b52d07468935aed2384c7dbd7f663fc272dbc12d68028968270ca5ac",
