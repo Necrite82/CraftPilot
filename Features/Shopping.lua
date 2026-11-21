@@ -107,8 +107,8 @@ function CP:ExportToAuctionator(owner)
   if owner=="project" then
     -- 1.3.0: everything the projects still have to buy (requirements minus stock).
     for id,n in pairs(self.ProjectRequirements and self:ProjectRequirements() or {}) do
-      local left=n-(self:ItemAvailability(id) or 0)
-      if left>0 then missing[#missing+1]={id=id,quantity=left} end
+      local left=n-(self:AvailableForPlan(id,"project") or 0)
+      if left>0 then missing[id]=left end
     end
     name=name..L("Projekte")
   elseif owner=="raid" then
