@@ -1,8 +1,8 @@
 {
   "questiedb": {
     "source": "https://github.com/Questie/QuestieDB",
-    "tag": "v1.1.3",
-    "commit": "8b8df2dc12a34e2eb82bc7105b40405dce1c01f7",
+    "tag": "v1.1.6",
+    "commit": "4377c981ac368d1593ec92788218e0a689a6a02b",
     "files": {
       "data/Forever/foreverItemDB.lua": {
         "sha256": "987d037b6df94d5b0b1dc326a1670581e3abb952736a4ae055fd9f161328b71c"
