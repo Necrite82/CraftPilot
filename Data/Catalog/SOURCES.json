@@ -1,33 +1,33 @@
 {
   "allthethings": {
-    "commit": "6276795630de0e3a10d618fe49532a1642ac5fd4",
-    "files": 197,
-    "sha256": "b73ef7920aaac2cb476f4a581d22412ca0cf5d6a7a1d658851a72129f715e935"
+    "commit": "2e670c0cea75b5f4c5a1df08d793d05e6d787aed",
+    "files": 200,
+    "sha256": "5476ad98f09a1ba59842542414ac77ae1724e82e5e08b0078e4c33758b2d0227"
   },
   "classicdb": {
     "sha256": "4f92db520868ab4e566726f68b5b2e380ae781209beaf22237b4f7f04600d0c0",
     "source": "https://github.com/cmangos/classic-db"
   },
   "client": {
-    "build": "1.60.1.70959",
+    "build": "1.60.1.71139",
     "eraBuild": "1.15.9.70576",
     "source": "https://wago.tools",
     "tables": {
       "AreaTable.csv.gz": "9aac5960ef4b8f3c01d9f46f399628ce7bb633ff865709d59fb59d9ce4cb43df",
       "Faction.csv.gz": "8d83f21f58cd2835a49085d58fab481305220d1d26c5e99d148583a48a137d6c",
-      "Item.csv.gz": "32ee11866ddee06477a4830105b084f68e972644fd6b067d77c859168cbf9df3",
-      "ItemEffect.csv.gz": "4e6090e887ab2e82d2aac7e5526a5b8aea6366aeaebfc10a272e2c513eaa7bc4",
-      "ItemSparse.csv.gz": "0e194578bca2289558a133fe6d4184b1baba848327c0fa0442ba2846b9b39a55",
-      "ItemXItemEffect.csv.gz": "4a0604e047f72390991e3a7914fe3e309829fb8773c36f5e4aff5628b7913f88",
+      "Item.csv.gz": "0f3a75bdd765a2138181e771f68a93be8a0f5124468164c40615b1e664582744",
+      "ItemEffect.csv.gz": "91cb8d9389de3088660965501c1ca720050abd48655e3369efb55565dcee5b99",
+      "ItemSparse.csv.gz": "04ef3ef49aed8f98b0ffe357f980b08afd6e32b62ef592afe03e620ab95e6648",
+      "ItemXItemEffect.csv.gz": "34545365043a710f0fc9a312fc547dec0162ac5b9ee97d5c58be1ff918bb7fd8",
       "SkillLine.csv.gz": "f3867d43ab42d1f5278e6e5028d0151bc06e4ef8e5cbd790a20df6ee57aa654d",
-      "SkillLineAbility.csv.gz": "6696abd03ef90ad250a12ac23778616c292c46f6a0082130fbe187c96ead0aa0",
-      "Spell.csv.gz": "1bbb3dbe51236c2f431efe2d6c7168b462819e4a63bcf2776e584ced440bdce1",
-      "SpellCooldowns.csv.gz": "f9ee0b38458f23cfd38aa0605b8015853276b1401aa3e5bcb46a34b8732b4fc4",
-      "SpellDuration.csv.gz": "4787f303fe8487cd67e5f9e8574fdc6fa2a03516dcfaabba23d9944f937223f5",
-      "SpellEffect.csv.gz": "c872f27d9103aa73736c8e46a0d82b14fa86416cb3493f0088e726956f9a9c8d",
-      "SpellLevels.csv.gz": "8bb6142b47be66c5110c7f64e53bbc27223a1d2bde739dafde1eec5c92a42649",
-      "SpellMisc.csv.gz": "e2032d651fba6a21cd15a07cd6d33147636a9dc294c10712aa639ace3e096b10",
-      "SpellName.csv.gz": "820691f35767955e96f929a5f66782d3825aeea8169644dbbbb5fa4d8578452f",
+      "SkillLineAbility.csv.gz": "ecdc96fca011a72281802b0a10e6e36dbcc9c072c2dfae93b5ceaa9f31aa74e7",
+      "Spell.csv.gz": "cc8e495092e5030ccfc2719dd052948cb7e6debca79584260abd560582b855fc",
+      "SpellCooldowns.csv.gz": "8057a49fd5c0e627f31117be362f8a7ac55d822997ec4ef2dd8a0615da7b7542",
+      "SpellDuration.csv.gz": "422876b9cca2c40fcc18346a0d914afc0001dded0ae3c450ad4505b8a6fbc765",
+      "SpellEffect.csv.gz": "970158fb0ea34695b1d59837a8a612d72b76592f941324372095e1566ea461f2",
+      "SpellLevels.csv.gz": "f7a4ee0244a9363e15a2aec0cc69525d7b1e75e11518df920608b285eedd4fc8",
+      "SpellMisc.csv.gz": "f57f7cd3c95d829ae90fe450b8068545beece192a112693da4ce81ee29034690",
+      "SpellName.csv.gz": "02128e7f52b8741d2bd144f273cad5e29da384636096087f567db8734a939934",
       "SpellReagents.csv.gz": "be6e987755f7097348eb072073ae3175b3d56016f43f90615a081d33d6affff6",
       "SpellTotems.csv.gz": "43be02451227ce8a588e95ce9f8804b818a4e02cb7c5b9db0126266e65227471",
       "TotemCategory.csv.gz": "ba854281b52d07468935aed2384c7dbd7f663fc272dbc12d68028968270ca5ac",
@@ -37,12 +37,12 @@
     }
   },
   "questiedb": {
-    "asset": "QuestieDB-1.1.3-Forever.zip",
+    "asset": "QuestieDB-1.1.6-Forever.zip",
     "files": {
       "questiedb-Forever.toc.gz": {
-        "bytes": 18453049,
+        "bytes": 19014629,
         "from": "QuestieDB/QuestieDB_Forever.toc",
-        "sha256": "ace910659975d6bf089372c96535dda44b2ec1c4281bb9efb4b9f188b7321f26"
+        "sha256": "6edc0a7c344f7c1b66c38e331b9dd61132b4992466b355e1d0163a67adb181f4"
       },
       "questiedb-areaIdToUiMapId.lua.gz": {
         "bytes": 59485,
@@ -50,8 +50,8 @@
         "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
       }
     },
-    "sha256": "98201b11bf9854895f2c966d3924b9fb10d18d10dcad7540465e7d761c1f624d",
-    "tag": "v1.1.3"
+    "sha256": "4d3e043e3c8d28014ec6f5d4d894d476769e1be99d060a174e14ca46038ebe50",
+    "tag": "v1.1.6"
   },
   "summary": {
     "alchemy": {
@@ -70,7 +70,7 @@
       "recipes": 463,
       "skipped": 20,
       "sources": {
-        "drop": 192,
+        "drop": 205,
         "quest": 35,
         "start": 5,
         "trainer": 77,
@@ -82,19 +82,18 @@
       "recipes": 131,
       "skipped": 10,
       "sources": {
-        "drop": 29,
+        "drop": 30,
         "quest": 32,
         "start": 4,
         "trainer": 7,
-        "trainer?": 1,
-        "vendor": 225
+        "vendor": 226
       }
     },
     "enchanting": {
       "recipes": 238,
       "skipped": 11,
       "sources": {
-        "drop": 91,
+        "drop": 92,
         "quest": 3,
         "start": 5,
         "trainer": 61,
@@ -106,11 +105,11 @@
       "recipes": 259,
       "skipped": 21,
       "sources": {
-        "drop": 81,
+        "drop": 83,
         "quest": 21,
         "start": 3,
         "trainer": 72,
-        "trainer?": 18,
+        "trainer?": 17,
         "vendor": 109
       }
     },
@@ -143,15 +142,15 @@
       }
     },
     "leatherworking": {
-      "recipes": 545,
+      "recipes": 546,
       "skipped": 25,
       "sources": {
-        "drop": 192,
+        "drop": 213,
         "quest": 23,
         "start": 6,
         "trainer": 68,
-        "trainer?": 11,
-        "vendor": 339
+        "trainer?": 1,
+        "vendor": 343
       }
     },
     "mining": {
@@ -177,12 +176,12 @@
       "recipes": 441,
       "skipped": 15,
       "sources": {
-        "drop": 176,
+        "drop": 181,
         "quest": 8,
         "start": 5,
         "trainer": 76,
         "trainer?": 18,
-        "vendor": 349
+        "vendor": 357
       }
     }
   }
