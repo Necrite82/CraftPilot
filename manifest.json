@@ -1,0 +1,156 @@
+{
+  "allthethings": {
+    "commit": "2e670c0cea75b5f4c5a1df08d793d05e6d787aed",
+    "files": 200,
+    "sha256": "5476ad98f09a1ba59842542414ac77ae1724e82e5e08b0078e4c33758b2d0227"
+  },
+  "build": "1.60.1.71139",
+  "eraBuild": "1.15.9.70576",
+  "fetched": "2026-11-27T14:02Z",
+  "questiedb": {
+    "asset": "QuestieDB-1.1.6-Forever.zip",
+    "files": {
+      "questiedb-Forever.toc.gz": {
+        "bytes": 19014629,
+        "from": "QuestieDB/QuestieDB_Forever.toc",
+        "sha256": "6edc0a7c344f7c1b66c38e331b9dd61132b4992466b355e1d0163a67adb181f4"
+      },
+      "questiedb-areaIdToUiMapId.lua.gz": {
+        "bytes": 59485,
+        "from": "QuestieDB/support/Forever/Zones/areaIdToUiMapId.lua",
+        "sha256": "805544d9e6234876c6cc1047fc0fbde1c034a46bb418d5f5b19384b8f615206b"
+      }
+    },
+    "sha256": "4d3e043e3c8d28014ec6f5d4d894d476769e1be99d060a174e14ca46038ebe50",
+    "tag": "v1.1.6"
+  },
+  "source": "https://wago.tools",
+  "tables": {
+    "AreaTable.csv.gz": {
+      "bytes": 152398,
+      "columns": "ID,ZoneName,AreaName_lang,ContinentID,ParentAreaID,AreaBit,SoundProviderPref,SoundProviderPrefUnderwater,AmbienceID,UwAmbience,ZoneMusic,UwZoneMusic,ExplorationLevel,IntroSound,UwIntroSound,FactionGroupMask,Ambient_multiplier,MountFlags,PvpCombatWorldStateID,WildBattlePetLevelMin,WildBattlePetLevelMax,WindSettingsID,ContentTuningID,Flags_0,Flags_1,LiquidTypeID_0,LiquidTypeID_1,LiquidTypeID_2,LiquidTypeID_3",
+      "rows": 1404,
+      "sha256": "9aac5960ef4b8f3c01d9f46f399628ce7bb633ff865709d59fb59d9ce4cb43df"
+    },
+    "Faction.csv.gz": {
+      "bytes": 34942,
+      "columns": "ID,Name_lang,Description_lang,ReputationIndex,ParentFactionID,Expansion,FriendshipRepID,Flags,ParagonFactionID,RenownFactionID,RenownCurrencyID,RenownThresholdCurveID,ReputationClassMask_0,ReputationClassMask_1,ReputationClassMask_2,ReputationClassMask_3,ReputationFlags_0,ReputationFlags_1,ReputationFlags_2,ReputationFlags_3,ReputationBase_0,ReputationBase_1,ReputationBase_2,ReputationBase_3,ReputationMax_0,ReputationMax_1,ReputationMax_2,ReputationMax_3,ParentFactionMod_0,ParentFactionMod_1,ParentFactionCap_0,ParentFactionCap_1,ReputationRaceMasks0_0,ReputationRaceMasks0_1,ReputationRaceMasks1_0,ReputationRaceMasks1_1,ReputationRaceMasks2_0,ReputationRaceMasks2_1,ReputationRaceMasks3_0,ReputationRaceMasks3_1",
+      "rows": 253,
+      "sha256": "8d83f21f58cd2835a49085d58fab481305220d1d26c5e99d148583a48a137d6c"
+    },
+    "Item.csv.gz": {
+      "bytes": 1443879,
+      "columns": "ID,ClassID,SubclassID,Material,InventoryType,SheatheType,ItemPetFoodID,Sound_override_subclassID,IconFileDataID,ItemGroupSoundsID,ContentTuningID,ModifiedCraftingReagentItemID,AmmunitionType,CraftingQualityID,ItemSquishEraID,RecraftReagentCountPercentage,OrderSource",
+      "rows": 32011,
+      "sha256": "0f3a75bdd765a2138181e771f68a93be8a0f5124468164c40615b1e664582744"
+    },
+    "ItemEffect.csv.gz": {
+      "bytes": 412728,
+      "columns": "ID,LegacySlotIndex,TriggerType,Charges,CoolDownMSec,CategoryCoolDownMSec,SpellCategoryID,SpellID,ChrSpecializationID,PlayerConditionID",
+      "rows": 12696,
+      "sha256": "91cb8d9389de3088660965501c1ca720050abd48655e3369efb55565dcee5b99"
+    },
+    "ItemSparse.csv.gz": {
+      "bytes": 5367694,
+      "columns": "ID,Description_lang,Display3_lang,Display2_lang,Display1_lang,Display_lang,ExpansionID,DmgVariance,LimitCategory,DurationInInventory,QualityModifier,BagFamily,StartQuestID,LanguageID,ItemRange,StatPercentageOfSocket_0,StatPercentageOfSocket_1,StatPercentageOfSocket_2,StatPercentageOfSocket_3,StatPercentageOfSocket_4,StatPercentageOfSocket_5,StatPercentageOfSocket_6,StatPercentageOfSocket_7,StatPercentageOfSocket_8,StatPercentageOfSocket_9,StatPercentEditor_0,StatPercentEditor_1,StatPercentEditor_2,StatPercentEditor_3,StatPercentEditor_4,StatPercentEditor_5,StatPercentEditor_6,StatPercentEditor_7,StatPercentEditor_8,StatPercentEditor_9,StatModifier_bonusStat_0,StatModifier_bonusStat_1,StatModifier_bonusStat_2,StatModifier_bonusStat_3,StatModifier_bonusStat_4,StatModifier_bonusStat_5,StatModifier_bonusStat_6,StatModifier_bonusStat_7,StatModifier_bonusStat_8,StatModifier_bonusStat_9,Stackable,MaxCount,MinReputation,RequiredAbility,AllowableRace_0,AllowableRace_1,SellPrice,BuyPrice,VendorStackCount,PriceVariance,PriceRandomValue,Flags_0,Flags_1,Flags_2,Flags_3,Flags_4,OppositeFactionItemID,ModifiedCraftingReagentItemID,ContentTuningID,PlayerLevelToItemLevelCurveID,ItemLevelOffsetCurveID,ItemLevelOffsetItemLevel,ItemSquishEraID,ItemNameDescriptionID,RequiredTransmogHoliday,RequiredHoliday,Gem_properties,Socket_match_enchantment_ID,TotemCategoryID,InstanceBound,ZoneBound_0,ZoneBound_1,ItemSet,LockID,PageID,ItemDelay,MinFactionID,RequiredSkillRank,RequiredSkill,ItemLevel,AllowableClass,ArtifactID,SpellWeight,SpellWeightCategory,SocketType_0,SocketType_1,SocketType_2,SheatheType,Material,PageMaterialID,Bonding,DamageType,ContainerSlots,RequiredPVPMedal,RequiredPVPRank,RequiredLevel,InventoryType,OverallQualityID,AmmunitionType",
+      "rows": 19404,
+      "sha256": "04ef3ef49aed8f98b0ffe357f980b08afd6e32b62ef592afe03e620ab95e6648"
+    },
+    "ItemXItemEffect.csv.gz": {
+      "bytes": 254349,
+      "columns": "ID,ItemEffectID,ItemID",
+      "rows": 12682,
+      "sha256": "34545365043a710f0fc9a312fc547dec0162ac5b9ee97d5c58be1ff918bb7fd8"
+    },
+    "SkillLine.csv.gz": {
+      "bytes": 14266,
+      "columns": "DisplayName_lang,AlternateVerb_lang,Description_lang,HordeDisplayName_lang,NeutralDisplayName,ID,CategoryID,SpellIconFileID,CanLink,ParentSkillLineID,ParentTierIndex,Flags,SpellBookSpellID,ExpansionNameSharedStringID,HordeExpansionNameSharedStringID",
+      "rows": 154,
+      "sha256": "f3867d43ab42d1f5278e6e5028d0151bc06e4ef8e5cbd790a20df6ee57aa654d"
+    },
+    "SkillLineAbility.csv.gz": {
+      "bytes": 407585,
+      "columns": "AbilityVerb_lang,AbilityAllVerb_lang,ID,SkillLine,Spell,MinSkillLineRank,ClassMask,SupercedesSpell,AcquireMethod,TrivialSkillLineRankHigh,TrivialSkillLineRankLow,Flags,NumSkillUps,UniqueBit,TradeSkillCategoryID,SkillupSkillLineID,Field_5_5_4_67090_014_0,Field_5_5_4_67090_014_1,RaceMasks_0,RaceMasks_1",
+      "rows": 7854,
+      "sha256": "ecdc96fca011a72281802b0a10e6e36dbcc9c072c2dfae93b5ceaa9f31aa74e7"
+    },
+    "Spell.csv.gz": {
+      "bytes": 2246336,
+      "columns": "ID,NameSubtext_lang,Description_lang,AuraDescription_lang",
+      "rows": 37695,
+      "sha256": "cc8e495092e5030ccfc2719dd052948cb7e6debca79584260abd560582b855fc"
+    },
+    "SpellCooldowns.csv.gz": {
+      "bytes": 120626,
+      "columns": "ID,DifficultyID,CategoryRecoveryTime,RecoveryTime,StartRecoveryTime,AuraSpellID,SpellID",
+      "rows": 4543,
+      "sha256": "8057a49fd5c0e627f31117be362f8a7ac55d822997ec4ef2dd8a0615da7b7542"
+    },
+    "SpellDuration.csv.gz": {
+      "bytes": 2846,
+      "columns": "ID,Duration,DurationPerLevel,MaxDuration,DurationPerResource",
+      "rows": 135,
+      "sha256": "422876b9cca2c40fcc18346a0d914afc0001dded0ae3c450ad4505b8a6fbc765"
+    },
+    "SpellEffect.csv.gz": {
+      "bytes": 3928646,
+      "columns": "ID,EffectAura,DifficultyID,EffectIndex,Effect,EffectAmplitude,EffectAttributes,EffectAuraPeriod,EffectBonusCoefficient,EffectChainAmplitude,EffectChainTargets,EffectItemType,EffectMechanic,EffectPointsPerResource,EffectPos_facing,EffectRealPointsPerLevel,EffectTriggerSpell,BonusCoefficientFromAP,PvpMultiplier,Coefficient,Variance,ResourceCoefficient,GroupSizeBasePointsCoefficient,EffectBasePointsF,ScalingClass,Node__Field_12_0_0_63534_001,EffectMiscValue_0,EffectMiscValue_1,EffectRadiusIndex_0,EffectRadiusIndex_1,EffectSpellClassMask_0,EffectSpellClassMask_1,EffectSpellClassMask_2,EffectSpellClassMask_3,ImplicitTarget_0,ImplicitTarget_1,SpellID",
+      "rows": 43551,
+      "sha256": "970158fb0ea34695b1d59837a8a612d72b76592f941324372095e1566ea461f2"
+    },
+    "SpellLevels.csv.gz": {
+      "bytes": 316187,
+      "columns": "ID,DifficultyID,MaxLevel,MaxPassiveAuraLevel,BaseLevel,SpellLevel,SpellID",
+      "rows": 13085,
+      "sha256": "f7a4ee0244a9363e15a2aec0cc69525d7b1e75e11518df920608b285eedd4fc8"
+    },
+    "SpellMisc.csv.gz": {
+      "bytes": 3086607,
+      "columns": "ID,Attributes_0,Attributes_1,Attributes_2,Attributes_3,Attributes_4,Attributes_5,Attributes_6,Attributes_7,Attributes_8,Attributes_9,Attributes_10,Attributes_11,Attributes_12,Attributes_13,Attributes_14,Attributes_15,Attributes_16,DifficultyID,CastingTimeIndex,DurationIndex,PvPDurationIndex,RangeIndex,SchoolMask,Speed,LaunchDelay,MinDuration,SpellIconFileDataID,ActiveIconFileDataID,ContentTuningID,ShowFutureSpellPlayerConditionID,SpellVisualScript,ActiveSpellVisualScript,SpellID",
+      "rows": 32489,
+      "sha256": "f57f7cd3c95d829ae90fe450b8068545beece192a112693da4ce81ee29034690"
+    },
+    "SpellName.csv.gz": {
+      "bytes": 851618,
+      "columns": "ID,Name_lang",
+      "rows": 32511,
+      "sha256": "02128e7f52b8741d2bd144f273cad5e29da384636096087f567db8734a939934"
+    },
+    "SpellReagents.csv.gz": {
+      "bytes": 291447,
+      "columns": "ID,SpellID,Reagent_0,Reagent_1,Reagent_2,Reagent_3,Reagent_4,Reagent_5,Reagent_6,Reagent_7,ReagentCount_0,ReagentCount_1,ReagentCount_2,ReagentCount_3,ReagentCount_4,ReagentCount_5,ReagentCount_6,ReagentCount_7,ReagentReCraftCount_0,ReagentReCraftCount_1,ReagentReCraftCount_2,ReagentReCraftCount_3,ReagentReCraftCount_4,ReagentReCraftCount_5,ReagentReCraftCount_6,ReagentReCraftCount_7,ReagentSource_0,ReagentSource_1,ReagentSource_2,ReagentSource_3,ReagentSource_4,ReagentSource_5,ReagentSource_6,ReagentSource_7",
+      "rows": 3319,
+      "sha256": "be6e987755f7097348eb072073ae3175b3d56016f43f90615a081d33d6affff6"
+    },
+    "SpellTotems.csv.gz": {
+      "bytes": 25486,
+      "columns": "ID,SpellID,RequiredTotemCategoryID_0,RequiredTotemCategoryID_1,Totem_0,Totem_1",
+      "rows": 1124,
+      "sha256": "43be02451227ce8a588e95ce9f8804b818a4e02cb7c5b9db0126266e65227471"
+    },
+    "TotemCategory.csv.gz": {
+      "bytes": 867,
+      "columns": "ID,Name_lang,TotemCategoryType,TotemCategoryMask",
+      "rows": 29,
+      "sha256": "ba854281b52d07468935aed2384c7dbd7f663fc272dbc12d68028968270ca5ac"
+    },
+    "era-SkillLineAbility.csv.gz": {
+      "bytes": 289820,
+      "columns": "ID,SkillLine,Spell,MinSkillLineRank,ClassMask,SupercedesSpell,AcquireMethod,TrivialSkillLineRankHigh,TrivialSkillLineRankLow,Flags,NumSkillUps,UniqueBit,TradeSkillCategoryID,Field_5_5_4_67090_013,Field_5_5_4_67090_014_0,Field_5_5_4_67090_014_1,RaceMask_0,RaceMask_1",
+      "rows": 6143,
+      "sha256": "5bb0ddce9943379976192bbb3cd6a438db47fd1abc2f642d89de500de19a02b3"
+    },
+    "era-SpellEffect.csv.gz": {
+      "bytes": 3658064,
+      "columns": "ID,DifficultyID,EffectIndex,Effect,EffectAmplitude,EffectAttributes,EffectAura,EffectAuraPeriod,EffectBasePoints,EffectBonusCoefficient,EffectChainAmplitude,EffectChainTargets,EffectDieSides,EffectItemType,EffectMechanic,EffectPointsPerResource,EffectPos_facing,EffectRealPointsPerLevel,EffectTriggerSpell,BonusCoefficientFromAP,PvpMultiplier,Coefficient,Variance,ResourceCoefficient,GroupSizeBasePointsCoefficient,EffectBasePointsF,Field_5_5_4_67090_025,EffectMiscValue_0,EffectMiscValue_1,EffectRadiusIndex_0,EffectRadiusIndex_1,EffectSpellClassMask_0,EffectSpellClassMask_1,EffectSpellClassMask_2,EffectSpellClassMask_3,ImplicitTarget_0,ImplicitTarget_1,SpellID",
+      "rows": 40250,
+      "sha256": "7f61c558042e0f95045dfcdd54f8bd8df8f33fb1e4e05aa0887871c3ffb7b0d1"
+    },
+    "era-SpellName.csv.gz": {
+      "bytes": 813507,
+      "columns": "ID,Name_lang",
+      "rows": 31249,
+      "sha256": "5ac8f81bc9b8aae4838c40cceb2e97bf5ca461838d9133eb2dd602cc7b0ebdd8"
+    }
+  }
+}
